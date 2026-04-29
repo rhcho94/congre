@@ -1,0 +1,71 @@
+@import "tailwindcss";
+
+:root {
+  --bg:            #0c0b09;
+  --surface:       #151310;
+  --surface-2:     #1e1a13;
+  --border:        #2d2720;
+  --text:          #ede8df;
+  --muted:         #79716a;
+  --accent:        #c8892c;
+  --accent-bright: #e8a038;
+}
+
+@theme inline {
+  --color-background:     var(--bg);
+  --color-foreground:     var(--text);
+  --color-surface:        var(--surface);
+  --color-surface2:       var(--surface-2);
+  --color-border:         var(--border);
+  --color-muted:          var(--muted);
+  --color-accent:         var(--accent);
+  --color-accent-bright:  var(--accent-bright);
+  --font-sans:            var(--font-body);
+  --font-display:         var(--font-display);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body, 'DM Sans'), sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Film grain overlay — appears on every page */
+body::after {
+  content: '';
+  position: fixed;
+  inset: -50%;
+  width: 200%;
+  height: 200%;
+  opacity: 0.038;
+  pointer-events: none;
+  z-index: 9999;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.78' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E");
+  background-size: 256px 256px;
+  animation: grain 0.45s steps(2) infinite;
+}
+
+@keyframes grain {
+  0%, 100% { transform: translate(0, 0); }
+  20%       { transform: translate(-1.5%, 1%); }
+  40%       { transform: translate(1.5%, -1%); }
+  60%       { transform: translate(-1%, 1.5%); }
+  80%       { transform: translate(1%, -1.5%); }
+}
+
+/* Decorative rule used across pages */
+.rule {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border) 20%, var(--border) 80%, transparent);
+}
+
+/* Amber glow utility */
+.glow-accent {
+  box-shadow: 0 0 40px 0 rgba(200, 137, 44, 0.18);
+}
