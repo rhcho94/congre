@@ -138,31 +138,18 @@ function UploadInner() {
     setStage("standby");
   }
 
-  // standby·recording 양쪽 지원하는 카메라 전환
+  // standby 전용 카메라 전환 — 녹화 중 전환은 데이터 손실을 유발하므로 허용하지 않음
   async function switchCamera() {
+    if (stage !== "standby") return;
+
     const newFacing = facingMode === "environment" ? "user" : "environment";
     setFacingMode(newFacing);
 
-    if (tickRef.current) { clearInterval(tickRef.current); tickRef.current = null; }
-
-    const wasRecording = recorderRef.current?.state === "recording";
-    if (recorderRef.current) {
-      recorderRef.current.ondataavailable = null;
-      recorderRef.current.onstop = null;
-      if (wasRecording) recorderRef.current.stop();
-    }
     stopStream();
-    chunksRef.current = [];
-    setTimer(0);
 
     const stream = await openCamera(newFacing);
     if (!stream) return;
-
-    if (wasRecording) {
-      // 녹화 중이었으면 새 스트림으로 녹화 재개
-      beginRecording(stream);
-    }
-    // standby였으면 streamKey 증가만으로 useEffect가 video.srcObject 갱신
+    // streamKey 증가만으로 useEffect가 video.srcObject 갱신
   }
 
   function beginRecording(stream: MediaStream) {
@@ -290,7 +277,7 @@ function UploadInner() {
 
   const timerPct = (timer / MAX_SEC) * 100;
 
-  // 카메라 전환 버튼 — standby·recording 공통
+  // 카메라 전환 버튼 — standby 전용
   const flipButton = (
     <button
       onClick={switchCamera}
@@ -436,6 +423,10 @@ function UploadInner() {
               />
             </div>
 
+            <p className="text-xs text-muted opacity-60 text-center">
+              카메라를 선택한 뒤 촬영을 시작하세요
+            </p>
+
             <button
               onClick={() => { if (streamRef.current) beginRecording(streamRef.current); }}
               className="w-full py-4 bg-accent text-background text-sm tracking-widest uppercase font-medium hover:brightness-110 transition-all duration-200 glow-accent"
@@ -476,8 +467,6 @@ function UploadInner() {
                 <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
                 <span className="text-xs text-white tracking-widest uppercase">REC</span>
               </div>
-
-              {flipButton}
 
               <video
                 ref={liveRef}
