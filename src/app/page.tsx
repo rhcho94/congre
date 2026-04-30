@@ -82,12 +82,9 @@ export default function LandingPage() {
           >
             주최자로 시작하기
           </Link>
-          <Link
-            href="/upload/demo?token=demo"
-            className="px-8 py-3.5 text-sm tracking-widest uppercase font-medium border border-border text-muted hover:border-accent hover:text-foreground transition-all duration-200"
-          >
-            참가자로 체험하기
-          </Link>
+          <p className="px-2 py-3.5 text-xs text-muted leading-relaxed text-center max-w-xs" style={{ opacity: 0.7 }}>
+            참가자는 주최자에게 받은 링크 또는 QR코드로 접속해주세요
+          </p>
         </div>
       </section>
 

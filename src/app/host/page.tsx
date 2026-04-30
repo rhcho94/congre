@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { loginWithEmail, logout, subscribeToAuthChanges, type User } from "@/lib/auth";
+import { loginWithEmail, logout, resetPassword, subscribeToAuthChanges, type User } from "@/lib/auth";
 import { isFirebaseConfigured } from "@/lib/firebase";
 
 type View = "login" | "dashboard" | "create";
@@ -66,6 +66,13 @@ export default function HostPage() {
   const [loginLoading, setLoginLoading] = useState(false);
   const [loginError, setLoginError] = useState("");
 
+  // 비밀번호 재설정 모달 상태
+  const [resetOpen, setResetOpen] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
+  const [resetError, setResetError] = useState("");
+
   useEffect(() => {
     if (!isFirebaseConfigured) return;
 
@@ -101,6 +108,34 @@ export default function HostPage() {
   async function handleLogout() {
     await logout();
     // 뷰 전환은 subscribeToAuthChanges가 처리
+  }
+
+  function openResetModal() {
+    setResetEmail(loginEmail);
+    setResetSent(false);
+    setResetError("");
+    setResetOpen(true);
+  }
+
+  async function handlePasswordReset(e: React.FormEvent) {
+    e.preventDefault();
+    setResetLoading(true);
+    setResetError("");
+    try {
+      await resetPassword(resetEmail);
+      setResetSent(true);
+    } catch (err) {
+      const code = (err as { code?: string }).code ?? "";
+      if (code === "auth/invalid-email") {
+        setResetError("이메일 형식이 올바르지 않습니다.");
+      } else if (code === "auth/user-not-found") {
+        setResetError("등록되지 않은 이메일입니다.");
+      } else {
+        setResetError("메일 발송에 실패했습니다. 다시 시도해주세요.");
+      }
+    } finally {
+      setResetLoading(false);
+    }
   }
 
   function handleCreate(e: React.FormEvent) {
@@ -155,6 +190,7 @@ export default function HostPage() {
       <main className="mx-auto max-w-2xl px-6 py-16">
         {/* ─── Login ─── */}
         {view === "login" && (
+          <>
           <div className="flex flex-col items-center">
             <div className="w-full max-w-md">
               <p className="text-xs tracking-[0.4em] uppercase text-accent mb-4 text-center">
@@ -220,8 +256,96 @@ export default function HostPage() {
                   {loginLoading ? "로그인 중..." : "로그인"}
                 </button>
               </form>
+
+              <div className="mt-4 text-center">
+                <button
+                  type="button"
+                  onClick={openResetModal}
+                  className="text-xs text-muted hover:text-accent transition-colors duration-200"
+                >
+                  비밀번호를 잊으셨나요?
+                </button>
+              </div>
             </div>
           </div>
+
+          {/* 비밀번호 재설정 모달 */}
+          {resetOpen && (
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center px-6"
+              style={{ background: "rgba(12,11,9,0.8)", backdropFilter: "blur(4px)" }}
+              onClick={() => setResetOpen(false)}
+            >
+              <div
+                className="w-full max-w-sm bg-surface border border-border p-8 flex flex-col gap-5"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between">
+                  <p className="text-xs tracking-[0.3em] uppercase text-accent">비밀번호 재설정</p>
+                  <button
+                    onClick={() => setResetOpen(false)}
+                    className="text-muted hover:text-foreground transition-colors"
+                    aria-label="닫기"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
+                </div>
+
+                {resetSent ? (
+                  <div className="flex flex-col gap-3">
+                    <div className="flex items-center gap-2">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5ba06e" strokeWidth="1.5">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                      <p className="text-sm" style={{ color: "#5ba06e" }}>재설정 메일을 보냈습니다</p>
+                    </div>
+                    <p className="text-xs text-muted leading-relaxed">
+                      {resetEmail} 로 전송됐습니다. 메일함을 확인해주세요.
+                    </p>
+                    <button
+                      onClick={() => setResetOpen(false)}
+                      className="mt-1 py-2.5 border border-border text-xs tracking-widest uppercase text-muted hover:border-accent hover:text-foreground transition-all duration-200"
+                    >
+                      닫기
+                    </button>
+                  </div>
+                ) : (
+                  <form onSubmit={handlePasswordReset} className="flex flex-col gap-4">
+                    <p className="text-xs text-muted leading-relaxed">
+                      가입한 이메일을 입력하면 비밀번호 재설정 링크를 보내드립니다.
+                    </p>
+                    <label className="flex flex-col gap-1.5">
+                      <span className="text-xs tracking-widest uppercase text-muted">이메일</span>
+                      <input
+                        type="email"
+                        placeholder="host@congre.io"
+                        value={resetEmail}
+                        onChange={(e) => setResetEmail(e.target.value)}
+                        required
+                        disabled={resetLoading}
+                        autoFocus
+                        className="bg-background border border-border px-4 py-3 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-accent transition-colors duration-200 disabled:opacity-50"
+                      />
+                    </label>
+                    {resetError && (
+                      <p className="text-xs" style={{ color: "#d45040" }}>{resetError}</p>
+                    )}
+                    <button
+                      type="submit"
+                      disabled={resetLoading}
+                      className="py-3 bg-accent text-background text-xs tracking-widest uppercase font-medium hover:brightness-110 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      {resetLoading ? "발송 중..." : "재설정 메일 보내기"}
+                    </button>
+                  </form>
+                )}
+              </div>
+            </div>
+          )}
+          </>
         )}
 
         {/* ─── Dashboard ─── */}

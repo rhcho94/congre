@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
   s3Urls.forEach((url, i) => console.log(`  [${i}] ${url}`));
 
   try {
-    const renderId = await createRender(s3Urls, eventTitle ?? "congre");
+    const renderId = await createRender(s3Urls);
     return Response.json({ renderId });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "render_failed";

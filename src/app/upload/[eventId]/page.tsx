@@ -24,6 +24,7 @@ function UploadInner() {
   const [retryNum, setRetryNum] = useState(0);
   const [errorMsg, setErrorMsg] = useState("");
   const [s3Ready, setS3Ready] = useState<boolean | null>(null);
+  const [facingMode, setFacingMode] = useState<"user" | "environment">("environment");
 
   const liveRef = useRef<HTMLVideoElement>(null);
   const previewRef = useRef<HTMLVideoElement>(null);
@@ -94,19 +95,49 @@ function UploadInner() {
     video.load();
   }, [stage]);
 
-  async function startCamera() {
+  async function startCamera(facing: "user" | "environment" = facingMode) {
     setErrorMsg("");
+    if (typeof MediaRecorder === "undefined") {
+      setErrorMsg("이 브라우저에서는 녹화가 지원되지 않습니다. iOS 15 이상의 Safari를 사용해주세요.");
+      setStage("error");
+      return;
+    }
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { ideal: "environment" }, width: { ideal: 1080 }, height: { ideal: 1920 } },
-        audio: true,
-      });
+      let stream: MediaStream;
+      try {
+        // 기본 시도: facingMode ideal constraints
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: facing } },
+          audio: true,
+        });
+      } catch {
+        // iOS 일부 버전에서 constraints 거부 시 최소 constraints로 폴백
+        stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      }
       streamRef.current = stream;
-      beginRecording(stream); // setStage("recording") → useEffect가 srcObject 연결
+      beginRecording(stream);
     } catch {
       setErrorMsg("카메라 접근 권한이 필요합니다. 브라우저 설정을 확인해주세요.");
       setStage("error");
     }
+  }
+
+  async function switchCamera() {
+    const newFacing = facingMode === "environment" ? "user" : "environment";
+    setFacingMode(newFacing);
+
+    // 현재 녹화 중단 (chunks 폐기, onstop에서 preview로 가지 않도록 핸들러 해제)
+    if (tickRef.current) { clearInterval(tickRef.current); tickRef.current = null; }
+    if (recorderRef.current) {
+      recorderRef.current.ondataavailable = null;
+      recorderRef.current.onstop = null;
+      if (recorderRef.current.state === "recording") recorderRef.current.stop();
+    }
+    stopStream();
+    chunksRef.current = [];
+    setTimer(0);
+
+    await startCamera(newFacing);
   }
 
   function beginRecording(stream: MediaStream) {
@@ -311,7 +342,7 @@ function UploadInner() {
             </p>
 
             <button
-              onClick={startCamera}
+              onClick={() => startCamera()}
               className="group relative w-full bg-surface hover:bg-[var(--surface-2)] border-2 border-border hover:border-accent transition-all duration-300 flex flex-col items-center justify-center gap-5 cursor-pointer"
               style={{ aspectRatio: "9 / 16", maxHeight: "58vh" }}
             >
@@ -375,8 +406,22 @@ function UploadInner() {
                 <span className="text-xs text-white tracking-widest uppercase">REC</span>
               </div>
 
+              {/* 카메라 전환 버튼 */}
+              <button
+                onClick={switchCamera}
+                className="absolute top-4 right-4 z-10 w-10 h-10 flex items-center justify-center rounded-full bg-black/50"
+                aria-label="카메라 전환"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M1 4v6h6" />
+                  <path d="M23 20v-6h-6" />
+                  <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15" />
+                </svg>
+              </button>
+
               <video
                 ref={liveRef}
+                autoPlay
                 playsInline
                 muted
                 className="w-full h-full object-cover"
