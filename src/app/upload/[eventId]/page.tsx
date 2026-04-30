@@ -8,7 +8,9 @@ import { getEvent, saveClipMetadata, CongreEvent } from "@/lib/events";
 import { isFirebaseConfigured } from "@/lib/firebase";
 import CongreBadge from "@/components/CongreBadge";
 
-type Stage = "verifying" | "invalid" | "idle" | "recording" | "preview" | "uploading" | "done" | "error";
+// "standby" = 카메라 켜진 미리보기 (녹화 전)
+// "preview"  = 녹화 완료 후 blob 재생 (기존)
+type Stage = "verifying" | "invalid" | "idle" | "standby" | "recording" | "preview" | "uploading" | "done" | "error";
 
 const MAX_SEC = 10;
 
@@ -25,6 +27,8 @@ function UploadInner() {
   const [errorMsg, setErrorMsg] = useState("");
   const [s3Ready, setS3Ready] = useState<boolean | null>(null);
   const [facingMode, setFacingMode] = useState<"user" | "environment">("environment");
+  // streamKey: openCamera 호출마다 증가 → useEffect([stage, streamKey])가 재실행되어 video.srcObject 갱신
+  const [streamKey, setStreamKey] = useState(0);
 
   const liveRef = useRef<HTMLVideoElement>(null);
   const previewRef = useRef<HTMLVideoElement>(null);
@@ -67,6 +71,8 @@ function UploadInner() {
   const stopStream = useCallback(() => {
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
+    // 이전 스트림 잔재 제거 — srcObject를 null로 초기화하지 않으면 검은 화면 잔류
+    if (liveRef.current) liveRef.current.srcObject = null;
   }, []);
 
   useEffect(() => {
@@ -77,14 +83,14 @@ function UploadInner() {
     };
   }, [stopStream]);
 
-  // stage가 "recording"으로 바뀐 뒤 video 엘리먼트가 마운트되면 스트림을 연결
+  // standby·recording 진입 시, 또는 streamKey가 바뀔 때(카메라 전환) video에 스트림 연결
   useEffect(() => {
-    if (stage !== "recording") return;
+    if (stage !== "standby" && stage !== "recording") return;
     const video = liveRef.current;
     if (!video || !streamRef.current) return;
     video.srcObject = streamRef.current;
     video.play().catch(() => {});
-  }, [stage]);
+  }, [stage, streamKey]);
 
   // stage가 "preview"로 바뀐 뒤 video 엘리먼트가 마운트되면 blob URL을 연결
   useEffect(() => {
@@ -95,12 +101,13 @@ function UploadInner() {
     video.load();
   }, [stage]);
 
-  async function startCamera(facing: "user" | "environment" = facingMode) {
+  // 카메라 스트림 획득만 담당. streamRef·streamKey 갱신. 녹화 시작 안 함.
+  async function openCamera(facing: "user" | "environment"): Promise<MediaStream | null> {
     setErrorMsg("");
     if (typeof MediaRecorder === "undefined") {
       setErrorMsg("이 브라우저에서는 녹화가 지원되지 않습니다. iOS 15 이상의 Safari를 사용해주세요.");
       setStage("error");
-      return;
+      return null;
     }
     try {
       let stream: MediaStream;
@@ -115,29 +122,47 @@ function UploadInner() {
         stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
       }
       streamRef.current = stream;
-      beginRecording(stream);
+      setStreamKey((k) => k + 1); // useEffect 재실행 트리거
+      return stream;
     } catch {
       setErrorMsg("카메라 접근 권한이 필요합니다. 브라우저 설정을 확인해주세요.");
       setStage("error");
+      return null;
     }
   }
 
+  // idle → standby: 카메라 켜고 미리보기 진입 (녹화 없음)
+  async function startPreview() {
+    const stream = await openCamera(facingMode);
+    if (!stream) return;
+    setStage("standby");
+  }
+
+  // standby·recording 양쪽 지원하는 카메라 전환
   async function switchCamera() {
     const newFacing = facingMode === "environment" ? "user" : "environment";
     setFacingMode(newFacing);
 
-    // 현재 녹화 중단 (chunks 폐기, onstop에서 preview로 가지 않도록 핸들러 해제)
     if (tickRef.current) { clearInterval(tickRef.current); tickRef.current = null; }
+
+    const wasRecording = recorderRef.current?.state === "recording";
     if (recorderRef.current) {
       recorderRef.current.ondataavailable = null;
       recorderRef.current.onstop = null;
-      if (recorderRef.current.state === "recording") recorderRef.current.stop();
+      if (wasRecording) recorderRef.current.stop();
     }
     stopStream();
     chunksRef.current = [];
     setTimer(0);
 
-    await startCamera(newFacing);
+    const stream = await openCamera(newFacing);
+    if (!stream) return;
+
+    if (wasRecording) {
+      // 녹화 중이었으면 새 스트림으로 녹화 재개
+      beginRecording(stream);
+    }
+    // standby였으면 streamKey 증가만으로 useEffect가 video.srcObject 갱신
   }
 
   function beginRecording(stream: MediaStream) {
@@ -163,7 +188,7 @@ function UploadInner() {
       stopStream();
       if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
       previewUrlRef.current = URL.createObjectURL(blob);
-      setStage("preview"); // useEffect가 마운트 후 previewRef.current.src 연결
+      setStage("preview");
     };
 
     recorder.start(100);
@@ -223,7 +248,6 @@ function UploadInner() {
     console.log(`[upload] S3 PUT success`);
 
     // Firestore 저장은 best-effort — 실패·타임아웃해도 done 전환 막지 않음
-    // (Firestore 미설정·규칙 거부 시 SDK가 무한 대기하므로 5초 타임아웃 적용)
     const clipSave = saveClipMetadata({ eventId, s3Key: key, sessionToken: urlToken });
     const clipTimeout = new Promise<void>((_, reject) =>
       setTimeout(() => reject(new Error("firestore_timeout")), 5000)
@@ -266,6 +290,21 @@ function UploadInner() {
 
   const timerPct = (timer / MAX_SEC) * 100;
 
+  // 카메라 전환 버튼 — standby·recording 공통
+  const flipButton = (
+    <button
+      onClick={switchCamera}
+      className="absolute top-4 right-4 z-10 w-10 h-10 flex items-center justify-center rounded-full bg-black/50"
+      aria-label="카메라 전환"
+    >
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M1 4v6h6" />
+        <path d="M23 20v-6h-6" />
+        <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15" />
+      </svg>
+    </button>
+  );
+
   // ── verifying ──
   if (stage === "verifying") {
     return (
@@ -298,7 +337,7 @@ function UploadInner() {
     );
   }
 
-  // ── idle / recording / preview / uploading / done / error ──
+  // ── idle / standby / recording / preview / uploading / done / error ──
   return (
     <div className="min-h-screen bg-background flex flex-col" style={{ maxWidth: "480px", margin: "0 auto" }}>
       {/* Header */}
@@ -342,7 +381,7 @@ function UploadInner() {
             </p>
 
             <button
-              onClick={() => startCamera()}
+              onClick={startPreview}
               className="group relative w-full bg-surface hover:bg-[var(--surface-2)] border-2 border-border hover:border-accent transition-all duration-300 flex flex-col items-center justify-center gap-5 cursor-pointer"
               style={{ aspectRatio: "9 / 16", maxHeight: "58vh" }}
             >
@@ -362,7 +401,7 @@ function UploadInner() {
                   </svg>
                 </div>
                 <p className="text-base tracking-widest uppercase font-medium text-muted group-hover:text-accent transition-colors duration-300">
-                  촬영 시작
+                  카메라 켜기
                 </p>
                 <p className="text-xs text-muted opacity-60">최대 10초 · 탭하여 시작</p>
               </div>
@@ -372,6 +411,38 @@ function UploadInner() {
               AI가 모든 순간을 모아 하나의 영상으로 편집해드려요.
             </p>
           </>
+        )}
+
+        {/* ── standby: 카메라 미리보기 (녹화 전) ── */}
+        {stage === "standby" && (
+          <div className="w-full flex flex-col items-center gap-4">
+            <div
+              className="relative w-full bg-black overflow-hidden"
+              style={{ aspectRatio: "9 / 16", maxHeight: "54vh" }}
+            >
+              <span className="absolute top-3 left-3 w-5 h-5 border-t border-l border-accent z-10" />
+              <span className="absolute top-3 right-3 w-5 h-5 border-t border-r border-accent z-10" />
+              <span className="absolute bottom-3 left-3 w-5 h-5 border-b border-l border-accent z-10" />
+              <span className="absolute bottom-3 right-3 w-5 h-5 border-b border-r border-accent z-10" />
+
+              {flipButton}
+
+              <video
+                ref={liveRef}
+                autoPlay
+                playsInline
+                muted
+                className="w-full h-full object-cover"
+              />
+            </div>
+
+            <button
+              onClick={() => { if (streamRef.current) beginRecording(streamRef.current); }}
+              className="w-full py-4 bg-accent text-background text-sm tracking-widest uppercase font-medium hover:brightness-110 transition-all duration-200 glow-accent"
+            >
+              촬영 시작
+            </button>
+          </div>
         )}
 
         {/* ── recording ── */}
@@ -406,18 +477,7 @@ function UploadInner() {
                 <span className="text-xs text-white tracking-widest uppercase">REC</span>
               </div>
 
-              {/* 카메라 전환 버튼 */}
-              <button
-                onClick={switchCamera}
-                className="absolute top-4 right-4 z-10 w-10 h-10 flex items-center justify-center rounded-full bg-black/50"
-                aria-label="카메라 전환"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M1 4v6h6" />
-                  <path d="M23 20v-6h-6" />
-                  <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15" />
-                </svg>
-              </button>
+              {flipButton}
 
               <video
                 ref={liveRef}
@@ -437,7 +497,7 @@ function UploadInner() {
           </div>
         )}
 
-        {/* ── preview ── */}
+        {/* ── preview (녹화 후 blob 재생) ── */}
         {stage === "preview" && (
           <div className="w-full flex flex-col gap-5">
             <div
