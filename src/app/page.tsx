@@ -83,7 +83,7 @@ export default function LandingPage() {
             주최자로 시작하기
           </Link>
           <Link
-            href="/event/demo"
+            href="/upload/demo?token=demo"
             className="px-8 py-3.5 text-sm tracking-widest uppercase font-medium border border-border text-muted hover:border-accent hover:text-foreground transition-all duration-200"
           >
             참가자로 체험하기

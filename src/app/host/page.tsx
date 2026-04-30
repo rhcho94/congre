@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { loginWithEmail, logout, subscribeToAuthChanges, type User } from "@/lib/auth";
 import { isFirebaseConfigured } from "@/lib/firebase";
 
@@ -49,6 +50,7 @@ function getAuthErrorMessage(code: string): string {
 }
 
 export default function HostPage() {
+  const router = useRouter();
   const [view, setView] = useState<View>("login");
   const [user, setUser] = useState<User | null>(null);
   // Firebase 설정이 없으면 auth 체크를 건너뜀
@@ -70,11 +72,15 @@ export default function HostPage() {
     const unsubscribe = subscribeToAuthChanges((firebaseUser) => {
       setUser(firebaseUser);
       setAuthChecking(false);
-      setView(firebaseUser ? "dashboard" : "login");
+      if (firebaseUser) {
+        router.push("/dashboard");
+      } else {
+        setView("login");
+      }
     });
 
     return unsubscribe;
-  }, []);
+  }, [router]);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();

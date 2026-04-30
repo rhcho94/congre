@@ -35,5 +35,7 @@ export async function POST(request: NextRequest) {
 
   const url = await getSignedUrl(s3, command, { expiresIn: 300 });
 
+  console.log(`[presign] key=${key} contentType=${contentType} expires=300s`);
+
   return Response.json({ url, key });
 }
