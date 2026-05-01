@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { BrandName } from "@/components/BrandName";
+import LandingParticles from "@/components/LandingParticles";
+import LandingSparkles from "@/components/LandingSparkles";
 import {
   QrCode,
   Sparkles,
@@ -81,6 +83,7 @@ const useCases = [
 export default function LandingPage() {
   return (
     <div className="relative min-h-screen overflow-x-hidden">
+      <LandingParticles />
 
       {/* ── Nav ── */}
       <nav className="relative z-20 flex items-center justify-between px-8 py-6">
@@ -148,32 +151,34 @@ export default function LandingPage() {
 
             {/* Right: hero video — 5 cols */}
             <div className="flex justify-center md:col-span-5">
-              <div
-                className="relative overflow-hidden rounded-2xl bg-surface shadow-2xl"
-                style={{
-                  aspectRatio: "9 / 16",
-                  width: "100%",
-                  maxWidth: "260px",
-                  boxShadow: "0 0 60px 0 rgba(200, 137, 44, 0.12), 0 32px 64px rgba(0,0,0,0.6)",
-                }}
-              >
-                <video
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  preload="metadata"
-                  className="w-full h-full object-cover"
-                  style={{ background: "var(--surface)" }}
-                >
-                  <source src="/videos/hero.mp4" type="video/mp4" />
-                </video>
+              <LandingSparkles>
                 <div
-                  className="pointer-events-none absolute inset-0 rounded-2xl"
-                  style={{ boxShadow: "inset 0 0 40px 0 rgba(12,11,9,0.4)" }}
-                  aria-hidden
-                />
-              </div>
+                  className="relative overflow-hidden rounded-2xl bg-surface shadow-2xl"
+                  style={{
+                    aspectRatio: "9 / 16",
+                    width: "100%",
+                    maxWidth: "260px",
+                    boxShadow: "0 0 60px 0 rgba(200, 137, 44, 0.12), 0 32px 64px rgba(0,0,0,0.6)",
+                  }}
+                >
+                  <video
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    preload="metadata"
+                    className="w-full h-full object-cover"
+                    style={{ background: "var(--surface)" }}
+                  >
+                    <source src="/videos/hero.mp4" type="video/mp4" />
+                  </video>
+                  <div
+                    className="pointer-events-none absolute inset-0 rounded-2xl"
+                    style={{ boxShadow: "inset 0 0 40px 0 rgba(12,11,9,0.4)" }}
+                    aria-hidden
+                  />
+                </div>
+              </LandingSparkles>
             </div>
 
           </div>
