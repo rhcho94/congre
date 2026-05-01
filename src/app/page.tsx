@@ -6,6 +6,7 @@ import {
   Download,
   Clock,
   Smartphone,
+  ChevronDown,
 } from "lucide-react";
 
 /* ─── data ─────────────────────────────────────────── */
@@ -97,95 +98,104 @@ export default function LandingPage() {
       </nav>
 
       {/* ── Hero ── */}
-      <section className="relative z-10 mx-auto max-w-6xl px-6 pt-12 pb-32 md:pt-16 md:pb-40">
-        {/* Ambient glow behind video */}
-        <div
-          className="pointer-events-none absolute right-0 top-0 h-[600px] w-[400px] opacity-20 blur-3xl"
-          style={{ background: "radial-gradient(ellipse at center, #c8892c 0%, transparent 70%)" }}
-          aria-hidden
-        />
+      <section className="relative z-10 flex flex-col" style={{ minHeight: "calc(90vh - 80px)" }}>
+        <div className="mx-auto w-full max-w-6xl px-6 pt-12 pb-16 md:pt-16 flex-1 flex flex-col">
+          {/* Ambient glow */}
+          <div
+            className="pointer-events-none absolute right-0 top-0 h-[600px] w-[400px] opacity-20 blur-3xl"
+            style={{ background: "radial-gradient(ellipse at center, #c8892c 0%, transparent 70%)" }}
+            aria-hidden
+          />
 
-        <div className="relative flex flex-col gap-16 md:flex-row md:items-center md:gap-12">
+          <div className="relative grid grid-cols-1 gap-16 md:grid-cols-12 md:gap-8 md:items-center flex-1">
 
-          {/* Left: copy + CTA */}
-          <div className="flex flex-col gap-8 md:flex-1">
-            {/* Eyebrow */}
-            <div className="flex items-center gap-4">
-              <div className="rule w-10 shrink-0" />
-              <span className="text-xs tracking-[0.4em] uppercase text-accent whitespace-nowrap">
-                Event Video Platform
-              </span>
+            {/* Left: copy + CTA — 7 cols */}
+            <div className="flex flex-col gap-8 md:col-span-7">
+              {/* Eyebrow */}
+              <div className="flex items-center gap-4">
+                <div className="rule w-10 shrink-0" />
+                <span className="text-xs tracking-[0.4em] uppercase text-accent whitespace-nowrap">
+                  Event Video Platform
+                </span>
+              </div>
+
+              {/* Wordmark + headline */}
+              <div className="flex flex-col gap-4">
+                <span
+                  className="text-sm italic tracking-[0.3em] uppercase text-muted"
+                  style={{ fontFamily: "var(--font-display, serif)" }}
+                >
+                  congre
+                </span>
+                <h1
+                  className="text-5xl leading-tight italic text-foreground md:text-6xl lg:text-7xl"
+                  style={{ fontFamily: "var(--font-display, serif)" }}
+                >
+                  이 순간을
+                  <br />
+                  <span style={{ color: "var(--accent)" }}>영원히</span>
+                </h1>
+              </div>
+
+              <p className="text-base leading-relaxed text-muted max-w-md">
+                결혼식·돌잔치 하객의 10초 영상이 모여,<br />
+                평생 간직할 한 편의 영상이 됩니다.
+              </p>
+
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <Link
+                  href="/host"
+                  className="inline-block px-8 py-4 text-sm tracking-widest uppercase font-medium bg-accent text-background hover:brightness-110 transition-all duration-200 glow-accent text-center"
+                >
+                  이벤트 만들기
+                </Link>
+                <span className="text-xs text-muted opacity-60 pl-1">
+                  지금은 무료로 체험 가능
+                </span>
+              </div>
             </div>
 
-            {/* Wordmark + headline */}
-            <div className="flex flex-col gap-4">
-              <span
-                className="text-sm italic tracking-[0.3em] uppercase text-muted"
-                style={{ fontFamily: "var(--font-display, serif)" }}
-              >
-                congre
-              </span>
-              <h1
-                className="text-5xl leading-tight italic text-foreground md:text-6xl lg:text-7xl"
-                style={{ fontFamily: "var(--font-display, serif)" }}
-              >
-                이 순간을
-                <br />
-                <span style={{ color: "var(--accent)" }}>영원히</span>
-              </h1>
-            </div>
-
-            <p className="text-base leading-relaxed text-muted max-w-md">
-              결혼식·돌잔치 하객의 10초 영상이 모여,<br />
-              평생 간직할 한 편의 영상이 됩니다.
-            </p>
-
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-              <Link
-                href="/host"
-                className="inline-block px-8 py-4 text-sm tracking-widest uppercase font-medium bg-accent text-background hover:brightness-110 transition-all duration-200 glow-accent text-center"
-              >
-                이벤트 만들기
-              </Link>
-              <span className="text-xs text-muted opacity-60 pl-1">
-                지금은 무료로 체험 가능
-              </span>
-            </div>
-          </div>
-
-          {/* Right: hero video */}
-          <div className="flex justify-center md:w-64 lg:w-72 shrink-0">
-            <div
-              className="relative overflow-hidden rounded-2xl bg-surface shadow-2xl"
-              style={{
-                aspectRatio: "9 / 16",
-                width: "100%",
-                maxWidth: "280px",
-                boxShadow: "0 0 60px 0 rgba(200, 137, 44, 0.12), 0 32px 64px rgba(0,0,0,0.6)",
-              }}
-            >
-              <video
-                autoPlay
-                muted
-                loop
-                playsInline
-                preload="metadata"
-                className="w-full h-full object-cover"
-                style={{ background: "var(--surface)" }}
-              >
-                <source src="/videos/hero.mp4" type="video/mp4" />
-              </video>
-              {/* Subtle inner vignette */}
+            {/* Right: hero video — 5 cols */}
+            <div className="flex justify-center md:col-span-5">
               <div
-                className="pointer-events-none absolute inset-0 rounded-2xl"
+                className="relative overflow-hidden rounded-2xl bg-surface shadow-2xl"
                 style={{
-                  boxShadow: "inset 0 0 40px 0 rgba(12,11,9,0.4)",
+                  aspectRatio: "9 / 16",
+                  width: "100%",
+                  maxWidth: "260px",
+                  boxShadow: "0 0 60px 0 rgba(200, 137, 44, 0.12), 0 32px 64px rgba(0,0,0,0.6)",
                 }}
-                aria-hidden
-              />
+              >
+                <video
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  preload="metadata"
+                  className="w-full h-full object-cover"
+                  style={{ background: "var(--surface)" }}
+                >
+                  <source src="/videos/hero.mp4" type="video/mp4" />
+                </video>
+                <div
+                  className="pointer-events-none absolute inset-0 rounded-2xl"
+                  style={{ boxShadow: "inset 0 0 40px 0 rgba(12,11,9,0.4)" }}
+                  aria-hidden
+                />
+              </div>
             </div>
-          </div>
 
+          </div>
+        </div>
+
+        {/* Scroll cue */}
+        <div className="flex justify-center pb-8 opacity-40">
+          <ChevronDown
+            size={22}
+            className="text-accent animate-bounce"
+            strokeWidth={1.5}
+            aria-hidden
+          />
         </div>
       </section>
 
