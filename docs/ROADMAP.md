@@ -8,7 +8,6 @@
 
 - 푸시 알림 (FCM) — PWA 푸시는 iOS 제약 있음, 검토 필요
 - 유료 플랜 결제 (토스페이먼츠)
-- 테스트 이벤트 데이터 정리 (Firestore events 컬렉션 누적)
 
 ## 알려진 이슈
 
@@ -16,5 +15,3 @@
 
 요약:
 - `clipCount` permission-denied (무시 중, 기능 영향 없음)
-- 클립 재생 Pre-signed URL 미구현
-- Firestore events 컬렉션에 테스트 데이터 누적
