@@ -1,3 +1,5 @@
+import { BrandName } from "@/components/BrandName";
+
 export default function CongreBadge({ className }: { className?: string }) {
   return (
     <div
@@ -6,17 +8,9 @@ export default function CongreBadge({ className }: { className?: string }) {
     >
       <div className="flex items-center gap-2">
         <span className="text-[9px]" style={{ color: "var(--accent)" }}>◆</span>
-        <span
-          className="text-sm font-light italic tracking-widest text-white"
-          style={{ fontFamily: "var(--font-display, Georgia, serif)" }}
-        >
-          Congre
-        </span>
+        <BrandName className="text-sm font-light tracking-widest" />
       </div>
-      <span className="text-[9px] tracking-[0.22em] uppercase font-light">
-        <span style={{ color: "rgba(200,137,44,0.45)" }}>made by </span>
-        <span style={{ color: "var(--accent)" }}>Congre</span>
-      </span>
+      <BrandName withMadeBy className="text-[9px] tracking-[0.22em] uppercase font-light" />
     </div>
   );
 }

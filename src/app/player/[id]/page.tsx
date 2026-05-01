@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import Link from "next/link";
+import { BrandName } from "@/components/BrandName";
 import { useParams } from "next/navigation";
 
 // Mock — replace with API fetch by video id in production
@@ -35,10 +36,9 @@ export default function PlayerPage() {
       <header className="flex items-center justify-between px-6 py-5 border-b border-border">
         <Link
           href="/"
-          className="text-xl italic tracking-wider text-foreground hover:text-accent transition-colors duration-200"
-          style={{ fontFamily: "var(--font-display, serif)" }}
+          className="text-xl tracking-wider hover:opacity-75 transition-opacity duration-200"
         >
-          Congre
+          <BrandName />
         </Link>
         <Link
           href="/host"
@@ -158,7 +158,7 @@ export default function PlayerPage() {
 
       <footer className="px-6 pb-6 text-center">
         <p className="text-xs tracking-[0.3em] uppercase text-muted">
-          Congre · AI 자동 편집
+          <BrandName /> · AI 자동 편집
         </p>
       </footer>
     </div>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BrandName } from "@/components/BrandName";
 import {
   QrCode,
   Sparkles,
@@ -83,12 +84,7 @@ export default function LandingPage() {
 
       {/* ── Nav ── */}
       <nav className="relative z-20 flex items-center justify-between px-8 py-6">
-        <span
-          className="text-2xl italic tracking-wider text-foreground"
-          style={{ fontFamily: "var(--font-display, serif)" }}
-        >
-          Congre
-        </span>
+        <BrandName className="text-2xl tracking-wider" />
         <Link
           href="/host"
           className="text-sm tracking-widest uppercase text-muted hover:text-accent transition-colors duration-200"
@@ -121,12 +117,7 @@ export default function LandingPage() {
 
               {/* Wordmark + headline */}
               <div className="flex flex-col gap-4">
-                <span
-                  className="text-sm italic tracking-[0.3em] uppercase text-muted"
-                  style={{ fontFamily: "var(--font-display, serif)" }}
-                >
-                  Congre
-                </span>
+                <BrandName className="text-sm tracking-[0.3em] uppercase" />
                 <h1
                   className="text-5xl leading-tight italic text-foreground md:text-6xl lg:text-7xl"
                   style={{ fontFamily: "var(--font-display, serif)" }}
@@ -256,7 +247,7 @@ export default function LandingPage() {
             className="text-3xl italic text-foreground md:text-4xl"
             style={{ fontFamily: "var(--font-display, serif)" }}
           >
-            왜 Congre인가요
+            왜 <BrandName />인가요
           </h2>
         </div>
 
@@ -352,13 +343,8 @@ export default function LandingPage() {
       <footer className="relative z-10 border-t border-border">
         <div className="mx-auto max-w-5xl px-6 py-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-col gap-1">
-            <span
-              className="text-base italic tracking-wider text-foreground"
-              style={{ fontFamily: "var(--font-display, serif)" }}
-            >
-              Congre
-            </span>
-            <p className="text-xs text-muted opacity-60">© 2025 Congre. All rights reserved.</p>
+            <BrandName className="text-base tracking-wider" />
+            <p className="text-xs text-muted opacity-60">© 2025 <BrandName />. All rights reserved.</p>
           </div>
           <a
             href="mailto:hello@congre.io"

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { BrandName } from "@/components/BrandName";
 import { useRouter } from "next/navigation";
 import { QRCodeSVG, QRCodeCanvas } from "qrcode.react";
 import { subscribeToAuthChanges, type User } from "@/lib/auth";
@@ -112,10 +113,9 @@ export default function CreateEventPage() {
       <nav className="flex items-center justify-between px-8 py-6 border-b border-border">
         <Link
           href="/"
-          className="text-xl italic tracking-wider text-foreground hover:text-accent transition-colors duration-200"
-          style={{ fontFamily: "var(--font-display, serif)" }}
+          className="text-xl tracking-wider hover:opacity-75 transition-opacity duration-200"
         >
-          Congre
+          <BrandName />
         </Link>
         {view === "form" && (
           <Link

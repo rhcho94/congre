@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { BrandName } from "@/components/BrandName";
 import { useParams } from "next/navigation";
 import { checkS3, getPresignedUrl, uploadToS3 } from "@/lib/s3";
 import { saveVideoMetadata } from "@/lib/firestore";
@@ -224,10 +225,9 @@ export default function EventPage() {
       <header className="px-6 py-5 border-b border-border flex items-center justify-between">
         <Link
           href="/"
-          className="text-xl italic tracking-wider text-foreground"
-          style={{ fontFamily: "var(--font-display, serif)" }}
+          className="text-xl tracking-wider hover:opacity-75 transition-opacity duration-200"
         >
-          Congre
+          <BrandName />
         </Link>
       </header>
 

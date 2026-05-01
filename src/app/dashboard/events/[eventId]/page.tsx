@@ -15,6 +15,7 @@ import {
 } from "@/lib/events";
 import { isFirebaseConfigured } from "@/lib/firebase";
 import CongreBadge from "@/components/CongreBadge";
+import { BrandName } from "@/components/BrandName";
 import type { Timestamp } from "firebase/firestore";
 
 const statusLabels: Record<string, string> = {
@@ -308,10 +309,9 @@ export default function EventDetailPage() {
       <nav className="flex items-center justify-between px-8 py-6 border-b border-border">
         <Link
           href="/"
-          className="text-xl italic tracking-wider text-foreground hover:text-accent transition-colors duration-200"
-          style={{ fontFamily: "var(--font-display, serif)" }}
+          className="text-xl tracking-wider hover:opacity-75 transition-opacity duration-200"
         >
-          Congre
+          <BrandName />
         </Link>
         <Link
           href="/dashboard"
@@ -360,7 +360,7 @@ export default function EventDetailPage() {
 
         {/* QR 코드 & 공유 링크 — 수집중(open)일 때만 표시 */}
         {event.status === "open" && shareUrl && (
-          <div className="mb-8">
+          <div className="mb-8 w-full overflow-hidden">
             <p className="text-xs tracking-widest uppercase text-muted mb-4">참가자 초대</p>
             <div className="flex flex-col sm:flex-row gap-6 p-6 border border-border bg-surface">
               <div className="shrink-0 flex flex-col items-center gap-2">
@@ -378,7 +378,7 @@ export default function EventDetailPage() {
                   QR 이미지 저장
                 </button>
               </div>
-              <div className="flex-1 flex flex-col justify-center gap-3">
+              <div className="flex-1 min-w-0 flex flex-col justify-center gap-3">
                 <p className="text-xs text-muted leading-relaxed">
                   QR코드를 스캔하거나 링크를 공유하세요.
                 </p>

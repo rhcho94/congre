@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { BrandName } from "@/components/BrandName";
 import { useRouter } from "next/navigation";
 import { subscribeToAuthChanges, logout, type User } from "@/lib/auth";
 import {
@@ -84,10 +85,9 @@ export default function DashboardPage() {
       <nav className="flex items-center justify-between px-8 py-6 border-b border-border">
         <Link
           href="/"
-          className="text-xl italic tracking-wider text-foreground hover:text-accent transition-colors duration-200"
-          style={{ fontFamily: "var(--font-display, serif)" }}
+          className="text-xl tracking-wider hover:opacity-75 transition-opacity duration-200"
         >
-          Congre
+          <BrandName />
         </Link>
         <div className="flex items-center gap-6">
           <span className="text-xs text-muted truncate max-w-[180px]">{user?.email}</span>
