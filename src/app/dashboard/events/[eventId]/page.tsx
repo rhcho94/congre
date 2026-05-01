@@ -358,17 +358,10 @@ export default function EventDetailPage() {
 
         <div className="rule mb-8" />
 
-        {/* QR 코드 & 공유 링크 — 마감 전후 항상 표시 */}
-        {shareUrl && (
+        {/* QR 코드 & 공유 링크 — 수집중(open)일 때만 표시 */}
+        {event.status === "open" && shareUrl && (
           <div className="mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <p className="text-xs tracking-widest uppercase text-muted">참가자 초대</p>
-              {isClosed && (
-                <span className="text-xs tracking-widest uppercase text-muted">
-                  마감됨
-                </span>
-              )}
-            </div>
+            <p className="text-xs tracking-widest uppercase text-muted mb-4">참가자 초대</p>
             <div className="flex flex-col sm:flex-row gap-6 p-6 border border-border bg-surface">
               <div className="shrink-0 flex flex-col items-center gap-2">
                 <QRCodeSVG
@@ -386,17 +379,9 @@ export default function EventDetailPage() {
                 </button>
               </div>
               <div className="flex-1 flex flex-col justify-center gap-3">
-                {isClosed ? (
-                  <p className="text-xs text-muted leading-relaxed">
-                    마감된 이벤트입니다.
-                    <br />
-                    이 링크로 접속하면 업로드 불가 안내가 표시됩니다.
-                  </p>
-                ) : (
-                  <p className="text-xs text-muted leading-relaxed">
-                    QR코드를 스캔하거나 링크를 공유하세요.
-                  </p>
-                )}
+                <p className="text-xs text-muted leading-relaxed">
+                  QR코드를 스캔하거나 링크를 공유하세요.
+                </p>
                 <div className="flex items-center gap-2">
                   <span className="flex-1 min-w-0 text-xs text-foreground bg-[var(--surface-2)] border border-border px-3 py-2 truncate font-mono">
                     {shareUrl}
