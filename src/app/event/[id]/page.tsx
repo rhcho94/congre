@@ -227,7 +227,7 @@ export default function EventPage() {
           className="text-xl italic tracking-wider text-foreground"
           style={{ fontFamily: "var(--font-display, serif)" }}
         >
-          congre
+          Congre
         </Link>
       </header>
 

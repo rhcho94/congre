@@ -17,7 +17,7 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "congre — 이벤트 순간을 하나의 영상으로",
+  title: "Congre — 이벤트 순간을 하나의 영상으로",
   description:
     "QR로 참가자 영상을 모아 AI가 자동 편집해주는 이벤트 영상 플랫폼",
 };

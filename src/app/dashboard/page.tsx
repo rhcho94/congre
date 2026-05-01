@@ -87,7 +87,7 @@ export default function DashboardPage() {
           className="text-xl italic tracking-wider text-foreground hover:text-accent transition-colors duration-200"
           style={{ fontFamily: "var(--font-display, serif)" }}
         >
-          congre
+          Congre
         </Link>
         <div className="flex items-center gap-6">
           <span className="text-xs text-muted truncate max-w-[180px]">{user?.email}</span>

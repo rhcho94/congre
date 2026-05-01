@@ -334,7 +334,7 @@ function UploadInner() {
           className="text-xl italic tracking-wider text-foreground"
           style={{ fontFamily: "var(--font-display, serif)" }}
         >
-          congre
+          Congre
         </Link>
       </header>
 
@@ -561,7 +561,7 @@ function UploadInner() {
             <div className="flex flex-col items-center gap-2">
               <CongreBadge />
               <p className="text-[10px] tracking-widest uppercase text-muted opacity-60">
-                곧 congre 배지가 담긴 편집 영상을 받아보실 수 있어요
+                곧 Congre 배지가 담긴 편집 영상을 받아보실 수 있어요
               </p>
             </div>
 

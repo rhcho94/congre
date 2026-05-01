@@ -10,11 +10,12 @@ export default function CongreBadge({ className }: { className?: string }) {
           className="text-sm font-light italic tracking-widest text-white"
           style={{ fontFamily: "var(--font-display, Georgia, serif)" }}
         >
-          congre
+          Congre
         </span>
       </div>
-      <span className="text-[9px] tracking-[0.22em] uppercase font-light" style={{ color: "var(--accent)" }}>
-        made by congre
+      <span className="text-[9px] tracking-[0.22em] uppercase font-light">
+        <span style={{ color: "rgba(200,137,44,0.45)" }}>made by </span>
+        <span style={{ color: "var(--accent)" }}>Congre</span>
       </span>
     </div>
   );

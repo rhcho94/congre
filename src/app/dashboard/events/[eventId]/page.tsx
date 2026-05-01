@@ -153,7 +153,7 @@ export default function EventDetailPage() {
         objectType: "feed",
         content: {
           title: event.title,
-          description: "congre로 만든 영상입니다 🎬",
+          description: "Congre로 만든 영상입니다 🎬",
           imageUrl: event.videoUrl,
           link: { mobileWebUrl: event.videoUrl, webUrl: event.videoUrl },
         },
@@ -311,7 +311,7 @@ export default function EventDetailPage() {
           className="text-xl italic tracking-wider text-foreground hover:text-accent transition-colors duration-200"
           style={{ fontFamily: "var(--font-display, serif)" }}
         >
-          congre
+          Congre
         </Link>
         <Link
           href="/dashboard"

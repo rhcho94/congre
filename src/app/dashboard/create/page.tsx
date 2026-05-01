@@ -115,7 +115,7 @@ export default function CreateEventPage() {
           className="text-xl italic tracking-wider text-foreground hover:text-accent transition-colors duration-200"
           style={{ fontFamily: "var(--font-display, serif)" }}
         >
-          congre
+          Congre
         </Link>
         {view === "form" && (
           <Link
@@ -243,7 +243,7 @@ export default function CreateEventPage() {
               <div className="w-full">
                 <p className="text-xs text-muted tracking-widest uppercase mb-2">공유 링크</p>
                 <div className="flex items-center gap-2">
-                  <span className="flex-1 text-xs text-foreground bg-[var(--surface-2)] border border-border px-3 py-2 truncate font-mono">
+                  <span className="flex-1 min-w-0 text-xs text-foreground bg-[var(--surface-2)] border border-border px-3 py-2 truncate font-mono">
                     {shareUrl}
                   </span>
                   <button

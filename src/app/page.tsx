@@ -87,7 +87,7 @@ export default function LandingPage() {
           className="text-2xl italic tracking-wider text-foreground"
           style={{ fontFamily: "var(--font-display, serif)" }}
         >
-          congre
+          Congre
         </span>
         <Link
           href="/host"
@@ -125,7 +125,7 @@ export default function LandingPage() {
                   className="text-sm italic tracking-[0.3em] uppercase text-muted"
                   style={{ fontFamily: "var(--font-display, serif)" }}
                 >
-                  congre
+                  Congre
                 </span>
                 <h1
                   className="text-5xl leading-tight italic text-foreground md:text-6xl lg:text-7xl"
@@ -251,12 +251,12 @@ export default function LandingPage() {
         />
 
         <div className="relative mb-14 flex flex-col gap-3">
-          <span className="text-xs tracking-[0.4em] uppercase text-accent">Why congre</span>
+          <span className="text-xs tracking-[0.4em] uppercase text-accent">Why Congre</span>
           <h2
             className="text-3xl italic text-foreground md:text-4xl"
             style={{ fontFamily: "var(--font-display, serif)" }}
           >
-            왜 congre인가요
+            왜 Congre인가요
           </h2>
         </div>
 
@@ -356,9 +356,9 @@ export default function LandingPage() {
               className="text-base italic tracking-wider text-foreground"
               style={{ fontFamily: "var(--font-display, serif)" }}
             >
-              congre
+              Congre
             </span>
-            <p className="text-xs text-muted opacity-60">© 2025 congre. All rights reserved.</p>
+            <p className="text-xs text-muted opacity-60">© 2025 Congre. All rights reserved.</p>
           </div>
           <a
             href="mailto:hello@congre.io"

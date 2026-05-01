@@ -172,7 +172,7 @@ export default function HostPage() {
           className="text-xl italic tracking-wider text-foreground hover:text-accent transition-colors duration-200"
           style={{ fontFamily: "var(--font-display, serif)" }}
         >
-          congre
+          Congre
         </Link>
         {user && (
           <div className="flex items-center gap-6">

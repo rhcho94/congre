@@ -38,7 +38,7 @@ export default function PlayerPage() {
           className="text-xl italic tracking-wider text-foreground hover:text-accent transition-colors duration-200"
           style={{ fontFamily: "var(--font-display, serif)" }}
         >
-          congre
+          Congre
         </Link>
         <Link
           href="/host"
@@ -158,7 +158,7 @@ export default function PlayerPage() {
 
       <footer className="px-6 pb-6 text-center">
         <p className="text-xs tracking-[0.3em] uppercase text-muted">
-          congre · AI 자동 편집
+          Congre · AI 자동 편집
         </p>
       </footer>
     </div>
