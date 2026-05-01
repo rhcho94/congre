@@ -13,6 +13,7 @@
     "@aws-sdk/s3-request-presigner": "^3.1038.0",
     "canvas-confetti": "^1.9.4",
     "firebase": "^12.12.1",
+    "firebase-admin": "^13.8.0",
     "lucide-react": "^1.14.0",
     "next": "16.2.4",
     "qrcode.react": "^4.2.0",

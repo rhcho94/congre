@@ -21,7 +21,7 @@
 - Vercel 배포
 - Tailwind v4 (config 파일 없이 @import 방식)
 
-주요 의존성: `@aws-sdk/client-s3`, `@aws-sdk/s3-request-presigner`, `firebase`, `qrcode.react`, `lucide-react`, `canvas-confetti`.
+주요 의존성: `@aws-sdk/client-s3`, `@aws-sdk/s3-request-presigner`, `firebase`, `firebase-admin`, `qrcode.react`, `lucide-react`, `canvas-confetti`.
 
 ## 디자인 시스템
 
@@ -73,3 +73,4 @@
 - 마감/렌더링/완료 상태에서 QR/링크 박스 자동 숨김
 - 이벤트 페이지 overflow 정리
 - 랜딩 페이지 파티클 효과 (canvas-confetti burst + CSS sparkle)
+- 클립 재생 Pre-signed URL (주최자 대시보드에서 인라인 미리보기, firebase-admin 인증)

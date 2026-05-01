@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { QRCodeSVG, QRCodeCanvas } from "qrcode.react";
+import { Play, X, Loader2 } from "lucide-react";
 import { subscribeToAuthChanges, type User } from "@/lib/auth";
 import {
   getEvent,
@@ -14,6 +15,7 @@ import {
   type Clip,
 } from "@/lib/events";
 import { isFirebaseConfigured } from "@/lib/firebase";
+import { getClipPlaybackUrl } from "@/lib/clip-playback";
 import CongreBadge from "@/components/CongreBadge";
 import { BrandName } from "@/components/BrandName";
 import type { Timestamp } from "firebase/firestore";
@@ -60,6 +62,10 @@ export default function EventDetailPage() {
   const [closing, setClosing] = useState(false);
   const [copied, setCopied] = useState(false);
   const [shareUrl, setShareUrl] = useState("");
+  const [activeClipId, setActiveClipId] = useState<string | null>(null);
+  const [playbackUrl, setPlaybackUrl] = useState<string | null>(null);
+  const [playbackLoading, setPlaybackLoading] = useState(false);
+  const [playbackError, setPlaybackError] = useState<string | null>(null);
   const [instaCopied, setInstaCopied] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
   const [kakaoReady, setKakaoReady] = useState(false);
@@ -110,6 +116,27 @@ export default function EventDetailPage() {
       alert("링크 복사에 실패했습니다.");
     }
   }
+
+  const handlePlayClip = useCallback(async (clip: Clip) => {
+    if (activeClipId === clip.id) {
+      setActiveClipId(null);
+      setPlaybackUrl(null);
+      setPlaybackError(null);
+      return;
+    }
+    setActiveClipId(clip.id);
+    setPlaybackUrl(null);
+    setPlaybackError(null);
+    setPlaybackLoading(true);
+    try {
+      const { url } = await getClipPlaybackUrl(clip.id);
+      setPlaybackUrl(url);
+    } catch (err) {
+      setPlaybackError(err instanceof Error ? err.message : "재생 URL 발급 실패");
+    } finally {
+      setPlaybackLoading(false);
+    }
+  }, [activeClipId]);
 
   // Kakao SDK 동적 로드
   useEffect(() => {
@@ -520,22 +547,68 @@ export default function EventDetailPage() {
             </p>
           ) : (
             <div className="flex flex-col gap-px" style={{ background: "var(--border)" }}>
-              {clips.map((clip, i) => (
-                <div
-                  key={clip.id}
-                  className="flex items-center justify-between px-5 py-4 bg-surface"
-                >
-                  <span className="text-xs text-muted tabular-nums shrink-0">
-                    #{clips.length - i}
-                  </span>
-                  <span className="text-xs text-muted font-mono truncate mx-4 flex-1">
-                    {clip.s3Key.split("/").pop()}
-                  </span>
-                  <span className="text-xs text-muted shrink-0">
-                    {formatUploadTime(clip.uploadedAt)}
-                  </span>
-                </div>
-              ))}
+              {clips.map((clip, i) => {
+                const isActive = activeClipId === clip.id;
+                return (
+                  <div key={clip.id} className="flex flex-col bg-surface">
+                    {/* 클립 행 */}
+                    <div className="flex items-center justify-between px-5 py-4">
+                      <span className="text-xs text-muted tabular-nums shrink-0">
+                        #{clips.length - i}
+                      </span>
+                      <span className="text-xs text-muted font-mono truncate mx-4 flex-1">
+                        {clip.s3Key.split("/").pop()}
+                      </span>
+                      <span className="text-xs text-muted shrink-0 mr-3">
+                        {formatUploadTime(clip.uploadedAt)}
+                      </span>
+                      <button
+                        onClick={() => handlePlayClip(clip)}
+                        className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 border text-xs tracking-widest uppercase transition-all duration-200"
+                        style={
+                          isActive
+                            ? { borderColor: "var(--accent)", color: "var(--accent)" }
+                            : { borderColor: "var(--border)", color: "var(--muted)" }
+                        }
+                        aria-label={isActive ? "닫기" : "재생"}
+                      >
+                        {isActive ? (
+                          <X size={11} strokeWidth={2} />
+                        ) : (
+                          <Play size={11} strokeWidth={2} />
+                        )}
+                      </button>
+                    </div>
+
+                    {/* 인라인 플레이어 */}
+                    {isActive && (
+                      <div className="px-5 pb-5">
+                        {playbackLoading && (
+                          <div className="flex items-center gap-2 py-4">
+                            <Loader2 size={14} className="animate-spin text-accent" />
+                            <span className="text-xs text-muted">재생 URL 발급 중...</span>
+                          </div>
+                        )}
+                        {playbackError && (
+                          <p className="text-xs py-3" style={{ color: "#e05252" }}>
+                            {playbackError}
+                          </p>
+                        )}
+                        {playbackUrl && (
+                          <video
+                            src={playbackUrl}
+                            controls
+                            playsInline
+                            autoPlay
+                            className="w-full max-w-xs mx-auto block rounded"
+                            style={{ aspectRatio: "9/16", background: "var(--surface)" }}
+                          />
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
