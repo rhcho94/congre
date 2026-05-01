@@ -398,7 +398,7 @@ export default function EventDetailPage() {
                   </p>
                 )}
                 <div className="flex items-center gap-2">
-                  <span className="flex-1 text-xs text-foreground bg-[var(--surface-2)] border border-border px-3 py-2 truncate font-mono">
+                  <span className="flex-1 min-w-0 text-xs text-foreground bg-[var(--surface-2)] border border-border px-3 py-2 truncate font-mono">
                     {shareUrl}
                   </span>
                   <button

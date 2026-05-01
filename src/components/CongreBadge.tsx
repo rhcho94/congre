@@ -13,8 +13,8 @@ export default function CongreBadge({ className }: { className?: string }) {
           congre
         </span>
       </div>
-      <span className="text-[9px] tracking-[0.22em] uppercase font-light" style={{ color: "rgba(255,255,255,0.4)" }}>
-        made with congre
+      <span className="text-[9px] tracking-[0.22em] uppercase font-light" style={{ color: "var(--accent)" }}>
+        made by congre
       </span>
     </div>
   );
