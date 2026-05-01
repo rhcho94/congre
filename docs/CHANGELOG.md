@@ -4,6 +4,7 @@
 
 ## 2026-05-01
 
+- chore: 테스트 데이터 정리 실행 — events 32건 + clips 57건 + S3 객체 57건 삭제
 - chore: add execute mode to cleanup script with S3 object deletion
 - chore: add dry-run cleanup script for test events
 - feat: 클립 재생 Pre-signed URL 구현 (firebase-admin 도입)
