@@ -18,8 +18,8 @@
 ## 2026-05-02 — @react-email 대신 HTML 문자열 템플릿
 
 - **결정**: 이메일 템플릿을 `@react-email/components` 대신 `src/emails/*.ts` 의 HTML 문자열 함수로 작성.
-- **이유**: 설치 시 `@react-email/components@1.0.12` 가 deprecated 경고를 냈고, React 19 / Next.js 16 환경에서 SSR 호환성이 불확실함. HTML 문자열 방식은 외부 의존성 없이 안정적이며 Resend는 HTML 문자열을 직접 수용함.
-- **대안**: @react-email v2.x 또는 다른 이메일 빌더 — 추후 안정화 시 마이그레이션 가능.
+- **이유**: `@react-email/components@1.0.12` 가 npm에서 "Package no longer supported"로 deprecated 처리됨 (`npm view` 실측). React Email 팀이 통합 패키지를 버리고 개별 컴포넌트 패키지(`@react-email/html`, `@react-email/body` 등)로 분리했으나, 이 시점에 마이그레이션 경로가 명확하지 않았음. 단순한 트랜잭션 이메일 7개에는 HTML 직접 작성으로 충분하며, Resend는 HTML 문자열을 직접 수용함.
+- **대안**: `@react-email/render@2.0.8` (deprecated 아님, 정상 유지보수 중) + 개별 컴포넌트 패키지 조합으로 마이그레이션 가능 — 생태계 안정화 확인 후 검토.
 
 ## 2026-05-01 — firebase-admin 도입
 
