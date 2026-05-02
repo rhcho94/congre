@@ -65,14 +65,6 @@ export async function getEvent(eventId: string): Promise<CongreEvent | null> {
   return { id: snap.id, ...snap.data() } as CongreEvent;
 }
 
-export async function closeEvent(eventId: string): Promise<void> {
-  if (!isFirebaseConfigured) return;
-  const db = getFirebaseFirestore();
-  await updateDoc(doc(db, "events", eventId), {
-    status: "closed",
-    sessionToken: null,
-  });
-}
 
 export async function updateEventRender(
   eventId: string,

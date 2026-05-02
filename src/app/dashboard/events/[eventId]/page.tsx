@@ -8,12 +8,11 @@ import { Play, X, Loader2 } from "lucide-react";
 import { subscribeToAuthChanges, type User } from "@/lib/auth";
 import {
   getEvent,
-  closeEvent,
   subscribeToClips,
   type CongreEvent,
   type Clip,
 } from "@/lib/events";
-import { isFirebaseConfigured } from "@/lib/firebase";
+import { isFirebaseConfigured, getFirebaseAuth } from "@/lib/firebase";
 import { getClipPlaybackUrl } from "@/lib/clip-playback";
 import CongreBadge from "@/components/CongreBadge";
 import { BrandName } from "@/components/BrandName";
@@ -214,11 +213,18 @@ export default function EventDetailPage() {
   async function handleClose() {
     setClosing(true);
     try {
-      await closeEvent(eventId);
+      const idToken = await getFirebaseAuth().currentUser?.getIdToken();
+      if (!idToken) throw new Error("인증 토큰 발급 실패");
+
+      const closeRes = await fetch(`/api/events/${eventId}/close`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${idToken}` },
+      });
+      if (!closeRes.ok) throw new Error(`close failed: ${closeRes.status}`);
       setShowCloseModal(false);
 
       if (clips.length > 0 && event) {
-        // render/start now updates Firestore (status, renderId, deadlineAt) server-side
+        // render/start updates Firestore (status, renderId, deadlineAt) server-side
         await fetch("/api/render/start", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
