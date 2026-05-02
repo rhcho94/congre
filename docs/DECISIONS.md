@@ -2,6 +2,18 @@
 
 > 새 결정은 위로 추가 (최신이 위). 형식: 날짜 / 결정 / 이유 / 대안.
 
+## 2026-05-02 — 알림 채널: Resend 이메일 + SOLAPI SMS, FCM 미도입
+
+- **결정**: 이메일은 Resend, SMS는 SOLAPI. FCM 푸시는 이번 단계에서 도입하지 않음.
+- **이유**: Congre는 이벤트 당일 1회성 서비스 특성상 푸시 구독 관리 비용 대비 효용이 낮음. 이메일과 SMS는 앱 미설치 환경(iOS Safari 기본 PWA)에서도 안정적으로 전달됨. Resend는 Next.js App Router와 궁합이 좋고 무료 3,000건/월. SOLAPI는 국내 발신번호 등록·LMS 자동 전환 지원.
+- **대안**: FCM 푸시 — iOS 16.4+ PWA 푸시 지원되나, 주최자가 별도로 알림 허용 설정 필요. 다음 PR에서 재검토 가능.
+
+## 2026-05-02 — @react-email 대신 HTML 문자열 템플릿
+
+- **결정**: 이메일 템플릿을 `@react-email/components` 대신 `src/emails/*.ts` 의 HTML 문자열 함수로 작성.
+- **이유**: 설치 시 `@react-email/components@1.0.12` 가 deprecated 경고를 냈고, React 19 / Next.js 16 환경에서 SSR 호환성이 불확실함. HTML 문자열 방식은 외부 의존성 없이 안정적이며 Resend는 HTML 문자열을 직접 수용함.
+- **대안**: @react-email v2.x 또는 다른 이메일 빌더 — 추후 안정화 시 마이그레이션 가능.
+
 ## 2026-05-01 — firebase-admin 도입
 
 - **결정**: 서버 측 인증/Firestore 접근에 firebase-admin 사용. 첫 적용 지점은 클립 재생 API.

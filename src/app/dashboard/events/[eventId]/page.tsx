@@ -9,7 +9,6 @@ import { subscribeToAuthChanges, type User } from "@/lib/auth";
 import {
   getEvent,
   closeEvent,
-  updateEventRender,
   subscribeToClips,
   type CongreEvent,
   type Clip,
@@ -219,7 +218,8 @@ export default function EventDetailPage() {
       setShowCloseModal(false);
 
       if (clips.length > 0 && event) {
-        const res = await fetch("/api/render/start", {
+        // render/start now updates Firestore (status, renderId, deadlineAt) server-side
+        await fetch("/api/render/start", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -228,10 +228,6 @@ export default function EventDetailPage() {
             eventTitle: event.title,
           }),
         });
-        if (res.ok) {
-          const { renderId } = await res.json() as { renderId: string };
-          await updateEventRender(eventId, { status: "rendering", renderId });
-        }
       }
 
       const updated = await getEvent(eventId);
@@ -257,11 +253,19 @@ export default function EventDetailPage() {
         if (!res.ok) return;
         const { status, url } = await res.json() as { status: string; url?: string };
         if (status === "done" && url) {
-          await updateEventRender(eventId, { status: "done", videoUrl: url });
+          await fetch("/api/render/complete", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ eventId, status: "done", url }),
+          });
           const updated = await getEvent(eventId);
           setEvent(updated);
         } else if (status === "failed") {
-          await updateEventRender(eventId, { status: "closed" });
+          await fetch("/api/render/complete", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ eventId, status: "failed" }),
+          });
           const updated = await getEvent(eventId);
           setEvent(updated);
         }

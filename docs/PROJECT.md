@@ -21,7 +21,7 @@
 - Vercel 배포
 - Tailwind v4 (config 파일 없이 @import 방식)
 
-주요 의존성: `@aws-sdk/client-s3`, `@aws-sdk/s3-request-presigner`, `firebase`, `firebase-admin`, `qrcode.react`, `lucide-react`, `canvas-confetti`.
+주요 의존성: `@aws-sdk/client-s3`, `@aws-sdk/s3-request-presigner`, `firebase`, `firebase-admin`, `resend`, `solapi`, `qrcode.react`, `lucide-react`, `canvas-confetti`.
 
 ## 디자인 시스템
 
@@ -74,3 +74,6 @@
 - 이벤트 페이지 overflow 정리
 - 랜딩 페이지 파티클 효과 (canvas-confetti burst + CSS sparkle)
 - 클립 재생 Pre-signed URL (주최자 대시보드에서 인라인 미리보기, firebase-admin 인증)
+- 알림 시스템 (Resend 이메일 + SOLAPI SMS, 채널 어댑터 패턴, notifications 컬렉션 이력 저장)
+  - 트리거 연결 5건: 이벤트 생성, 렌더 시작, 렌더 완료, 렌더 지연(10분 초과), 렌더 실패
+  - 함수만 구현 2건: 첫 클립 업로드, 참가자 결과 (다음 PR에서 트리거 연결)

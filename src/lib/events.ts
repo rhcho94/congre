@@ -21,6 +21,9 @@ export interface CongreEvent {
   renderId?: string;
   videoUrl?: string;
   draftVideoUrl?: string;
+  organizerEmail?: string;
+  organizerPhone?: string;
+  deadlineAt?: Timestamp;        // 마감 시각 — render/start에서 저장, 완료 시간 계산용
 }
 
 export interface Clip {

@@ -6,8 +6,8 @@ import { BrandName } from "@/components/BrandName";
 import { useRouter } from "next/navigation";
 import { QRCodeSVG, QRCodeCanvas } from "qrcode.react";
 import { subscribeToAuthChanges, type User } from "@/lib/auth";
-import { createEvent, type EventPlan } from "@/lib/events";
-import { isFirebaseConfigured } from "@/lib/firebase";
+import { type EventPlan } from "@/lib/events";
+import { isFirebaseConfigured, getFirebaseAuth } from "@/lib/firebase";
 
 const planOptions: { value: EventPlan; label: string; desc: string }[] = [
   { value: "free",   label: "무료", desc: "최대 10클립" },
@@ -23,7 +23,13 @@ export default function CreateEventPage() {
   const [user, setUser] = useState<User | null>(null);
   const [authChecking, setAuthChecking] = useState(isFirebaseConfigured);
   const [view, setView] = useState<View>("form");
-  const [form, setForm] = useState({ title: "", date: "", plan: "free" as EventPlan });
+  const [form, setForm] = useState({
+    title: "",
+    date: "",
+    plan: "free" as EventPlan,
+    organizerEmail: "",
+    organizerPhone: "",
+  });
   const [submitting, setSubmitting] = useState(false);
   const [createdEventId, setCreatedEventId] = useState("");
   const [shareUrl, setShareUrl] = useState("");
@@ -35,8 +41,13 @@ export default function CreateEventPage() {
     return subscribeToAuthChanges((firebaseUser) => {
       setUser(firebaseUser);
       setAuthChecking(false);
-      if (!firebaseUser) router.push("/host");
+      if (!firebaseUser) {
+        router.push("/host");
+      } else if (firebaseUser.email && !form.organizerEmail) {
+        setForm((f) => ({ ...f, organizerEmail: firebaseUser.email! }));
+      }
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -44,12 +55,29 @@ export default function CreateEventPage() {
     if (!user) return;
     setSubmitting(true);
     try {
-      const { eventId, sessionToken } = await createEvent({
-        title: form.title,
-        date: form.date,
-        plan: form.plan,
-        hostId: user.uid,
+      const idToken = await getFirebaseAuth().currentUser?.getIdToken();
+      if (!idToken) throw new Error("인증 토큰 발급 실패");
+
+      const res = await fetch("/api/events", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({
+          title: form.title,
+          date: form.date,
+          plan: form.plan,
+          organizerEmail: form.organizerEmail,
+          organizerPhone: form.organizerPhone,
+        }),
       });
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const { eventId, sessionToken } = await res.json() as {
+        eventId: string;
+        sessionToken: string;
+      };
       const url = `${window.location.origin}/upload/${eventId}?token=${sessionToken}`;
       setCreatedEventId(eventId);
       setShareUrl(url);
@@ -190,6 +218,36 @@ export default function CreateEventPage() {
                       <span className="text-xs text-muted">{opt.desc}</span>
                     </label>
                   ))}
+                </div>
+              </div>
+
+              <div className="pt-2 border-t border-border">
+                <p className="text-xs tracking-widest uppercase text-muted mb-4">알림 수신 정보</p>
+                <div className="flex flex-col gap-4">
+                  <label className="flex flex-col gap-1.5">
+                    <span className="text-xs tracking-widest uppercase text-muted">이메일</span>
+                    <input
+                      type="email"
+                      placeholder="organizer@example.com"
+                      value={form.organizerEmail}
+                      onChange={(e) => setForm({ ...form, organizerEmail: e.target.value })}
+                      required
+                      disabled={submitting}
+                      className="bg-surface border border-border px-4 py-3 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-accent transition-colors duration-200 disabled:opacity-50"
+                    />
+                  </label>
+                  <label className="flex flex-col gap-1.5">
+                    <span className="text-xs tracking-widest uppercase text-muted">휴대폰 번호</span>
+                    <input
+                      type="tel"
+                      placeholder="01012345678"
+                      value={form.organizerPhone}
+                      onChange={(e) => setForm({ ...form, organizerPhone: e.target.value })}
+                      required
+                      disabled={submitting}
+                      className="bg-surface border border-border px-4 py-3 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-accent transition-colors duration-200 disabled:opacity-50"
+                    />
+                  </label>
                 </div>
               </div>
 
