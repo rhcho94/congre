@@ -2,6 +2,11 @@
 
 > 기능 단위 작업 이력. 최신이 위.
 
+## 2026-05-03
+
+- chore: 알림 시스템 외부 서비스 연결 완료 — congre.kr 도메인 가비아 등록, Resend DKIM/SPF/DMARC 인증, SOLAPI 가입 + 발신번호 등록 + API 키 발급, .env.local 6개 변수 입력
+- chore: 알림 발송 검증 — 시나리오 1(event_created) 이메일, 시나리오 3(render_completed) 이메일+SMS 통과
+
 ## 2026-05-02
 
 - refactor: closeEvent 서버 API 이전 — POST /api/events/[eventId]/close, hostId 주최자 검증 포함, 클라이언트 Firestore 직접 쓰기 완전 제거
