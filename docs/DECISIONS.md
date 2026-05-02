@@ -2,6 +2,13 @@
 
 > 새 결정은 위로 추가 (최신이 위). 형식: 날짜 / 결정 / 이유 / 대안.
 
+## 2026-05-02 — Firestore Rules를 로컬 파일로 관리
+
+- **결정**: `firestore.rules`를 프로젝트 루트에 두고 Git으로 변경 이력 추적. `firebase.json` + `.firebaserc`(프로젝트: congre-mvp)로 Firebase CLI 연동.
+- **이유**: 콘솔에서만 관리하면 변경 이력이 없어 언제 어떤 규칙이 적용됐는지 알 수 없음. 코드 리뷰와 PR 흐름에 보안 규칙 변경을 포함시키기 위함.
+- **배포 방법**: `firebase deploy --only firestore:rules` (Firebase CLI 필요 — `npm install -g firebase-tools`)
+- **대안**: Firebase 콘솔에서 직접 관리 — 추적 불가.
+
 ## 2026-05-02 — 알림 채널: Resend 이메일 + SOLAPI SMS, FCM 미도입
 
 - **결정**: 이메일은 Resend, SMS는 SOLAPI. FCM 푸시는 이번 단계에서 도입하지 않음.
