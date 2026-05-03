@@ -29,6 +29,12 @@ export function getAdminAuth(): Auth {
   return getAuth(getAdminApp());
 }
 
+let _db: Firestore | null = null;
+
 export function getAdminDb(): Firestore {
-  return getFirestore(getAdminApp());
+  if (_db) return _db;
+  _db = getFirestore(getAdminApp());
+  // Firestore rejects undefined values by default; this makes optional fields safe to spread
+  _db.settings({ ignoreUndefinedProperties: true });
+  return _db;
 }
