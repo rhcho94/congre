@@ -14,7 +14,7 @@ export const smsChannel: Channel = {
     }
     try {
       // Dynamic import avoids module-level side effects when env vars are absent
-      const { SolapiMessageService } = await import("solapi");
+      const { SolapiMessageService, MessageNotReceivedError } = await import("solapi");
       const service = new SolapiMessageService(apiKey!, apiSecret!);
       // SOLAPI automatically upgrades SMS→LMS when text exceeds 90 bytes
       type MsgPayload = { to: string; from: string; text: string };
@@ -24,6 +24,15 @@ export const smsChannel: Channel = {
         (res as Record<string, unknown>)?.groupId as string | undefined;
       return { success: true, messageId: msgId };
     } catch (err) {
+      // Re-import for instanceof check — module is cached, no cost
+      const { MessageNotReceivedError } = await import("solapi");
+      if (err instanceof MessageNotReceivedError) {
+        const details = err.failedMessageList
+          .map((m) => `[${m.statusCode}] ${m.statusMessage} (to: ${m.to})`)
+          .join(", ");
+        console.error("[sms] SOLAPI rejected:", details);
+        return { success: false, error: details };
+      }
       return { success: false, error: err instanceof Error ? err.message : String(err) };
     }
   },
