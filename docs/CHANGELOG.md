@@ -4,8 +4,11 @@
 
 ## 2026-05-03
 
-- chore: 알림 시스템 외부 서비스 연결 완료 — congre.kr 도메인 가비아 등록, Resend DKIM/SPF/DMARC 인증, SOLAPI 가입 + 발신번호 등록 + API 키 발급, .env.local 6개 변수 입력
-- chore: 알림 발송 검증 — 시나리오 1(event_created) 이메일, 시나리오 3(render_completed) 이메일+SMS 통과
+- chore: congre.kr 도메인 가비아 등록 완료 (1년)
+- chore: Resend 가입 + congre.kr 도메인 인증 완료 (DKIM/SPF/DMARC 4개 레코드)
+- chore: SOLAPI 가입 + 발신번호 등록 + API 키 발급 (개인 휴대폰 명의)
+- chore: .env.local 6개 변수 입력 (RESEND_API_KEY, EMAIL_FROM, EMAIL_FROM_NAME, SOLAPI_API_KEY, SOLAPI_API_SECRET, SOLAPI_SENDER)
+- chore: 알림 시나리오 4/5건 실제 발송 검증 완료 — event_created(이메일), render_completed(이메일+SMS), render_delayed(이메일+SMS, 분기 동작 정상), render_failed(이메일+SMS); render_started는 다음 세션 처리
 
 ## 2026-05-02
 

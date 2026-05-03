@@ -6,13 +6,20 @@
 
 ## 다음 작업 후보
 
-### 알림 시스템 실제 연결 (API 키 발급 + 테스트)
+### 알림 시스템 마무리 (다음 세션 첫 작업)
 
-- congre.kr 도메인 등록
-- Resend 가입 + congre.kr 도메인 인증 (DNS 전파 1~2시간)
-- SOLAPI 가입 + 발신번호 등록 (영업일 1~2일)
-- .env.local에 RESEND_API_KEY, SOLAPI_* 키 입력
-- 알림 시나리오 5건 실제 발송 테스트
+- ✅ congre.kr 도메인 가비아 등록 (1년)
+- ✅ Resend 가입 + congre.kr 도메인 인증 (DKIM/SPF/DMARC)
+- ✅ SOLAPI 가입 + 발신번호 등록 + API 키 발급
+- ✅ .env.local 6개 변수 입력
+- ✅ 시나리오 4건 발송 검증 (event_created, render_completed, render_delayed, render_failed)
+- render_started 시나리오 검증 (별도 스크립트 필요, `scripts/test-notify-render-started.ts`)
+
+### 알림 시스템 버그 수정
+
+- [notifications:history] `undefined` 필드 → Firestore 거부 (`history.ts:18`)
+- SMS 실패 시 `failedMessageList` 상세 사유 콘솔 미출력 (`sms.ts`)
+- render_delayed 메시지 톤 재정의 (사후 완료 안내 vs 진행 중 지연 안내)
 
 ### 알림 시스템 Phase 2
 
