@@ -2,6 +2,26 @@
 
 > 새 결정은 위로 추가 (최신이 위). 형식: 날짜 / 결정 / 이유 / 대안.
 
+## 2026-05-03 — SOLAPI 실패 사유를 history.error에 상세 문자열로 저장
+
+- **결정**: `MessageNotReceivedError.failedMessageList`를 파싱해 `[statusCode] statusMessage (to: 수신번호)` 형식 문자열을 `history.error` 필드에 저장 (B안). commit: 79af076
+- **컨텍스트**: SOLAPI가 throw하는 `MessageNotReceivedError`의 `.message`는 "1개의 메시지가 접수되지 못했습니다"라는 안내문 수준. 실제 거절 사유는 `err.failedMessageList[].statusCode + statusMessage`에 있음.
+- **대안 검토**:
+  - A안: 콘솔 로그만 상세 출력, `history.error`는 짧은 메시지 유지 — 로그는 휘발성이라 사후 추적 불가
+  - B안: `history.error`에 상세 사유 저장 **(선택)** — Firestore 콘솔 한 곳에서 사유 확인 가능
+  - C안: `history`에 `failureCode`, `failureReason` 별도 필드 추가 — 스키마 변경 비용, 이메일 채널과 일관성 깨짐
+- **부가 결정**: `instanceof` 안전성을 위해 `catch` 블록 내 `MessageNotReceivedError` 동적 재import. 모듈 캐싱으로 런타임 비용 없음.
+
+## 2026-05-03 — Firestore Admin SDK에 ignoreUndefinedProperties: true 적용
+
+- **결정**: `firebase-admin.ts`의 `getAdminDb()`에서 db 인스턴스를 캐싱하고, 최초 1회 `db.settings({ ignoreUndefinedProperties: true })` 호출 (A안). commit: bcfe1f3
+- **컨텍스트**: `notifications` 컬렉션 저장 시 `error`, `providerMessageId` 등 optional 필드가 `undefined`인 채로 전달되어 Firestore가 거부. 발송 자체는 성공해도 이력이 누락됨.
+- **대안 검토**:
+  - A안: Admin SDK 전역 `ignoreUndefinedProperties: true` **(선택)** — 공식 권장 방식. 이후 다른 컬렉션 쓰기에서도 동일 문제 예방
+  - B안: `history.ts` 저장 직전 `undefined` 필드 제거 — 로컬 패치라 향후 다른 컬렉션에서 재발 위험
+- **안전성 검토**: 코드베이스 전체 `: undefined` 의도적 사용 0건(grep 확인) — 부작용 없음.
+- **구현 주의**: `settings()`는 인스턴스당 1회만 허용. `_db` 변수로 인스턴스 캐싱 후 조건부 호출.
+
 ## 2026-05-03 — 알림 시나리오별 채널 정책 (이메일 전용 vs 이메일+SMS)
 
 - **결정**: B안 채택 — 긴급/중요 시나리오만 SMS 추가 발송.

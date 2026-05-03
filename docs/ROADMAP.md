@@ -6,20 +6,28 @@
 
 ## 다음 작업 후보
 
-### 알림 시스템 마무리 (다음 세션 첫 작업)
+### ✅ 알림 시스템 Phase 1 완료 (2026-05-03)
 
 - ✅ congre.kr 도메인 가비아 등록 (1년)
 - ✅ Resend 가입 + congre.kr 도메인 인증 (DKIM/SPF/DMARC)
 - ✅ SOLAPI 가입 + 발신번호 등록 + API 키 발급
 - ✅ .env.local 6개 변수 입력
-- ✅ 시나리오 4건 발송 검증 (event_created, render_completed, render_delayed, render_failed)
-- render_started 시나리오 검증 (별도 스크립트 필요, `scripts/test-notify-render-started.ts`)
+- ✅ 시나리오 5/5건 발송 검증 완료 (event_created, render_completed, render_delayed, render_failed, render_started)
+- ✅ notifications:history undefined 에러 수정 (commit bcfe1f3)
+- ✅ SMS failedMessageList 상세 사유 출력 (commit 79af076)
 
-### 알림 시스템 버그 수정
+### render_delayed 장애 대응 시나리오 재설계
 
-- [notifications:history] `undefined` 필드 → Firestore 거부 (`history.ts:18`)
-- SMS 실패 시 `failedMessageList` 상세 사유 콘솔 미출력 (`sms.ts`)
-- render_delayed 메시지 톤 재정의 (사후 완료 안내 vs 진행 중 지연 안내)
+배경: 편집 지연 시 단순 완료 사후 안내보다 비즈니스 임팩트가 큼 — 행사 중 상영 계획 무산, 결혼식 등 재현 불가 행사에서의 환불 사유, 완성본 미생성 가능성.
+
+필요 작업: 단순 메시지 톤 수정이 아닌 다단계 알림 시나리오 설계.
+
+결정 보류 사항 (다음 세션에서 합의 필요):
+1. 지연 임계값 단계 분리 (예: 5분 감지 / 15분 상영 불가 확정 / 완성본 실패 3단계)
+2. 이벤트 데이터에 행사 시각 정보 존재 여부 확인 — 시스템이 자동 판단 가능한지
+3. 운영자 에스컬레이션 채널 (이메일·SMS → 슬랙 → 전화 단계별)
+4. 고객 통보 시점과 주체 (자동 vs 운영자 확인 후 수동)
+5. 환불·보상 정책의 알림 포함 여부
 
 ### 알림 시스템 Phase 2
 

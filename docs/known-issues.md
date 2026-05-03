@@ -6,30 +6,27 @@
 - 영상 재생 및 다운로드 정상
 - 클립 타임라인 순서 수정 (uploadedAt 오름차순)
 
-## [notifications:history] save failed — undefined 필드 처리 누락
+## ✅ [notifications:history] save failed — undefined 필드 처리 누락 [RESOLVED 2026-05-03 / bcfe1f3]
 
-- 위치: `src/lib/notifications/history.ts:18`
+- **해결**: `src/lib/firebase-admin.ts`에서 db 인스턴스 캐싱 후 `settings({ ignoreUndefinedProperties: true })` 1회 적용. 이후 모든 Admin Firestore 쓰기에서 `undefined` 필드 자동 무시됨. 코드베이스 전체 의도적 `undefined` 사용 0건 확인(grep) 후 부작용 없음 판정.
+- 위치: `src/lib/firebase-admin.ts` (`getAdminDb()` 함수)
 - 현상: 알림 이력 저장 시 `save failed: undefined` 에러 발생 (일부 시나리오)
-- 원인: `record`에 `error`, `providerMessageId` 등 선택 필드가 `undefined`인 채로 Firestore `add()` 호출됨. Firestore는 `undefined` 값을 거부함
-- 현재 처리: history 저장 실패는 `.catch()`로 무시하므로 알림 발송 자체에는 영향 없음. 이력 컬렉션 저장만 누락
-- 해결 방향: `ignoreUndefinedProperties` Admin SDK 옵션 활성화, 또는 record 작성 시 `undefined` 필드 스프레드 제거 (예: `...(messageId && { providerMessageId: messageId })`)
-- 우선순위: 낮음 (이력 누락 문제, 기능 영향 없음)
+- 원인: `error`, `providerMessageId` 등 optional 필드가 `undefined`인 채로 Firestore `add()` 호출됨. Firestore Admin SDK는 기본적으로 `undefined` 값을 거부함
+- 영향: history 저장 실패는 `.catch()`로 격리되어 있어 알림 발송 자체에는 영향 없었음. 이력 컬렉션 저장만 누락됐었음
 
-## SMS 실패 시 failedMessageList 상세 사유 콘솔 미출력
+## ✅ SMS 실패 시 failedMessageList 상세 사유 미출력 [RESOLVED 2026-05-03 / 79af076]
 
+- **해결**: `catch` 블록에서 `MessageNotReceivedError` instanceof 분기 추가. `failedMessageList`를 순회해 `[statusCode] statusMessage (to: 수신번호)` 형식으로 콘솔 출력 + `history.error` 필드에 저장. 동적 재import로 instanceof 안전성 보장 (모듈 캐싱으로 비용 없음).
 - 위치: `src/lib/notifications/channels/sms.ts`
-- 현상: SOLAPI 거절 시 "1개의 메시지가 접수되지 못했습니다"만 표시, 상태코드·거절 사유가 콘솔에 출력 안 됨
-- 원인: `catch` 블록이 `err.message`만 반환하고 SOLAPI SDK error 객체의 `failedMessageList` 미참조
-- 현재 처리: Firestore `notifications` 이력에 최상위 에러 문자열만 저장됨
-- 해결 방향: `service.send()` 반환값 또는 catch error에서 `failedMessageList` 파싱해 상세 출력 추가
-- 우선순위: 낮음 (디버깅 편의 목적)
+- 현상: SOLAPI 거절 시 "1개의 메시지가 접수되지 못했습니다"만 표시, 상태코드·거절 사유가 콘솔·이력에 남지 않음
+- 원인: `catch` 블록이 `err.message`만 반환, SOLAPI SDK `MessageNotReceivedError.failedMessageList` 미참조
+- 검증: 발신번호 미등록(statusCode 1062) 시나리오로 검증 — before: 일반 안내문, after: `[1062] 발신번호 미등록 (to: 010xxxx)`
 
-## render_delayed 메시지 톤 정의 모호
+## render_delayed 장애 대응 시나리오 재설계 필요 (진행 중 논의)
 
-- 현상: 현재 메시지는 "완료됐는데 늦었다" 톤 (사후 안내). 이메일 제목도 "완료되었습니다 (지연)"
-- 의문: "아직 처리 중인데 평소보다 오래 걸리고 있음" 알림(진행 중 사전 안내)이 별도로 필요한지 정책 검토 필요
-- 처리 방향: 별도 세션에서 메시지 톤·의미 재정의 + 필요 시 별도 시나리오(`render_processing_slow`) 추가
-- 우선순위: 낮음 (현재 동작은 정상, UX 개선 영역)
+- **격상 이유**: 단순 메시지 톤 이슈에서 비즈니스 임팩트가 있는 시나리오 재설계로 확장됨. 행사 중 상영 계획 무산, 결혼식 등 재현 불가 행사에서의 환불 사유 가능성, 완성본 미생성 위험 등이 포함됨
+- 현재 동작: 10분 초과 시 "완료됐는데 늦었다" 톤의 사후 안내 1건 발송
+- 논의 필요 사항: ROADMAP 참조 (다단계 알림 설계, 임계값 분리, 운영자 에스컬레이션 채널 등)
 
 ## clipCount 증가 실패 (무시됨)
 - 현상: 업로드 시 events.clipCount 증가 permission-denied 발생
