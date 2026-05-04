@@ -2,7 +2,7 @@
 
 ## 진행 중
 
-- render_delayed 장애 대응 시나리오 재설계 — 코드 작업 진행 중 (정책 확정 완료)
+- [6] 운영 작업 마무리 — 자동 cron 실행 검증, 카카오톡 채널 @congre 개설, CONGRE_INTERNAL_PHONE 결정 및 Vercel 등록
 
 ## 다음 작업 후보
 
@@ -20,8 +20,8 @@
 
 배경: 편집 지연 시 단순 완료 사후 안내보다 비즈니스 임팩트가 큼 — 행사 중 상영 계획 무산, 결혼식 등 재현 불가 행사에서의 환불 사유, 완성본 미생성 가능성.
 
-**상태: 정책 확정 / 코드 작업 진행 중**
-세부 사항: docs/DECISIONS.md `## 2026-05-04` 항목 + docs/handoff/2026-05-04.md 참조.
+**상태: 코드 작업 [1]–[5] 완료 (2026-05-04) / [6] 운영 작업 일부 완료**
+세부 사항: docs/DECISIONS.md `## 2026-05-04` 항목 + docs/handoff/2026-05-04.md, docs/handoff/2026-05-05.md 참조.
 
 코드 작업 체크리스트:
 - [x] [1] /api/render/start 인증 추가 + E 계산 + 새 필드 기록
@@ -29,7 +29,13 @@
 - [x] [3] /api/cron/check-render-deadlines 신설
 - [x] [4] /api/render/complete 수정 (refundStatus 따라 분기)
 - [x] [5] GitHub Actions 워크플로 추가 (.github/workflows/cron-check-deadlines.yml)
-- [ ] [6] 운영 작업: 카카오톡 채널 @congre 개설, CRON_SECRET 등록(Vercel + GitHub Secrets), 사내 SMS 수신번호 등록
+- [ ] [6] 운영 작업:
+  - [x] CRON_SECRET 등록 (Vercel + GitHub Secrets)
+  - [x] NEXT_PUBLIC_APP_URL / APP_URL 등록 (Vercel + GitHub Secrets)
+  - [x] GitHub Actions 수동 실행 통과
+  - [ ] 자동 cron 실행 검증 (Actions 탭 로그 확인)
+  - [ ] 카카오톡 채널 @congre 개설
+  - [ ] CONGRE_INTERNAL_PHONE 결정 및 Vercel 등록 (사내 SMS×2 활성화)
 
 ### 알림 시스템 Phase 2
 
@@ -39,7 +45,6 @@
 ### 보안
 
 - Firestore 보안 규칙 종합 점검 (clips create 검증, events update 권한 강화)
-  - /api/render/start 인증 누락 (Authorization 헤더 + hostId 검증 추가 필요) ← render_delayed 재설계 [1] 단계에서 함께 처리 예정
   - /api/render/complete 검증 강화 (Shotstack webhook 서명 검증 검토)
 
 ### 결제
