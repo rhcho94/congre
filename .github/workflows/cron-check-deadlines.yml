@@ -1,0 +1,22 @@
+# Calls /api/cron/check-render-deadlines every minute to check render delay thresholds.
+#
+# Required GitHub Secrets (register in repo Settings → Secrets → Actions):
+#   APP_URL       — e.g. https://congre-three.vercel.app  (TODO [6])
+#   CRON_SECRET   — must match CRON_SECRET env var in Vercel            (TODO [6])
+
+name: Check Render Deadlines
+
+on:
+  schedule:
+    - cron: '* * * * *'
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call check-render-deadlines
+        run: |
+          curl -f -sS \
+            -X GET "${{ secrets.APP_URL }}/api/cron/check-render-deadlines" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
