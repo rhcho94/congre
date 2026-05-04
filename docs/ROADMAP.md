@@ -26,7 +26,7 @@
 코드 작업 체크리스트:
 - [ ] [1] /api/render/start 인증 추가 + E 계산 + 새 필드 기록
 - [x] [2] 알림 템플릿 5종 추가 (render-started, render-delayed, refund-50, refund-100, render-completed)
-- [ ] [3] /api/cron/check-render-deadlines 신설
+- [x] [3] /api/cron/check-render-deadlines 신설
 - [ ] [4] /api/render/complete 수정 (refundStatus 따라 분기)
 - [ ] [5] GitHub Actions 워크플로 추가 (.github/workflows/cron-check-deadlines.yml)
 - [ ] [6] 운영 작업: 카카오톡 채널 @congre 개설, CRON_SECRET 등록(Vercel + GitHub Secrets), 사내 SMS 수신번호 등록

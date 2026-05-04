@@ -22,11 +22,15 @@
 - 원인: `catch` 블록이 `err.message`만 반환, SOLAPI SDK `MessageNotReceivedError.failedMessageList` 미참조
 - 검증: 발신번호 미등록(statusCode 1062) 시나리오로 검증 — before: 일반 안내문, after: `[1062] 발신번호 미등록 (to: 010xxxx)`
 
-## render_delayed 장애 대응 시나리오 재설계 필요 (진행 중 논의)
+## ✅ render_delayed 장애 대응 시나리오 재설계 [RESOLVED 2026-05-04]
 
-- **격상 이유**: 단순 메시지 톤 이슈에서 비즈니스 임팩트가 있는 시나리오 재설계로 확장됨. 행사 중 상영 계획 무산, 결혼식 등 재현 불가 행사에서의 환불 사유 가능성, 완성본 미생성 위험 등이 포함됨
-- 현재 동작: 10분 초과 시 "완료됐는데 늦었다" 톤의 사후 안내 1건 발송
-- 논의 필요 사항: ROADMAP 참조 (다단계 알림 설계, 임계값 분리, 운영자 에스컬레이션 채널 등)
+- 재설계 완료. 다단계 시간축(T+E / T+E+30분 / T+24h) + 환불 정책 적용.
+- 크론 라우트([3]), 알림 템플릿 5종([2]) 구현 완료. GitHub Actions 워크플로 등록([5]) 및 운영 작업([6]) 진행 중.
+
+## 환경변수 미등록 — 운영 작업 [6] 대기 중
+
+- **CRON_SECRET**: `/api/cron/check-render-deadlines` Bearer 인증 토큰. 코드 준비 완료, Vercel + GitHub Secrets 등록 필요.
+- **NEXT_PUBLIC_APP_URL**: 크론에서 dashboardUrl 구성 시 사용 (`https://congre-three.vercel.app`). Vercel 등록 필요.
 
 ## clipCount 증가 실패 (무시됨)
 - 현상: 업로드 시 events.clipCount 증가 permission-denied 발생
