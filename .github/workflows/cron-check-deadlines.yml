@@ -1,4 +1,4 @@
-# Calls /api/cron/check-render-deadlines every minute to check render delay thresholds.
+# Calls /api/cron/check-render-deadlines every 5 minutes to check render delay thresholds.
 #
 # Required GitHub Secrets (register in repo Settings → Secrets → Actions):
 #   APP_URL       — e.g. https://congre-three.vercel.app  (TODO [6])
@@ -8,7 +8,7 @@ name: Check Render Deadlines
 
 on:
   schedule:
-    - cron: '* * * * *'
+    - cron: '*/5 * * * *'
   workflow_dispatch:
 
 jobs:

@@ -32,6 +32,12 @@
 - **CRON_SECRET**: `/api/cron/check-render-deadlines` Bearer 인증 토큰. 코드 준비 완료, Vercel + GitHub Secrets 등록 필요.
 - **NEXT_PUBLIC_APP_URL**: 크론에서 dashboardUrl 구성 시 사용 (`https://congre-three.vercel.app`). Vercel 등록 필요.
 
+## GitHub Actions cron throttling — `* * * * *` 매분 스케줄 실질적 미동작
+
+- **현상**: `* * * * *` 스케줄 등록 후 약 4시간에 1회만 자동 실행됨 (2026-05-05 관측).
+- **원인**: GitHub Actions free tier에서 고빈도 cron을 throttling. 공식 보장 없음.
+- **조치**: `*/5 * * * *` (5분 간격)으로 변경 후 재관측 예정. 여전히 부족하면 외부 cron 서비스 또는 Vercel Cron Jobs로 이전 검토.
+
 ## clipCount 증가 실패 (무시됨)
 - 현상: 업로드 시 events.clipCount 증가 permission-denied 발생
 - 원인: 비로그인 참가자가 events 문서 update 불가 (Firebase 규칙)
