@@ -45,6 +45,7 @@ export async function POST(request: NextRequest) {
         organizerEmail: eventData.organizerEmail,
         organizerPhone: eventData.organizerPhone,
         dashboardUrl,
+        refundStatus: eventData.refundStatus,
       }).catch((err) =>
         console.error("[render/complete] notify render done error:", err)
       );
