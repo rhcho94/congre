@@ -2,7 +2,7 @@
 
 ## 진행 중
 
-- [6] 운영 작업 마무리 — 자동 cron 실행 검증, 카카오톡 채널 @congre 개설, CONGRE_INTERNAL_PHONE 결정 및 Vercel 등록
+- **영상 편집 결과물 길이 이슈 디버깅** — 클립 합산보다 완성본이 길게 나오는 현상 (정지 화면 삽입 추정). `src/lib/shotstack.ts` 검토 필요. 상세: docs/known-issues.md
 
 ## 다음 작업 후보
 
@@ -20,7 +20,7 @@
 
 배경: 편집 지연 시 단순 완료 사후 안내보다 비즈니스 임팩트가 큼 — 행사 중 상영 계획 무산, 결혼식 등 재현 불가 행사에서의 환불 사유, 완성본 미생성 가능성.
 
-**상태: 코드 작업 [1]–[5] 완료 (2026-05-04) / [6] 운영 작업 일부 완료**
+**상태: 전체 완료 (2026-05-05)**
 세부 사항: docs/DECISIONS.md `## 2026-05-04` 항목 + docs/handoff/2026-05-04.md, docs/handoff/2026-05-05.md 참조.
 
 코드 작업 체크리스트:
@@ -29,13 +29,12 @@
 - [x] [3] /api/cron/check-render-deadlines 신설
 - [x] [4] /api/render/complete 수정 (refundStatus 따라 분기)
 - [x] [5] GitHub Actions 워크플로 추가 (.github/workflows/cron-check-deadlines.yml)
-- [ ] [6] 운영 작업:
+- [x] [6] 운영 작업:
   - [x] CRON_SECRET 등록 (Vercel + GitHub Secrets)
   - [x] NEXT_PUBLIC_APP_URL / APP_URL 등록 (Vercel + GitHub Secrets)
-  - [x] GitHub Actions 수동 실행 통과
-  - [ ] 자동 cron 실행 검증 (Actions 탭 로그 확인)
-  - [ ] 카카오톡 채널 @congre 개설
-  - [ ] CONGRE_INTERNAL_PHONE 결정 및 Vercel 등록 (사내 SMS×2 활성화)
+  - [x] GitHub Actions 수동 실행 통과 + cron 5분 간격 조정
+  - [x] 카카오톡 채널 @congre 개설 (검색용 ID `congre`, 채팅 허용)
+  - [x] CONGRE_INTERNAL_PHONE Vercel 등록 (`01075822020`, Redeploy 완료)
 
 ### 알림 시스템 Phase 2
 
@@ -69,4 +68,5 @@
 상세 추적은 [`known-issues.md`](./known-issues.md) 참조.
 
 요약:
+- 영상 편집 결과물에 빈 시간/정지 화면 발생 (Shotstack 설정 추정, 미해결)
 - `clipCount` permission-denied (무시 중, 기능 영향 없음)
