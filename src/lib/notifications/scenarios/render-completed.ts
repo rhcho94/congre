@@ -9,6 +9,7 @@ export interface RenderCompletedCtx {
   organizerEmail: string;
   organizerPhone: string;
   dashboardUrl: string;
+  refundStatus?: "none" | "50" | "100";
 }
 
 export async function notifyRenderCompleted(ctx: RenderCompletedCtx): Promise<void> {
@@ -16,7 +17,7 @@ export async function notifyRenderCompleted(ctx: RenderCompletedCtx): Promise<vo
     title: ctx.title,
     videoUrl: ctx.videoUrl,
     dashboardUrl: ctx.dashboardUrl,
-    isDelayed: false,
+    refundStatus: ctx.refundStatus,
   });
 
   await sendNotification("render_completed", ctx.eventId, [

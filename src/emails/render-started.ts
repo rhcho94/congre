@@ -3,6 +3,7 @@ import { baseEmail, C } from "./layouts/base";
 export interface RenderStartedEmailCtx {
   title: string;
   clipCount: number;
+  renderEstimateMin: number;
   dashboardUrl: string;
 }
 
@@ -24,7 +25,7 @@ export function renderRenderStartedEmail(ctx: RenderStartedEmailCtx): string {
       </tr>
     </table>
     <p style="margin:0 0 20px;font-size:14px;color:${C.text};line-height:1.7;">
-      편집 완료까지 약 10분이 소요될 수 있습니다. 완료되면 별도로 알림을 보내드립니다.
+      편집 완료까지 약 ${ctx.renderEstimateMin}분이 소요될 예정입니다. 완료되면 별도로 알림을 보내드립니다.
     </p>
     <a href="${ctx.dashboardUrl}"
        style="display:inline-block;padding:12px 28px;background:${C.accent};color:#fff;font-size:13px;font-weight:600;text-decoration:none;border-radius:2px;letter-spacing:0.05em;">

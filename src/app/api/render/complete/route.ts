@@ -1,10 +1,7 @@
 import type { NextRequest } from "next/server";
 import { getAdminDb } from "@/lib/firebase-admin";
 import { notifyRenderCompleted } from "@/lib/notifications/scenarios/render-completed";
-import { notifyRenderDelayed } from "@/lib/notifications/scenarios/render-delayed";
 import { notifyRenderFailed } from "@/lib/notifications/scenarios/render-failed";
-
-const TEN_MINUTES_MS = 10 * 60 * 1000;
 
 export async function POST(request: NextRequest) {
   const body = await request.json() as {
@@ -41,19 +38,14 @@ export async function POST(request: NextRequest) {
     await db.collection("events").doc(eventId).update({ status: "done", videoUrl: url });
 
     if (hasContact) {
-      const deadlineAt = eventData.deadlineAt?.toMillis?.() ?? Date.now();
-      const elapsedMs = Date.now() - deadlineAt;
-      const isDelayed = elapsedMs > TEN_MINUTES_MS;
-      const ctx = {
+      notifyRenderCompleted({
         eventId,
         title,
         videoUrl: url,
         organizerEmail: eventData.organizerEmail,
         organizerPhone: eventData.organizerPhone,
         dashboardUrl,
-      };
-      const notify = isDelayed ? notifyRenderDelayed : notifyRenderCompleted;
-      notify(ctx).catch((err) =>
+      }).catch((err) =>
         console.error("[render/complete] notify render done error:", err)
       );
     }

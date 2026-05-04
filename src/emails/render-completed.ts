@@ -4,22 +4,22 @@ export interface RenderCompletedEmailCtx {
   title: string;
   videoUrl: string;
   dashboardUrl: string;
-  isDelayed?: boolean;
+  refundStatus?: "none" | "50" | "100";
 }
 
 export function renderRenderCompletedEmail(ctx: RenderCompletedEmailCtx): string {
-  const headline = ctx.isDelayed
-    ? "영상 편집이 완료되었습니다 (지연)"
-    : "영상 편집이 완료되었습니다";
-  const subtitle = ctx.isDelayed
-    ? "예상보다 시간이 걸렸지만 완성되었습니다. 기다려 주셔서 감사합니다."
-    : "완성된 영상을 지금 바로 확인하세요.";
+  const refundBlock =
+    ctx.refundStatus === "50" || ctx.refundStatus === "100"
+      ? `<p style="margin:0 0 20px;font-size:13px;color:${C.muted};line-height:1.7;padding:12px 16px;background:${C.bg};border-left:3px solid ${C.accent};">
+        ${ctx.refundStatus}% 환불이 확정된 상태입니다. 환불 절차 문의: 카카오톡 <strong style="color:${C.text};">@congre</strong>
+      </p>`
+      : "";
 
   return baseEmail(
     `'${ctx.title}' 영상 편집 완료`,
     `
-    <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:${C.text};">${headline}</h1>
-    <p style="margin:0 0 28px;font-size:14px;color:${C.muted};">${subtitle}</p>
+    <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:${C.text};">영상 편집이 완료되었습니다</h1>
+    <p style="margin:0 0 28px;font-size:14px;color:${C.muted};">완성된 영상을 지금 바로 확인하세요.</p>
     <table role="presentation" cellpadding="0" cellspacing="0" width="100%"
            style="background:${C.bg};border:1px solid ${C.border};border-radius:4px;margin-bottom:28px;">
       <tr>
@@ -41,6 +41,7 @@ export function renderRenderCompletedEmail(ctx: RenderCompletedEmailCtx): string
        style="display:inline-block;margin-top:8px;font-size:12px;color:${C.accent};text-decoration:underline;">
       영상 직접 링크
     </a>
+    ${refundBlock}
     `
   );
 }

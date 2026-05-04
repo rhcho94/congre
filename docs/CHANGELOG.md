@@ -2,6 +2,12 @@
 
 > 기능 단위 작업 이력. 최신이 위.
 
+## 2026-05-04
+
+- feat: render_delayed 재설계 알림 템플릿 5종 정비 — render-started(E 동적화), render-delayed(재설계), refund-50(신규), refund-100(신규), render-completed(refundStatus 조건부 블록)
+- refactor: render/complete에서 구 isDelayed 분기 제거 → notifyRenderCompleted 단일 호출
+- chore: CONGRE_INTERNAL_PHONE env var 코드 준비 (TODO [6] — 실제 번호 미등록)
+
 ## 2026-05-03
 
 - chore: congre.kr 도메인 가비아 등록 완료 (1년)

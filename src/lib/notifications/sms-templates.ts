@@ -13,7 +13,11 @@ export const smsTemplates = {
   render_completed:
     "[Congre] '{title}' 편집 완료! 영상: {url}",
   render_delayed:
-    "[Congre] '{title}' 편집이 완료되었습니다. (예상보다 지연됨)",
+    "[Congre] '{title}' 편집 지연 중. 30분 후 50% 환불 확정 예정. 문의: 카카오톡 @congre",
+  refund_50:
+    "[Congre] '{title}' 편집 지연으로 50% 환불이 확정되었습니다. 환불 절차: 카카오톡 @congre",
+  refund_100:
+    "[Congre] '{title}' 편집 지연으로 100% 환불이 확정되었습니다. 영상은 완성 후 전달드립니다.",
   render_failed:
     "[Congre] '{title}' 편집 실패. 대시보드를 확인해 주세요.",
   first_clip_uploaded:

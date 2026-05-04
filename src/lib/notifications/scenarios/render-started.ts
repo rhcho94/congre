@@ -6,6 +6,7 @@ export interface RenderStartedCtx {
   eventId: string;
   title: string;
   clipCount: number;
+  renderEstimateMin: number;
   organizerEmail: string;
   organizerPhone: string;
   dashboardUrl: string;
@@ -15,6 +16,7 @@ export async function notifyRenderStarted(ctx: RenderStartedCtx): Promise<void> 
   const html = renderRenderStartedEmail({
     title: ctx.title,
     clipCount: ctx.clipCount,
+    renderEstimateMin: ctx.renderEstimateMin,
     dashboardUrl: ctx.dashboardUrl,
   });
 

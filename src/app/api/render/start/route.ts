@@ -103,11 +103,11 @@ export async function POST(request: NextRequest) {
   if (eventData.organizerEmail && eventData.organizerPhone) {
     const origin = request.headers.get("origin") ?? "";
     const dashboardUrl = `${origin}/dashboard/events/${eventId}`;
-    // TODO [2]: render-started 알림 템플릿 교체 (render-delayed 재설계 알림 5종)
     notifyRenderStarted({
       eventId,
       title: eventData.title ?? eventTitle ?? eventId,
       clipCount: s3Keys.length,
+      renderEstimateMin,
       organizerEmail: eventData.organizerEmail,
       organizerPhone: eventData.organizerPhone,
       dashboardUrl,

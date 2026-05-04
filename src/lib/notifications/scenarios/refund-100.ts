@@ -1,8 +1,8 @@
 import { sendNotification } from "../send";
-import { renderRenderDelayedEmail } from "@/emails/render-delayed";
+import { renderRefund100Email } from "@/emails/refund-100";
 import { renderSms, smsTemplates } from "../sms-templates";
 
-export interface RenderDelayedCtx {
+export interface Refund100Ctx {
   eventId: string;
   title: string;
   organizerEmail: string;
@@ -10,27 +10,27 @@ export interface RenderDelayedCtx {
   dashboardUrl: string;
 }
 
-export async function notifyRenderDelayed(ctx: RenderDelayedCtx): Promise<void> {
-  const html = renderRenderDelayedEmail({
+export async function notifyRefund100(ctx: Refund100Ctx): Promise<void> {
+  const html = renderRefund100Email({
     title: ctx.title,
     dashboardUrl: ctx.dashboardUrl,
   });
 
-  await sendNotification("render_delayed", ctx.eventId, [
+  await sendNotification("refund_100", ctx.eventId, [
     {
       channel: "email",
       to: ctx.organizerEmail,
       message: {
-        subject: `[Congre] '${ctx.title}' 영상 편집이 지연되고 있습니다`,
+        subject: `[Congre] '${ctx.title}' 편집 지연으로 100% 환불이 확정되었습니다`,
         html,
-        text: `'${ctx.title}' 영상 편집이 지연되고 있습니다. 30분 이내 미완료 시 50% 환불이 확정됩니다. 문의: 카카오톡 @congre\n\n대시보드: ${ctx.dashboardUrl}`,
+        text: `'${ctx.title}' 편집 지연으로 100% 환불이 확정되었습니다. 영상은 완성 후 전달드립니다. 환불 절차 문의: 카카오톡 @congre\n\n대시보드: ${ctx.dashboardUrl}`,
       },
     },
     {
       channel: "sms",
       to: ctx.organizerPhone,
       message: {
-        text: renderSms(smsTemplates.render_delayed, { title: ctx.title }),
+        text: renderSms(smsTemplates.refund_100, { title: ctx.title }),
       },
     },
   ]);
@@ -38,8 +38,8 @@ export async function notifyRenderDelayed(ctx: RenderDelayedCtx): Promise<void> 
   // TODO [6]: process.env.CONGRE_INTERNAL_PHONE 환경변수 등록 후 사내 SMS×2 활성화
   const internalPhone = process.env.CONGRE_INTERNAL_PHONE;
   if (internalPhone) {
-    const internalText = renderSms(smsTemplates.render_delayed, { title: ctx.title });
-    await sendNotification("render_delayed_internal", ctx.eventId, [
+    const internalText = renderSms(smsTemplates.refund_100, { title: ctx.title });
+    await sendNotification("refund_100_internal", ctx.eventId, [
       { channel: "sms", to: internalPhone, message: { text: internalText } },
       { channel: "sms", to: internalPhone, message: { text: internalText } },
     ]);
