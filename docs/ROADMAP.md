@@ -2,7 +2,7 @@
 
 ## 진행 중
 
-- (현재 진행 중인 작업 없음)
+- render_delayed 장애 대응 시나리오 재설계 — 코드 작업 진행 중 (정책 확정 완료)
 
 ## 다음 작업 후보
 
@@ -20,24 +20,26 @@
 
 배경: 편집 지연 시 단순 완료 사후 안내보다 비즈니스 임팩트가 큼 — 행사 중 상영 계획 무산, 결혼식 등 재현 불가 행사에서의 환불 사유, 완성본 미생성 가능성.
 
-필요 작업: 단순 메시지 톤 수정이 아닌 다단계 알림 시나리오 설계.
+**상태: 정책 확정 / 코드 작업 진행 중**
+세부 사항: docs/DECISIONS.md `## 2026-05-04` 항목 + docs/handoff/2026-05-04.md 참조.
 
-결정 보류 사항 (다음 세션에서 합의 필요):
-1. 지연 임계값 단계 분리 (예: 5분 감지 / 15분 상영 불가 확정 / 완성본 실패 3단계)
-2. 이벤트 데이터에 행사 시각 정보 존재 여부 확인 — 시스템이 자동 판단 가능한지
-3. 운영자 에스컬레이션 채널 (이메일·SMS → 슬랙 → 전화 단계별)
-4. 고객 통보 시점과 주체 (자동 vs 운영자 확인 후 수동)
-5. 환불·보상 정책의 알림 포함 여부
+코드 작업 체크리스트:
+- [ ] [1] /api/render/start 인증 추가 + E 계산 + 새 필드 기록
+- [ ] [2] 알림 템플릿 5종 추가 (render-started, render-delayed, refund-50, refund-100, render-completed)
+- [ ] [3] /api/cron/check-render-deadlines 신설
+- [ ] [4] /api/render/complete 수정 (refundStatus 따라 분기)
+- [ ] [5] GitHub Actions 워크플로 추가 (.github/workflows/cron-check-deadlines.yml)
+- [ ] [6] 운영 작업: 카카오톡 채널 @congre 개설, CRON_SECRET 등록(Vercel + GitHub Secrets), 사내 SMS 수신번호 등록
 
 ### 알림 시스템 Phase 2
 
 - 시나리오 2건 트리거 연결 (첫 클립 업로드 → clips onCreate 훅, 참가자 결과 → 참가자 연락처 수집 선행 필요)
-- 알림 자동 재시도 — 채널 실패 시 재시도 로직 (Vercel Cron or queue)
+- 알림 자동 재시도 — 채널 실패 시 재시도 로직 (Vercel Cron or queue) ← render_delayed 재설계 완료 후 진행 권장 (cron 인프라 공유)
 
 ### 보안
 
 - Firestore 보안 규칙 종합 점검 (clips create 검증, events update 권한 강화)
-  - /api/render/start 인증 누락 (Authorization 헤더 + hostId 검증 추가 필요)
+  - /api/render/start 인증 누락 (Authorization 헤더 + hostId 검증 추가 필요) ← render_delayed 재설계 [1] 단계에서 함께 처리 예정
   - /api/render/complete 검증 강화 (Shotstack webhook 서명 검증 검토)
 
 ### 결제

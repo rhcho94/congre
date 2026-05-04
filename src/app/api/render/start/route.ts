@@ -1,8 +1,9 @@
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { FieldValue } from "firebase-admin/firestore";
+import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { createRender } from "@/lib/shotstack";
 import { getAdminDb } from "@/lib/firebase-admin";
+import { verifyIdToken } from "@/lib/auth-server";
 import { notifyRenderStarted } from "@/lib/notifications/scenarios/render-started";
 import type { NextRequest } from "next/server";
 
@@ -26,6 +27,27 @@ export async function POST(request: NextRequest) {
 
   if (!eventId || !Array.isArray(s3Keys) || s3Keys.length === 0) {
     return Response.json({ error: "INVALID_PARAMS" }, { status: 400 });
+  }
+
+  let uid: string;
+  try {
+    const token = await verifyIdToken(request);
+    uid = token.uid;
+  } catch {
+    return Response.json({ error: "UNAUTHORIZED" }, { status: 401 });
+  }
+
+  const db = getAdminDb();
+  const eventSnap = await db.collection("events").doc(eventId).get();
+
+  if (!eventSnap.exists) {
+    return Response.json({ error: "EVENT_NOT_FOUND" }, { status: 404 });
+  }
+
+  const eventData = eventSnap.data()!;
+
+  if (eventData.hostId !== uid) {
+    return Response.json({ error: "FORBIDDEN" }, { status: 403 });
   }
 
   const s3 = new S3Client({
@@ -59,22 +81,29 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: msg }, { status: 500 });
   }
 
-  const db = getAdminDb();
+  const renderEstimateMin = Math.max(15, Math.round(s3Keys.length * 0.5 + 10));
+  const now = Date.now();
 
-  // Update Firestore: rendering state + deadline timestamp for completion-time calculation
   await db.collection("events").doc(eventId).update({
     status: "rendering",
     renderId,
     deadlineAt: FieldValue.serverTimestamp(),
+    renderStartedAt: Timestamp.fromMillis(now),
+    renderEstimateMin,
+    expectedCompletedAt: Timestamp.fromMillis(now + renderEstimateMin * 60 * 1000),
+    refund50At: Timestamp.fromMillis(now + (renderEstimateMin + 30) * 60 * 1000),
+    refund100At: Timestamp.fromMillis(now + 24 * 60 * 60 * 1000),
+    refundStatus: "none",
+    "notifications.renderStartedNotifiedAt": null,
+    "notifications.renderDelayedNotifiedAt": null,
+    "notifications.refund50NotifiedAt": null,
+    "notifications.refund100NotifiedAt": null,
   });
 
-  // Fetch organizer contact for notification (graceful if fields are missing)
-  const eventSnap = await db.collection("events").doc(eventId).get();
-  const eventData = eventSnap.data();
-
-  if (eventData?.organizerEmail && eventData?.organizerPhone) {
+  if (eventData.organizerEmail && eventData.organizerPhone) {
     const origin = request.headers.get("origin") ?? "";
     const dashboardUrl = `${origin}/dashboard/events/${eventId}`;
+    // TODO [2]: render-started 알림 템플릿 교체 (render-delayed 재설계 알림 5종)
     notifyRenderStarted({
       eventId,
       title: eventData.title ?? eventTitle ?? eventId,

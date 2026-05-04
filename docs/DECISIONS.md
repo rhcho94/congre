@@ -96,3 +96,49 @@
 - Shotstack 선택 (AI 영상 편집)
 - Firebase + S3 분리 구조 (메타데이터는 Firestore, 영상 파일은 S3)
 - 브랜드 표기 통일을 위한 BrandName 컴포넌트 도입
+
+## 2026-05-04 — render_delayed 시나리오 정책 확정
+
+### 결정
+render_delayed 시나리오를 단일 +10분 알림에서 다단계 시간축으로 재설계한다.
+T=0(마감 버튼) → T+E(예상 완료) → T+E+30분(50% 환불 확정) → T+24시간(100% 환불 확정).
+
+### 핵심 정책
+1. **T=0 기준점**: 주최자가 "마감하기" 버튼을 누르는 시점 (기존 deadlineAt 활용)
+2. **E 산정 공식 (1차안)**: `E = max(15분, 클립수 × 30초 + 10분)`. 필드 테스트 후 조정.
+3. **클립 수 소스**: render/start 시점에 클라이언트가 전달하는 s3Keys.length 사용.
+   events.clipCount는 참가자(비로그인) 업로드 실패 가능성 때문에 신뢰 불가.
+4. **환불 확정의 비가역성**: T+E+30분을 1초라도 넘으면 50% 확정. 이후 완료되어도
+   번복하지 않음. 24시간 넘으면 100% 확정 + 영상은 끝까지 완성하여 전달.
+5. **환불 처리는 알림만 자동, 실행은 수동**: 카카오톡 채널 @congre로 CS 응대 시 처리.
+6. **품질 클레임 미접수**: 별도 결제 동의서에 명시 (별도 작업).
+7. **고객 알림 횟수**: 시나리오당 1회 원칙. 중간 리마인더 없음.
+8. **사내 담당자 알림**: SMS 이중 발송 (슬랙 도입 시 이전).
+
+### 인프라
+- 시간 카운트: GitHub Actions cron (매분 호출). Vercel Hobby 제약 우회.
+- 향후 Vercel Pro 업그레이드 시 vercel.json cron으로 이전.
+- 새 엔드포인트: `/api/cron/check-render-deadlines` (Bearer CRON_SECRET 인증).
+
+### 데이터 스키마 (events 문서 신규 필드)
+- `renderStartedAt`, `renderEstimateMin`, `expectedCompletedAt`
+- `refund50At`, `refund100At`
+- `notifications.{renderStartedNotifiedAt, renderDelayedNotifiedAt, refund50NotifiedAt, refund100NotifiedAt}` (멱등성)
+- `refundStatus: 'none' | 'pending_50' | 'pending_100' | 'processed_50' | 'processed_100'`
+
+### 톤 & 채널
+- 알림 톤: 사회성·사과·이해 요청 강조. 서명 "꽁그레팀 드림", SMS prefix `[Congre]`.
+- CS 채널: 카카오톡 채널 @congre. 전화는 발신만, 수신 없음.
+
+### 보류·후속
+- 유료 결제 동의서에 환불 정책·품질 클레임 조항 추가 (법무·UX)
+- 슬랙 워크스페이스 도입 시 사내 알림 이전
+- E 산정 공식의 필드 테스트 데이터 수집 후 재조정
+
+### 근거
+- 30분 임계값을 "확정·비가역"으로 정한 이유: 자동 알림 후 번복 시 신뢰 손상이
+  지연 자체보다 큼. 운영자 수동 판단 단계를 빼서 의사결정 트리 단순화.
+- 50% 알림에 환불 즉시 처리를 약속하지 않은 이유: CS 콜 한 번에 처리·소통이
+  더 효율적이며, 고객 응대의 인간적 접점도 확보됨.
+- GitHub Actions를 단기 선택한 이유: Vercel Hobby에서 매분 cron 불가, Pro 업그레이드는
+  필드 테스트 후로 보류된 상태에서 무료·즉시 구축 가능한 외부 cron이 합리적.

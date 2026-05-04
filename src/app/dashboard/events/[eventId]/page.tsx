@@ -227,7 +227,10 @@ export default function EventDetailPage() {
         // render/start updates Firestore (status, renderId, deadlineAt) server-side
         await fetch("/api/render/start", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${idToken}`,
+          },
           body: JSON.stringify({
             eventId,
             s3Keys: clips.map((c) => c.s3Key),
