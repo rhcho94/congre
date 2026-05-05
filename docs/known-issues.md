@@ -38,11 +38,20 @@
 - **원인**: GitHub Actions free tier에서 고빈도 cron을 throttling. 공식 보장 없음.
 - **조치**: `*/5 * * * *` (5분 간격)으로 변경 후 재관측 예정. 여전히 부족하면 외부 cron 서비스 또는 Vercel Cron Jobs로 이전 검토.
 
-## ✅ 영상 편집 결과물에 빈 시간/정지 화면 발생 [RESOLVED 2026-05-05 / ad4a352]
+## ✅ 영상 편집 결과물에 빈 시간/정지 화면 발생 [RESOLVED 2026-05-05 / ad4a352 → cad7b58]
 
-- **해결**: `CLIP_MAX_SEC = 10` 고정값 제거. 클라이언트(`upload/page.tsx`)가 `loadedmetadata` 이벤트로 실제 duration을 측정하여 Firestore `clips.durationSec`에 저장. `render/start`가 `durationsSec[]`를 수신해 `createRender`에 전달. `createRender`는 누적 `startCursor`로 각 클립의 `start`·`length`를 정확히 계산.
 - **원인**: `shotstack.ts`의 `CLIP_MAX_SEC = 10` 상수를 모든 클립 슬롯에 고정 적용 → 실제 클립이 짧으면 마지막 프레임 freeze 발생
-- WebM `Infinity` duration 예외: `Number.isFinite(d) && d > 0` 검증 실패 시 `lastTimerRef.current`(타이머 최종값)로 폴백
+- **해결 흐름**:
+  - ad4a352: 옵션 A — 클라이언트 `loadedmetadata`로 duration 측정, Firestore `clips.durationSec` 저장, `createRender`에 누적 `startCursor` 적용
+  - cad7b58: Shotstack Smart Clips 발견 → `start: "auto"`, `length: "auto"` 사용으로 전환. 클라이언트 측정 코드 원복. 길이 측정은 편집 도구 책임 원칙.
+- **검증**: 짧은 클립 3개(약 3·6·9초)로 실제 렌더 테스트 — 결과 영상 길이가 클립 합과 일치, freeze 사라짐 확인
+
+## 한글 인트로/아웃트로 기능 미구현
+
+- **현상**: 행사 주최자가 인트로/아웃트로 텍스트를 입력하는 기능 없음. `shotstack.ts`에 타이틀 클립 자체가 없음.
+- **배경**: 기존 코드에 "Shotstack 기본 폰트가 한글을 지원하지 않아 자막 깨짐 발생"이라는 주석이 있었으나 잘못된 진단. Shotstack은 HTML asset + 커스텀 TTF 폰트(예: Noto Sans KR) 방식으로 한글 렌더링을 지원함.
+- **향후 작업**: 대시보드에 인트로/아웃트로 입력 UI 추가 → 한글 TTF 호스팅 → Shotstack timeline에 HTML asset 삽입
+- **우선순위**: 미정. 필드 테스트 시작 후 사용자 피드백 기반 결정.
 
 ## clipCount 증가 실패 (무시됨)
 - 현상: 업로드 시 events.clipCount 증가 permission-denied 발생
