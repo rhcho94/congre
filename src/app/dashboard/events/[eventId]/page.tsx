@@ -7,7 +7,7 @@ import { QRCodeSVG, QRCodeCanvas } from "qrcode.react";
 import { Play, X, Loader2 } from "lucide-react";
 import { subscribeToAuthChanges, type User } from "@/lib/auth";
 import {
-  getEvent,
+  subscribeToEvent,
   subscribeToClips,
   type CongreEvent,
   type Clip,
@@ -80,13 +80,11 @@ export default function EventDetailPage() {
 
   useEffect(() => {
     if (!eventId) return;
-    let isMounted = true;
-    getEvent(eventId).then((evt) => {
-      if (!isMounted) return;
+    return subscribeToEvent(eventId, (evt) => {
       // Only show event to its host
       if (evt && user && evt.hostId !== user.uid) {
         setEventLoading(false);
-        return; // event stays null → "not found" UI
+        return;
       }
       setEvent(evt);
       setEventLoading(false);
@@ -96,7 +94,6 @@ export default function EventDetailPage() {
         setShareUrl(`${window.location.origin}/upload/${eventId}?token=${token}`);
       }
     });
-    return () => { isMounted = false; };
   }, [eventId, user]);
 
   useEffect(() => {
@@ -239,8 +236,6 @@ export default function EventDetailPage() {
         });
       }
 
-      const updated = await getEvent(eventId);
-      setEvent(updated);
     } catch {
       alert("마감 처리 중 오류가 발생했습니다.");
     } finally {
@@ -248,45 +243,6 @@ export default function EventDetailPage() {
     }
   }
 
-  // 30초마다 Shotstack 렌더 상태 폴링
-  const renderingRenderId =
-    event?.status === "rendering" ? (event.renderId ?? null) : null;
-
-  useEffect(() => {
-    if (!renderingRenderId) return;
-    const capturedId = renderingRenderId;
-
-    async function poll() {
-      try {
-        const res = await fetch(`/api/render/status?renderId=${capturedId}`);
-        if (!res.ok) return;
-        const { status, url } = await res.json() as { status: string; url?: string };
-        if (status === "done" && url) {
-          await fetch("/api/render/complete", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ eventId, status: "done", url }),
-          });
-          const updated = await getEvent(eventId);
-          setEvent(updated);
-        } else if (status === "failed") {
-          await fetch("/api/render/complete", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ eventId, status: "failed" }),
-          });
-          const updated = await getEvent(eventId);
-          setEvent(updated);
-        }
-      } catch {
-        // 폴링 오류는 무시 — 다음 주기에 재시도
-      }
-    }
-
-    poll();
-    const timer = setInterval(poll, 30000);
-    return () => clearInterval(timer);
-  }, [renderingRenderId, eventId]);
 
   if (authChecking || eventLoading) {
     return (
@@ -444,7 +400,7 @@ export default function EventDetailPage() {
               <p className="text-sm text-muted">AI가 영상을 편집하고 있습니다...</p>
             </div>
             <p className="text-xs text-muted opacity-60 pl-5">
-              3~5분 소요 · 30초마다 상태 확인 중
+              3~5분 소요 · 완료되면 자동으로 업데이트됩니다
             </p>
           </div>
         ) : event.status === "done" ? (

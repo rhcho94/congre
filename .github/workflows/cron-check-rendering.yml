@@ -1,0 +1,22 @@
+# Calls /api/cron/check-rendering every 5 minutes to update render status from Shotstack.
+#
+# Required GitHub Secrets (register in repo Settings → Secrets → Actions):
+#   APP_URL       — e.g. https://congre-three.vercel.app
+#   CRON_SECRET   — must match CRON_SECRET env var in Vercel
+
+name: Check Rendering Status
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call check-rendering
+        run: |
+          curl -f -sS \
+            -X GET "${{ secrets.APP_URL }}/api/cron/check-rendering" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"

@@ -78,6 +78,26 @@ export async function updateEventRender(
   await updateDoc(doc(db, "events", eventId), data);
 }
 
+export function subscribeToEvent(
+  eventId: string,
+  callback: (event: CongreEvent | null) => void,
+  onError?: (err: Error) => void
+): () => void {
+  if (!isFirebaseConfigured) {
+    callback(null);
+    return () => {};
+  }
+  const db = getFirebaseFirestore();
+  return onSnapshot(
+    doc(db, "events", eventId),
+    (snap) => {
+      if (!snap.exists()) { callback(null); return; }
+      callback({ id: snap.id, ...snap.data() } as CongreEvent);
+    },
+    onError
+  );
+}
+
 export function subscribeToHostEvents(
   hostId: string,
   callback: (events: CongreEvent[]) => void,

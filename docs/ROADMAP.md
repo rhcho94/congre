@@ -44,7 +44,7 @@
 ### 보안
 
 - Firestore 보안 규칙 종합 점검 (clips create 검증, events update 권한 강화)
-  - /api/render/complete 검증 강화 (Shotstack webhook 서명 검증 검토)
+  - /api/render/complete: 현재 401 잠금 상태. 향후 Shotstack webhook 서명 검증 후 재활성화 검토
 
 ### 결제
 

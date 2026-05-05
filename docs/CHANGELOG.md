@@ -2,6 +2,13 @@
 
 > 기능 단위 작업 이력. 최신이 위.
 
+## 2026-05-05 (2)
+
+- feat: /api/cron/check-rendering 신설 — 5분마다 rendering 이벤트 Shotstack 상태 조회, 완료 시 Firestore 업데이트 + 알림 발송
+- refactor(dashboard): 클라이언트 30초 폴링 → Firestore onSnapshot 실시간 수신으로 교체, /api/render/complete 클라이언트 호출 제거
+- chore(render/complete): 서버 cron 이전으로 dead endpoint 잠금 (401 반환)
+- chore(ci): .github/workflows/cron-check-rendering.yml 추가 (5분 간격)
+
 ## 2026-05-05
 
 - chore: 사용되지 않는 Clip.durationSec 필드 제거
