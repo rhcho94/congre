@@ -38,7 +38,6 @@ export async function POST(request: NextRequest) {
     sessionToken,
     uploadToken: sessionToken,
     createdAt: FieldValue.serverTimestamp(),
-    clipCount: 0,
     organizerEmail,
     organizerPhone,
   });

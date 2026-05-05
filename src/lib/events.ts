@@ -1,6 +1,6 @@
 import {
   collection, addDoc, doc, getDoc, updateDoc, onSnapshot,
-  query, where, serverTimestamp, increment, Timestamp,
+  query, where, serverTimestamp, Timestamp,
 } from "firebase/firestore";
 import { getFirebaseFirestore, isFirebaseConfigured } from "./firebase";
 
@@ -17,7 +17,6 @@ export interface CongreEvent {
   sessionToken: string | null;
   uploadToken?: string;          // 원본 토큰 — 마감 후에도 QR 재표시용으로 보존
   createdAt: Timestamp;
-  clipCount: number;
   renderId?: string;
   videoUrl?: string;
   draftVideoUrl?: string;
@@ -52,7 +51,6 @@ export async function createEvent(input: {
     sessionToken,
     uploadToken: sessionToken,   // 마감 시 sessionToken은 null이 되지만 uploadToken은 보존
     createdAt: serverTimestamp(),
-    clipCount: 0,
   });
   return { eventId: ref.id, sessionToken };
 }
@@ -147,10 +145,4 @@ export async function saveClipMetadata(data: {
     uploadedAt: serverTimestamp(),
   });
   console.log("[saveClipMetadata] clips 저장 성공 →", clipRef.id);
-  // clipCount 증가 실패는 무시 — clips 저장이 핵심
-  updateDoc(doc(db, "events", data.eventId), {
-    clipCount: increment(1),
-  })
-    .then(() => console.log("[saveClipMetadata] events.clipCount 증가 성공"))
-    .catch((err) => console.error("[saveClipMetadata] events.clipCount 증가 실패 (무시됨):", err?.code, err?.message));
 }

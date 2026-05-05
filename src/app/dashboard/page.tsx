@@ -149,8 +149,6 @@ export default function DashboardPage() {
                     {event.date?.toDate().toLocaleDateString("ko-KR")}
                     {" · "}
                     {planLabels[event.plan]}
-                    {" · "}
-                    클립 {event.clipCount}개
                   </span>
                 </div>
                 <span
