@@ -6,6 +6,19 @@
 
 결혼식 등 행사에서 참가자들이 영상을 촬영·업로드하면 AI가 자동으로 편집해서 SNS 공유용 영상을 만들어주는 서비스.
 
+## 로컬 개발
+
+```bash
+npm run dev          # Next.js 개발 서버 (http://localhost:3000)
+
+# Firestore 에뮬레이터 (보안 규칙 테스트용)
+npx firebase emulators:start --only firestore
+```
+
+에뮬레이터 UI: http://localhost:4000 → Firestore → Rules Playground에서 규칙 검증 가능.
+에뮬레이터는 prod 데이터에 영향 없음. 종료 후 데이터 초기화됨.
+사전 조건: Java 설치 필요 (https://java.com/download). 미설치 시 "Could not spawn `java`" 오류.
+
 ## 배포 / 저장소
 
 - Vercel: https://congre-three.vercel.app
