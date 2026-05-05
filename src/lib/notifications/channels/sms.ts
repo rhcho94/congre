@@ -6,6 +6,12 @@ const sender = process.env.SOLAPI_SENDER;
 
 const isDryRun = !apiKey || !apiSecret || !sender;
 
+console.log("[sms:env]",
+  "apiKey=", !!apiKey, apiKey?.length ?? 0,
+  "apiSecret=", !!apiSecret, apiSecret?.length ?? 0,
+  "sender=", !!sender, sender?.length ?? 0,
+  "isDryRun=", isDryRun);
+
 export const smsChannel: Channel = {
   async send(to: string, message: NotificationMessage): Promise<NotificationResult> {
     if (isDryRun) {
