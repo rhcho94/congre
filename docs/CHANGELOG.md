@@ -2,6 +2,10 @@
 
 > 기능 단위 작업 이력. 최신이 위.
 
+## 2026-05-05
+
+- fix(render): 클립별 실제 재생 시간 사용 — CLIP_MAX_SEC 10초 고정값 제거, 클라이언트 loadedmetadata 측정값 → Firestore → render/start → createRender 전달, 정지 화면 패딩 문제 해결
+
 ## 2026-05-04
 
 - chore(ci): cron 빈도 매분 → 5분 간격 변경 (GitHub Actions throttling 회피)

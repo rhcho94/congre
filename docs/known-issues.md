@@ -38,17 +38,11 @@
 - **원인**: GitHub Actions free tier에서 고빈도 cron을 throttling. 공식 보장 없음.
 - **조치**: `*/5 * * * *` (5분 간격)으로 변경 후 재관측 예정. 여전히 부족하면 외부 cron 서비스 또는 Vercel Cron Jobs로 이전 검토.
 
-## 영상 편집 결과물에 빈 시간/정지 화면 발생
+## ✅ 영상 편집 결과물에 빈 시간/정지 화면 발생 [RESOLVED 2026-05-05 / ad4a352]
 
-- **현상**: 클립 길이 합 < 완성본 길이. 각 클립 마지막 프레임에서 정지 후 다음 클립 재생.
-  - 예: 5초 + 7초 + 3초 = 15초 → 완성본 약 30초
-- **재현**: 짧은 길이의 여러 클립을 업로드하여 렌더 진행
-- **추정 원인 (미확인)**:
-  - Shotstack API에 클립 length를 자동 계산하지 않고 고정값으로 박았을 가능성
-  - 클립 사이 transition(전환) 효과의 고정 길이로 인한 빈 시간
-  - 마지막 프레임 freeze 효과 잘못 적용
-- **영향도**: 중간. 사고는 아니지만 결과물 품질 이슈로 사용자 만족도에 영향
-- **다음 단계**: src/lib/shotstack.ts 또는 클립 처리 로직 검토 필요. 우선순위는 별도 결정.
+- **해결**: `CLIP_MAX_SEC = 10` 고정값 제거. 클라이언트(`upload/page.tsx`)가 `loadedmetadata` 이벤트로 실제 duration을 측정하여 Firestore `clips.durationSec`에 저장. `render/start`가 `durationsSec[]`를 수신해 `createRender`에 전달. `createRender`는 누적 `startCursor`로 각 클립의 `start`·`length`를 정확히 계산.
+- **원인**: `shotstack.ts`의 `CLIP_MAX_SEC = 10` 상수를 모든 클립 슬롯에 고정 적용 → 실제 클립이 짧으면 마지막 프레임 freeze 발생
+- WebM `Infinity` duration 예외: `Number.isFinite(d) && d > 0` 검증 실패 시 `lastTimerRef.current`(타이머 최종값)로 폴백
 
 ## clipCount 증가 실패 (무시됨)
 - 현상: 업로드 시 events.clipCount 증가 permission-denied 발생

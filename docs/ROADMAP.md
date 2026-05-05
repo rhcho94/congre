@@ -2,7 +2,7 @@
 
 ## 진행 중
 
-- **영상 편집 결과물 길이 이슈 디버깅** — 클립 합산보다 완성본이 길게 나오는 현상 (정지 화면 삽입 추정). `src/lib/shotstack.ts` 검토 필요. 상세: docs/known-issues.md
+특별히 진행 중인 작업 없음. 다음 작업 후보 참조.
 
 ## 다음 작업 후보
 
@@ -68,5 +68,4 @@
 상세 추적은 [`known-issues.md`](./known-issues.md) 참조.
 
 요약:
-- 영상 편집 결과물에 빈 시간/정지 화면 발생 (Shotstack 설정 추정, 미해결)
 - `clipCount` permission-denied (무시 중, 기능 영향 없음)
