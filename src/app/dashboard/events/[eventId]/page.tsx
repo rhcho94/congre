@@ -374,8 +374,6 @@ export default function EventDetailPage() {
             </h1>
             <p className="text-xs text-muted mt-2">
               {event.date?.toDate().toLocaleDateString("ko-KR")}
-              {" · "}
-              클립 {clips.length}개
             </p>
           </div>
           <div className="flex flex-col items-end gap-3 shrink-0">
