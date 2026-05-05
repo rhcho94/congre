@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
   if (eventData.organizerEmail && eventData.organizerPhone) {
     const origin = request.headers.get("origin") ?? "";
     const dashboardUrl = `${origin}/dashboard/events/${eventId}`;
-    notifyRenderStarted({
+    await notifyRenderStarted({
       eventId,
       title: eventData.title ?? eventTitle ?? eventId,
       clipCount: s3Keys.length,

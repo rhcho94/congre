@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
 
       if (data.organizerEmail && data.organizerPhone) {
         const dashboardUrl = `${baseUrl}/dashboard/events/${eventId}`;
-        notifyRenderCompleted({
+        await notifyRenderCompleted({
           eventId,
           title: (data.title as string) ?? eventId,
           videoUrl: url,
@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
 
       if (data.organizerEmail && data.organizerPhone) {
         const dashboardUrl = `${baseUrl}/dashboard/events/${eventId}`;
-        notifyRenderFailed({
+        await notifyRenderFailed({
           eventId,
           title: (data.title as string) ?? eventId,
           organizerEmail: data.organizerEmail as string,

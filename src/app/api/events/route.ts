@@ -46,8 +46,7 @@ export async function POST(request: NextRequest) {
   const origin = request.headers.get("origin") ?? "";
   const dashboardUrl = `${origin}/dashboard/events/${eventId}`;
 
-  // Fire notification without blocking the response
-  notifyEventCreated({ eventId, title, date, organizerEmail, dashboardUrl }).catch((err) =>
+  await notifyEventCreated({ eventId, title, date, organizerEmail, dashboardUrl }).catch((err) =>
     console.error("[api/events] notifyEventCreated error:", err)
   );
 
