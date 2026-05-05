@@ -21,21 +21,12 @@ export async function POST(request: NextRequest) {
   const body = await request.json() as {
     eventId?: string;
     s3Keys?: string[];
-    durationsSec?: number[];
     eventTitle?: string;
   };
-  const { eventId, s3Keys, durationsSec, eventTitle } = body;
+  const { eventId, s3Keys, eventTitle } = body;
 
   if (!eventId || !Array.isArray(s3Keys) || s3Keys.length === 0) {
     return Response.json({ error: "INVALID_PARAMS" }, { status: 400 });
-  }
-
-  if (
-    !Array.isArray(durationsSec) ||
-    durationsSec.length !== s3Keys.length ||
-    durationsSec.some((d) => typeof d !== "number" || !Number.isFinite(d) || d <= 0)
-  ) {
-    return Response.json({ error: "INVALID_DURATIONS" }, { status: 400 });
   }
 
   let uid: string;
@@ -84,7 +75,7 @@ export async function POST(request: NextRequest) {
 
   let renderId: string;
   try {
-    renderId = await createRender(s3Urls, durationsSec);
+    renderId = await createRender(s3Urls);
   } catch (err) {
     const msg = err instanceof Error ? err.message : "render_failed";
     return Response.json({ error: msg }, { status: 500 });

@@ -32,20 +32,15 @@ function assertApiKey(): void {
 
 export async function createRender(
   s3Urls: string[],
-  durationsSec: number[],
 ): Promise<string> {
   assertApiKey();
   // subscribeToClips가 uploadedAt 내림차순으로 전달하므로 뒤집어 오름차순(오래된 것 먼저) 배치.
-  // title 클립 제거: Shotstack 기본 폰트가 한글을 지원하지 않아 자막 깨짐 발생.
-  const urls = [...s3Urls].reverse();
-  const durations = [...durationsSec].reverse();
-  let startCursor = 0;
-  const videoClips = urls.map((src, i) => {
-    const length = durations[i];
-    const clip = { asset: { type: "video", src }, start: startCursor, length, fit: "cover" };
-    startCursor += length;
-    return clip;
-  });
+  const videoClips = [...s3Urls].reverse().map((src) => ({
+    asset: { type: "video", src },
+    start: "auto",
+    length: "auto",
+    fit: "cover",
+  }));
 
   const body = {
     timeline: {
