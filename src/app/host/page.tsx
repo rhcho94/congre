@@ -397,22 +397,6 @@ export default function HostPage() {
                       >
                         {event.status}
                       </span>
-                      {event.status === "완성" && (
-                        <Link
-                          href={`/player/${event.id}`}
-                          className="text-xs tracking-widest uppercase text-muted hover:text-accent transition-colors"
-                        >
-                          보기 →
-                        </Link>
-                      )}
-                      {event.status === "수집중" && (
-                        <Link
-                          href={`/event/${event.id}`}
-                          className="text-xs tracking-widest uppercase text-muted hover:text-accent transition-colors"
-                        >
-                          관리 →
-                        </Link>
-                      )}
                     </div>
                   </div>
                 ))}
