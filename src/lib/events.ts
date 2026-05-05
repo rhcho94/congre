@@ -32,6 +32,7 @@ export interface Clip {
   s3Key: string;
   uploadedAt: Timestamp;
   sessionToken: string;
+  durationSec?: number;
 }
 
 export async function createEvent(input: {
@@ -136,6 +137,7 @@ export async function saveClipMetadata(data: {
   eventId: string;
   s3Key: string;
   sessionToken: string;
+  durationSec?: number;
 }): Promise<void> {
   if (!isFirebaseConfigured) return;
   const db = getFirebaseFirestore();
@@ -145,6 +147,7 @@ export async function saveClipMetadata(data: {
     s3Key: data.s3Key,
     sessionToken: data.sessionToken,
     uploadedAt: serverTimestamp(),
+    ...(data.durationSec !== undefined && { durationSec: data.durationSec }),
   });
   console.log("[saveClipMetadata] clips 저장 성공 →", clipRef.id);
   // clipCount 증가 실패는 무시 — clips 저장이 핵심

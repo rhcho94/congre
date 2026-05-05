@@ -39,6 +39,8 @@ function UploadInner() {
   const blobRef = useRef<Blob | null>(null);
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const previewUrlRef = useRef<string>("");
+  const durationSecRef = useRef<number | null>(null);
+  const lastTimerRef = useRef(0);
 
   // Verify token against Firestore
   useEffect(() => {
@@ -93,13 +95,21 @@ function UploadInner() {
     video.play().catch(() => {});
   }, [stage, streamKey]);
 
-  // stage가 "preview"로 바뀐 뒤 video 엘리먼트가 마운트되면 blob URL을 연결
+  // stage가 "preview"로 바뀐 뒤 video 엘리먼트가 마운트되면 blob URL을 연결하고 실제 duration 측정
   useEffect(() => {
     if (stage !== "preview") return;
     const video = previewRef.current;
     if (!video || !previewUrlRef.current) return;
+
+    function onLoaded() {
+      const d = video!.duration;
+      // WebM은 일부 브라우저에서 Infinity 반환 → 타이머 최종값으로 대체
+      durationSecRef.current = Number.isFinite(d) && d > 0 ? d : lastTimerRef.current || null;
+    }
+    video.addEventListener("loadedmetadata", onLoaded);
     video.src = previewUrlRef.current;
     video.load();
+    return () => video.removeEventListener("loadedmetadata", onLoaded);
   }, [stage]);
 
   // 카메라 스트림 획득만 담당. streamRef·streamKey 갱신. 녹화 시작 안 함.
@@ -186,6 +196,7 @@ function UploadInner() {
     tickRef.current = setInterval(() => {
       setTimer((t) => {
         const next = t + 1;
+        lastTimerRef.current = next;
         if (next >= MAX_SEC) {
           clearInterval(tickRef.current!);
           tickRef.current = null;
@@ -206,6 +217,7 @@ function UploadInner() {
   }
 
   function reRecord() {
+    durationSecRef.current = null;
     if (previewUrlRef.current) {
       URL.revokeObjectURL(previewUrlRef.current);
       previewUrlRef.current = "";
@@ -236,7 +248,7 @@ function UploadInner() {
     console.log(`[upload] S3 PUT success`);
 
     // Firestore 저장은 best-effort — 실패·타임아웃해도 done 전환 막지 않음
-    const clipSave = saveClipMetadata({ eventId, s3Key: key, sessionToken: urlToken });
+    const clipSave = saveClipMetadata({ eventId, s3Key: key, sessionToken: urlToken, durationSec: durationSecRef.current ?? undefined });
     const clipTimeout = new Promise<void>((_, reject) =>
       setTimeout(() => reject(new Error("firestore_timeout")), 5000)
     );

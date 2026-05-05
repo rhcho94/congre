@@ -30,21 +30,22 @@ function assertApiKey(): void {
   }
 }
 
-const CLIP_MAX_SEC = 10; // 녹화 상한. 실제 클립이 짧으면 background로 패딩됨.
-
 export async function createRender(
   s3Urls: string[],
+  durationsSec: number[],
 ): Promise<string> {
   assertApiKey();
   // subscribeToClips가 uploadedAt 내림차순으로 전달하므로 뒤집어 오름차순(오래된 것 먼저) 배치.
-  // 실제 클립이 10초 미만이면 남은 구간은 background(#0c0b09)으로 채워짐.
   // title 클립 제거: Shotstack 기본 폰트가 한글을 지원하지 않아 자막 깨짐 발생.
-  const videoClips = [...s3Urls].reverse().map((src, i) => ({
-    asset: { type: "video", src },
-    start: i * CLIP_MAX_SEC,
-    length: CLIP_MAX_SEC,
-    fit: "cover",
-  }));
+  const urls = [...s3Urls].reverse();
+  const durations = [...durationsSec].reverse();
+  let startCursor = 0;
+  const videoClips = urls.map((src, i) => {
+    const length = durations[i];
+    const clip = { asset: { type: "video", src }, start: startCursor, length, fit: "cover" };
+    startCursor += length;
+    return clip;
+  });
 
   const body = {
     timeline: {

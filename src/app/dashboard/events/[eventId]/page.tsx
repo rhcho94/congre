@@ -224,19 +224,24 @@ export default function EventDetailPage() {
       setShowCloseModal(false);
 
       if (clips.length > 0 && event) {
-        // render/start updates Firestore (status, renderId, deadlineAt) server-side
-        await fetch("/api/render/start", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${idToken}`,
-          },
-          body: JSON.stringify({
-            eventId,
-            s3Keys: clips.map((c) => c.s3Key),
-            eventTitle: event.title,
-          }),
-        });
+        if (clips.some((c) => typeof c.durationSec !== "number")) {
+          alert("일부 클립의 길이 정보가 없습니다. 페이지를 새로고침한 뒤 다시 시도해주세요.");
+        } else {
+          // render/start updates Firestore (status, renderId, deadlineAt) server-side
+          await fetch("/api/render/start", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${idToken}`,
+            },
+            body: JSON.stringify({
+              eventId,
+              s3Keys: clips.map((c) => c.s3Key),
+              durationsSec: clips.map((c) => c.durationSec as number),
+              eventTitle: event.title,
+            }),
+          });
+        }
       }
 
       const updated = await getEvent(eventId);
