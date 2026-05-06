@@ -50,6 +50,7 @@
 - Tailwind는 v4 사용 중이며 **config 파일 없음**. `@import` 방식. tailwind.config.js 만들지 말 것.
 - 커밋 메시지는 conventional commits (feat:, fix:, chore:, docs:, refactor:).
 - 작업 완료 시 자동으로 commit & push.
+- **무료 티어 한계는 유료 플랜으로 해결**: Vercel·GitHub Actions·AWS·SOLAPI·Resend·카카오 등 인프라·플랫폼의 무료 티어 제약(쿼터·throttling·기능 제한)에 걸렸을 때, 우회 방법 검토하지 말고 유료 플랜이 표준 답임을 사용자에게 알리고 진행. 어느 플랜·얼마짜리 가입은 사용자 결정 영역.
 
 ## 디자인 토큰 (CSS 변수)
 
