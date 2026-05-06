@@ -6,17 +6,10 @@ import { useParams, useRouter } from "next/navigation";
 import { QRCodeSVG, QRCodeCanvas } from "qrcode.react";
 import { Play, X, Loader2 } from "lucide-react";
 import { subscribeToAuthChanges, type User } from "@/lib/auth";
-import {
-  subscribeToEvent,
-  subscribeToClips,
-  type CongreEvent,
-  type Clip,
-} from "@/lib/events";
 import { isFirebaseConfigured, getFirebaseAuth } from "@/lib/firebase";
 import { getClipPlaybackUrl } from "@/lib/clip-playback";
 import CongreBadge from "@/components/CongreBadge";
 import { BrandName } from "@/components/BrandName";
-import type { Timestamp } from "firebase/firestore";
 
 const statusLabels: Record<string, string> = {
   open: "수집중",
@@ -38,9 +31,26 @@ interface KakaoInstance {
   Share: { sendDefault: (opts: Record<string, unknown>) => void };
 }
 
-function formatUploadTime(ts: Timestamp | undefined): string {
+interface ApiEvent {
+  id: string;
+  title: string;
+  date: number | null;
+  status: string;
+  hostId: string;
+  uploadToken?: string;
+  videoUrl?: string;
+}
+
+interface ApiClip {
+  id: string;
+  eventId: string;
+  s3Key: string;
+  uploadedAt: number | null;
+}
+
+function formatUploadTime(ts: number | null | undefined): string {
   if (!ts) return "";
-  return ts.toDate().toLocaleString("ko-KR", {
+  return new Date(ts).toLocaleString("ko-KR", {
     month: "numeric",
     day: "numeric",
     hour: "numeric",
@@ -53,9 +63,9 @@ export default function EventDetailPage() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [authChecking, setAuthChecking] = useState(isFirebaseConfigured);
-  const [event, setEvent] = useState<CongreEvent | null>(null);
+  const [event, setEvent] = useState<ApiEvent | null>(null);
   const [eventLoading, setEventLoading] = useState(true);
-  const [clips, setClips] = useState<Clip[]>([]);
+  const [clips, setClips] = useState<ApiClip[]>([]);
   const [showCloseModal, setShowCloseModal] = useState(false);
   const [closing, setClosing] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -79,27 +89,97 @@ export default function EventDetailPage() {
   }, [router]);
 
   useEffect(() => {
-    if (!eventId) return;
-    return subscribeToEvent(eventId, (evt) => {
-      // Only show event to its host
-      if (evt && user && evt.hostId !== user.uid) {
+    if (!eventId || !user) return;
+    let cancelled = false;
+    let timerId: ReturnType<typeof setTimeout> | null = null;
+
+    async function fetchEvent() {
+      if (cancelled || document.hidden) return;
+      try {
+        const idToken = await getFirebaseAuth().currentUser?.getIdToken();
+        if (!idToken || cancelled) return;
+        const res = await fetch(`/api/host/events/${eventId}`, {
+          headers: { Authorization: `Bearer ${idToken}` },
+        });
+        if (cancelled) return;
+        if (res.status === 404) {
+          setEvent(null);
+          setEventLoading(false);
+          return;
+        }
+        if (!res.ok) return;
+        const evt = await res.json() as ApiEvent;
+        if (cancelled) return;
+        setEvent(evt);
         setEventLoading(false);
-        return;
+        if (evt.uploadToken) {
+          setShareUrl(`${window.location.origin}/upload/${eventId}?token=${evt.uploadToken}`);
+        }
+      } catch (err) {
+        console.error("[event-detail] fetchEvent error:", err);
+      } finally {
+        if (!cancelled) {
+          timerId = setTimeout(fetchEvent, 5000);
+        }
       }
-      setEvent(evt);
-      setEventLoading(false);
-      // uploadToken은 마감 후에도 보존 → sessionToken이 null이어도 QR 복원 가능
-      const token = evt?.uploadToken ?? evt?.sessionToken;
-      if (token) {
-        setShareUrl(`${window.location.origin}/upload/${eventId}?token=${token}`);
+    }
+
+    function onVisibilityEvent() {
+      if (!document.hidden) {
+        if (timerId) { clearTimeout(timerId); timerId = null; }
+        fetchEvent();
       }
-    });
+    }
+    document.addEventListener("visibilitychange", onVisibilityEvent);
+    fetchEvent();
+
+    return () => {
+      cancelled = true;
+      if (timerId) clearTimeout(timerId);
+      document.removeEventListener("visibilitychange", onVisibilityEvent);
+    };
   }, [eventId, user]);
 
   useEffect(() => {
-    if (!eventId) return;
-    return subscribeToClips(eventId, setClips);
-  }, [eventId]);
+    if (!eventId || !user) return;
+    let cancelled = false;
+    let timerId: ReturnType<typeof setTimeout> | null = null;
+
+    async function fetchClips() {
+      if (cancelled || document.hidden) return;
+      try {
+        const idToken = await getFirebaseAuth().currentUser?.getIdToken();
+        if (!idToken || cancelled) return;
+        const res = await fetch(`/api/host/clips?eventId=${encodeURIComponent(eventId)}`, {
+          headers: { Authorization: `Bearer ${idToken}` },
+        });
+        if (!res.ok || cancelled) return;
+        const data = await res.json() as { clips: ApiClip[] };
+        if (!cancelled) setClips(data.clips);
+      } catch (err) {
+        console.error("[event-detail] fetchClips error:", err);
+      } finally {
+        if (!cancelled) {
+          timerId = setTimeout(fetchClips, 5000);
+        }
+      }
+    }
+
+    function onVisibilityClips() {
+      if (!document.hidden) {
+        if (timerId) { clearTimeout(timerId); timerId = null; }
+        fetchClips();
+      }
+    }
+    document.addEventListener("visibilitychange", onVisibilityClips);
+    fetchClips();
+
+    return () => {
+      cancelled = true;
+      if (timerId) clearTimeout(timerId);
+      document.removeEventListener("visibilitychange", onVisibilityClips);
+    };
+  }, [eventId, user]);
 
   async function handleCopy() {
     if (!shareUrl) return;
@@ -112,7 +192,7 @@ export default function EventDetailPage() {
     }
   }
 
-  const handlePlayClip = useCallback(async (clip: Clip) => {
+  const handlePlayClip = useCallback(async (clip: ApiClip) => {
     if (activeClipId === clip.id) {
       setActiveClipId(null);
       setPlaybackUrl(null);
@@ -325,7 +405,7 @@ export default function EventDetailPage() {
               {event.title}
             </h1>
             <p className="text-xs text-muted mt-2">
-              {event.date?.toDate().toLocaleDateString("ko-KR")}
+              {event.date ? new Date(event.date).toLocaleDateString("ko-KR") : ""}
             </p>
           </div>
           <div className="flex flex-col items-end gap-3 shrink-0">

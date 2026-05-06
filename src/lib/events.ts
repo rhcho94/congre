@@ -1,6 +1,6 @@
 import {
-  collection, addDoc, doc, updateDoc, onSnapshot,
-  query, where, serverTimestamp, Timestamp,
+  collection, addDoc, doc, updateDoc,
+  serverTimestamp, Timestamp,
 } from "firebase/firestore";
 import { getFirebaseFirestore, isFirebaseConfigured } from "./firebase";
 
@@ -68,76 +68,4 @@ export async function updateEventRender(
   if (!isFirebaseConfigured) return;
   const db = getFirebaseFirestore();
   await updateDoc(doc(db, "events", eventId), data);
-}
-
-export function subscribeToEvent(
-  eventId: string,
-  callback: (event: CongreEvent | null) => void,
-  onError?: (err: Error) => void
-): () => void {
-  if (!isFirebaseConfigured) {
-    callback(null);
-    return () => {};
-  }
-  const db = getFirebaseFirestore();
-  return onSnapshot(
-    doc(db, "events", eventId),
-    (snap) => {
-      if (!snap.exists()) { callback(null); return; }
-      callback({ id: snap.id, ...snap.data() } as CongreEvent);
-    },
-    onError
-  );
-}
-
-export function subscribeToHostEvents(
-  hostId: string,
-  callback: (events: CongreEvent[]) => void,
-  onError?: (err: Error) => void
-): () => void {
-  if (!isFirebaseConfigured) {
-    callback([]);
-    return () => {};
-  }
-  const db = getFirebaseFirestore();
-  const q = query(
-    collection(db, "events"),
-    where("hostId", "==", hostId)
-  );
-  return onSnapshot(
-    q,
-    (snap) => {
-      const events = snap.docs
-        .map((d) => ({ id: d.id, ...d.data() }) as CongreEvent)
-        .sort((a, b) => (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0));
-      callback(events);
-    },
-    onError
-  );
-}
-
-export function subscribeToClips(
-  eventId: string,
-  callback: (clips: Clip[]) => void,
-  onError?: (err: Error) => void
-): () => void {
-  if (!isFirebaseConfigured) {
-    callback([]);
-    return () => {};
-  }
-  const db = getFirebaseFirestore();
-  const q = query(
-    collection(db, "clips"),
-    where("eventId", "==", eventId)
-  );
-  return onSnapshot(
-    q,
-    (snap) => {
-      const clips = snap.docs
-        .map((d) => ({ id: d.id, ...d.data() }) as Clip)
-        .sort((a, b) => (b.uploadedAt?.toMillis?.() ?? 0) - (a.uploadedAt?.toMillis?.() ?? 0));
-      callback(clips);
-    },
-    onError
-  );
 }

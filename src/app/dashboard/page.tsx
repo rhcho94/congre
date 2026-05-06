@@ -5,13 +5,16 @@ import Link from "next/link";
 import { BrandName } from "@/components/BrandName";
 import { useRouter } from "next/navigation";
 import { subscribeToAuthChanges, logout, type User } from "@/lib/auth";
-import {
-  subscribeToHostEvents,
-  type CongreEvent,
-  type EventPlan,
-  type EventStatus,
-} from "@/lib/events";
-import { isFirebaseConfigured } from "@/lib/firebase";
+import { type EventPlan, type EventStatus } from "@/lib/events";
+import { isFirebaseConfigured, getFirebaseAuth } from "@/lib/firebase";
+
+interface ApiEvent {
+  id: string;
+  title: string;
+  date: number | null;
+  plan: EventPlan;
+  status: EventStatus;
+}
 
 const planLabels: Record<EventPlan, string> = {
   free: "무료", small: "소형", medium: "중형", large: "대형",
@@ -32,7 +35,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [authChecking, setAuthChecking] = useState(isFirebaseConfigured);
-  const [events, setEvents] = useState<CongreEvent[]>([]);
+  const [events, setEvents] = useState<ApiEvent[]>([]);
   const [eventsLoading, setEventsLoading] = useState(false);
 
   useEffect(() => {
@@ -46,11 +49,37 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!user) return;
+    let cancelled = false;
+
+    async function fetchEvents() {
+      try {
+        const idToken = await getFirebaseAuth().currentUser?.getIdToken();
+        if (!idToken || cancelled) return;
+        const res = await fetch("/api/events", {
+          headers: { Authorization: `Bearer ${idToken}` },
+        });
+        if (!res.ok || cancelled) return;
+        const data = await res.json() as { events: ApiEvent[] };
+        if (!cancelled) setEvents(data.events);
+      } catch (err) {
+        console.error("[dashboard] fetchEvents error:", err);
+      } finally {
+        if (!cancelled) setEventsLoading(false);
+      }
+    }
+
     setEventsLoading(true);
-    return subscribeToHostEvents(user.uid, (evts) => {
-      setEvents(evts);
-      setEventsLoading(false);
-    });
+    fetchEvents();
+
+    function onVisibility() {
+      if (!document.hidden) fetchEvents();
+    }
+    document.addEventListener("visibilitychange", onVisibility);
+
+    return () => {
+      cancelled = true;
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
   }, [user]);
 
   if (!isFirebaseConfigured) {
@@ -146,7 +175,7 @@ export default function DashboardPage() {
                     {event.title}
                   </span>
                   <span className="text-xs text-muted">
-                    {event.date?.toDate().toLocaleDateString("ko-KR")}
+                    {event.date ? new Date(event.date).toLocaleDateString("ko-KR") : ""}
                     {" · "}
                     {planLabels[event.plan]}
                   </span>
