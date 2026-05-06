@@ -18,15 +18,11 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "NOT_CONFIGURED" }, { status: 503 });
   }
 
-  const body = await request.json() as {
-    eventId?: string;
-    s3Keys?: string[];
-    eventTitle?: string;
-  };
-  const { eventId, s3Keys, eventTitle } = body;
+  const body = await request.json() as { eventId?: string };
+  const { eventId } = body;
 
-  if (!eventId || !Array.isArray(s3Keys) || s3Keys.length === 0) {
-    return Response.json({ error: "INVALID_PARAMS" }, { status: 400 });
+  if (!eventId) {
+    return Response.json({ error: "EVENT_ID_REQUIRED" }, { status: 400 });
   }
 
   let uid: string;
@@ -49,6 +45,14 @@ export async function POST(request: NextRequest) {
   if (eventData.hostId !== uid) {
     return Response.json({ error: "FORBIDDEN" }, { status: 403 });
   }
+
+  const clipsSnap = await db.collection("clips").where("eventId", "==", eventId).get();
+
+  if (clipsSnap.empty) {
+    return Response.json({ error: "NO_CLIPS" }, { status: 400 });
+  }
+
+  const s3Keys = clipsSnap.docs.map((d) => d.data().s3Key as string);
 
   const s3 = new S3Client({
     region: process.env.AWS_REGION!,
@@ -105,7 +109,7 @@ export async function POST(request: NextRequest) {
     const dashboardUrl = `${origin}/dashboard/events/${eventId}`;
     await notifyRenderStarted({
       eventId,
-      title: eventData.title ?? eventTitle ?? eventId,
+      title: eventData.title as string,
       clipCount: s3Keys.length,
       renderEstimateMin,
       organizerEmail: eventData.organizerEmail,

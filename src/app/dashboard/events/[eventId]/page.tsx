@@ -228,11 +228,7 @@ export default function EventDetailPage() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${idToken}`,
           },
-          body: JSON.stringify({
-            eventId,
-            s3Keys: clips.map((c) => c.s3Key),
-            eventTitle: event.title,
-          }),
+          body: JSON.stringify({ eventId }),
         });
       }
 
