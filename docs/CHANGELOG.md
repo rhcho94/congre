@@ -4,6 +4,7 @@
 
 ## 2026-05-06
 
+- chore(security): Firestore rules 잠금 — events read if false, clips read/create if false (Admin SDK 전용, Client SDK read 의존 제거 완료) (Phase B-3 2단계 커밋 4)
 - refactor(dashboard): 실시간 구독 3개 → polling/단발 fetch — Client SDK Firestore read 의존 제거, Timestamp ms 기반, 탭 숨김 시 polling 중단 (Phase B-3 2단계 커밋 3-2)
 - refactor(api): /api/render/start eventId 기반 — 서버에서 clips 직접 read, body { eventId }만, 빈 clips 가드 (Phase B-3 2단계 커밋 3-1)
 - feat(api): GET /api/host/events/[eventId] + /api/host/clips — 호스트 전용 polling route, Bearer 토큰 인증, hostId 소유권 검증 (Phase B-3 2단계 커밋 2)

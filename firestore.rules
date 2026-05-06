@@ -3,17 +3,16 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     match /events/{eventId} {
-      allow read: if request.auth != null;
+      allow read: if false;
       allow create: if request.auth != null;
       allow update: if request.auth != null && request.auth.uid == resource.data.hostId;
     }
 
     match /clips/{clipId} {
-      allow create: if true;
-      allow read, update, delete: if request.auth != null;
+      allow read, create: if false;
+      allow update, delete: if request.auth != null;
     }
 
-    // admin SDK only — 클라이언트 접근 명시적 차단
     match /notifications/{any} {
       allow read, write: if false;
     }
