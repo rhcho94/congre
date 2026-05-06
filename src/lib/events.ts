@@ -30,7 +30,7 @@ export interface Clip {
   eventId: string;
   s3Key: string;
   uploadedAt: Timestamp;
-  sessionToken: string;
+  sessionToken?: string;
 }
 
 export async function createEvent(input: {
@@ -140,21 +140,4 @@ export function subscribeToClips(
     },
     onError
   );
-}
-
-export async function saveClipMetadata(data: {
-  eventId: string;
-  s3Key: string;
-  sessionToken: string;
-}): Promise<void> {
-  if (!isFirebaseConfigured) return;
-  const db = getFirebaseFirestore();
-  console.log("[saveClipMetadata] addDoc 시작 →", { eventId: data.eventId, s3Key: data.s3Key });
-  const clipRef = await addDoc(collection(db, "clips"), {
-    eventId: data.eventId,
-    s3Key: data.s3Key,
-    sessionToken: data.sessionToken,
-    uploadedAt: serverTimestamp(),
-  });
-  console.log("[saveClipMetadata] clips 저장 성공 →", clipRef.id);
 }

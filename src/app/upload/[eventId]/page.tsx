@@ -5,7 +5,6 @@ import Link from "next/link";
 import { BrandName } from "@/components/BrandName";
 import { useParams, useSearchParams } from "next/navigation";
 import { checkS3, getPresignedUrl, uploadToS3 } from "@/lib/s3";
-import { saveClipMetadata } from "@/lib/events";
 import CongreBadge from "@/components/CongreBadge";
 
 // "standby" = 카메라 켜진 미리보기 (녹화 전)
@@ -235,13 +234,17 @@ function UploadInner() {
     await uploadToS3(url, blob, mimeType, setProgress);
     console.log(`[upload] S3 PUT success`);
 
-    // Firestore 저장은 best-effort — 실패·타임아웃해도 done 전환 막지 않음
-    const clipSave = saveClipMetadata({ eventId, s3Key: key, sessionToken: urlToken });
-    const clipTimeout = new Promise<void>((_, reject) =>
-      setTimeout(() => reject(new Error("firestore_timeout")), 5000)
+    // 클립 메타데이터 저장 best-effort — 실패·타임아웃해도 done 전환 막지 않음
+    const clipSave = fetch("/api/clips", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ eventId, s3Key: key, token: urlToken }),
+    });
+    const clipTimeout = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("clip_save_timeout")), 5000)
     );
     await Promise.race([clipSave, clipTimeout]).catch((err) => {
-      console.error("[firestore] saveClipMetadata skipped:", err?.message ?? err);
+      console.error("[clip] save skipped:", err?.message ?? err);
     });
   }
 
