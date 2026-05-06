@@ -1,5 +1,5 @@
 import {
-  collection, addDoc, doc, getDoc, updateDoc, onSnapshot,
+  collection, addDoc, doc, updateDoc, onSnapshot,
   query, where, serverTimestamp, Timestamp,
 } from "firebase/firestore";
 import { getFirebaseFirestore, isFirebaseConfigured } from "./firebase";
@@ -53,14 +53,6 @@ export async function createEvent(input: {
     createdAt: serverTimestamp(),
   });
   return { eventId: ref.id, sessionToken };
-}
-
-export async function getEvent(eventId: string): Promise<CongreEvent | null> {
-  if (!isFirebaseConfigured) return null;
-  const db = getFirebaseFirestore();
-  const snap = await getDoc(doc(db, "events", eventId));
-  if (!snap.exists()) return null;
-  return { id: snap.id, ...snap.data() } as CongreEvent;
 }
 
 

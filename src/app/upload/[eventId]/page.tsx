@@ -5,8 +5,7 @@ import Link from "next/link";
 import { BrandName } from "@/components/BrandName";
 import { useParams, useSearchParams } from "next/navigation";
 import { checkS3, getPresignedUrl, uploadToS3 } from "@/lib/s3";
-import { getEvent, saveClipMetadata, CongreEvent } from "@/lib/events";
-import { isFirebaseConfigured } from "@/lib/firebase";
+import { saveClipMetadata } from "@/lib/events";
 import CongreBadge from "@/components/CongreBadge";
 
 // "standby" = 카메라 켜진 미리보기 (녹화 전)
@@ -21,7 +20,7 @@ function UploadInner() {
   const urlToken = searchParams.get("token") ?? "";
 
   const [stage, setStage] = useState<Stage>("verifying");
-  const [event, setEvent] = useState<CongreEvent | null>(null);
+  const [event, setEvent] = useState<{ id: string; title: string } | null>(null);
   const [timer, setTimer] = useState(0);
   const [progress, setProgress] = useState(0);
   const [retryNum, setRetryNum] = useState(0);
@@ -40,21 +39,22 @@ function UploadInner() {
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const previewUrlRef = useRef<string>("");
 
-  // Verify token against Firestore
+  // Verify token via server API (sessionToken never sent to client)
   useEffect(() => {
     let isMounted = true;
     async function verify() {
-      if (!isFirebaseConfigured || !urlToken) {
+      if (!urlToken) {
         if (isMounted) setStage("invalid");
         return;
       }
       try {
-        const evt = await getEvent(eventId);
+        const res = await fetch(`/api/events/${eventId}?token=${encodeURIComponent(urlToken)}`);
         if (!isMounted) return;
-        if (!evt || evt.sessionToken === null || evt.sessionToken !== urlToken) {
+        if (!res.ok) {
           setStage("invalid");
           return;
         }
+        const evt = await res.json() as { id: string; title: string };
         setEvent(evt);
         setStage("idle");
       } catch {
