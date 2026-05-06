@@ -73,6 +73,19 @@
 
 - **청첩장 글로벌 B2B 전략 검토** (별도 세션)
 
+## 약한 고리 (2026-05-06 재평가 — 1순위 시장 학교 졸업식 반영)
+
+우선순위 순:
+
+1. **Firestore 보안 — 미성년자 데이터** (Phase B로 분리, 작업 진입 대기). `events` 컬렉션 `allow read: if true`로 sessionToken·organizerEmail·organizerPhone 노출. 학생 영상이 미성년자 개인정보라 격상.
+2. **알림 도달성 — 네이버 메일 미해결** (handoff 2026-05-05-evening 별도 작업 후보). 학부모·교사 사용자 비율 높아 격상. SPF/DKIM 인증 점검 필요.
+3. **cron 신뢰성 — webhook 도입 후보** (신규). GitHub Actions runner 할당 지연으로 "렌더 끝났는데 알림 늦음" 발생. 표준 답은 **Shotstack webhook 도입 + 현재 cron을 fallback으로**. 작업 1단계: Shotstack webhook 지원 여부 docs 확인.
+4. ~~단일 편집 엔진 의존~~ → 약점이 아닌 비즈니스 leverage로 재평가. "시장에서 커지면 Shotstack에 한국 시장 패키지 협상" (DECISIONS 시장 정의 참조).
+
+## 다음 작업 후보 (시장 정의 후 추가)
+
+- **클립 제외 기능**: 행사 주최자가 부적절한 클립을 전체 편집에서 제외. 미성년자 영상 맥락에선 "본인 동의 철회권" 측면도 있어 권한 모델 설계 필요. 시점(렌더 전 vs 후) 트레이드오프 검토 필요.
+
 ## 알려진 이슈
 
 상세 추적은 [`known-issues.md`](./known-issues.md) 참조.
