@@ -2,6 +2,20 @@
 
 > 새 결정은 위로 추가 (최신이 위). 형식: 날짜 / 결정 / 이유 / 대안.
 
+## 2026-05-07 — Cron 이전: GitHub Actions → Vercel Cron, Pro 업그레이드
+
+- **결정**: GitHub Actions schedule cron을 폐기하고 Vercel Cron으로 이전. Vercel Pro 플랜으로 업그레이드 ($20/월).
+- **이유**:
+  - GitHub Actions free tier에서 `*/5 * * * *` 스케줄이 실측 평균 5시간 간격으로 실행됨 (8시간 동안 12회, 60배 부족). 추가로 runner 할당 실패("The job was not acquired by Runner of type hosted") 발생.
+  - render_delayed 정책의 T+E+30분 비가역 임계값은 분 단위 정밀도 필요. 5시간 간격 cron으로는 임계값 자체가 무의미.
+  - DECISIONS 2026-05-06 "무료 티어 한계 시 유료 플랜" 정책 적용. 우회 검토 0회.
+- **대안 검토**:
+  - Shotstack webhook 도입 (cron 유지): 시간 카운트(render_delayed)는 webhook으로 못 함. 보완재이지 대체재 아님.
+  - 외부 cron 서비스 (cron-job.org 등): 운영 책임 분산, 1인 비개발자에게 트레이드오프 나쁨.
+  - cron 간격 매시간으로 변경: render_delayed 정책 후퇴.
+- **인증**: Vercel Cron이 호출 시 `Authorization: Bearer ${CRON_SECRET}` 헤더 자동 주입. 라우트 코드 수정 불필요.
+- **정리**: GitHub Actions 워크플로 yml 2개 삭제. GitHub Secrets (APP_URL, CRON_SECRET)는 사용자가 GitHub UI에서 별도 삭제.
+
 ## 2026-05-06 — Phase B-3 2단계 완료: events/clips Admin SDK 전용 전환
 
 - **결정**: 대시보드의 Client SDK 실시간 구독 3개(subscribeToHostEvents, subscribeToEvent, subscribeToClips)를 서버 API polling으로 전환. Firestore rules에서 events/clips의 read를 `if false`로 잠금하여 Admin SDK 전용 경로로 통일. 권한 종류가 다른 라우트는 `/api/host/...` prefix로 분리.

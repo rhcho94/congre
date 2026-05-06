@@ -79,7 +79,7 @@
 
 1. ~~**Firestore 보안 — 미성년자 데이터** (Phase B로 분리, 작업 진입 대기). `events` 컬렉션 `allow read: if true`로 sessionToken·organizerEmail·organizerPhone 노출. 학생 영상이 미성년자 개인정보라 격상.~~ → Phase B-3 완료 (2026-05-06)
 2. **알림 도달성 — 네이버 메일 미해결** (handoff 2026-05-05-evening 별도 작업 후보). 학부모·교사 사용자 비율 높아 격상. SPF/DKIM 인증 점검 필요.
-3. **cron 신뢰성 — webhook 도입 후보** (신규). GitHub Actions runner 할당 지연으로 "렌더 끝났는데 알림 늦음" 발생. 표준 답은 **Shotstack webhook 도입 + 현재 cron을 fallback으로**. 작업 1단계: Shotstack webhook 지원 여부 docs 확인.
+3. ~~**cron 신뢰성 — webhook 도입 후보** (신규). GitHub Actions runner 할당 지연으로 "렌더 끝났는데 알림 늦음" 발생. 표준 답은 **Shotstack webhook 도입 + 현재 cron을 fallback으로**. 작업 1단계: Shotstack webhook 지원 여부 docs 확인.~~ → Vercel Cron 이전으로 해결 (2026-05-07)
 4. ~~단일 편집 엔진 의존~~ → 약점이 아닌 비즈니스 leverage로 재평가. "시장에서 커지면 Shotstack에 한국 시장 패키지 협상" (DECISIONS 시장 정의 참조).
 
 ## 다음 작업 후보 (시장 정의 후 추가)
