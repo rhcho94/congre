@@ -77,7 +77,7 @@
 
 우선순위 순:
 
-1. **Firestore 보안 — 미성년자 데이터** (Phase B로 분리, 작업 진입 대기). `events` 컬렉션 `allow read: if true`로 sessionToken·organizerEmail·organizerPhone 노출. 학생 영상이 미성년자 개인정보라 격상.
+1. ~~**Firestore 보안 — 미성년자 데이터** (Phase B로 분리, 작업 진입 대기). `events` 컬렉션 `allow read: if true`로 sessionToken·organizerEmail·organizerPhone 노출. 학생 영상이 미성년자 개인정보라 격상.~~ → Phase B-3 완료 (2026-05-06)
 2. **알림 도달성 — 네이버 메일 미해결** (handoff 2026-05-05-evening 별도 작업 후보). 학부모·교사 사용자 비율 높아 격상. SPF/DKIM 인증 점검 필요.
 3. **cron 신뢰성 — webhook 도입 후보** (신규). GitHub Actions runner 할당 지연으로 "렌더 끝났는데 알림 늦음" 발생. 표준 답은 **Shotstack webhook 도입 + 현재 cron을 fallback으로**. 작업 1단계: Shotstack webhook 지원 여부 docs 확인.
 4. ~~단일 편집 엔진 의존~~ → 약점이 아닌 비즈니스 leverage로 재평가. "시장에서 커지면 Shotstack에 한국 시장 패키지 협상" (DECISIONS 시장 정의 참조).
@@ -86,8 +86,6 @@
 
 - **클립 제외 기능**: 행사 주최자가 부적절한 클립을 전체 편집에서 제외. 미성년자 영상 맥락에선 "본인 동의 철회권" 측면도 있어 권한 모델 설계 필요. 시점(렌더 전 vs 후) 트레이드오프 검토 필요.
 - **s3Key 바꿔치기 방어** (Phase B-2 정찰 시 발견): presign 서버가 발급한 s3Key를 클라이언트가 임의 키로 바꿔 saveClipMetadata 호출 가능. 방어 방법은 presign 발급 시 서버가 (token, key) 페어를 Firestore에 임시 기록 → 클립 저장 시 대조. 위협 모델(공격자 이익) 정의 후 진입.
-- **subscribeToClips 서버 이전** (Phase B-3 범위): 대시보드의 클립 실시간 구독을 Client SDK에서 서버 API로 이전. clips 컬렉션 read 권한 잠금 전제 작업.
-- **subscribeToEvent / subscribeToHostEvents 서버 이전** (Phase B-3 범위): 대시보드의 이벤트 실시간 구독 2개를 Client SDK에서 서버로 이전. events 컬렉션 read 권한 완전 잠금 전제 작업.
 
 ## 알려진 이슈
 

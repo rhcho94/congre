@@ -90,3 +90,4 @@ npx firebase emulators:start --only firestore
 - 알림 시스템 (Resend 이메일 + SOLAPI SMS, 채널 어댑터 패턴, notifications 컬렉션 이력 저장)
   - 트리거 연결 5건: 이벤트 생성, 렌더 시작, 렌더 완료, 렌더 지연(10분 초과), 렌더 실패
   - 함수만 구현 2건: 첫 클립 업로드, 참가자 결과 (다음 PR에서 트리거 연결)
+- Firestore 보안: events/clips Admin SDK 전용 (Client SDK read 잠금, Phase B-3 완료 2026-05-06)

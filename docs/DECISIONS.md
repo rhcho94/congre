@@ -2,6 +2,18 @@
 
 > 새 결정은 위로 추가 (최신이 위). 형식: 날짜 / 결정 / 이유 / 대안.
 
+## 2026-05-06 — Phase B-3 2단계 완료: events/clips Admin SDK 전용 전환
+
+- **결정**: 대시보드의 Client SDK 실시간 구독 3개(subscribeToHostEvents, subscribeToEvent, subscribeToClips)를 서버 API polling으로 전환. Firestore rules에서 events/clips의 read를 `if false`로 잠금하여 Admin SDK 전용 경로로 통일. 권한 종류가 다른 라우트는 `/api/host/...` prefix로 분리.
+- **이유**:
+  - PII(sessionToken, organizerEmail 등) 노출을 클라이언트 SDK 의존에서 분리해 서버에서만 필터링 가능.
+  - 인증 종류가 다른 케이스(호스트 Bearer vs 참가자 token)는 endpoint를 분리하는 게 OWASP 권장. 한 endpoint에서 인증 종류 분기 시 PII 노출 분기 사고 위험.
+  - Polling 5초 + 탭 숨김 시 중단 + visibilitychange 복귀 시 재시작으로 실시간성 큰 손실 없이 보안 표면 축소.
+- **대안 검토**:
+  - SSE: Vercel 함수 800s 한도 + 재연결 루프 부담 + Vercel docs 권장 사용처 아님 → 기각.
+  - 한 endpoint에서 Bearer 유무로 분기 (B 옵션): 분기 실수 시 PII 노출 사고 위험 → 기각.
+- **관련 커밋**: 40bc970 (GET /api/events), 0a501b7 (/api/host/events/[eventId] + /api/host/clips), de6551b (/api/render/start eventId 기반), a701572 (대시보드 polling 전환), b2f618d (firestore.rules 잠금 + production 배포).
+
 ## 2026-05-06 — 1순위 시장 정의: 학교 졸업식 / 1인칭 짧은 인터뷰
 
 - **결정**: congre의 1순위 시장은 초·중·고 졸업식. 핵심 사용 패턴은 "학생 본인이 폰으로 자기 졸업 소감을 짧게 찍은 클립을 30~100명분 모아 자동 편집".
