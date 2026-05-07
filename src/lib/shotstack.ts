@@ -102,6 +102,7 @@ export async function createRender(
 
   if (!res.ok) {
     const text = await res.text();
+    console.error("[shotstack] non-OK response:", res.status, text);
     throw new Error(`shotstack_create:${res.status} ${text.slice(0, 200)}`);
   }
 
