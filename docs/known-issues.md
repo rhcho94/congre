@@ -90,3 +90,24 @@
   - 영상 보존 기간 (학교 기록물 관리 규정 적용 가능성)
 - **우선순위**: 시장 진입 결정 시점 전 법무 검토 필수. 운영자 1인 비개발자 상황에서 기술 사고보다 법무 리스크가 큼.
 - **현재 처리**: 미정. 결정 시 DECISIONS.md에 추가 예정.
+
+## ✅ Shotstack rich-text 'Unknown property width/height' 400 에러 [RESOLVED 2026-05-08 / 37afdb8]
+
+- **해결**: `makeTextClip`의 asset 객체에서 `width: 1080`, `height: 1920` 필드 제거. rich-text asset은 이 필드를 지원하지 않음. 해상도는 `output.size`에서 결정.
+- **현상**: render/start → Shotstack POST → 400 "Validation failed — Found 2 validation errors: Unknown property 'width', Unknown property 'height'"
+- **원인**: rich-text asset 스키마를 학습 데이터 기반으로 추정해 video asset과 혼용. WebFetch spec 실측 없이 구현.
+- **학습**: Shotstack 필드 추가 전 공식 문서 실측 필수 (DECISIONS 2026-05-08 참조).
+
+## Shotstack console.error 디버그 로그 영구 보존 (메모)
+
+- **현황**: `shotstack.ts` createRender의 non-OK 분기에 `console.error("[shotstack] non-OK response:", res.status, text)` 영구 보존 확정 (DECISIONS 2026-05-08).
+- **위치**: `src/lib/shotstack.ts` — `if (!res.ok)` 블록
+- **이유**: Vercel 서버 로그가 유일한 원격 디버깅 채널. throw 전 전체 응답 본문 출력이 진단에 결정적이었음 (width/height 오류 발견).
+- **운영 메모**: 프로덕션에서 Shotstack API 스키마 변경/오류 발생 시 Vercel 로그 → Functions 탭 → "non-OK response" 검색으로 바로 확인 가능.
+
+## 인트로/아웃트로 편집 UI 미존재 — 이미 생성된 이벤트 수정 불가
+
+- **현상**: 이벤트 생성 시 입력한 인트로/아웃트로 텍스트를 생성 후 수정하는 UI 없음. 잘못 입력했거나 변경하려면 Firestore 직접 수정 필요.
+- **위치**: `src/app/dashboard/events/[eventId]/page.tsx` — 이벤트 상세 대시보드에 편집 폼 없음
+- **우선순위**: 미정. 필드 테스트에서 수정 요구 발생 시 구현 검토.
+- **임시 대응**: Firestore 콘솔에서 `events/{eventId}` 문서의 `introText`/`outroText` 필드 직접 수정.

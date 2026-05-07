@@ -2,7 +2,7 @@
 
 ## 진행 중
 
-특별히 진행 중인 작업 없음. 다음 작업 후보 참조.
+특별히 진행 중인 작업 없음. 한글 인트로/아웃트로 (E) 완료로 필드 테스트 진입 준비 완료. 다음 작업 후보 참조.
 
 ## 다음 작업 후보
 
@@ -78,7 +78,7 @@
 우선순위 순:
 
 1. ~~**Firestore 보안 — 미성년자 데이터** (Phase B로 분리, 작업 진입 대기). `events` 컬렉션 `allow read: if true`로 sessionToken·organizerEmail·organizerPhone 노출. 학생 영상이 미성년자 개인정보라 격상.~~ → Phase B-3 완료 (2026-05-06)
-2. **알림 도달성 — 네이버 메일 미해결** (handoff 2026-05-05-evening 별도 작업 후보). 학부모·교사 사용자 비율 높아 격상. SPF/DKIM 인증 점검 필요.
+2. **알림 도달성 — 네이버 메일** (1차 점검 완료, 보류). 2026-05-08 실측: 받은편지함 정상 도달, 경고 배너 없음. 잠재 리스크(From/SPF 도메인 mismatch) 잔존. 트리거: known-issues.md "네이버 메일 도달성" 참조.
 3. ~~**cron 신뢰성 — webhook 도입 후보** (신규). GitHub Actions runner 할당 지연으로 "렌더 끝났는데 알림 늦음" 발생. 표준 답은 **Shotstack webhook 도입 + 현재 cron을 fallback으로**. 작업 1단계: Shotstack webhook 지원 여부 docs 확인.~~ → Vercel Cron 이전으로 해결 (2026-05-07)
 4. ~~단일 편집 엔진 의존~~ → 약점이 아닌 비즈니스 leverage로 재평가. "시장에서 커지면 Shotstack에 한국 시장 패키지 협상" (DECISIONS 시장 정의 참조).
 
@@ -86,7 +86,8 @@
 
 - ~~**클립 제외 기능 (B)**~~: 완료 (2026-05-08 / PATCH /api/clips/[clipId], render/start JS 필터, 대시보드 토글 버튼).
 - **s3Key 바꿔치기 방어** (Phase B-2 정찰 시 발견): presign 서버가 발급한 s3Key를 클라이언트가 임의 키로 바꿔 saveClipMetadata 호출 가능. 방어 방법은 presign 발급 시 서버가 (token, key) 페어를 Firestore에 임시 기록 → 클립 저장 시 대조. 위협 모델(공격자 이익) 정의 후 진입. 서비스 모델(기념품·단기 데이터) 근거로 필드 테스트 후 판단.
-- **한글 인트로/아웃트로 (E)**: B 완료 후 진행 예정. 필드 테스트 진입 전 마지막 큰 작업.
+- ~~**한글 인트로/아웃트로 (E)**~~: 완료 (2026-05-08). 갈래 1~4: NotoSansKR TTF 호스팅, 이벤트 생성 폼 UI+API, Shotstack rich-text 파이프라인.
+- **→ 필드 테스트 진입 준비 완료**: 실제 행사에서 운영. 관찰 포인트: 인트로/아웃트로 UX, Shotstack 한글 렌더 품질, 알림 도달성 실사용 데이터 수집.
 
 ## 알려진 이슈
 

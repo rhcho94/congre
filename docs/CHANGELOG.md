@@ -2,6 +2,12 @@
 
 > 기능 단위 작업 이력. 최신이 위.
 
+## 2026-05-08 — 한글 인트로/아웃트로 기능 추가
+
+- feat(fonts): NotoSansKR-Regular.ttf 추가 — /public/fonts/ 호스팅, Shotstack rich-text 폰트 소스 (SIL OFL)
+- feat: 한글 인트로/아웃트로 입력 UI + API — 이벤트 생성 폼 필드 추가, POST /api/events 저장, CongreEvent 데이터 모델 introText/outroText 추가
+- feat(shotstack): rich-text 클립 렌더 파이프라인 연결 — createRender에 인트로(start:0)/아웃트로(start:auto) rich-text clip + timeline.fonts 주입; fix: width/height 미지원 필드 제거 (37afdb8)
+
 ## 2026-05-08
 
 - feat: [영상 생성 다시 시작] 버튼 — 마감 후 클립 제외 해제하고 재시도 가능 (행사 당일 클립 복구 경로)

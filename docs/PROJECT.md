@@ -30,7 +30,8 @@ npx firebase emulators:start --only firestore
 - Next.js (TypeScript, App Router)
 - Firebase Auth + Firestore (project: congre-mvp)
 - AWS S3 (bucket: congre-mvp-videos)
-- Shotstack (AI 영상 편집) — production 키 적용
+- Shotstack (AI 영상 편집) — production 키 적용. rich-text asset으로 한글 인트로/아웃트로 렌더.
+- `public/fonts/NotoSansKR-Regular.ttf` — 한글 렌더링용 커스텀 TTF (SIL OFL). Shotstack `timeline.fonts` 소스.
 - Vercel 배포
 - Tailwind v4 (config 파일 없이 @import 방식)
 
@@ -66,6 +67,7 @@ npx firebase emulators:start --only firestore
 |---|---|---|
 | SHOTSTACK_API_KEY | production 키 | stage 키 |
 | SHOTSTACK_ENV | production | stage |
+| NEXT_PUBLIC_APP_URL | https://congre-three.vercel.app | https://congre-three.vercel.app |
 
 (Firebase, AWS 관련 환경변수는 Vercel 대시보드 참조)
 
@@ -91,3 +93,4 @@ npx firebase emulators:start --only firestore
   - 트리거 연결 5건: 이벤트 생성, 렌더 시작, 렌더 완료, 렌더 지연(10분 초과), 렌더 실패
   - 함수만 구현 2건: 첫 클립 업로드, 참가자 결과 (다음 PR에서 트리거 연결)
 - Firestore 보안: events/clips Admin SDK 전용 (Client SDK read 잠금, Phase B-3 완료 2026-05-06)
+- 한글 인트로/아웃트로 (이벤트 생성 폼 입력 → Firestore 저장 → Shotstack rich-text 클립 삽입, NotoSansKR TTF 호스팅)

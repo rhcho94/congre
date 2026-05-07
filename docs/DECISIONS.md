@@ -2,6 +2,32 @@
 
 > 새 결정은 위로 추가 (최신이 위). 형식: 날짜 / 결정 / 이유 / 대안.
 
+## 2026-05-08 — 갈래 패턴: 정찰 → 코드 커밋 → 문서 커밋
+
+- **결정**: 큰 기능은 갈래로 분리. 각 갈래: 정찰(코드 변경 없음) → 코드 atomic 커밋 → 다음 갈래 정찰... → 완료 후 문서 갱신 atomic 커밋 1개.
+- **이유**: 정찰이 실행 범위를 결정하므로 선행 필요. 문서는 완료된 사실을 기록하므로 코드 후행. 중간 문서 갱신은 미완성 상태를 기록하게 되어 혼란 유발.
+- **적용**: 인트로/아웃트로 작업이 초안 — 갈래 1(폰트) → 갈래 2(UI/API) → 갈래 3(Shotstack 연결 + 디버그 + 미세 수정) → 갈래 4(문서) 순서.
+
+## 2026-05-08 — Shotstack 필드 추가 전 공식 문서 WebFetch 선행
+
+- **결정**: Shotstack API 필드 추가·변경 전 WebFetch로 공식 문서(또는 OpenAPI spec) 실측 후 구현. 학습 데이터 기반 필드 추정 금지.
+- **이유**: `width`/`height` 필드를 rich-text asset에 추가했다가 "Unknown property" 400 에러 (commit 37afdb8에서 제거). Shotstack 학습 데이터가 실제 현행 스키마와 불일치함 확인.
+- **적용**: Shotstack 필드 추가·변경 작업 시 → spec 실측 → 구현. 런타임 에러 발생 시에도 동일하게 spec 실측 우선.
+
+## 2026-05-08 — Shotstack rich-text asset 채택, timeline fonts 주입, length 3초 고정
+
+- **결정**: 한글 인트로/아웃트로 클립에 HtmlAsset 대신 `rich-text` asset 사용. 커스텀 폰트는 `timeline.fonts: [{ src: ... }]`로 주입. 클립 `length: 3` 고정 (auto length 미검증).
+- **필드 주의사항**: `align.vertical`은 `"middle"` ("center" 아님 — top/middle/bottom). `width`/`height` 필드 없음 (해상도는 output.size에서 결정).
+- **이유**: WebFetch로 Shotstack 공식 문서 실측. rich-text가 단순 텍스트·배경·폰트 조합에 더 간단한 API. HtmlAsset은 스키마 불명확하고 자유도만 높아 사고 확률 높음.
+- **폰트 URL**: `${NEXT_PUBLIC_APP_URL}/fonts/NotoSansKR-Regular.ttf`. 인트로/아웃트로 없는 이벤트는 fonts 주입 건너뜀.
+- **대안**: HtmlAsset + `<style>@font-face{...}</style>` 인라인 — 복잡도 높음, 검증된 예시 없음 → 기각.
+
+## 2026-05-08 — Shotstack non-OK 응답 console.error 영구 보존
+
+- **결정**: `shotstack.ts` `createRender`의 non-OK 분기에 `console.error("[shotstack] non-OK response:", res.status, text)` 영구 보존. 진단용 임시 추가 아닌 운영 코드로 확정.
+- **이유**: Vercel 서버 로그는 배포 환경에서 운영자가 접근할 수 있는 유일한 원격 디버깅 채널. 400 에러 text를 200자 슬라이스로만 throw하면 로그에서 원인 파악 불가. console.error는 클라이언트에 노출되지 않으므로 보안 비용 없음.
+- **대안**: 에러 throw만 유지, console.error 제거 — Shotstack API 스키마 변경/신규 필드 오류 재발 시 원격 진단 불가 → 기각.
+
 ## 2026-05-08 — 마감 후 렌더 재시도 경로 도입
 
 - **결정**: 대시보드에 [영상 생성 다시 시작] 버튼 추가. 노출 조건 `event.status === "closed" && clips.length > 0`. 버튼 클릭 시 기존 render/start 재호출. 서버 라우트는 status 체크 없이 진행되므로 수정 불필요.
