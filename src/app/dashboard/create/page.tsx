@@ -29,6 +29,8 @@ export default function CreateEventPage() {
     plan: "free" as EventPlan,
     organizerEmail: "",
     organizerPhone: "",
+    introText: "",
+    outroText: "",
   });
   const [submitting, setSubmitting] = useState(false);
   const [createdEventId, setCreatedEventId] = useState("");
@@ -70,6 +72,8 @@ export default function CreateEventPage() {
           plan: form.plan,
           organizerEmail: form.organizerEmail,
           organizerPhone: form.organizerPhone,
+          ...(form.introText.trim() ? { introText: form.introText.trim() } : {}),
+          ...(form.outroText.trim() ? { outroText: form.outroText.trim() } : {}),
         }),
       });
 
@@ -244,6 +248,42 @@ export default function CreateEventPage() {
                       value={form.organizerPhone}
                       onChange={(e) => setForm({ ...form, organizerPhone: e.target.value })}
                       required
+                      disabled={submitting}
+                      className="bg-surface border border-border px-4 py-3 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-accent transition-colors duration-200 disabled:opacity-50"
+                    />
+                  </label>
+                </div>
+              </div>
+
+              <div className="pt-2 border-t border-border">
+                <p className="text-xs tracking-widest uppercase text-muted mb-4">영상 인트로/아웃트로 (선택)</p>
+                <div className="flex flex-col gap-4">
+                  <label className="flex flex-col gap-1.5">
+                    <span className="flex items-center justify-between">
+                      <span className="text-xs tracking-widest uppercase text-muted">인트로</span>
+                      <span className="text-xs text-muted">{form.introText.length} / 30</span>
+                    </span>
+                    <input
+                      type="text"
+                      placeholder="예) 2026 ○○초등학교 졸업식"
+                      value={form.introText}
+                      onChange={(e) => setForm({ ...form, introText: e.target.value })}
+                      maxLength={30}
+                      disabled={submitting}
+                      className="bg-surface border border-border px-4 py-3 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-accent transition-colors duration-200 disabled:opacity-50"
+                    />
+                  </label>
+                  <label className="flex flex-col gap-1.5">
+                    <span className="flex items-center justify-between">
+                      <span className="text-xs tracking-widest uppercase text-muted">아웃트로</span>
+                      <span className="text-xs text-muted">{form.outroText.length} / 30</span>
+                    </span>
+                    <input
+                      type="text"
+                      placeholder="예) 함께한 6년, 고마웠어요"
+                      value={form.outroText}
+                      onChange={(e) => setForm({ ...form, outroText: e.target.value })}
+                      maxLength={30}
                       disabled={submitting}
                       className="bg-surface border border-border px-4 py-3 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-accent transition-colors duration-200 disabled:opacity-50"
                     />

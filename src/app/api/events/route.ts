@@ -66,6 +66,8 @@ export async function POST(request: NextRequest) {
     plan?: string;
     organizerEmail?: string;
     organizerPhone?: string;
+    introText?: string;
+    outroText?: string;
   };
   const { title, date, plan, organizerEmail, organizerPhone } = body;
 
@@ -87,6 +89,8 @@ export async function POST(request: NextRequest) {
     createdAt: FieldValue.serverTimestamp(),
     organizerEmail,
     organizerPhone,
+    ...(body.introText !== undefined ? { introText: body.introText } : {}),
+    ...(body.outroText !== undefined ? { outroText: body.outroText } : {}),
   });
 
   const eventId = ref.id;
