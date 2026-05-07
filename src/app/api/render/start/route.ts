@@ -83,9 +83,12 @@ export async function POST(request: NextRequest) {
   console.log("[render/start] presigned URLs (24h):");
   s3Urls.forEach((url, i) => console.log(`  [${i}] ${url}`));
 
+  const introText = eventData.introText as string | undefined;
+  const outroText = eventData.outroText as string | undefined;
+
   let renderId: string;
   try {
-    renderId = await createRender(s3Urls);
+    renderId = await createRender(s3Urls, introText, outroText);
   } catch (err) {
     const msg = err instanceof Error ? err.message : "render_failed";
     return Response.json({ error: msg }, { status: 500 });

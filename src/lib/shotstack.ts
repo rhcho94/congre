@@ -30,10 +30,37 @@ function assertApiKey(): void {
   }
 }
 
+function makeTextClip(text: string, start: number | "auto") {
+  return {
+    asset: {
+      type: "rich-text",
+      text,
+      font: { family: "Noto Sans KR", size: 64, color: "#c8892c" },
+      background: { color: "#0c0b09" },
+      width: 1080,
+      height: 1920,
+      align: { horizontal: "center", vertical: "middle" },
+    },
+    start,
+    length: 3,
+  };
+}
+
 export async function createRender(
   s3Urls: string[],
+  introText?: string,
+  outroText?: string,
 ): Promise<string> {
   assertApiKey();
+
+  const hasIntroOutro = !!(introText || outroText);
+  let fontsSrc: string | undefined;
+  if (hasIntroOutro) {
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+    if (!appUrl) throw new Error("MISSING_APP_URL_FOR_INTRO_OUTRO");
+    fontsSrc = `${appUrl}/fonts/NotoSansKR-Regular.ttf`;
+  }
+
   // subscribeToClips가 uploadedAt 내림차순으로 전달하므로 뒤집어 오름차순(오래된 것 먼저) 배치.
   const videoClips = [...s3Urls].reverse().map((src) => ({
     asset: { type: "video", src },
@@ -42,11 +69,20 @@ export async function createRender(
     fit: "cover",
   }));
 
+  const allClips = [
+    ...(introText ? [makeTextClip(introText, 0)] : []),
+    ...videoClips,
+    ...(outroText ? [makeTextClip(outroText, "auto")] : []),
+  ];
+
+  const timeline = {
+    background: "#0c0b09",
+    tracks: [{ clips: allClips }],
+    ...(fontsSrc ? { fonts: [{ src: fontsSrc }] } : {}),
+  };
+
   const body = {
-    timeline: {
-      background: "#0c0b09",
-      tracks: [{ clips: videoClips }],
-    },
+    timeline,
     output: {
       format: "mp4",
       size: { width: 1080, height: 1920 },
