@@ -4,6 +4,7 @@
 
 ## 2026-05-08
 
+- fix: handleClose render/start 응답 미체크 silent fail 픽스 — 에러 코드별 사용자 메시지 분기
 - feat: 클립 제외/복원 기능 — 호스트 대시보드 토글 버튼, PATCH /api/clips/[clipId], render/start JS 필터, 제외 클립 시각적 dimming
 
 ## 2026-05-06

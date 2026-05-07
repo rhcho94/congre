@@ -1,5 +1,13 @@
 # Known Issues & Deferred Tasks
 
+## ✅ handleClose silent fail — render/start 응답 미체크 [RESOLVED 2026-05-08]
+
+- **해결**: handleClose의 render/start fetch 호출에 응답 코드 체크 추가. 에러 코드별 사용자 메시지 분기 (NO_CLIPS_AFTER_EXCLUSION, NO_CLIPS, NOT_CONFIGURED 등).
+- 위치: `src/app/dashboard/events/[eventId]/page.tsx` `handleClose`
+- 발견 경위: 클립 제외 기능 테스트 중 모든 클립을 제외한 채 마감 시도 → render/start가 400 NO_CLIPS_AFTER_EXCLUSION 반환했지만 클라이언트가 응답을 보지 않아 silent fail. event.status = "closed"이지만 renderStartedAt 미설정 상태로 정지.
+- 잠재성: 클립 제외 기능 도입 이전부터 존재한 버그. 503/500 등 다른 에러도 동일하게 silent fail이었음. 이번에 처음 표면화.
+- 운영 메모: 사고 발생한 어정쩡한 상태 이벤트(status=closed + renderStartedAt 없음)는 자동 복구 경로 없음. 발생 빈도 낮으므로 CS 채널(@congre 카카오톡)로 응대 후 Firestore 직접 정리.
+
 ## ✅ Phase 4 AI 렌더링 파이프라인 (완료)
 - S3 업로드 정상
 - Shotstack 렌더링 정상 (stage 환경, 워터마크 있음)

@@ -314,8 +314,7 @@ export default function EventDetailPage() {
       setShowCloseModal(false);
 
       if (clips.length > 0 && event) {
-        // render/start updates Firestore (status, renderId, deadlineAt) server-side
-        await fetch("/api/render/start", {
+        const renderRes = await fetch("/api/render/start", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -323,6 +322,24 @@ export default function EventDetailPage() {
           },
           body: JSON.stringify({ eventId }),
         });
+
+        if (!renderRes.ok) {
+          const body = await renderRes.json().catch(() => ({})) as { error?: string };
+          const code = body.error;
+
+          let message: string;
+          if (code === "NO_CLIPS_AFTER_EXCLUSION") {
+            message = "선택된 클립이 없어요. 제외를 해제한 뒤 페이지에서 다시 시도해주세요.";
+          } else if (code === "NO_CLIPS") {
+            message = "업로드된 클립이 없어요.";
+          } else if (code === "NOT_CONFIGURED") {
+            message = "서버 설정 오류로 영상 생성을 시작하지 못했어요. 운영자에게 문의해주세요.";
+          } else {
+            message = `영상 생성 시작에 실패했습니다 (${code ?? renderRes.status}). 운영자에게 문의해주세요.`;
+          }
+          alert(message);
+          return;
+        }
       }
 
     } catch {
