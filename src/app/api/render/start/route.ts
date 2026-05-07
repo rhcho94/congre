@@ -52,7 +52,13 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "NO_CLIPS" }, { status: 400 });
   }
 
-  const s3Keys = clipsSnap.docs.map((d) => d.data().s3Key as string);
+  const includedDocs = clipsSnap.docs.filter((d) => !d.data().excludedAt);
+
+  if (includedDocs.length === 0) {
+    return Response.json({ error: "NO_CLIPS_AFTER_EXCLUSION" }, { status: 400 });
+  }
+
+  const s3Keys = includedDocs.map((d) => d.data().s3Key as string);
 
   const s3 = new S3Client({
     region: process.env.AWS_REGION!,

@@ -39,6 +39,7 @@ export async function GET(request: NextRequest) {
           eventId: data.eventId as string,
           s3Key: data.s3Key as string,
           uploadedAt: tsToMs(data.uploadedAt),
+          excludedAt: tsToMs(data.excludedAt),
         };
       })
       .sort((a, b) => (b.uploadedAt ?? 0) - (a.uploadedAt ?? 0));

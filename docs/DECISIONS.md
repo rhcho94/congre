@@ -2,6 +2,19 @@
 
 > 새 결정은 위로 추가 (최신이 위). 형식: 날짜 / 결정 / 이유 / 대안.
 
+## 2026-05-08 — 클립 제외 기능: excludedAt Timestamp 필드, JS 필터, 양방향 토글
+
+- **결정**: 클립 제외 상태를 `clips.excludedAt: Timestamp | null` 필드로 관리. `render/start`에서 Firestore 조회 후 JS 필터(`!d.data().excludedAt`)로 적용. 주최자 대시보드 클립 행에 양방향 토글 버튼 (Eye/EyeOff 아이콘). 낙관적 업데이트 후 API 실패 시 롤백.
+- **이유**:
+  - Timestamp는 boolean 대비 언제 제외했는지 디버깅 정보를 보존. 미존재 필드(기존 클립)와 null(복원된 클립)을 동일하게 처리 가능.
+  - JS 필터: Firestore `where("excludedAt", "==", null)` 사용 시 `excludedAt` 필드 미존재 문서가 쿼리에서 누락됨 (Firestore 동작 특성). JS 필터는 이 사고를 원천 차단 + composite index 불필요.
+  - 양방향 토글: 제외 후 실수 복구 가능. 주최자 UX 안전.
+- **대안 검토**:
+  - `excluded: boolean` 필드: 시각 정보 없음. boolean → timestamp 마이그레이션은 정보가 없어 비용이 큰 반면 timestamp → boolean은 정보 줄이는 방향이라 거의 안 일어남. 비대칭 비용 → 기각.
+  - Firestore where 절 필터: 미존재 필드 사고 위험 + composite index 필요 → 기각.
+  - 단방향 삭제(Firestore doc delete): 실수 복구 불가 → 기각.
+- **전체 제외 가드**: JS 필터 후 0개면 `400 NO_CLIPS_AFTER_EXCLUSION`. 기존 `NO_CLIPS`(클립 자체 0개)와 에러 코드 구분.
+
 ## 2026-05-07 — 서비스 모델 정의: 비공식 기념품, 즉시 삭제 데이터 흐름
 
 - **결정**: congre는 학교·기업 등 주최 측이 공식적으로 발주하는 행사 솔루션이 아니라, 참가자들끼리 사적으로 기념하는 도구로 정의한다. 데이터는 인터넷 망에 영구 보존하지 않고 단기 처리 후 삭제한다.

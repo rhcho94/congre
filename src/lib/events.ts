@@ -31,6 +31,7 @@ export interface Clip {
   s3Key: string;
   uploadedAt: Timestamp;
   sessionToken?: string;
+  excludedAt?: Timestamp | null;
 }
 
 export async function createEvent(input: {

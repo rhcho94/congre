@@ -4,10 +4,10 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { QRCodeSVG, QRCodeCanvas } from "qrcode.react";
-import { Play, X, Loader2 } from "lucide-react";
+import { Play, X, Loader2, Eye, EyeOff } from "lucide-react";
 import { subscribeToAuthChanges, type User } from "@/lib/auth";
 import { isFirebaseConfigured, getFirebaseAuth } from "@/lib/firebase";
-import { getClipPlaybackUrl } from "@/lib/clip-playback";
+import { getClipPlaybackUrl, toggleClipExclusion } from "@/lib/clip-playback";
 import CongreBadge from "@/components/CongreBadge";
 import { BrandName } from "@/components/BrandName";
 
@@ -46,6 +46,7 @@ interface ApiClip {
   eventId: string;
   s3Key: string;
   uploadedAt: number | null;
+  excludedAt?: number | null;
 }
 
 function formatUploadTime(ts: number | null | undefined): string {
@@ -212,6 +213,18 @@ export default function EventDetailPage() {
       setPlaybackLoading(false);
     }
   }, [activeClipId]);
+
+  const handleToggleExclusion = useCallback(async (clip: ApiClip) => {
+    const newExcludedAt = clip.excludedAt ? null : Date.now();
+    setClips((prev) => prev.map((c) => c.id === clip.id ? { ...c, excludedAt: newExcludedAt } : c));
+    try {
+      await toggleClipExclusion(clip.id, !clip.excludedAt);
+    } catch (err) {
+      setClips((prev) => prev.map((c) => c.id === clip.id ? { ...c, excludedAt: clip.excludedAt } : c));
+      console.error("[toggleExclusion]", err);
+      alert("제외 상태 변경에 실패했습니다.");
+    }
+  }, []);
 
   // Kakao SDK 동적 로드
   useEffect(() => {
@@ -593,7 +606,7 @@ export default function EventDetailPage() {
               {clips.map((clip, i) => {
                 const isActive = activeClipId === clip.id;
                 return (
-                  <div key={clip.id} className="flex flex-col bg-surface">
+                  <div key={clip.id} className="flex flex-col bg-surface" style={clip.excludedAt ? { opacity: 0.45 } : {}}>
                     {/* 클립 행 */}
                     <div className="flex items-center justify-between px-5 py-4">
                       <span className="text-xs text-muted tabular-nums shrink-0">
@@ -605,6 +618,22 @@ export default function EventDetailPage() {
                       <span className="text-xs text-muted shrink-0 mr-3">
                         {formatUploadTime(clip.uploadedAt)}
                       </span>
+                      <button
+                        onClick={() => handleToggleExclusion(clip)}
+                        className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 border text-xs tracking-widest uppercase transition-all duration-200 mr-2"
+                        style={
+                          clip.excludedAt
+                            ? { borderColor: "#e05252", color: "#e05252" }
+                            : { borderColor: "var(--border)", color: "var(--muted)" }
+                        }
+                        aria-label={clip.excludedAt ? "복원" : "제외"}
+                      >
+                        {clip.excludedAt ? (
+                          <EyeOff size={11} strokeWidth={2} />
+                        ) : (
+                          <Eye size={11} strokeWidth={2} />
+                        )}
+                      </button>
                       <button
                         onClick={() => handlePlayClip(clip)}
                         className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 border text-xs tracking-widest uppercase transition-all duration-200"
