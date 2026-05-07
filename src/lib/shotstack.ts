@@ -37,8 +37,6 @@ function makeTextClip(text: string, start: number | "auto") {
       text,
       font: { family: "Noto Sans KR", size: 64, color: "#c8892c" },
       background: { color: "#0c0b09" },
-      width: 1080,
-      height: 1920,
       align: { horizontal: "center", vertical: "middle" },
     },
     start,
