@@ -111,3 +111,16 @@
 - **위치**: `src/app/dashboard/events/[eventId]/page.tsx` — 이벤트 상세 대시보드에 편집 폼 없음
 - **우선순위**: 미정. 필드 테스트에서 수정 요구 발생 시 구현 검토.
 - **임시 대응**: Firestore 콘솔에서 `events/{eventId}` 문서의 `introText`/`outroText` 필드 직접 수정.
+
+## 재렌더 UX 갭 — done 상태 버튼 미노출, 클립 토글 모달 없음
+
+- **현황**: 재렌더 버튼이 `status === "closed" && clips.length > 0` 조건에서만 노출 (정찰 B7). `status === "done"` 완성 후엔 안 보임. 클립 제외 토글 UI도 별도 섹션에 있어 재렌더 직전 토글 화면을 다시 보여주는 흐름 아님.
+- **위치**: `src/app/dashboard/events/[eventId]/page.tsx` — done 상태 블록, 재렌더 버튼 조건부 렌더링
+- **결정 사항**: DECISIONS 2026-05-09 (D1) 재렌더 정책에서 "done 상태에도 노출 + 클립 토글 모달" 사양 확정.
+- **처리 시점**: 필드 테스트 첫 회차 결과 보고 갈래 5에서 처리.
+
+## 완성본 단일 필드 덮어쓰기 구조 — D2 구현 시 전환 예정
+
+- **현황**: `events/{eventId}.videoUrl` 단일 필드에 Shotstack URL 직접 저장 (정찰 E15, `src/app/api/cron/check-rendering/route.ts:45`). 재렌더 시 이전 영상 URL 소실. 한 이벤트는 단일 완성본만 보존하는 구조.
+- **결정 사항**: DECISIONS 2026-05-09 (D2) 완성본 보존 정책에서 서브컬렉션 `events/{eventId}/renders/{renderId}` 전환 사양 확정.
+- **처리 시점**: 갈래 6 (7일 보관 + 삭제 알림) 작업 시 동시 전환.
