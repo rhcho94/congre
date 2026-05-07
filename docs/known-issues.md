@@ -53,13 +53,11 @@
 - **향후 작업**: 대시보드에 인트로/아웃트로 입력 UI 추가 → 한글 TTF 호스팅 → Shotstack timeline에 HTML asset 삽입
 - **우선순위**: 미정. 필드 테스트 시작 후 사용자 피드백 기반 결정.
 
-## clipCount 증가 실패 (무시됨)
-- 현상: 업로드 시 events.clipCount 증가 permission-denied 발생
-- 원인: 비로그인 참가자가 events 문서 update 불가 (Firebase 규칙)
-- 현재 처리: .catch()로 무시 중. 클립 목록은 onSnapshot으로 직접 세므로 기능 영향 없음
-- 해결 방법: Firebase 규칙에서 clipCount 필드만 비로그인 update 허용
-  또는 Cloud Function으로 clipCount 업데이트 위임
-- 우선순위: 배포 전 처리
+## ✅ clipCount 증가 실패 [RESOLVED 2026-05-07 / Phase B-2 자연 해결]
+
+- **해결**: Phase B-2에서 클립 저장이 `POST /api/clips` 서버 라우트로 이전되면서 클라이언트 SDK의 `events.clipCount` `updateDoc` 호출 자체가 코드에서 제거됨. 서버 라우트는 `clipCount` 필드를 건드리지 않으며, `events` 문서의 `clipCount` 필드 자체가 사용되지 않음.
+- **검증**: 코드베이스 전체에 `clipCount` increment/updateDoc 호출 0건. `clipCount` 참조 3곳은 모두 render-started 알림의 지역 변수(`s3Keys.length` 전달)로, Firestore 필드와 무관.
+- **위치**: `src/app/api/clips/route.ts` (events update 없음), `src/app/api/render/start/route.ts:113` (지역 변수 사용)
 
 ## 미성년자 영상 법적 리스크 — 시장 진입 전 검토 필요
 
