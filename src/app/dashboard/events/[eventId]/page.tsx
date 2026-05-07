@@ -300,6 +300,37 @@ export default function EventDetailPage() {
     link.click();
   }
 
+  async function callRenderStart(idToken: string, eventId: string): Promise<boolean> {
+    const renderRes = await fetch("/api/render/start", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${idToken}`,
+      },
+      body: JSON.stringify({ eventId }),
+    });
+
+    if (!renderRes.ok) {
+      const body = await renderRes.json().catch(() => ({})) as { error?: string };
+      const code = body.error;
+
+      let message: string;
+      if (code === "NO_CLIPS_AFTER_EXCLUSION") {
+        message = "선택된 클립이 없어요. 제외를 해제한 뒤 [영상 생성 다시 시작] 버튼을 눌러주세요.";
+      } else if (code === "NO_CLIPS") {
+        message = "업로드된 클립이 없어요.";
+      } else if (code === "NOT_CONFIGURED") {
+        message = "서버 설정 오류로 영상 생성을 시작하지 못했어요. 운영자에게 문의해주세요.";
+      } else {
+        message = `영상 생성 시작에 실패했습니다 (${code ?? renderRes.status}). 운영자에게 문의해주세요.`;
+      }
+      alert(message);
+      return false;
+    }
+
+    return true;
+  }
+
   async function handleClose() {
     setClosing(true);
     try {
@@ -314,36 +345,24 @@ export default function EventDetailPage() {
       setShowCloseModal(false);
 
       if (clips.length > 0 && event) {
-        const renderRes = await fetch("/api/render/start", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${idToken}`,
-          },
-          body: JSON.stringify({ eventId }),
-        });
-
-        if (!renderRes.ok) {
-          const body = await renderRes.json().catch(() => ({})) as { error?: string };
-          const code = body.error;
-
-          let message: string;
-          if (code === "NO_CLIPS_AFTER_EXCLUSION") {
-            message = "선택된 클립이 없어요. 제외를 해제한 뒤 페이지에서 다시 시도해주세요.";
-          } else if (code === "NO_CLIPS") {
-            message = "업로드된 클립이 없어요.";
-          } else if (code === "NOT_CONFIGURED") {
-            message = "서버 설정 오류로 영상 생성을 시작하지 못했어요. 운영자에게 문의해주세요.";
-          } else {
-            message = `영상 생성 시작에 실패했습니다 (${code ?? renderRes.status}). 운영자에게 문의해주세요.`;
-          }
-          alert(message);
-          return;
-        }
+        await callRenderStart(idToken, eventId);
       }
 
     } catch {
       alert("마감 처리 중 오류가 발생했습니다.");
+    } finally {
+      setClosing(false);
+    }
+  }
+
+  async function handleRestartRender() {
+    setClosing(true);
+    try {
+      const idToken = await getFirebaseAuth().currentUser?.getIdToken();
+      if (!idToken) throw new Error("인증 토큰 발급 실패");
+      await callRenderStart(idToken, eventId);
+    } catch {
+      alert("영상 생성 시작 중 오류가 발생했습니다.");
     } finally {
       setClosing(false);
     }
@@ -448,9 +467,19 @@ export default function EventDetailPage() {
             {!isClosed && (
               <button
                 onClick={() => setShowCloseModal(true)}
-                className="px-4 py-2 bg-red-600 text-white text-xs tracking-widest uppercase hover:bg-red-700 transition-all duration-200"
+                disabled={closing}
+                className="px-4 py-2 bg-red-600 text-white text-xs tracking-widest uppercase hover:bg-red-700 transition-all duration-200 disabled:opacity-50"
               >
                 마감하기
+              </button>
+            )}
+            {event.status === "closed" && clips.length > 0 && (
+              <button
+                onClick={handleRestartRender}
+                disabled={closing}
+                className="px-4 py-2 bg-red-600 text-white text-xs tracking-widest uppercase hover:bg-red-700 transition-all duration-200 disabled:opacity-50"
+              >
+                {closing ? "처리 중..." : "영상 생성 다시 시작"}
               </button>
             )}
           </div>
