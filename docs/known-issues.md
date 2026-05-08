@@ -1,5 +1,12 @@
 # Known Issues & Deferred Tasks
 
+## ✅ 카메라 광각 고정 — 후면 표준 wide 자동 선택 [RESOLVED 2026-05-09]
+
+- **해결**: `openCamera`에 `pickStandardBackCamera` 휴리스틱 추가. iOS는 라벨 "후면 카메라"/"Back Camera" 정확 매칭(가상 카메라 제외), Android는 두 번째 facing back 디바이스 선택. 휴리스틱 실패 시 원본 stream 유지(fallback).
+- **휴리스틱 한계**: 운영자 갤럭시 S22+ + 아이폰 외 기기 미검증. 다른 폰에서 ultrawide가 잡힐 가능성 잔존.
+- **격상 트리거**: 첫 회차에서 "내 영상이 광각으로 찍혀 이상하다" 호스트 또는 참가자 신고 시 → 사용자 카메라 선택 UI(옵션 5-C) 격상 검토.
+- **영향 범위**: `src/app/upload/[eventId]/page.tsx` — `pickStandardBackCamera` 모듈 레벨 함수 추가, `openCamera` 내 후면 분기 추가.
+
 ## ✅ 랜딩 히어로 영상 무음 고정 — 소리 켜는 방법 없음 [RESOLVED 2026-05-09]
 
 - **해결**: `LandingHeroVideo` 클라이언트 컴포넌트 신설. 영상 우하단에 VolumeX/Volume2 아이콘 버튼 추가 — 클릭 시 `video.muted` 토글. 기본은 무음 유지(브라우저 자동재생 정책 준수).

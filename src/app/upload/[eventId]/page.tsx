@@ -13,6 +13,39 @@ type Stage = "verifying" | "invalid" | "nickname" | "idle" | "standby" | "record
 
 const MAX_SEC = 10;
 
+// 가상 카메라 키워드 (iOS 라벨 필터용) — triple/dual/ultra/telephoto 조합
+const VIRTUAL_CAM_RE = /triple|dual|ultra|telephoto|망원|광각/i;
+
+// 후면 표준 wide 카메라 자동 선택 휴리스틱.
+// iOS: 라벨이 "후면 카메라" 또는 "Back Camera"로 정확 매칭 (가상 카메라 제외).
+// Android 등: facing back 디바이스(label에 "front" 없는 것) 2개 이상이면 두 번째 선택.
+// 현재 active와 동일하거나 후보 없으면 null 반환 (호출자가 원본 stream 유지).
+async function pickStandardBackCamera(currentStream: MediaStream): Promise<MediaStream | null> {
+  const devices = await navigator.mediaDevices.enumerateDevices();
+  const videoDevices = devices.filter((d) => d.kind === "videoinput");
+  const activeDeviceId = (currentStream.getVideoTracks()[0]?.getSettings?.() ?? {}).deviceId as string | undefined;
+
+  const isIOS = /iPhone|iPad/.test(navigator.userAgent);
+  let targetDeviceId: string | undefined;
+
+  if (isIOS) {
+    const candidate = videoDevices.find(
+      (d) => (d.label === "후면 카메라" || d.label === "Back Camera") && !VIRTUAL_CAM_RE.test(d.label)
+    );
+    targetDeviceId = candidate?.deviceId;
+  } else {
+    const backCams = videoDevices.filter((d) => !d.label.toLowerCase().includes("front"));
+    if (backCams.length >= 2) targetDeviceId = backCams[1].deviceId;
+  }
+
+  if (!targetDeviceId || targetDeviceId === activeDeviceId) return null;
+
+  return navigator.mediaDevices.getUserMedia({
+    video: { deviceId: { exact: targetDeviceId } },
+    audio: true,
+  });
+}
+
 function UploadInner() {
   const { eventId } = useParams<{ eventId: string }>();
   const searchParams = useSearchParams();
@@ -134,6 +167,18 @@ function UploadInner() {
       } catch {
         // iOS 일부 버전에서 constraints 거부 시 최소 constraints로 폴백
         stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      }
+      // 후면 카메라일 때 표준 wide 자동 선택 (전면은 적용 안 함)
+      if (facing === "environment") {
+        try {
+          const betterStream = await pickStandardBackCamera(stream);
+          if (betterStream) {
+            stream.getTracks().forEach((t) => t.stop());
+            stream = betterStream;
+          }
+        } catch {
+          // 휴리스틱 실패 시 첫 stream 유지
+        }
       }
       streamRef.current = stream;
       setStreamKey((k) => k + 1); // useEffect 재실행 트리거
