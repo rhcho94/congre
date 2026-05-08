@@ -32,6 +32,7 @@ export interface Clip {
   eventId: string;
   s3Key: string;
   uploadedAt: Timestamp;
+  uploaderName?: string;
   sessionToken?: string;
   excludedAt?: Timestamp | null;
 }

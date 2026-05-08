@@ -9,7 +9,7 @@ import CongreBadge from "@/components/CongreBadge";
 
 // "standby" = 카메라 켜진 미리보기 (녹화 전)
 // "preview"  = 녹화 완료 후 blob 재생 (기존)
-type Stage = "verifying" | "invalid" | "idle" | "standby" | "recording" | "preview" | "uploading" | "done" | "error";
+type Stage = "verifying" | "invalid" | "nickname" | "idle" | "standby" | "recording" | "preview" | "uploading" | "done" | "error";
 
 const MAX_SEC = 10;
 
@@ -24,6 +24,8 @@ function UploadInner() {
   const [progress, setProgress] = useState(0);
   const [retryNum, setRetryNum] = useState(0);
   const [errorMsg, setErrorMsg] = useState("");
+  const [nickname, setNickname] = useState("");
+  const [nicknameError, setNicknameError] = useState("");
   const [s3Ready, setS3Ready] = useState<boolean | null>(null);
   const [facingMode, setFacingMode] = useState<"user" | "environment">("environment");
   // streamKey: openCamera 호출마다 증가 → useEffect([stage, streamKey])가 재실행되어 video.srcObject 갱신
@@ -55,7 +57,7 @@ function UploadInner() {
         }
         const evt = await res.json() as { id: string; title: string };
         setEvent(evt);
-        setStage("idle");
+        setStage("nickname");
       } catch {
         if (isMounted) setStage("invalid");
       }
@@ -67,6 +69,12 @@ function UploadInner() {
   useEffect(() => {
     checkS3().then(setS3Ready);
   }, []);
+
+  useEffect(() => {
+    if (stage !== "nickname") return;
+    const saved = sessionStorage.getItem(`congre-nick-${eventId}`);
+    if (saved) setNickname(saved);
+  }, [stage, eventId]);
 
   const stopStream = useCallback(() => {
     streamRef.current?.getTracks().forEach((t) => t.stop());
@@ -128,6 +136,27 @@ function UploadInner() {
       setErrorMsg("카메라 접근 권한이 필요합니다. 브라우저 설정을 확인해주세요.");
       setStage("error");
       return null;
+    }
+  }
+
+  async function handleNicknameNext() {
+    const trimmed = nickname.trim();
+    if (!trimmed) return;
+    setNicknameError("");
+    try {
+      const res = await fetch(
+        `/api/clips/check?eventId=${encodeURIComponent(eventId)}&name=${encodeURIComponent(trimmed)}`
+      );
+      const data = await res.json() as { exists: boolean };
+      if (data.exists) {
+        setNicknameError("이미 사용된 닉네임이에요. 다른 닉네임을 입력해주세요.");
+        return;
+      }
+      setNickname(trimmed);
+      sessionStorage.setItem(`congre-nick-${eventId}`, trimmed);
+      setStage("idle");
+    } catch {
+      setNicknameError("확인 중 오류가 발생했습니다. 다시 시도해주세요.");
     }
   }
 
@@ -234,18 +263,25 @@ function UploadInner() {
     await uploadToS3(url, blob, mimeType, setProgress);
     console.log(`[upload] S3 PUT success`);
 
-    // 클립 메타데이터 저장 best-effort — 실패·타임아웃해도 done 전환 막지 않음
     const clipSave = fetch("/api/clips", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ eventId, s3Key: key, token: urlToken }),
+      body: JSON.stringify({ eventId, s3Key: key, token: urlToken, uploaderName: nickname }),
     });
     const clipTimeout = new Promise<never>((_, reject) =>
       setTimeout(() => reject(new Error("clip_save_timeout")), 5000)
     );
-    await Promise.race([clipSave, clipTimeout]).catch((err) => {
-      console.error("[clip] save skipped:", err?.message ?? err);
-    });
+    try {
+      const clipRes = await Promise.race([clipSave, clipTimeout]);
+      if (!clipRes.ok) {
+        const body = await clipRes.json().catch(() => ({})) as { error?: string };
+        if (body.error === "DUPLICATE_NICKNAME") throw new Error("DUPLICATE_NICKNAME");
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg === "DUPLICATE_NICKNAME") throw err;
+      console.error("[clip] save skipped:", msg);
+    }
   }
 
   async function handleUpload() {
@@ -268,6 +304,11 @@ function UploadInner() {
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
         console.error(`[upload] attempt=${attempt} FAILED:`, msg, err);
+        if (msg === "DUPLICATE_NICKNAME") {
+          setNicknameError("이미 사용된 닉네임이에요. 다른 닉네임을 입력해주세요.");
+          setStage("nickname");
+          return;
+        }
         if (attempt === 3) {
           const display = msg.includes("S3_NOT_CONFIGURED")
             ? "S3가 연결되지 않아 업로드할 수 없습니다."
@@ -362,6 +403,45 @@ function UploadInner() {
       <div className="rule mx-6 my-5" />
 
       <main className="flex-1 flex flex-col items-center px-6 py-4 gap-6">
+
+        {/* ── nickname ── */}
+        {stage === "nickname" && (
+          <>
+            <p className="text-sm text-center text-foreground leading-relaxed">
+              영상에 표시될 닉네임을 입력해주세요.
+            </p>
+            <div className="w-full flex flex-col gap-3">
+              <div className="relative">
+                <input
+                  type="text"
+                  value={nickname}
+                  onChange={(e) => { setNickname(e.target.value.slice(0, 10)); setNicknameError(""); }}
+                  onKeyDown={(e) => { if (e.key === "Enter") handleNicknameNext(); }}
+                  placeholder="닉네임 (최대 10자)"
+                  maxLength={10}
+                  autoFocus
+                  className="w-full bg-surface border border-border px-4 py-3 pr-14 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-accent transition-colors"
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted tabular-nums pointer-events-none">
+                  {nickname.length}/10
+                </span>
+              </div>
+              {nicknameError && (
+                <p className="text-xs" style={{ color: "#e05252" }}>{nicknameError}</p>
+              )}
+              <p className="text-xs text-muted leading-relaxed opacity-70">
+                같은 이벤트에서 중복 사용 불가. 한 번 입력 후 여러 영상을 올릴 수 있어요.
+              </p>
+            </div>
+            <button
+              onClick={handleNicknameNext}
+              disabled={!nickname.trim()}
+              className="w-full py-4 bg-accent text-background text-sm tracking-widest uppercase font-medium hover:brightness-110 transition-all duration-200 glow-accent disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:brightness-100"
+            >
+              다음
+            </button>
+          </>
+        )}
 
         {/* ── idle ── */}
         {stage === "idle" && (

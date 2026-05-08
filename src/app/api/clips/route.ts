@@ -9,8 +9,14 @@ export async function POST(request: NextRequest) {
     !body ||
     typeof body.eventId !== "string" ||
     typeof body.s3Key !== "string" ||
-    typeof body.token !== "string"
+    typeof body.token !== "string" ||
+    typeof body.uploaderName !== "string"
   ) {
+    return Response.json({ error: "BAD_REQUEST" }, { status: 400 });
+  }
+
+  const uploaderName = body.uploaderName.trim();
+  if (uploaderName.length < 1 || uploaderName.length > 10) {
     return Response.json({ error: "BAD_REQUEST" }, { status: 400 });
   }
 
@@ -33,9 +39,20 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "EVENT_CLOSED" }, { status: 409 });
   }
 
+  const dupSnap = await db
+    .collection("clips")
+    .where("eventId", "==", eventId)
+    .where("uploaderName", "==", uploaderName)
+    .limit(1)
+    .get();
+  if (!dupSnap.empty) {
+    return Response.json({ error: "DUPLICATE_NICKNAME" }, { status: 409 });
+  }
+
   const clipRef = await db.collection("clips").add({
     eventId,
     s3Key,
+    uploaderName,
     uploadedAt: FieldValue.serverTimestamp(),
   });
 
