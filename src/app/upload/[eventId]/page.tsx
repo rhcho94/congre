@@ -40,10 +40,21 @@ async function pickStandardBackCamera(currentStream: MediaStream): Promise<Media
 
   if (!targetDeviceId || targetDeviceId === activeDeviceId) return null;
 
-  return navigator.mediaDevices.getUserMedia({
-    video: { deviceId: { exact: targetDeviceId } },
-    audio: true,
-  });
+  // Android 카메라 센서 점유 해제 — 새 stream 요청 전 반드시 먼저 정지
+  currentStream.getTracks().forEach((t) => t.stop());
+
+  try {
+    return await navigator.mediaDevices.getUserMedia({
+      video: { deviceId: { exact: targetDeviceId } },
+      audio: true,
+    });
+  } catch {
+    // deviceId 재호출 실패 → facingMode fallback (ultrawide 가능성 있지만 카메라 불가보다 나음)
+    return navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: "environment" } },
+      audio: true,
+    });
+  }
 }
 
 function UploadInner() {
@@ -173,11 +184,14 @@ function UploadInner() {
         try {
           const betterStream = await pickStandardBackCamera(stream);
           if (betterStream) {
-            stream.getTracks().forEach((t) => t.stop());
+            // stream already stopped inside pickStandardBackCamera
             stream = betterStream;
           }
         } catch {
-          // 휴리스틱 실패 시 첫 stream 유지
+          // 재호출·fallback 모두 실패 — 첫 stream은 내부에서 이미 정지됨
+          setErrorMsg("카메라를 열 수 없습니다. 다시 시도해주세요.");
+          setStage("error");
+          return null;
         }
       }
       streamRef.current = stream;

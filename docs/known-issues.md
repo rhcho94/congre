@@ -5,6 +5,7 @@
 - **해결**: `openCamera`에 `pickStandardBackCamera` 휴리스틱 추가. iOS는 라벨 "후면 카메라"/"Back Camera" 정확 매칭(가상 카메라 제외), Android는 두 번째 facing back 디바이스 선택. 휴리스틱 실패 시 원본 stream 유지(fallback).
 - **휴리스틱 한계**: 운영자 갤럭시 S22+ + 아이폰 외 기기 미검증. 다른 폰에서 ultrawide가 잡힐 가능성 잔존.
 - **격상 트리거**: 첫 회차에서 "내 영상이 광각으로 찍혀 이상하다" 호스트 또는 참가자 신고 시 → 사용자 카메라 선택 UI(옵션 5-C) 격상 검토.
+- **후속 수정 (2026-05-09)**: Android "Could not start video source" — 기존 stream을 정지하지 않고 새 getUserMedia(deviceId) 호출 시 카메라 센서 점유 충돌. `pickStandardBackCamera` 내에서 `currentStream.getTracks().forEach(t => t.stop())` 선행 후 getUserMedia 호출로 수정. deviceId 호출 실패 시 facingMode fallback 추가.
 - **영향 범위**: `src/app/upload/[eventId]/page.tsx` — `pickStandardBackCamera` 모듈 레벨 함수 추가, `openCamera` 내 후면 분기 추가.
 
 ## ✅ 랜딩 히어로 영상 무음 고정 — 소리 켜는 방법 없음 [RESOLVED 2026-05-09]

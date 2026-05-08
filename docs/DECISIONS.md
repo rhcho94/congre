@@ -11,6 +11,7 @@
   - 옵션 5-C(사용자가 항상 카메라 선택): 참가자 학습 비용 발생 → 보류
 - **정찰 근거**: 갤럭시 S22+ 실측 — camera 0(deviceId 8182bd5c) = 표준 wide, camera 2(deviceId f2634c39) = ultrawide. 아이폰 실측 — 라벨 "후면 카메라" 단독 = 표준 wide, 가상 카메라(트리플·듀얼·울트라·망원 포함 라벨)는 제외.
 - **미검증 기기 리스크**: 갤럭시 S22+, 아이폰 외 기기에서 Android 두 번째 휴리스틱이 틀릴 수 있음. 첫 회차 피드백 기반 격상 여부 결정.
+- **후속 수정 (2026-05-09)**: Android 카메라 센서 점유 해제 — `pickStandardBackCamera`에서 새 `getUserMedia` 호출 전 `currentStream` 트랙 정지. deviceId 실패 시 `facingMode: { ideal: "environment" }` fallback 추가. openCamera 호출부에서 stream.stop() 제거(내부로 이동), fallback도 실패 시 error stage 전환.
 
 ## 2026-05-09 — 닉네임 재사용 정책 변경: "한 닉 = 한 영상" 정식 채택
 
