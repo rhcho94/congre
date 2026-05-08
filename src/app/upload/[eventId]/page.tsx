@@ -19,22 +19,13 @@ const VIRTUAL_CAM_RE = /triple|dual|ultra|telephoto|망원|광각/i;
 // 후면 표준 wide 카메라 자동 선택 휴리스틱.
 // iOS: 라벨이 "후면 카메라" 또는 "Back Camera"로 정확 매칭 (가상 카메라 제외).
 // Android 등: facing back 디바이스(label에 "front" 없는 것) 2개 이상이면 두 번째 선택.
-// 현재 active와 동일하거나 후보 없으면 null 반환 (호출자가 원본 stream 유지).
-// TEMP DEBUG — 이슈 #4 휴리스틱 추적: log 콜백 파라미터 추가
-async function pickStandardBackCamera(
-  currentStream: MediaStream,
-  log: (msg: string) => void
-): Promise<MediaStream | null> {
+// 후보 없거나 현재 active와 동일하면 null 반환 (호출자가 원본 stream 유지).
+async function pickStandardBackCamera(currentStream: MediaStream): Promise<MediaStream | null> {
   const devices = await navigator.mediaDevices.enumerateDevices();
   const videoDevices = devices.filter((d) => d.kind === "videoinput");
   const activeDeviceId = (currentStream.getVideoTracks()[0]?.getSettings?.() ?? {}).deviceId as string | undefined;
 
-  log(`[heuristic] enumerate count=${videoDevices.length}`);
-  log(`[heuristic] devices: ${videoDevices.map((d, i) => `${i}:"${d.label}" id="${d.deviceId.slice(0, 8)}..."`).join(" | ")}`);
-  log(`[heuristic] active deviceId="${(activeDeviceId ?? "?").slice(0, 8)}..."`);
-
   const isIOS = /iPhone|iPad/.test(navigator.userAgent);
-  log(`[heuristic] isIOS=${isIOS}`);
   let targetDeviceId: string | undefined;
 
   if (isIOS) {
@@ -42,45 +33,18 @@ async function pickStandardBackCamera(
       (d) => (d.label === "후면 카메라" || d.label === "Back Camera") && !VIRTUAL_CAM_RE.test(d.label)
     );
     targetDeviceId = candidate?.deviceId;
-    log(targetDeviceId
-      ? `[heuristic] iOS candidate="${candidate?.label}"`
-      : "[heuristic] iOS no candidate found");
   } else {
     const backCams = videoDevices.filter((d) => !d.label.toLowerCase().includes("front"));
-    log(`[heuristic] backCams count=${backCams.length}`);
-    if (backCams.length >= 2) {
-      targetDeviceId = backCams[1].deviceId;
-      log(`[heuristic] target deviceId="${targetDeviceId.slice(0, 8)}..." (index 1 of backCams)`);
-    } else {
-      log("[heuristic] no candidate (backCams.length < 2)");
-    }
+    if (backCams.length >= 2) targetDeviceId = backCams[1].deviceId;
   }
 
-  if (!targetDeviceId) {
-    log("[heuristic] returning null — no target");
-    return null;
-  }
-  if (targetDeviceId === activeDeviceId) {
-    log("[heuristic] returning null — target == active");
-    return null;
-  }
+  if (!targetDeviceId || targetDeviceId === activeDeviceId) return null;
 
-  log("[heuristic] target != active, calling getUserMedia again");
-  try {
-    const newStream = await navigator.mediaDevices.getUserMedia({
-      video: { deviceId: { exact: targetDeviceId } },
-      audio: true,
-    });
-    const newTrack = newStream.getVideoTracks()[0];
-    const newDeviceId = (newTrack?.getSettings?.() ?? {}).deviceId as string | undefined;
-    log(`[heuristic] re-getUserMedia success label="${newTrack?.label ?? "?"}" deviceId="${(newDeviceId ?? "?").slice(0, 8)}..."`);
-    return newStream;
-  } catch (err) {
-    log(`[heuristic] re-getUserMedia failed: ${err instanceof Error ? err.message : String(err)}`);
-    throw err;
-  }
+  return navigator.mediaDevices.getUserMedia({
+    video: { deviceId: { exact: targetDeviceId } },
+    audio: true,
+  });
 }
-// END TEMP DEBUG 휴리스틱 추적
 
 function UploadInner() {
   const { eventId } = useParams<{ eventId: string }>();
@@ -100,8 +64,6 @@ function UploadInner() {
   const [facingMode, setFacingMode] = useState<"user" | "environment">("environment");
   // streamKey: openCamera 호출마다 증가 → useEffect([stage, streamKey])가 재실행되어 video.srcObject 갱신
   const [streamKey, setStreamKey] = useState(0);
-  // TEMP DEBUG — 이슈 #4 휴리스틱 추적
-  const [cameraDebugLog, setCameraDebugLog] = useState<string[]>([]);
 
   const liveRef = useRef<HTMLVideoElement>(null);
   const previewRef = useRef<HTMLVideoElement>(null);
@@ -208,12 +170,8 @@ function UploadInner() {
       }
       // 후면 카메라일 때 표준 wide 자동 선택 (전면은 적용 안 함)
       if (facing === "environment") {
-        // TEMP DEBUG — 이슈 #4 휴리스틱 추적
-        const hMsgs: string[] = [];
-        const hLog = (msg: string) => { hMsgs.push(msg); console.log(msg); };
-        // END TEMP DEBUG
         try {
-          const betterStream = await pickStandardBackCamera(stream, hLog);
+          const betterStream = await pickStandardBackCamera(stream);
           if (betterStream) {
             stream.getTracks().forEach((t) => t.stop());
             stream = betterStream;
@@ -221,9 +179,6 @@ function UploadInner() {
         } catch {
           // 휴리스틱 실패 시 첫 stream 유지
         }
-        // TEMP DEBUG — 이슈 #4 휴리스틱 추적
-        setCameraDebugLog(hMsgs);
-        // END TEMP DEBUG
       }
       streamRef.current = stream;
       setStreamKey((k) => k + 1); // useEffect 재실행 트리거
@@ -496,17 +451,6 @@ function UploadInner() {
           </p>
         </div>
       )}
-
-      {/* TEMP DEBUG — 이슈 #4 휴리스틱 추적 */}
-      {cameraDebugLog.length > 0 && (
-        <div className="mx-6 mt-2 p-3 border border-border bg-surface overflow-auto" style={{ maxHeight: "280px" }}>
-          <p className="text-xs text-accent font-medium tracking-wide mb-1">[DEBUG] 휴리스틱 추적 — 스크린샷 찍어서 공유</p>
-          {cameraDebugLog.map((msg, i) => (
-            <p key={i} className="text-[10px] text-muted font-mono leading-relaxed break-all">{msg}</p>
-          ))}
-        </div>
-      )}
-      {/* END TEMP DEBUG */}
 
       <div className="rule mx-6 my-5" />
 
