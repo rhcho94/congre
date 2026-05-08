@@ -31,10 +31,6 @@ function UploadInner() {
   const [facingMode, setFacingMode] = useState<"user" | "environment">("environment");
   // streamKey: openCamera 호출마다 증가 → useEffect([stage, streamKey])가 재실행되어 video.srcObject 갱신
   const [streamKey, setStreamKey] = useState(0);
-  // TEMP DEBUG — 이슈 #4 정찰용
-  const [cameraDebugLog, setCameraDebugLog] = useState<string[]>([]);
-  // TEMP DEBUG — 이슈 #4 강제 전환
-  const [backCameraDevices, setBackCameraDevices] = useState<{ deviceId: string; label: string }[]>([]);
 
   const liveRef = useRef<HTMLVideoElement>(null);
   const previewRef = useRef<HTMLVideoElement>(null);
@@ -141,44 +137,6 @@ function UploadInner() {
       }
       streamRef.current = stream;
       setStreamKey((k) => k + 1); // useEffect 재실행 트리거
-
-      // TEMP DEBUG — 이슈 #4 정찰용
-      try {
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        const videoDevices = devices.filter((d) => d.kind === "videoinput");
-        const activeTrack = stream.getVideoTracks()[0];
-        const activeSettings = activeTrack?.getSettings?.() ?? {};
-        const msgs: string[] = [
-          `[camera-debug] requested facing=${facing}`,
-          `[camera-debug] active label="${activeTrack?.label ?? "?"}" deviceId="${String(activeSettings.deviceId ?? "?").slice(0, 8)}..."`,
-          ...videoDevices.map((d, i) =>
-            `[camera-debug] index=${i} label="${d.label}" deviceId="${d.deviceId.slice(0, 8)}..." groupId="${d.groupId.slice(0, 8)}..."`
-          ),
-        ];
-        // zoom capability — 갤럭시 S22+ 정찰 (TEMP DEBUG — 이슈 #4)
-        try {
-          const caps = (activeTrack?.getCapabilities?.() ?? {}) as Record<string, unknown>;
-          const zoomCap = "zoom" in caps ? JSON.stringify(caps.zoom) : '"not supported"';
-          const zoomSet = "zoom" in (activeSettings as Record<string, unknown>)
-            ? String((activeSettings as Record<string, unknown>).zoom)
-            : "not present";
-          const zoomSupported = (navigator.mediaDevices.getSupportedConstraints() as Record<string, unknown>).zoom ?? "not supported";
-          msgs.push(`[camera-debug] capabilities.zoom=${zoomCap}`);
-          msgs.push(`[camera-debug] settings.zoom=${zoomSet}`);
-          msgs.push(`[camera-debug] supportedConstraints.zoom=${String(zoomSupported)}`);
-        } catch {
-          msgs.push("[camera-debug] zoom capability check failed");
-        }
-        msgs.forEach((m) => console.log(m));
-        setCameraDebugLog(msgs);
-        // TEMP DEBUG — 이슈 #4 강제 전환
-        const backCams = videoDevices.filter((d) => !d.label.toLowerCase().includes("front"));
-        setBackCameraDevices(backCams.map((d) => ({ deviceId: d.deviceId, label: d.label || `device-${d.deviceId.slice(0, 6)}` })));
-      } catch {
-        console.log("[camera-debug] enumerateDevices failed");
-      }
-      // END TEMP DEBUG
-
       return stream;
     } catch {
       setErrorMsg("카메라 접근 권한이 필요합니다. 브라우저 설정을 확인해주세요.");
@@ -186,54 +144,6 @@ function UploadInner() {
       return null;
     }
   }
-
-  // TEMP DEBUG — 이슈 #4 강제 전환
-  async function forceCameraById(deviceId: string, label: string) {
-    stopStream();
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { deviceId: { exact: deviceId } },
-        audio: true,
-      });
-      streamRef.current = stream;
-      setStreamKey((k) => k + 1);
-      try {
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        const videoDevices = devices.filter((d) => d.kind === "videoinput");
-        const activeTrack = stream.getVideoTracks()[0];
-        const activeSettings = activeTrack?.getSettings?.() ?? {};
-        const msgs: string[] = [
-          `[camera-debug] FORCED label="${label}"`,
-          `[camera-debug] active label="${activeTrack?.label ?? "?"}" deviceId="${String(activeSettings.deviceId ?? "?").slice(0, 8)}..."`,
-          ...videoDevices.map((d, i) =>
-            `[camera-debug] index=${i} label="${d.label}" deviceId="${d.deviceId.slice(0, 8)}..." groupId="${d.groupId.slice(0, 8)}..."`
-          ),
-        ];
-        try {
-          const caps = (activeTrack?.getCapabilities?.() ?? {}) as Record<string, unknown>;
-          const zoomCap = "zoom" in caps ? JSON.stringify(caps.zoom) : '"not supported"';
-          const zoomSet = "zoom" in (activeSettings as Record<string, unknown>)
-            ? String((activeSettings as Record<string, unknown>).zoom)
-            : "not present";
-          const zoomSupported = (navigator.mediaDevices.getSupportedConstraints() as Record<string, unknown>).zoom ?? "not supported";
-          msgs.push(`[camera-debug] capabilities.zoom=${zoomCap}`);
-          msgs.push(`[camera-debug] settings.zoom=${zoomSet}`);
-          msgs.push(`[camera-debug] supportedConstraints.zoom=${String(zoomSupported)}`);
-        } catch {
-          msgs.push("[camera-debug] zoom capability check failed");
-        }
-        msgs.forEach((m) => console.log(m));
-        setCameraDebugLog(msgs);
-        const backCams = videoDevices.filter((d) => !d.label.toLowerCase().includes("front"));
-        setBackCameraDevices(backCams.map((d) => ({ deviceId: d.deviceId, label: d.label || `device-${d.deviceId.slice(0, 6)}` })));
-      } catch {
-        console.log("[camera-debug] enumerateDevices failed after force-switch");
-      }
-    } catch (err) {
-      console.error("[camera-debug] forceCameraById failed:", err);
-    }
-  }
-  // END TEMP DEBUG 강제 전환
 
   async function handleNicknameNext() {
     const trimmed = nickname.trim();
@@ -496,35 +406,6 @@ function UploadInner() {
           </p>
         </div>
       )}
-
-      {/* TEMP DEBUG — 이슈 #4 정찰용 */}
-      {cameraDebugLog.length > 0 && (
-        <div className="mx-6 mt-2 p-3 border border-border bg-surface overflow-auto" style={{ maxHeight: "280px" }}>
-          <p className="text-xs text-accent font-medium tracking-wide mb-1">[DEBUG] 카메라 목록 — 스크린샷 찍어서 공유</p>
-          {cameraDebugLog.map((msg, i) => (
-            <p key={i} className="text-[10px] text-muted font-mono leading-relaxed break-all">{msg}</p>
-          ))}
-          {/* TEMP DEBUG — 이슈 #4 강제 전환 */}
-          {backCameraDevices.length > 0 && (
-            <>
-              <p className="text-xs text-accent font-medium tracking-wide mt-2 mb-1">[DEBUG] 후면 카메라 강제 전환</p>
-              <div className="flex flex-wrap gap-1">
-                {backCameraDevices.map((cam) => (
-                  <button
-                    key={cam.deviceId}
-                    onClick={() => { void forceCameraById(cam.deviceId, cam.label); }}
-                    className="text-[10px] px-2 py-1 border border-border text-muted hover:border-accent hover:text-foreground transition-colors"
-                  >
-                    ▶ {cam.label} 강제 켜기
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
-          {/* END TEMP DEBUG 강제 전환 */}
-        </div>
-      )}
-      {/* END TEMP DEBUG */}
 
       <div className="rule mx-6 my-5" />
 
