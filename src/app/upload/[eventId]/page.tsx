@@ -26,6 +26,7 @@ function UploadInner() {
   const [errorMsg, setErrorMsg] = useState("");
   const [nickname, setNickname] = useState("");
   const [nicknameError, setNicknameError] = useState("");
+  const [isReturning, setIsReturning] = useState(false);
   const [s3Ready, setS3Ready] = useState<boolean | null>(null);
   const [facingMode, setFacingMode] = useState<"user" | "environment">("environment");
   // streamKey: openCamera 호출마다 증가 → useEffect([stage, streamKey])가 재실행되어 video.srcObject 갱신
@@ -73,7 +74,12 @@ function UploadInner() {
   useEffect(() => {
     if (stage !== "nickname") return;
     const saved = sessionStorage.getItem(`congre-nick-${eventId}`);
-    if (saved) setNickname(saved);
+    if (saved) {
+      setNickname(saved);
+      setIsReturning(true);
+    } else {
+      setIsReturning(false);
+    }
   }, [stage, eventId]);
 
   const stopStream = useCallback(() => {
@@ -243,7 +249,8 @@ function UploadInner() {
     setProgress(0);
     setRetryNum(0);
     setErrorMsg("");
-    setStage("idle");
+    setNicknameError("");
+    setStage("nickname");
   }
 
   async function doUpload(attempt: number): Promise<void> {
@@ -408,7 +415,9 @@ function UploadInner() {
         {stage === "nickname" && (
           <>
             <p className="text-sm text-center text-foreground leading-relaxed">
-              영상에 표시될 닉네임을 입력해주세요.
+              {isReturning
+                ? "이전 닉네임은 이미 사용됐어요. 새 닉네임을 입력해주세요. (예: 민준 2, 민준 한마디 더)"
+                : "영상에 표시될 닉네임을 입력해주세요."}
             </p>
             <div className="w-full flex flex-col gap-3">
               <div className="relative">
