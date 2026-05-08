@@ -75,7 +75,6 @@ export default function EventDetailPage() {
   const [playbackUrl, setPlaybackUrl] = useState<string | null>(null);
   const [playbackLoading, setPlaybackLoading] = useState(false);
   const [playbackError, setPlaybackError] = useState<string | null>(null);
-  const [instaCopied, setInstaCopied] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
   const [kakaoReady, setKakaoReady] = useState(false);
   const qrHiResRef = useRef<HTMLDivElement>(null);
@@ -242,19 +241,6 @@ export default function EventDetailPage() {
     document.head.appendChild(script);
     return () => { script.remove(); };
   }, []);
-
-  function handleInstagramShare() {
-    if (!event?.videoUrl) return;
-    const isMobile = /iPhone|Android|iPad/i.test(navigator.userAgent);
-    if (isMobile) {
-      window.location.href = "instagram://story-camera";
-    } else {
-      navigator.clipboard.writeText(event.videoUrl).then(() => {
-        setInstaCopied(true);
-        setTimeout(() => setInstaCopied(false), 3500);
-      }).catch(() => {});
-    }
-  }
 
   function handleKakaoShare() {
     if (!event?.videoUrl) return;
@@ -577,23 +563,7 @@ export default function EventDetailPage() {
                 {/* SNS 공유 */}
                 <div className="pt-3 border-t border-border">
                   <p className="text-xs tracking-widest uppercase text-muted mb-3">공유하기</p>
-                  <div className="grid grid-cols-3 gap-2">
-                    {/* 인스타그램 */}
-                    <button
-                      onClick={handleInstagramShare}
-                      className="flex flex-col items-center gap-1.5 py-3 text-xs font-medium transition-all duration-200 hover:brightness-110 active:scale-95"
-                      style={{ background: "linear-gradient(135deg,#f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%)" }}
-                    >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5">
-                        <rect x="2" y="2" width="20" height="20" rx="5" />
-                        <circle cx="12" cy="12" r="4" />
-                        <circle cx="17.5" cy="6.5" r="1" fill="white" stroke="none" />
-                      </svg>
-                      <span className="text-white leading-tight text-center">
-                        {instaCopied ? "복사됨!" : "인스타그램"}
-                      </span>
-                    </button>
-
+                  <div className="grid grid-cols-2 gap-2">
                     {/* 카카오톡 */}
                     <button
                       onClick={handleKakaoShare}
@@ -620,11 +590,6 @@ export default function EventDetailPage() {
                     </button>
                   </div>
 
-                  {instaCopied && (
-                    <p className="text-xs text-muted mt-2 text-center leading-relaxed">
-                      링크가 복사됐습니다. 인스타그램 앱에서 스토리에 붙여넣기 하세요.
-                    </p>
-                  )}
                 </div>
               </div>
             ) : (
