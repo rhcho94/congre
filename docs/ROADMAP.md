@@ -1,97 +1,59 @@
 # 로드맵 / 백로그 / 알려진 이슈
 
-## 진행 중
+## 현재 단계: 필드 테스트 진입 준비
 
-특별히 진행 중인 작업 없음. 한글 인트로/아웃트로 (E) 완료로 필드 테스트 진입 준비 완료. 다음 작업 후보 참조.
+### P0 — 완료
+- [x] 환경변수 등록 확인 (CRON_SECRET, NEXT_PUBLIC_APP_URL)
+- [x] 인스타그램 공유 버튼 제거 (커밋 7507b1e)
+- [x] 참가자 닉네임 필수 입력 추가 (커밋 a5bec82)
+- [ ] 호스트 계정 N개 생성 (옵션 A) — 필드 테스트 일정 확정 시 운영자 수동 (Firebase 콘솔 → Authentication → Users → Add user)
 
-## 다음 작업 후보
+### P1 — 권장하지만 첫 회차 후 가능
+- Shotstack 비용 모니터링 설정 (출시 차단 항목이었으나 첫 회차 소규모 진입으로 우선 관찰)
+- 클립 길이 안내 강화 검토 (시나리오 #2 방어)
+- 첫 회차 시나리오 정의 + 참가자 안내 자료 (운영자 영역)
 
-### ✅ 알림 시스템 Phase 1 완료 (2026-05-03)
+### P2 — 첫 회차 결과 보고 결정
+- 재렌더 UX 개선 (DECISIONS D1: done 상태 노출 + 클립 토글 모달)
+- 본인 미리보기 화면
+- 7일 보관 + 삭제 알림 (DECISIONS D2)
+- 호스트 인증 모델 결정 (계정 모델 vs 이벤트-바운드)
+- 미성년자 영상 법무 검토
+- AWS S3 / SOLAPI / Resend 사용량 모니터링
+- 알림 시스템 Phase 2 (첫 클립 업로드 훅, 참가자 연락처 수집)
+- s3Key 바꿔치기 방어 (위협 모델 정의 후 진입)
 
-- ✅ congre.kr 도메인 가비아 등록 (1년)
-- ✅ Resend 가입 + congre.kr 도메인 인증 (DKIM/SPF/DMARC)
-- ✅ SOLAPI 가입 + 발신번호 등록 + API 키 발급
-- ✅ .env.local 6개 변수 입력
-- ✅ 시나리오 5/5건 발송 검증 완료 (event_created, render_completed, render_delayed, render_failed, render_started)
-- ✅ notifications:history undefined 에러 수정 (commit bcfe1f3)
-- ✅ SMS failedMessageList 상세 사유 출력 (commit 79af076)
-
-### render_delayed 장애 대응 시나리오 재설계
-
-배경: 편집 지연 시 단순 완료 사후 안내보다 비즈니스 임팩트가 큼 — 행사 중 상영 계획 무산, 결혼식 등 재현 불가 행사에서의 환불 사유, 완성본 미생성 가능성.
-
-**상태: 전체 완료 (2026-05-05)**
-세부 사항: docs/DECISIONS.md `## 2026-05-04` 항목 + docs/handoff/2026-05-04.md, docs/handoff/2026-05-05.md 참조.
-
-코드 작업 체크리스트:
-- [x] [1] /api/render/start 인증 추가 + E 계산 + 새 필드 기록
-- [x] [2] 알림 템플릿 5종 추가 (render-started, render-delayed, refund-50, refund-100, render-completed)
-- [x] [3] /api/cron/check-render-deadlines 신설
-- [x] [4] /api/render/complete 수정 (refundStatus 따라 분기)
-- [x] [5] GitHub Actions 워크플로 추가 (.github/workflows/cron-check-deadlines.yml)
-- [x] [6] 운영 작업:
-  - [x] CRON_SECRET 등록 (Vercel + GitHub Secrets)
-  - [x] NEXT_PUBLIC_APP_URL / APP_URL 등록 (Vercel + GitHub Secrets)
-  - [x] GitHub Actions 수동 실행 통과 + cron 5분 간격 조정
-  - [x] 카카오톡 채널 @congre 개설 (검색용 ID `congre`, 채팅 허용)
-  - [x] CONGRE_INTERNAL_PHONE Vercel 등록 (`01075822020`, Redeploy 완료)
-
-### 알림 시스템 Phase 2
-
-- 시나리오 2건 트리거 연결 (첫 클립 업로드 → clips onCreate 훅, 참가자 결과 → 참가자 연락처 수집 선행 필요)
-- 알림 자동 재시도 — 채널 실패 시 재시도 로직 (Vercel Cron or queue) ← render_delayed 재설계 완료 후 진행 권장 (cron 인프라 공유)
-
-### 보안
-
-- Firestore 보안 규칙 종합 점검 (clips create 검증, events update 권한 강화)
-  - /api/render/complete: 현재 401 잠금 상태. 향후 Shotstack webhook 서명 검증 후 재활성화 검토
-
-### 결제
-
-- 유료 플랜 결제 (토스페이먼츠)
-
-### 영상 강화
-
-- **한글 인트로/아웃트로** — 행사 주최자 텍스트 입력, Shotstack HTML asset + 커스텀 TTF 렌더. 상세: docs/known-issues.md
-- **영상 강화 방향 6항목 평가** — 인물 보정·배경 정리·특수효과·인아웃 효과·코멘트 자막·인트로/아웃트로. 현재 Shotstack 가능 범위 확인 및 부족한 항목 대체 플랫폼 검토. 상세: docs/DECISIONS.md (2026-05-05)
-- **/probe API 기반 예상 편집 시간 안내** (선택) — 사용자 피드백 시 구현 검토. 상세: docs/DECISIONS.md (2026-05-05)
-
-### 기타
-
-- FCM 푸시 알림 — iOS 16.4+ 지원 확인 후 재검토
-
-## 출시 전 처리 필수 항목
-
-- **비용 모니터링 셋업** (출시 차단) — Shotstack·AWS S3·SOLAPI·Resend 각 서비스별 사용량·비용 알림 설정. 출시 후 예상치 못한 과금 방지.
-
-## 보류 중 (나중에 검토 필요)
+## 보류 중 (나중에 검토)
 
 - **글로벌 B2B 진출 시 도메인·브랜드 전략 재검토**
   - `congre.com`은 일본 컨벤션·행사 컨설팅 회사 보유 중 — 글로벌 진출 시 충돌 가능성
   - 옵션: 이름 유지 + 다른 TLD / 변형 이름 + .com / 새 이름 + .com / congre.com 인수
   - 결정 시점: 글로벌 진출 직전 (마케팅 본격화 전)
-
 - **청첩장 글로벌 B2B 전략 검토** (별도 세션)
+- **FCM 푸시 알림** — iOS 16.4+ 지원 확인 후 재검토
+- **결제** — 유료 플랜 토스페이먼츠
+- **/probe API 기반 예상 편집 시간 안내** — 사용자 피드백 시 구현 검토
 
-## 약한 고리 (2026-05-06 재평가 — 1순위 시장 학교 졸업식 반영)
+## 약한 고리 (2026-05-09 기준)
 
-우선순위 순:
+1. ~~**Firestore 보안 — 미성년자 데이터**~~ → Phase B-3 완료 (2026-05-06)
+2. **알림 도달성 — 네이버 메일** (1차 점검 완료, 보류). 2026-05-08 실측: 받은편지함 정상 도달. 잠재 리스크(From/SPF 도메인 mismatch) 잔존. 트리거: known-issues.md 참조.
+3. ~~**cron 신뢰성**~~ → Vercel Cron 이전으로 해결 (2026-05-07)
 
-1. ~~**Firestore 보안 — 미성년자 데이터** (Phase B로 분리, 작업 진입 대기). `events` 컬렉션 `allow read: if true`로 sessionToken·organizerEmail·organizerPhone 노출. 학생 영상이 미성년자 개인정보라 격상.~~ → Phase B-3 완료 (2026-05-06)
-2. **알림 도달성 — 네이버 메일** (1차 점검 완료, 보류). 2026-05-08 실측: 받은편지함 정상 도달, 경고 배너 없음. 잠재 리스크(From/SPF 도메인 mismatch) 잔존. 트리거: known-issues.md "네이버 메일 도달성" 참조.
-3. ~~**cron 신뢰성 — webhook 도입 후보** (신규). GitHub Actions runner 할당 지연으로 "렌더 끝났는데 알림 늦음" 발생. 표준 답은 **Shotstack webhook 도입 + 현재 cron을 fallback으로**. 작업 1단계: Shotstack webhook 지원 여부 docs 확인.~~ → Vercel Cron 이전으로 해결 (2026-05-07)
-4. ~~단일 편집 엔진 의존~~ → 약점이 아닌 비즈니스 leverage로 재평가. "시장에서 커지면 Shotstack에 한국 시장 패키지 협상" (DECISIONS 시장 정의 참조).
+## 완료된 주요 작업 이력
 
-## 다음 작업 후보 (시장 정의 후 추가)
-
-- ~~**클립 제외 기능 (B)**~~: 완료 (2026-05-08 / PATCH /api/clips/[clipId], render/start JS 필터, 대시보드 토글 버튼).
-- **s3Key 바꿔치기 방어** (Phase B-2 정찰 시 발견): presign 서버가 발급한 s3Key를 클라이언트가 임의 키로 바꿔 saveClipMetadata 호출 가능. 방어 방법은 presign 발급 시 서버가 (token, key) 페어를 Firestore에 임시 기록 → 클립 저장 시 대조. 위협 모델(공격자 이익) 정의 후 진입. 서비스 모델(기념품·단기 데이터) 근거로 필드 테스트 후 판단.
-- ~~**한글 인트로/아웃트로 (E)**~~: 완료 (2026-05-08). 갈래 1~4: NotoSansKR TTF 호스팅, 이벤트 생성 폼 UI+API, Shotstack rich-text 파이프라인.
-- **→ 필드 테스트 진입 준비 완료**: 실제 행사에서 운영. 관찰 포인트: 인트로/아웃트로 UX, Shotstack 한글 렌더 품질, 알림 도달성 실사용 데이터 수집.
+| 완료일 | 항목 |
+|--------|------|
+| 2026-05-01 | firebase-admin 도입, 파티클 효과 |
+| 2026-05-02 | 알림 채널 (Resend + SOLAPI), Firestore rules 파일 관리, 마감 서버 API 이전 |
+| 2026-05-03 | 알림 시스템 Phase 1 (시나리오 5종 발송 검증) |
+| 2026-05-04 | render_delayed 다단계 시간축 + 환불 정책 |
+| 2026-05-05 | Shotstack Smart Clips, cron 다단계 타임라인 코드 완성 |
+| 2026-05-06 | 1순위 시장 정의 (학교 졸업식), Phase B-3 (Admin SDK 전용 전환), Vercel Pro + cron 이전 |
+| 2026-05-07 | 서비스 모델 정의 (비공식 기념품, 단기 데이터 삭제), Vercel Cron 이전 |
+| 2026-05-08 | 클립 제외 기능, 재렌더 버튼, 한글 인트로/아웃트로 (Shotstack rich-text) |
+| 2026-05-09 | 시장 정의 보강, 공유 채널 정리, 인스타 제거, 닉네임 필수 입력 |
 
 ## 알려진 이슈
 
 상세 추적은 [`known-issues.md`](./known-issues.md) 참조.
-
-요약:
-- 현재 미해결 이슈 없음. known-issues.md 참조.
