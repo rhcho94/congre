@@ -31,6 +31,8 @@ function UploadInner() {
   const [facingMode, setFacingMode] = useState<"user" | "environment">("environment");
   // streamKey: openCamera 호출마다 증가 → useEffect([stage, streamKey])가 재실행되어 video.srcObject 갱신
   const [streamKey, setStreamKey] = useState(0);
+  // TEMP DEBUG — 이슈 #4 정찰용
+  const [cameraDebugLog, setCameraDebugLog] = useState<string[]>([]);
 
   const liveRef = useRef<HTMLVideoElement>(null);
   const previewRef = useRef<HTMLVideoElement>(null);
@@ -137,6 +139,27 @@ function UploadInner() {
       }
       streamRef.current = stream;
       setStreamKey((k) => k + 1); // useEffect 재실행 트리거
+
+      // TEMP DEBUG — 이슈 #4 정찰용
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter((d) => d.kind === "videoinput");
+        const activeTrack = stream.getVideoTracks()[0];
+        const activeSettings = activeTrack?.getSettings?.() ?? {};
+        const msgs: string[] = [
+          `[camera-debug] requested facing=${facing}`,
+          `[camera-debug] active label="${activeTrack?.label ?? "?"}" deviceId="${String(activeSettings.deviceId ?? "?").slice(0, 8)}..."`,
+          ...videoDevices.map((d, i) =>
+            `[camera-debug] index=${i} label="${d.label}" deviceId="${d.deviceId.slice(0, 8)}..." groupId="${d.groupId.slice(0, 8)}..."`
+          ),
+        ];
+        msgs.forEach((m) => console.log(m));
+        setCameraDebugLog(msgs);
+      } catch {
+        console.log("[camera-debug] enumerateDevices failed");
+      }
+      // END TEMP DEBUG
+
       return stream;
     } catch {
       setErrorMsg("카메라 접근 권한이 필요합니다. 브라우저 설정을 확인해주세요.");
@@ -406,6 +429,17 @@ function UploadInner() {
           </p>
         </div>
       )}
+
+      {/* TEMP DEBUG — 이슈 #4 정찰용 */}
+      {cameraDebugLog.length > 0 && (
+        <div className="mx-6 mt-2 p-3 border border-border bg-surface overflow-auto" style={{ maxHeight: "180px" }}>
+          <p className="text-xs text-accent font-medium tracking-wide mb-1">[DEBUG] 카메라 목록 — 스크린샷 찍어서 공유</p>
+          {cameraDebugLog.map((msg, i) => (
+            <p key={i} className="text-[10px] text-muted font-mono leading-relaxed break-all">{msg}</p>
+          ))}
+        </div>
+      )}
+      {/* END TEMP DEBUG */}
 
       <div className="rule mx-6 my-5" />
 
