@@ -2,6 +2,10 @@
 
 > 기능 단위 작업 이력. 최신이 위.
 
+## 2026-05-09
+
+- fix(email): render-completed "영상 확인하기" 버튼을 videoUrl(CDN 직접 링크)로 변경 — 미인증 수신자도 바로 영상 확인 가능, 기존 "영상 직접 링크"는 "대시보드 열기"로 교체
+
 ## 2026-05-08 — 한글 인트로/아웃트로 기능 추가
 
 - feat(fonts): NotoSansKR-Regular.ttf 추가 — /public/fonts/ 호스팅, Shotstack rich-text 폰트 소스 (SIL OFL)

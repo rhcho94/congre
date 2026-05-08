@@ -32,14 +32,14 @@ export function renderRenderCompletedEmail(ctx: RenderCompletedEmailCtx): string
     <p style="margin:0 0 16px;font-size:14px;color:${C.text};line-height:1.7;">
       대시보드에서 완성된 영상을 확인하고 SNS에 공유해 보세요.
     </p>
-    <a href="${ctx.dashboardUrl}"
+    <a href="${ctx.videoUrl}"
        style="display:inline-block;padding:12px 28px;background:${C.accent};color:#fff;font-size:13px;font-weight:600;text-decoration:none;border-radius:2px;letter-spacing:0.05em;margin-bottom:12px;">
       영상 확인하기 →
     </a>
     <br>
-    <a href="${ctx.videoUrl}"
+    <a href="${ctx.dashboardUrl}"
        style="display:inline-block;margin-top:8px;font-size:12px;color:${C.accent};text-decoration:underline;">
-      영상 직접 링크
+      대시보드 열기
     </a>
     ${refundBlock}
     `

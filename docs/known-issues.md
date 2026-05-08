@@ -1,5 +1,12 @@
 # Known Issues & Deferred Tasks
 
+## ✅ render-completed 이메일 "영상 확인하기" 버튼 → /host 리다이렉트 [RESOLVED 2026-05-09]
+
+- **해결**: `src/emails/render-completed.ts`의 "영상 확인하기" 버튼 href를 `dashboardUrl` → `videoUrl`(Shotstack CDN)로 변경. 보조 링크는 "대시보드 열기"로 교체하여 `dashboardUrl` 유지.
+- **발견 경위**: 2026-05-09 필드 테스트 직전 사용성 테스트 — 번갈아 호스트·참가자 역할 시 render_completed 이메일을 비로그인 상태에서 확인하면 "영상 확인하기" 클릭 시 /host 리다이렉트.
+- **원인**: `render_completed` 이메일의 주 버튼이 `/dashboard/events/{id}` (호스트 인증 필요)를 가리키고 있었음. "영상 직접 링크"는 CDN URL이라 정상 동작.
+- **영향 범위**: `src/emails/render-completed.ts` 1파일. 다른 이메일 템플릿(event-created, render-started 등)의 dashboardUrl 버튼은 대시보드 이동 목적이라 변경 대상 아님.
+
 ## ✅ handleClose silent fail — render/start 응답 미체크 [RESOLVED 2026-05-08]
 
 - **해결**: handleClose의 render/start fetch 호출에 응답 코드 체크 추가. 에러 코드별 사용자 메시지 분기 (NO_CLIPS_AFTER_EXCLUSION, NO_CLIPS, NOT_CONFIGURED 등).
