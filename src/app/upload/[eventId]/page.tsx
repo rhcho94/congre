@@ -153,6 +153,20 @@ function UploadInner() {
             `[camera-debug] index=${i} label="${d.label}" deviceId="${d.deviceId.slice(0, 8)}..." groupId="${d.groupId.slice(0, 8)}..."`
           ),
         ];
+        // zoom capability — 갤럭시 S22+ 정찰 (TEMP DEBUG — 이슈 #4)
+        try {
+          const caps = (activeTrack?.getCapabilities?.() ?? {}) as Record<string, unknown>;
+          const zoomCap = "zoom" in caps ? JSON.stringify(caps.zoom) : '"not supported"';
+          const zoomSet = "zoom" in (activeSettings as Record<string, unknown>)
+            ? String((activeSettings as Record<string, unknown>).zoom)
+            : "not present";
+          const zoomSupported = (navigator.mediaDevices.getSupportedConstraints() as Record<string, unknown>).zoom ?? "not supported";
+          msgs.push(`[camera-debug] capabilities.zoom=${zoomCap}`);
+          msgs.push(`[camera-debug] settings.zoom=${zoomSet}`);
+          msgs.push(`[camera-debug] supportedConstraints.zoom=${String(zoomSupported)}`);
+        } catch {
+          msgs.push("[camera-debug] zoom capability check failed");
+        }
         msgs.forEach((m) => console.log(m));
         setCameraDebugLog(msgs);
       } catch {
