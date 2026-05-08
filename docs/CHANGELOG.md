@@ -5,6 +5,7 @@
 ## 2026-05-09
 
 - fix(email): render-completed "영상 확인하기" 버튼을 videoUrl(CDN 직접 링크)로 변경 — 미인증 수신자도 바로 영상 확인 가능, 기존 "영상 직접 링크"는 "대시보드 열기"로 교체
+- feat(landing): 히어로 영상 unmute 버튼 추가 — 기본 무음 유지, 클릭 시 소리 토글 (VolumeX/Volume2 아이콘, LandingHeroVideo 클라이언트 컴포넌트 분리)
 
 ## 2026-05-08 — 한글 인트로/아웃트로 기능 추가
 

@@ -1,5 +1,12 @@
 # Known Issues & Deferred Tasks
 
+## ✅ 랜딩 히어로 영상 무음 고정 — 소리 켜는 방법 없음 [RESOLVED 2026-05-09]
+
+- **해결**: `LandingHeroVideo` 클라이언트 컴포넌트 신설. 영상 우하단에 VolumeX/Volume2 아이콘 버튼 추가 — 클릭 시 `video.muted` 토글. 기본은 무음 유지(브라우저 자동재생 정책 준수).
+- **발견 경위**: 2026-05-09 필드 테스트 직전 사용성 테스트.
+- **원인**: `autoPlay muted` 조합은 브라우저 자동재생 정책상 필수. `muted` 제거 시 재생 자체가 차단됨. Unmute 버튼 없어서 사용자가 소리를 들을 방법이 없었음.
+- **영향 범위**: `src/app/page.tsx` (video 블록 → LandingHeroVideo 위임), `src/components/LandingHeroVideo.tsx` 신규.
+
 ## ✅ render-completed 이메일 "영상 확인하기" 버튼 → /host 리다이렉트 [RESOLVED 2026-05-09]
 
 - **해결**: `src/emails/render-completed.ts`의 "영상 확인하기" 버튼 href를 `dashboardUrl` → `videoUrl`(Shotstack CDN)로 변경. 보조 링크는 "대시보드 열기"로 교체하여 `dashboardUrl` 유지.
