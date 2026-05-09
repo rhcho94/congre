@@ -4,6 +4,7 @@
 
 ## 2026-05-09
 
+- fix(admin): getAdminDb() settings() 중복 호출 가드 — SSR 서버 컴포넌트(generateMetadata + SharePage) 모듈 격리 환경에서 같은 Firestore 객체에 settings() 두 번 호출 시 throw 발생. try/catch로 "already initialized" 에러만 무시, 그 외 에러는 re-throw.
 - feat(share): /share/{eventId} 공유 페이지 신설 — SSR 서버 컴포넌트, og 메타태그(generateMetadata), 상태별 화면 분기(done/준비 중/notFound), 카톡·링크복사 버튼(ShareActions 클라이언트 컴포넌트), BrandName 푸터
 - fix(share): 호스트 대시보드 카톡 공유 link.webUrl을 cdn.shotstack.io → /share/{eventId}로 변경 — 카카오 콘솔 미등록 도메인 fallback 사고 해소
 - fix(render): 영상 편집 클립 순서 오름차순 정렬 (uploadedAt 기준) — Phase B-3 (de6551b) 회귀 수정. render/start에서 uploadedAt 오름차순 sort 추가, shotstack.ts .reverse() 제거

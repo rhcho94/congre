@@ -34,7 +34,14 @@ let _db: Firestore | null = null;
 export function getAdminDb(): Firestore {
   if (_db) return _db;
   _db = getFirestore(getAdminApp());
-  // Firestore rejects undefined values by default; this makes optional fields safe to spread
-  _db.settings({ ignoreUndefinedProperties: true });
+  try {
+    // Firestore rejects undefined values by default; this makes optional fields safe to spread
+    _db.settings({ ignoreUndefinedProperties: true });
+  } catch (err) {
+    // SSR 모듈 격리 환경에서 다른 인스턴스가 이미 settings 적용한 경우 무시
+    if (!(err instanceof Error) || !err.message.includes("already")) {
+      throw err;
+    }
+  }
   return _db;
 }

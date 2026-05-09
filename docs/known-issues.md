@@ -1,5 +1,12 @@
 # Known Issues & Deferred Tasks
 
+## ✅ SSR 서버 컴포넌트 getAdminDb() 중복 호출 — settings() throw [RESOLVED 2026-05-09]
+
+- **해결**: `getAdminDb()` 내 `_db.settings()` 호출을 try/catch로 감쌈. "already initialized" 문자열 포함 에러만 무시, 그 외는 re-throw.
+- **발현 조건**: SSR 서버 컴포넌트에서 `generateMetadata`와 페이지 함수가 각각 `getAdminDb()`를 호출할 때. Next.js SSR 모듈 격리로 두 함수가 별도 모듈 인스턴스에서 실행되면 `_db` 모듈 변수가 공유되지 않음 → 둘 다 `getFirestore()`로 같은 내부 객체를 받고 `.settings()` 두 번 호출 → throw.
+- **격상 트리거**: SSR 서버 컴포넌트 내 `getAdminDb()` 호출자가 늘어나거나, Edge Runtime 등 다른 환경에서 동일 패턴이 깨지면 `globalThis` 싱글턴 패턴으로 격상 검토.
+- **위치**: `src/lib/firebase-admin.ts` `getAdminDb()`, `src/app/share/[eventId]/page.tsx` (트리거 파일)
+
 ## ✅ 영상 편집 순서 역순 회귀 [RESOLVED 2026-05-09]
 
 - **해결**: `render/start`에서 `includedDocs`를 `uploadedAt` 오름차순으로 sort 추가. `shotstack.ts`의 `.reverse()` 및 "내림차순 입력" 가정 주석 제거.
