@@ -25,6 +25,17 @@
 
 ## 보류 중 (나중에 검토)
 
+- **영상 호스팅 CDN 이전 (Shotstack → Cloudflare R2)**
+  - 현재 영상 호스팅: Shotstack CDN (cdn.shotstack.io). bandwidth 비용은 Shotstack 마진 포함.
+  - congre 시나리오 비용 비교 (영상 1편 3GB + 300명 시청 1회 기준):
+    - R2: 약 60원 (egress $0/GB, 저장 $0.015/GB·월)
+    - Bunny CDN: 약 3.6만 원
+    - AWS S3: 약 10.8만 원
+    - Shotstack 현재: 약 18만 원 (추정)
+  - 트레이드오프: 신규 인프라 1개 추가 (Cloudflare 계정·R2 버킷·도메인 연결).
+  - 격상 트리거: Shotstack fair use 한도 도달 / 100명+ 규모 시장 진입 / 첫 회차 후 사용량 데이터 재평가.
+  - 미완 정찰 영역: R2 한국 PoP 위치, R2 한국 결제·세금 처리, Shotstack 자체 호스팅 옵트아웃 정확한 사양.
+  - 관련 정찰: 2026-05-09 채팅 클로드 세션. 첫 회차 진입 차단 항목 아님. YAGNI.
 - **글로벌 B2B 진출 시 도메인·브랜드 전략 재검토**
   - `congre.com`은 일본 컨벤션·행사 컨설팅 회사 보유 중 — 글로벌 진출 시 충돌 가능성
   - 옵션: 이름 유지 + 다른 TLD / 변형 이름 + .com / 새 이름 + .com / congre.com 인수
