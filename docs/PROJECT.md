@@ -94,3 +94,4 @@ npx firebase emulators:start --only firestore
   - 함수만 구현 2건: 첫 클립 업로드, 참가자 결과 (다음 PR에서 트리거 연결)
 - Firestore 보안: events/clips Admin SDK 전용 (Client SDK read 잠금, Phase B-3 완료 2026-05-06)
 - 한글 인트로/아웃트로 (이벤트 생성 폼 입력 → Firestore 저장 → Shotstack rich-text 클립 삽입, NotoSansKR TTF 호스팅)
+- 공유 페이지 `/share/{eventId}` (인증 없음, SSR + og 메타태그, 상태별 화면 분기, 카톡·링크복사 버튼)

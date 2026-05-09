@@ -252,13 +252,17 @@ export default function EventDetailPage() {
       return;
     }
     try {
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
       K.Share.sendDefault({
         objectType: "feed",
         content: {
           title: event.title,
           description: "Congre로 만든 영상입니다 🎬",
-          imageUrl: event.videoUrl,
-          link: { mobileWebUrl: event.videoUrl, webUrl: event.videoUrl },
+          imageUrl: `${appUrl}/logo.png`,
+          link: {
+            mobileWebUrl: `${appUrl}/share/${eventId}`,
+            webUrl: `${appUrl}/share/${eventId}`,
+          },
         },
       });
     } catch {

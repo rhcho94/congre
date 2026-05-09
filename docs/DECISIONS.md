@@ -2,6 +2,24 @@
 
 > 새 결정은 위로 추가 (최신이 위). 형식: 날짜 / 결정 / 이유 / 대안.
 
+## 2026-05-09 — share 페이지 신설: URL 구조·데이터 취득 갈래·카톡 공유 링크 변경
+
+- **결정**:
+  - `/share/{eventId}` 공개 공유 페이지 신설. 인증 없음. 호스트·게스트 동일 화면.
+  - 데이터 취득: D-1(SSR 서버 컴포넌트) 채택 — `getAdminDb()`로 events 직접 read, `generateMetadata`로 og 태그 렌더.
+  - 호스트 대시보드 카톡 공유 `link.webUrl` / `link.mobileWebUrl`: `event.videoUrl`(cdn.shotstack.io) → `${NEXT_PUBLIC_APP_URL}/share/${eventId}`.
+  - 카톡 공유 `imageUrl`: `event.videoUrl` → `${NEXT_PUBLIC_APP_URL}/logo.png` (운영자 `public/logo.png` 업로드 예정).
+  - 공유 버튼(카톡·링크복사)은 `ShareActions.tsx` 클라이언트 컴포넌트로 분리. 대시보드 버튼은 추출 리팩토링 하지 않고 인라인 유지(YAGNI).
+  - 상태별 화면 분기: `status === "done" && videoUrl 있음` → 영상 재생 + 공유 버튼 / 그 외 → "영상 준비 중" 안내 / doc 없음 → `notFound()`.
+- **이유**:
+  - 카카오 피드 공유의 `link.webUrl`은 카카오 콘솔에 등록된 도메인이어야 함. 기존 코드가 `cdn.shotstack.io`를 직접 넣어 "자세히 보기" 클릭 시 카카오 초기화면으로 fallback. congre 자체 도메인 URL이 필요해 공유 페이지 신설.
+  - D-1(SSR) 채택 이유: `generateMetadata`로 og:title/og:image를 서버에서 렌더해 카톡 링크 미리보기 카드(제목·썸네일) 지원. D-2(클라이언트 fetch)는 og 태그 렌더 불가.
+  - `public/logo.png` 별도 업로드 예정 — 파일 없어도 빌드 통과. og:image fetch 실패는 카카오 측 처리에 위임.
+- **대안 검토**:
+  - 갈래 A (cdn.shotstack.io를 카카오 콘솔에 임시 등록): Shotstack 제3자 도메인을 콘솔에 등록하는 형태 → 영구 의존 + 도메인 변경 시 재발 → 기각.
+  - D-2 (API 라우트 + 클라이언트 컴포넌트): og 태그 불가, 파일 2개 신설 → 기각.
+  - 공유 버튼 컴포넌트 추출 리팩토링: 대시보드 인라인 코드 변경 범위 증가, 이번 작업 필요 범위 아님 → YAGNI, 기각.
+
 ## 2026-05-09 — 참가자 입력 사양 변경: 닉네임 → 이름 + 전화번호
 
 - **결정**: 참가자 업로드 시점에 **이름 + 전화번호** 입력 받기. 닉네임 사양 폐기. 시장 분기 없이 졸업식·결혼식·기업 행사 등 모든 시장 통일 사양.
