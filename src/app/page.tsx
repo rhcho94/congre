@@ -327,12 +327,26 @@ export default function LandingPage() {
             <BrandName className="text-base tracking-wider" />
             <p className="text-xs text-muted opacity-60">© 2025 <BrandName />. All rights reserved.</p>
           </div>
-          <a
-            href="mailto:hello@congre.io"
-            className="text-xs tracking-widest uppercase text-muted hover:text-accent transition-colors duration-200"
-          >
-            문의하기 →
-          </a>
+          <div className="flex items-center gap-6">
+            <Link
+              href="/privacy"
+              className="text-xs tracking-widest uppercase text-muted hover:text-accent transition-colors duration-200"
+            >
+              개인정보 처리방침
+            </Link>
+            <Link
+              href="/terms"
+              className="text-xs tracking-widest uppercase text-muted hover:text-accent transition-colors duration-200"
+            >
+              이용약관
+            </Link>
+            <a
+              href="mailto:hello@congre.kr"
+              className="text-xs tracking-widest uppercase text-muted hover:text-accent transition-colors duration-200"
+            >
+              문의하기 →
+            </a>
+          </div>
         </div>
       </footer>
 
