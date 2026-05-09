@@ -75,6 +75,10 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "MISSING_FIELDS" }, { status: 400 });
   }
 
+  if (!/^010\d{8}$/.test(organizerPhone)) {
+    return Response.json({ error: "INVALID_PHONE" }, { status: 400 });
+  }
+
   const db = getAdminDb();
   const sessionToken = crypto.randomUUID();
 

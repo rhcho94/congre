@@ -46,6 +46,7 @@ interface ApiClip {
   eventId: string;
   s3Key: string;
   uploaderName?: string;
+  uploaderPhone?: string;
   uploadedAt: number | null;
   excludedAt?: number | null;
 }
@@ -628,9 +629,14 @@ export default function EventDetailPage() {
                       <span className="text-xs text-muted tabular-nums shrink-0">
                         #{clips.length - i}
                       </span>
-                      <span className="text-xs text-foreground truncate mx-4 flex-1">
-                        {clip.uploaderName ?? <span className="text-muted">(닉네임 없음)</span>}
-                      </span>
+                      <div className="flex flex-col mx-4 flex-1 min-w-0">
+                        <span className="text-xs text-foreground truncate">
+                          {clip.uploaderName ?? <span className="text-muted">(이름 없음)</span>}
+                        </span>
+                        <span className="text-xs text-muted">
+                          {clip.uploaderPhone ?? "(전번 없음)"}
+                        </span>
+                      </div>
                       <span className="text-xs text-muted shrink-0 mr-3">
                         {formatUploadTime(clip.uploadedAt)}
                       </span>

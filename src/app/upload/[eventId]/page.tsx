@@ -9,7 +9,7 @@ import CongreBadge from "@/components/CongreBadge";
 
 // "standby" = 카메라 켜진 미리보기 (녹화 전)
 // "preview"  = 녹화 완료 후 blob 재생 (기존)
-type Stage = "verifying" | "invalid" | "nickname" | "idle" | "standby" | "recording" | "preview" | "uploading" | "done" | "error";
+type Stage = "verifying" | "invalid" | "uploader" | "idle" | "standby" | "recording" | "preview" | "uploading" | "done" | "error";
 
 const MAX_SEC = 10;
 
@@ -68,8 +68,9 @@ function UploadInner() {
   const [progress, setProgress] = useState(0);
   const [retryNum, setRetryNum] = useState(0);
   const [errorMsg, setErrorMsg] = useState("");
-  const [nickname, setNickname] = useState("");
-  const [nicknameError, setNicknameError] = useState("");
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [uploaderError, setUploaderError] = useState("");
   const [isReturning, setIsReturning] = useState(false);
   const [s3Ready, setS3Ready] = useState<boolean | null>(null);
   const [facingMode, setFacingMode] = useState<"user" | "environment">("environment");
@@ -102,7 +103,7 @@ function UploadInner() {
         }
         const evt = await res.json() as { id: string; title: string };
         setEvent(evt);
-        setStage("nickname");
+        setStage("uploader");
       } catch {
         if (isMounted) setStage("invalid");
       }
@@ -116,14 +117,22 @@ function UploadInner() {
   }, []);
 
   useEffect(() => {
-    if (stage !== "nickname") return;
-    const saved = sessionStorage.getItem(`congre-nick-${eventId}`);
-    if (saved) {
-      setNickname(saved);
-      setIsReturning(true);
-    } else {
-      setIsReturning(false);
+    if (stage !== "uploader") return;
+    const raw = sessionStorage.getItem(`congre-uploader-${eventId}`);
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw) as { name?: unknown; phone?: unknown };
+        if (typeof parsed.name === "string" && typeof parsed.phone === "string") {
+          setName(parsed.name);
+          setPhone(parsed.phone);
+          setIsReturning(true);
+          return;
+        }
+      } catch {
+        // 깨진 값 무시
+      }
     }
+    setIsReturning(false);
   }, [stage, eventId]);
 
   const stopStream = useCallback(() => {
@@ -204,24 +213,39 @@ function UploadInner() {
     }
   }
 
-  async function handleNicknameNext() {
-    const trimmed = nickname.trim();
-    if (!trimmed) return;
-    setNicknameError("");
+  async function handleUploaderNext() {
+    const trimmedName = name.trim();
+    const phoneClean = phone.replace(/\D/g, "");
+    setUploaderError("");
+
+    if (!trimmedName) {
+      setUploaderError("이름을 입력해주세요");
+      return;
+    }
+    if (trimmedName.length > 20) {
+      setUploaderError("이름은 20자까지 입력할 수 있어요");
+      return;
+    }
+    if (!/^010\d{8}$/.test(phoneClean)) {
+      setUploaderError("전화번호는 010으로 시작하는 11자리 숫자로 입력해주세요");
+      return;
+    }
+
     try {
       const res = await fetch(
-        `/api/clips/check?eventId=${encodeURIComponent(eventId)}&name=${encodeURIComponent(trimmed)}`
+        `/api/clips/check?eventId=${encodeURIComponent(eventId)}&phone=${encodeURIComponent(phoneClean)}&name=${encodeURIComponent(trimmedName)}`
       );
       const data = await res.json() as { exists: boolean };
       if (data.exists) {
-        setNicknameError("이미 사용된 닉네임이에요. 다른 닉네임을 입력해주세요.");
+        setUploaderError("이전 영상과 다른 이름을 입력해주세요");
         return;
       }
-      setNickname(trimmed);
-      sessionStorage.setItem(`congre-nick-${eventId}`, trimmed);
+      setName(trimmedName);
+      setPhone(phoneClean);
+      sessionStorage.setItem(`congre-uploader-${eventId}`, JSON.stringify({ name: trimmedName, phone: phoneClean }));
       setStage("idle");
     } catch {
-      setNicknameError("확인 중 오류가 발생했습니다. 다시 시도해주세요.");
+      setUploaderError("확인 중 오류가 발생했습니다. 다시 시도해주세요.");
     }
   }
 
@@ -308,8 +332,9 @@ function UploadInner() {
     setProgress(0);
     setRetryNum(0);
     setErrorMsg("");
-    setNicknameError("");
-    setStage("nickname");
+    setUploaderError("");
+    setStage("uploader");
+    // name/phone state 유지 — useEffect가 sessionStorage에서 다시 채움
   }
 
   async function doUpload(attempt: number): Promise<void> {
@@ -332,7 +357,7 @@ function UploadInner() {
     const clipSave = fetch("/api/clips", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ eventId, s3Key: key, token: urlToken, uploaderName: nickname }),
+      body: JSON.stringify({ eventId, s3Key: key, token: urlToken, uploaderName: name, uploaderPhone: phone.replace(/\D/g, "") }),
     });
     const clipTimeout = new Promise<never>((_, reject) =>
       setTimeout(() => reject(new Error("clip_save_timeout")), 5000)
@@ -341,11 +366,11 @@ function UploadInner() {
       const clipRes = await Promise.race([clipSave, clipTimeout]);
       if (!clipRes.ok) {
         const body = await clipRes.json().catch(() => ({})) as { error?: string };
-        if (body.error === "DUPLICATE_NICKNAME") throw new Error("DUPLICATE_NICKNAME");
+        if (body.error === "DUPLICATE_UPLOADER") throw new Error("DUPLICATE_UPLOADER");
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      if (msg === "DUPLICATE_NICKNAME") throw err;
+      if (msg === "DUPLICATE_UPLOADER") throw err;
       console.error("[clip] save skipped:", msg);
     }
   }
@@ -370,9 +395,9 @@ function UploadInner() {
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
         console.error(`[upload] attempt=${attempt} FAILED:`, msg, err);
-        if (msg === "DUPLICATE_NICKNAME") {
-          setNicknameError("이미 사용된 닉네임이에요. 다른 닉네임을 입력해주세요.");
-          setStage("nickname");
+        if (msg === "DUPLICATE_UPLOADER") {
+          setUploaderError("이전 영상과 다른 이름을 입력해주세요");
+          setStage("uploader");
           return;
         }
         if (attempt === 3) {
@@ -470,40 +495,50 @@ function UploadInner() {
 
       <main className="flex-1 flex flex-col items-center px-6 py-4 gap-6">
 
-        {/* ── nickname ── */}
-        {stage === "nickname" && (
+        {/* ── uploader ── */}
+        {stage === "uploader" && (
           <>
             <p className="text-sm text-center text-foreground leading-relaxed">
               {isReturning
-                ? "이전 닉네임은 이미 사용됐어요. 새 닉네임을 입력해주세요. (예: 민준 2, 민준 한마디 더)"
-                : "영상에 표시될 닉네임을 입력해주세요."}
+                ? "다시 오셨네요. 이름과 전화번호를 확인해주세요. 같은 이름으로는 한 번만 올릴 수 있어요."
+                : "이름과 전화번호를 입력해주세요. 결과 영상이 준비되면 문자로 알려드려요."}
             </p>
             <div className="w-full flex flex-col gap-3">
               <div className="relative">
                 <input
                   type="text"
-                  value={nickname}
-                  onChange={(e) => { setNickname(e.target.value.slice(0, 10)); setNicknameError(""); }}
-                  onKeyDown={(e) => { if (e.key === "Enter") handleNicknameNext(); }}
-                  placeholder="닉네임 (최대 10자)"
-                  maxLength={10}
+                  value={name}
+                  onChange={(e) => { setName(e.target.value.slice(0, 20)); setUploaderError(""); }}
+                  onKeyDown={(e) => { if (e.key === "Enter") handleUploaderNext(); }}
+                  placeholder="이름 (최대 20자)"
+                  maxLength={20}
                   autoFocus
                   className="w-full bg-surface border border-border px-4 py-3 pr-14 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-accent transition-colors"
                 />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted tabular-nums pointer-events-none">
-                  {nickname.length}/10
+                  {name.length}/20
                 </span>
               </div>
-              {nicknameError && (
-                <p className="text-xs" style={{ color: "#e05252" }}>{nicknameError}</p>
+              <input
+                type="tel"
+                inputMode="numeric"
+                value={phone}
+                onChange={(e) => { setPhone(e.target.value.slice(0, 13)); setUploaderError(""); }}
+                onKeyDown={(e) => { if (e.key === "Enter") handleUploaderNext(); }}
+                placeholder="010-1234-5678 또는 01012345678"
+                maxLength={13}
+                className="w-full bg-surface border border-border px-4 py-3 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-accent transition-colors"
+              />
+              {uploaderError && (
+                <p className="text-xs" style={{ color: "#e05252" }}>{uploaderError}</p>
               )}
               <p className="text-xs text-muted leading-relaxed opacity-70">
-                같은 이벤트에서 중복 사용 불가. 한 번 입력 후 여러 영상을 올릴 수 있어요.
+                같은 이름+전화번호로는 한 번만 올릴 수 있어요. 이름을 달리해서 여러 영상을 올릴 수 있어요.
               </p>
             </div>
             <button
-              onClick={handleNicknameNext}
-              disabled={!nickname.trim()}
+              onClick={handleUploaderNext}
+              disabled={!name.trim() || !phone.trim()}
               className="w-full py-4 bg-accent text-background text-sm tracking-widest uppercase font-medium hover:brightness-110 transition-all duration-200 glow-accent disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:brightness-100"
             >
               다음

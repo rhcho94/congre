@@ -33,6 +33,7 @@ export interface Clip {
   s3Key: string;
   uploadedAt: Timestamp;
   uploaderName?: string;
+  uploaderPhone?: string;
   sessionToken?: string;
   excludedAt?: Timestamp | null;
 }

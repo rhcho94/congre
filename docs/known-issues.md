@@ -1,5 +1,12 @@
 # Known Issues & Deferred Tasks
 
+## Firestore composite index — eventId + uploaderPhone + uploaderName 3조건 쿼리
+
+- **현황**: `/api/clips/check` GET 및 `POST /api/clips` 중복 체크에서 `eventId + uploaderPhone + uploaderName` 3조건 composite where 쿼리 사용. Firestore는 이 복합 인덱스를 자동 생성하지 않음.
+- **발현 조건**: PR 1 배포 후 첫 업로드 시도 시. Firestore가 쿼리를 거부하며 Vercel 로그에 인덱스 생성 링크 포함된 에러 출력.
+- **처리**: Vercel 로그 → Functions 탭 → 에러 메시지 내 "Create index" 링크 클릭 → Firebase 콘솔에서 인덱스 자동 생성 (1~2분 소요).
+- **격상 트리거**: 인덱스 생성 링크가 에러에 포함되지 않는 경우 → Firebase 콘솔 → Firestore → 색인 탭에서 수동 생성 (컬렉션: clips, 필드: eventId ASC + uploaderPhone ASC + uploaderName ASC).
+
 ## ✅ SSR 서버 컴포넌트 getAdminDb() 중복 호출 — settings() throw [RESOLVED 2026-05-09]
 
 - **해결**: `getAdminDb()` 내 `_db.settings()` 호출을 try/catch로 감쌈. "already initialized" 문자열 포함 에러만 무시, 그 외는 re-throw.
@@ -176,13 +183,9 @@
 - **격상 트리거**: 호스트가 클립 제외 후 "잘못 뺀 것 같다" 사고 발생 시. 양방향 토글이라 복구 가능하나 발견까지 시간 소요.
 - **처리 시점**: 격상 트리거 대기. 필드 테스트 첫 회차에서 흐름 직접 관찰.
 
-## 사용자 닉네임 회상 사고
+## ✅ 사용자 닉네임 회상 사고 [RESOLVED 2026-05-10 / PR 1]
 
-- **현황**: 사용자가 본인 닉네임을 까먹은 경우 본인 미리보기 화면 없음. sessionStorage는 탭 닫으면 사라짐.
-- **현재 처리**: 호스트 카카오톡 채널 @congre로 응대. 호스트가 클립 목록에서 닉으로 식별 후 사용자에게 안내.
-- **격상 트리거**: 회상 사고가 잦아져서 호스트 응대 부담이 커지면 본인 미리보기 화면 등 격상 검토.
-- **대안 검토**: localStorage 사용 — 폰 빌려쓰기 시나리오(졸업식)에서 정보 누출 위험으로 기각.
-- **후속 연계**: 참가자 입력 사양이 닉네임→이름+전화번호로 변경될 경우(DECISIONS 2026-05-09) 이 이슈는 자연 해소됨.
+- **해결**: 참가자 입력 사양이 닉네임 → 이름+전화번호로 변경(PR 1). 이름을 잊어도 전화번호가 기본 식별자가 됨. sessionStorage에 이름+전번 JSON으로 저장, 재방문 시 자동 미리 채움.
 
 ## 영상 호스팅 CDN 이전 — 비용 검토 보류 (메모)
 

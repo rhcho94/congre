@@ -7,6 +7,14 @@
 - [x] 인스타그램 공유 버튼 제거 (커밋 7507b1e)
 - [x] 참가자 닉네임 필수 입력 추가 (커밋 a5bec82)
 - [ ] 호스트 계정 N개 생성 (옵션 A) — 필드 테스트 일정 확정 시 운영자 수동 (Firebase 콘솔 → Authentication → Users → Add user)
+- [ ] 약관·처리방침 콘텐츠 작성 (PR 1 push 전 필수 — 전번 수집 코드와 함께 배포)
+
+### 다음 진입점: PR 2
+
+**feat(notify): 참가자 결과 SMS 트리거 연결**
+- `src/app/api/cron/check-rendering/route.ts` Shotstack done 직후 hook
+- clips 컬렉션 조회 (excludedAt: null) → distinct uploaderPhone → 각 phone에 notifyParticipantResult
+- 멱등성: `events.notifications.participantNotifiedAt` 필드 (기존 notifications.* 패턴)
 
 ### P1 — 권장하지만 첫 회차 후 가능
 - Shotstack 비용 모니터링 설정 (출시 차단 항목이었으나 첫 회차 소규모 진입으로 우선 관찰)
@@ -63,7 +71,8 @@
 | 2026-05-06 | 1순위 시장 정의 (학교 졸업식), Phase B-3 (Admin SDK 전용 전환), Vercel Pro + cron 이전 |
 | 2026-05-07 | 서비스 모델 정의 (비공식 기념품, 단기 데이터 삭제), Vercel Cron 이전 |
 | 2026-05-08 | 클립 제외 기능, 재렌더 버튼, 한글 인트로/아웃트로 (Shotstack rich-text) |
-| 2026-05-09 | 시장 정의 보강, 공유 채널 정리, 인스타 제거, 닉네임 필수 입력, share 페이지 신설, 카톡 공유 link fallback 해소 |
+| 2026-05-09 | 시장 정의 보강, 공유 채널 정리, 인스타 제거, 닉네임 필수 입력, share 페이지 신설, 카톡 공유 link fallback 해소, 약관·처리방침 페이지 골격 |
+| 2026-05-10 | PR 1 — 닉네임 → 이름+전번 전환 (uploader stage·API 4개·대시보드·organizerPhone 검증) |
 
 ## 알려진 이슈
 

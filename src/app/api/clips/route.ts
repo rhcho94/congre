@@ -10,14 +10,20 @@ export async function POST(request: NextRequest) {
     typeof body.eventId !== "string" ||
     typeof body.s3Key !== "string" ||
     typeof body.token !== "string" ||
-    typeof body.uploaderName !== "string"
+    typeof body.uploaderName !== "string" ||
+    typeof body.uploaderPhone !== "string"
   ) {
     return Response.json({ error: "BAD_REQUEST" }, { status: 400 });
   }
 
   const uploaderName = body.uploaderName.trim();
-  if (uploaderName.length < 1 || uploaderName.length > 10) {
+  if (uploaderName.length < 1 || uploaderName.length > 20) {
     return Response.json({ error: "BAD_REQUEST" }, { status: 400 });
+  }
+
+  const phoneClean = body.uploaderPhone.replace(/\D/g, "");
+  if (!/^010\d{8}$/.test(phoneClean)) {
+    return Response.json({ error: "INVALID_PHONE" }, { status: 400 });
   }
 
   const { eventId, s3Key, token } = body as { eventId: string; s3Key: string; token: string };
@@ -42,17 +48,19 @@ export async function POST(request: NextRequest) {
   const dupSnap = await db
     .collection("clips")
     .where("eventId", "==", eventId)
+    .where("uploaderPhone", "==", phoneClean)
     .where("uploaderName", "==", uploaderName)
     .limit(1)
     .get();
   if (!dupSnap.empty) {
-    return Response.json({ error: "DUPLICATE_NICKNAME" }, { status: 409 });
+    return Response.json({ error: "DUPLICATE_UPLOADER" }, { status: 409 });
   }
 
   const clipRef = await db.collection("clips").add({
     eventId,
     s3Key,
     uploaderName,
+    uploaderPhone: phoneClean,
     uploadedAt: FieldValue.serverTimestamp(),
   });
 
