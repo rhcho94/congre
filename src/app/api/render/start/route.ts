@@ -52,7 +52,13 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "NO_CLIPS" }, { status: 400 });
   }
 
-  const includedDocs = clipsSnap.docs.filter((d) => !d.data().excludedAt);
+  const includedDocs = clipsSnap.docs
+    .filter((d) => !d.data().excludedAt)
+    .sort((a, b) => {
+      const aMs = (a.data().uploadedAt as Timestamp)?.toMillis() ?? 0;
+      const bMs = (b.data().uploadedAt as Timestamp)?.toMillis() ?? 0;
+      return aMs - bMs;
+    });
 
   if (includedDocs.length === 0) {
     return Response.json({ error: "NO_CLIPS_AFTER_EXCLUSION" }, { status: 400 });

@@ -1,5 +1,12 @@
 # Known Issues & Deferred Tasks
 
+## ✅ 영상 편집 순서 역순 회귀 [RESOLVED 2026-05-09]
+
+- **해결**: `render/start`에서 `includedDocs`를 `uploadedAt` 오름차순으로 sort 추가. `shotstack.ts`의 `.reverse()` 및 "내림차순 입력" 가정 주석 제거.
+- **발견 경위**: 2026-05-09 운영자 사용성 테스트에서 먼저 올린 클립이 완성 영상 끝에 나오는 것 확인.
+- **회귀 도입 커밋**: `de6551b` (2026-05-06, Phase B-3) — render/start가 클라이언트 s3Keys body 전달 → Firestore 서버 직접 read로 변경되면서 `orderBy` 누락. `shotstack.ts:62`의 ".reverse()가 내림차순 입력을 받는다" 가정이 깨짐. Firestore auto-ID 기반 반환 순서(≈ 생성 시각 오름차순)에 `.reverse()` 적용 → 최종 내림차순 출력.
+- **영향 범위**: `src/app/api/render/start/route.ts` (sort 추가), `src/lib/shotstack.ts` (`.reverse()` 및 주석 제거). 대시보드 정렬(`host/clips/route.ts`)은 별도 코드라 무영향.
+
 ## ✅ 카메라 광각 고정 — 후면 표준 wide 자동 선택 [RESOLVED 2026-05-09]
 
 - **해결**: `openCamera`에 `pickStandardBackCamera` 휴리스틱 추가. iOS는 라벨 "후면 카메라"/"Back Camera" 정확 매칭(가상 카메라 제외), Android는 두 번째 facing back 디바이스 선택. 휴리스틱 실패 시 원본 stream 유지(fallback).

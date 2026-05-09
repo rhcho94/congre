@@ -59,8 +59,7 @@ export async function createRender(
     fontsSrc = `${appUrl}/fonts/NotoSansKR-Regular.ttf`;
   }
 
-  // subscribeToClips가 uploadedAt 내림차순으로 전달하므로 뒤집어 오름차순(오래된 것 먼저) 배치.
-  const videoClips = [...s3Urls].reverse().map((src) => ({
+  const videoClips = [...s3Urls].map((src) => ({
     asset: { type: "video", src },
     start: "auto",
     length: "auto",

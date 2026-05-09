@@ -2,6 +2,15 @@
 
 > 새 결정은 위로 추가 (최신이 위). 형식: 날짜 / 결정 / 이유 / 대안.
 
+## 2026-05-09 — 렌더링 클립 정렬 책임을 shotstack.ts에서 render/start로 이동
+
+- **결정**: `shotstack.ts`는 입력 순서를 그대로 신뢰. 호출자(`render/start`)가 `uploadedAt` 오름차순 sort를 수행. JS sort callback 방식.
+- **이유**: 회귀 원인이 "내림차순 입력 가정"이 호출자 변경(Phase B-3)으로 깨진 것 — 가정 자체를 없애는 게 정합. 명시적 sort가 render/start 코드에 있어야 향후 변경 시 의도 파악 가능. Firestore `orderBy` + 복합 인덱스 대비 운영 작업 0.
+- **대안 검토**:
+  - 갈래 B (`.reverse()`만 제거): "Firestore auto-ID ≈ 생성 시각" 비공식 보장에 의존 → 기각
+  - 갈래 C (Firestore `orderBy` + 복합 인덱스): 인덱스 생성 운영 작업 추가 필요 → 기각
+- **자체 학습**: Phase B-3 같은 큰 리팩토링 시 수정 코드의 출력을 받는 호출자의 가정을 점검하는 단계 누락. 다음 큰 리팩토링 시 grep 기반 호출자 가정 체크를 단계에 포함.
+
 ## 2026-05-09 — 카메라 광각 사고: 휴리스틱 자동 선택(옵션 5-A) 채택
 
 - **결정**: `openCamera` 후면 호출 시 `pickStandardBackCamera` 휴리스틱으로 표준 wide 자동 선택. iOS는 라벨 매칭("후면 카메라"/"Back Camera"), Android(갤럭시 S22+ 기준)는 두 번째 facing back 디바이스. 휴리스틱 실패 시 원본 stream fallback.
