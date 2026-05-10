@@ -107,12 +107,31 @@ export async function createRender(
   return json.response.id;
 }
 
-export async function deleteShotstackRender(renderId: string): Promise<void> {
+export async function deleteShotstackAssetsByRenderId(renderId: string): Promise<void> {
   assertApiKey();
-  await fetch(`${baseUrl}/render/${renderId}`, {
-    method: "DELETE",
+  const serveBaseUrl =
+    shotstackEnv === "production"
+      ? "https://api.shotstack.io/serve/v1"
+      : "https://api.shotstack.io/serve/stage";
+
+  const res = await fetch(`${serveBaseUrl}/assets/render/${renderId}`, {
     headers: { "x-api-key": SHOTSTACK_API_KEY },
   });
+  if (!res.ok) return;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const json = await res.json() as any;
+  const data = json?.data;
+  if (!Array.isArray(data) || data.length === 0) return;
+
+  for (const item of data) {
+    const assetId = item?.attributes?.id as string | undefined;
+    if (!assetId) continue;
+    await fetch(`${serveBaseUrl}/assets/${assetId}`, {
+      method: "DELETE",
+      headers: { "x-api-key": SHOTSTACK_API_KEY },
+    });
+  }
 }
 
 export async function getRenderStatus(
