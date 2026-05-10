@@ -4,6 +4,9 @@
 
 ## 2026-05-10
 
+- docs: split DECISIONS.md into 8 area files (rendering / notifications / auth-model / legal / market-product / infra / data-flow / misc), keep root as index
+- docs: split resolved issues from known-issues into known-issues-resolved (28 → 13 + 15)
+- docs: add suspended.md for parked issues (legal v0.1, entry A/C)
 - feat(cleanup): 자동 삭제 cron 추가 (클립 24h / 완성본 7d, KST 03:00 daily)
 - fix: render-started/completed 알림 발송 후 Firestore 플래그 set 누락 수정
 - feat(notify): 참가자 결과 SMS 트리거 연결 (PR 2)
