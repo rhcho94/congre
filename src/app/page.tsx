@@ -325,7 +325,7 @@ export default function LandingPage() {
         <div className="mx-auto max-w-5xl px-6 py-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-col gap-1">
             <BrandName className="text-base tracking-wider" />
-            <p className="text-xs text-muted opacity-60">© 2025 <BrandName />. All rights reserved.</p>
+            <p className="text-xs text-muted opacity-60">© 2025–2026 <BrandName />. All rights reserved.</p>
           </div>
           <div className="flex items-center gap-6">
             <Link

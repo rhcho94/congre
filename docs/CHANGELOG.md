@@ -8,6 +8,7 @@
 - fix: render-started/completed 알림 발송 후 Firestore 플래그 set 누락 수정
 - feat(notify): 참가자 결과 SMS 트리거 연결 (PR 2)
 - refactor(uploader): 닉네임 → 이름+전번 사양 전환. uploader stage·API 4개·대시보드·organizerPhone 검증 정합화.
+- docs(legal): 이용약관·개인정보처리방침 페이지 추가 (v0.1) — /terms, /privacy 본문 작성 + 푸터 © 표기 정정
 
 ## 2026-05-09
 
