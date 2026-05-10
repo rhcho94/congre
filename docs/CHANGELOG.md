@@ -4,6 +4,7 @@
 
 ## 2026-05-10
 
+- feat(cleanup): 자동 삭제 cron 추가 (클립 24h / 완성본 7d, KST 03:00 daily)
 - fix: render-started/completed 알림 발송 후 Firestore 플래그 set 누락 수정
 - feat(notify): 참가자 결과 SMS 트리거 연결 (PR 2)
 - refactor(uploader): 닉네임 → 이름+전번 사양 전환. uploader stage·API 4개·대시보드·organizerPhone 검증 정합화.

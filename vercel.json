@@ -1,6 +1,7 @@
 {
   "crons": [
     { "path": "/api/cron/check-render-deadlines", "schedule": "*/5 * * * *" },
-    { "path": "/api/cron/check-rendering", "schedule": "*/5 * * * *" }
+    { "path": "/api/cron/check-rendering", "schedule": "*/5 * * * *" },
+    { "path": "/api/cron/cleanup", "schedule": "0 18 * * *" }
   ]
 }
