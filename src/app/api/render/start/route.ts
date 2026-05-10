@@ -117,6 +117,7 @@ export async function POST(request: NextRequest) {
     "notifications.renderDelayedNotifiedAt": null,
     "notifications.refund50NotifiedAt": null,
     "notifications.refund100NotifiedAt": null,
+    "notifications.participantNotifiedAt": null,
   });
 
   if (eventData.organizerEmail && eventData.organizerPhone) {

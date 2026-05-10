@@ -90,8 +90,8 @@ npx firebase emulators:start --only firestore
 - 랜딩 페이지 파티클 효과 (canvas-confetti burst + CSS sparkle)
 - 클립 재생 Pre-signed URL (주최자 대시보드에서 인라인 미리보기, firebase-admin 인증)
 - 알림 시스템 (Resend 이메일 + SOLAPI SMS, 채널 어댑터 패턴, notifications 컬렉션 이력 저장)
-  - 트리거 연결 5건: 이벤트 생성, 렌더 시작, 렌더 완료, 렌더 지연(10분 초과), 렌더 실패
-  - 함수만 구현 2건: 첫 클립 업로드, 참가자 결과 (다음 PR에서 트리거 연결)
+  - 트리거 연결 6건: 이벤트 생성, 렌더 시작, 렌더 완료, 렌더 지연(10분 초과), 렌더 실패, **참가자 결과**
+  - 함수만 구현 1건: 첫 클립 업로드
 - Firestore 보안: events/clips Admin SDK 전용 (Client SDK read 잠금, Phase B-3 완료 2026-05-06)
 - 한글 인트로/아웃트로 (이벤트 생성 폼 입력 → Firestore 저장 → Shotstack rich-text 클립 삽입, NotoSansKR TTF 호스팅)
 - 공유 페이지 `/share/{eventId}` (인증 없음, SSR + og 메타태그, 상태별 화면 분기, 카톡·링크복사 버튼)

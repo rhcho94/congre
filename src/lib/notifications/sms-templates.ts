@@ -23,5 +23,5 @@ export const smsTemplates = {
   first_clip_uploaded:
     "[Congre] '{title}' 첫 클립이 업로드되었습니다.",
   participant_result:
-    "[Congre] '{title}' 결과 영상이 준비되었습니다: {url}",
+    "[Congre] '{title}' 결과 영상이 준비됐어요: {url}",
 } as const;

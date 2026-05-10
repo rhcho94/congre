@@ -9,12 +9,7 @@
 - [ ] 호스트 계정 N개 생성 (옵션 A) — 필드 테스트 일정 확정 시 운영자 수동 (Firebase 콘솔 → Authentication → Users → Add user)
 - [ ] 약관·처리방침 콘텐츠 작성 (PR 1 push 전 필수 — 전번 수집 코드와 함께 배포)
 
-### 다음 진입점: PR 2
-
-**feat(notify): 참가자 결과 SMS 트리거 연결**
-- `src/app/api/cron/check-rendering/route.ts` Shotstack done 직후 hook
-- clips 컬렉션 조회 (excludedAt: null) → distinct uploaderPhone → 각 phone에 notifyParticipantResult
-- 멱등성: `events.notifications.participantNotifiedAt` 필드 (기존 notifications.* 패턴)
+### 다음 진입점: PR 3 미정
 
 ### P1 — 권장하지만 첫 회차 후 가능
 - Shotstack 비용 모니터링 설정 (출시 차단 항목이었으나 첫 회차 소규모 진입으로 우선 관찰)

@@ -1,8 +1,10 @@
 import type { NextRequest } from "next/server";
+import { FieldValue } from "firebase-admin/firestore";
 import { getAdminDb } from "@/lib/firebase-admin";
 import { getRenderStatus } from "@/lib/shotstack";
 import { notifyRenderCompleted } from "@/lib/notifications/scenarios/render-completed";
 import { notifyRenderFailed } from "@/lib/notifications/scenarios/render-failed";
+import { notifyParticipantResult } from "@/lib/notifications/scenarios/participant-result";
 
 export async function GET(request: NextRequest) {
   const cronSecret = process.env.CRON_SECRET;
@@ -58,6 +60,36 @@ export async function GET(request: NextRequest) {
         }).catch((err) =>
           console.error(`[cron/check-rendering] notifyRenderCompleted failed for eventId=${eventId}:`, err)
         );
+      }
+
+      if (data.notifications?.participantNotifiedAt == null) {
+        const clipsSnap = await db.collection("clips")
+          .where("eventId", "==", eventId).get();
+
+        // JS 필터: excludedAt 없는 클립만 (DECISIONS 2026-05-08)
+        const includedClips = clipsSnap.docs.filter((d) => !d.data().excludedAt);
+
+        // distinct uploaderPhone (친구 폰 돌려쓰기 케이스 1건만)
+        const phones = [...new Set(
+          includedClips
+            .map((d) => d.data().uploaderPhone as string | undefined)
+            .filter((p): p is string => !!p)
+        )];
+
+        for (const phone of phones) {
+          await notifyParticipantResult({
+            eventId,
+            title: (data.title as string) ?? eventId,
+            videoUrl: url,
+            recipientPhone: phone,
+          }).catch((err) =>
+            console.error(`[cron/check-rendering] notifyParticipantResult failed for eventId=${eventId} phone=${phone}:`, err)
+          );
+        }
+
+        await db.collection("events").doc(eventId).update({
+          "notifications.participantNotifiedAt": FieldValue.serverTimestamp(),
+        });
       }
     } else if (status === "failed") {
       await db.collection("events").doc(eventId).update({ status: "closed" });
