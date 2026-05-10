@@ -107,6 +107,14 @@ export async function createRender(
   return json.response.id;
 }
 
+export async function deleteShotstackRender(renderId: string): Promise<void> {
+  assertApiKey();
+  await fetch(`${baseUrl}/render/${renderId}`, {
+    method: "DELETE",
+    headers: { "x-api-key": SHOTSTACK_API_KEY },
+  });
+}
+
 export async function getRenderStatus(
   renderId: string
 ): Promise<{ status: string; url?: string }> {

@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
     const { status, url } = renderResult;
 
     if (status === "done" && url) {
-      await db.collection("events").doc(eventId).update({ status: "done", videoUrl: url });
+      await db.collection("events").doc(eventId).update({ status: "done", videoUrl: url, renderDoneAt: FieldValue.serverTimestamp() });
       processedCount++;
 
       if (data.organizerEmail && data.organizerPhone) {
