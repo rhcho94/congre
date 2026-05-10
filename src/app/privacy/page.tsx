@@ -238,7 +238,7 @@ export default function PrivacyPage() {
                   </tr>
                   <tr>
                     <td className="border border-border px-3 py-2 align-top">Amazon Web Services, Inc.</td>
-                    <td className="border border-border px-3 py-2 align-top">[AWS_S3_REGION]</td>
+                    <td className="border border-border px-3 py-2 align-top">ap-southeast-2</td>
                     <td className="border border-border px-3 py-2 align-top">클립 영상 업로드 시점에 네트워크를 통한 전송</td>
                     <td className="border border-border px-3 py-2 align-top">클립 영상 콘텐츠</td>
                     <td className="border border-border px-3 py-2 align-top">제3조에 따른 보유 기간</td>
