@@ -1,5 +1,19 @@
 # Known Issues & Deferred Tasks
 
+## renderStartedNotifiedAt 발화 누락 의심 (2026-05-10 PR 2 배포 검증 중 발견)
+
+- **현상**: 렌더 정상 완료된 이벤트(MclmxNgLQBb8Lb6jexc9, "멱동성테스트")에서 `events.notifications.renderStartedNotifiedAt`이 null로 남음. 같은 문서의 다른 nested notifications 키들은 정상 동작 (participantNotifiedAt, renderCompletedNotifiedAt 동작 확인).
+- **발현 조건 / 잠재 원인 후보 (정찰 안 됨)**:
+  - notifyRenderStarted 호출이 안 됨 (트리거 위치 자체 누락)
+  - 호출은 됐으나 플래그 set 단계 누락
+  - SMS 발송 실패로 .catch()가 막아 set 안 됨
+  - 운영자 SMS 수신 기억: 명확 답 없음 — 다음 정찰에서 운영자 확인 필요
+- **영향**:
+  - 멱등성 가드가 매 cron마다 통과 → SMS 중복 발송 가능성 (수신 기억 있는 경우)
+  - 또는 운영자가 렌더 시작 알림을 못 받음 (수신 기억 없는 경우)
+- **격상 트리거 / 다음 액션**: 정찰 진입. `notifyRenderStarted` 함수 위치·시그니처, render/start/route.ts 안 호출 위치, set 코드 위치·조건, 운영자 SMS 수신 기억 답 확인.
+- **위치**: src/lib/notifications/scenarios/render-started.ts (추정 — 정찰 안 됨), src/app/api/render/start/route.ts
+
 ## Firestore composite index — eventId + uploaderPhone + uploaderName 3조건 쿼리
 
 - **현황**: `/api/clips/check` GET 및 `POST /api/clips` 중복 체크에서 `eventId + uploaderPhone + uploaderName` 3조건 composite where 쿼리 사용. Firestore는 이 복합 인덱스를 자동 생성하지 않음.
