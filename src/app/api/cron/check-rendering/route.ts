@@ -60,6 +60,9 @@ export async function GET(request: NextRequest) {
         }).catch((err) =>
           console.error(`[cron/check-rendering] notifyRenderCompleted failed for eventId=${eventId}:`, err)
         );
+        await db.collection("events").doc(eventId).update({
+          "notifications.renderCompletedNotifiedAt": FieldValue.serverTimestamp(),
+        });
       }
 
       if (data.notifications?.participantNotifiedAt == null) {

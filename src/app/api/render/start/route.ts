@@ -114,6 +114,7 @@ export async function POST(request: NextRequest) {
     refund100At: Timestamp.fromMillis(now + 24 * 60 * 60 * 1000),
     refundStatus: "none",
     "notifications.renderStartedNotifiedAt": null,
+    "notifications.renderCompletedNotifiedAt": null,
     "notifications.renderDelayedNotifiedAt": null,
     "notifications.refund50NotifiedAt": null,
     "notifications.refund100NotifiedAt": null,
@@ -132,6 +133,9 @@ export async function POST(request: NextRequest) {
       organizerPhone: eventData.organizerPhone,
       dashboardUrl,
     }).catch((err) => console.error("[render/start] notifyRenderStarted error:", err));
+    await db.collection("events").doc(eventId).update({
+      "notifications.renderStartedNotifiedAt": FieldValue.serverTimestamp(),
+    });
   }
 
   return Response.json({ renderId });
