@@ -8,6 +8,7 @@ import { Play, X, Loader2, Eye, EyeOff } from "lucide-react";
 import { subscribeToAuthChanges, type User } from "@/lib/auth";
 import { isFirebaseConfigured, getFirebaseAuth } from "@/lib/firebase";
 import { getClipPlaybackUrl, toggleClipExclusion } from "@/lib/clip-playback";
+import { getPresignedUrl, uploadToS3 } from "@/lib/s3";
 import CongreBadge from "@/components/CongreBadge";
 import { BrandName } from "@/components/BrandName";
 
@@ -39,6 +40,9 @@ interface ApiEvent {
   hostId: string;
   uploadToken?: string;
   videoUrl?: string;
+  welcomeText: string | null;
+  coverImageUrl: string | null;
+  galleryUrls: string[];
 }
 
 interface ApiClip {
@@ -80,6 +84,14 @@ export default function EventDetailPage() {
   const [linkCopied, setLinkCopied] = useState(false);
   const [kakaoReady, setKakaoReady] = useState(false);
   const qrHiResRef = useRef<HTMLDivElement>(null);
+  const inviteInitializedRef = useRef(false);
+  const [welcomeText, setWelcomeText] = useState("");
+  const [savedWelcomeText, setSavedWelcomeText] = useState("");
+  const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null);
+  const [galleryUrls, setGalleryUrls] = useState<string[]>([]);
+  const [coverUploading, setCoverUploading] = useState(false);
+  const [galleryUploading, setGalleryUploading] = useState(false);
+  const [savingWelcome, setSavingWelcome] = useState(false);
 
   useEffect(() => {
     if (!isFirebaseConfigured) return;
@@ -114,6 +126,13 @@ export default function EventDetailPage() {
         if (cancelled) return;
         setEvent(evt);
         setEventLoading(false);
+        if (!inviteInitializedRef.current) {
+          inviteInitializedRef.current = true;
+          setWelcomeText(evt.welcomeText ?? "");
+          setSavedWelcomeText(evt.welcomeText ?? "");
+          setCoverImageUrl(evt.coverImageUrl ?? null);
+          setGalleryUrls(evt.galleryUrls ?? []);
+        }
         if (evt.uploadToken) {
           setShareUrl(`${window.location.origin}/upload/${eventId}?token=${evt.uploadToken}`);
         }
@@ -280,6 +299,91 @@ export default function EventDetailPage() {
       setTimeout(() => setLinkCopied(false), 2000);
     } catch {
       alert("링크 복사에 실패했습니다.");
+    }
+  }
+
+  async function patchInvite(body: Record<string, unknown>) {
+    const idToken = await getFirebaseAuth().currentUser?.getIdToken();
+    if (!idToken) throw new Error("인증 토큰 발급 실패");
+    const res = await fetch(`/api/host/events/${eventId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${idToken}` },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error(`PATCH ${res.status}`);
+  }
+
+  async function handleSaveWelcomeText() {
+    setSavingWelcome(true);
+    try {
+      await patchInvite({ welcomeText: welcomeText.trim() || null });
+      setSavedWelcomeText(welcomeText);
+    } catch {
+      alert("저장에 실패했습니다.");
+    } finally {
+      setSavingWelcome(false);
+    }
+  }
+
+  async function handleCoverUpload(file: File) {
+    if (file.size > 10 * 1024 * 1024) {
+      alert("파일 크기는 10MB 이하만 가능합니다");
+      return;
+    }
+    setCoverUploading(true);
+    try {
+      const { url } = await getPresignedUrl(eventId, file.name, file.type, "invite");
+      await uploadToS3(url, file, file.type, () => {});
+      const publicUrl = url.split("?")[0];
+      await patchInvite({ coverImageUrl: publicUrl });
+      setCoverImageUrl(publicUrl);
+    } catch {
+      alert("업로드에 실패했습니다.");
+    } finally {
+      setCoverUploading(false);
+    }
+  }
+
+  async function handleCoverDelete() {
+    const prev = coverImageUrl;
+    setCoverImageUrl(null);
+    try {
+      await patchInvite({ coverImageUrl: null });
+    } catch {
+      setCoverImageUrl(prev);
+      alert("삭제에 실패했습니다.");
+    }
+  }
+
+  async function handleGalleryUpload(file: File) {
+    if (file.size > 10 * 1024 * 1024) {
+      alert("파일 크기는 10MB 이하만 가능합니다");
+      return;
+    }
+    setGalleryUploading(true);
+    try {
+      const { url } = await getPresignedUrl(eventId, file.name, file.type, "invite");
+      await uploadToS3(url, file, file.type, () => {});
+      const publicUrl = url.split("?")[0];
+      const next = [...galleryUrls, publicUrl];
+      await patchInvite({ galleryUrls: next });
+      setGalleryUrls(next);
+    } catch {
+      alert("업로드에 실패했습니다.");
+    } finally {
+      setGalleryUploading(false);
+    }
+  }
+
+  async function handleGalleryDelete(url: string) {
+    const prev = galleryUrls;
+    const next = galleryUrls.filter((u) => u !== url);
+    setGalleryUrls(next);
+    try {
+      await patchInvite({ galleryUrls: next });
+    } catch {
+      setGalleryUrls(prev);
+      alert("삭제에 실패했습니다.");
     }
   }
 
@@ -478,6 +582,147 @@ export default function EventDetailPage() {
         </div>
 
         <div className="rule mb-8" />
+
+        {/* 초대장 작성 */}
+        <div className={`mb-8 ${isClosed ? "opacity-60" : ""}`}>
+          <p className="text-xs tracking-widest uppercase text-muted mb-1">초대장 작성 (선택)</p>
+          <p className="text-xs text-muted mb-5 leading-relaxed" style={{ opacity: 0.7 }}>
+            게스트에게 보여줄 환영 문구와 사진. 비워두면 업로드 페이지로 바로 이동합니다.
+          </p>
+
+          <div className="flex flex-col gap-6">
+            {/* welcomeText */}
+            <div className="flex flex-col gap-1.5">
+              <span className="flex items-center justify-between">
+                <span className="text-xs tracking-widest uppercase text-muted">환영 문구</span>
+                <span className="text-xs text-muted">{welcomeText.length} / 120</span>
+              </span>
+              <textarea
+                rows={3}
+                maxLength={120}
+                placeholder="예: 우리 아이의 졸업식에 와주셔서 감사합니다"
+                value={welcomeText}
+                onChange={(e) => setWelcomeText(e.target.value)}
+                disabled={isClosed}
+                className="bg-surface border border-border px-4 py-3 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-accent transition-colors duration-200 disabled:opacity-50 resize-none"
+              />
+              {!isClosed && (
+                <button
+                  onClick={handleSaveWelcomeText}
+                  disabled={savingWelcome || welcomeText === savedWelcomeText}
+                  className="self-end px-4 py-2 border border-border text-xs tracking-widest uppercase text-muted hover:border-accent hover:text-foreground transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  {savingWelcome ? "저장 중..." : "저장"}
+                </button>
+              )}
+            </div>
+
+            {/* coverImageUrl */}
+            <div className="flex flex-col gap-1.5">
+              <span className="text-xs tracking-widest uppercase text-muted">대표 사진</span>
+              {coverUploading ? (
+                <div className="flex items-center gap-2 py-4">
+                  <Loader2 size={14} className="animate-spin text-accent" />
+                  <span className="text-xs text-muted">업로드 중...</span>
+                </div>
+              ) : coverImageUrl ? (
+                <div className="relative inline-block self-start">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={coverImageUrl} alt="대표 사진" className="max-h-48 object-cover" />
+                  {!isClosed && (
+                    <button
+                      onClick={handleCoverDelete}
+                      className="absolute top-2 right-2 px-2 py-1 text-xs text-white transition-all duration-200"
+                      style={{ background: "rgba(0,0,0,0.6)" }}
+                    >
+                      삭제
+                    </button>
+                  )}
+                </div>
+              ) : !isClosed ? (
+                <label className="inline-flex items-center gap-2 px-4 py-2 border border-border text-xs tracking-widest uppercase text-muted hover:border-accent hover:text-foreground transition-all duration-200 cursor-pointer self-start">
+                  + 사진 선택
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="sr-only"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleCoverUpload(file);
+                      e.target.value = "";
+                    }}
+                  />
+                </label>
+              ) : null}
+            </div>
+
+            {/* galleryUrls */}
+            <div className="flex flex-col gap-1.5">
+              <span className="text-xs tracking-widest uppercase text-muted">갤러리 사진 (최대 4장)</span>
+              <div className="grid grid-cols-2 gap-2">
+                {galleryUrls.map((url) => (
+                  <div key={url} className="relative aspect-square">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={url} alt="갤러리" className="w-full h-full object-cover" />
+                    {!isClosed && (
+                      <button
+                        onClick={() => handleGalleryDelete(url)}
+                        className="absolute top-1 right-1 px-1.5 py-0.5 text-xs text-white transition-all duration-200"
+                        style={{ background: "rgba(0,0,0,0.6)" }}
+                      >
+                        삭제
+                      </button>
+                    )}
+                  </div>
+                ))}
+                {galleryUploading && (
+                  <div className="aspect-square border border-border bg-surface flex flex-col items-center justify-center gap-1">
+                    <Loader2 size={14} className="animate-spin text-accent" />
+                    <span className="text-xs text-muted">업로드 중...</span>
+                  </div>
+                )}
+                {!isClosed && galleryUrls.length < 4 && !galleryUploading && (
+                  <label className="aspect-square border border-border bg-surface flex items-center justify-center text-xs text-muted hover:border-accent hover:text-foreground transition-all duration-200 cursor-pointer">
+                    + 사진 추가
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="sr-only"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleGalleryUpload(file);
+                        e.target.value = "";
+                      }}
+                    />
+                  </label>
+                )}
+              </div>
+            </div>
+
+            {/* 미리보기 */}
+            <div className="flex flex-col gap-2">
+              {!savedWelcomeText.trim() && !coverImageUrl && galleryUrls.length === 0 && (
+                <p className="text-xs text-muted" style={{ opacity: 0.7 }}>
+                  초대장이 비어있어 게스트는 업로드 페이지로 바로 이동합니다
+                </p>
+              )}
+              <a
+                href={`/invite/${eventId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-disabled={!savedWelcomeText.trim() && !coverImageUrl && galleryUrls.length === 0}
+                tabIndex={!savedWelcomeText.trim() && !coverImageUrl && galleryUrls.length === 0 ? -1 : 0}
+                className={`self-start px-4 py-2 border text-xs tracking-widest uppercase transition-all duration-200 ${
+                  !savedWelcomeText.trim() && !coverImageUrl && galleryUrls.length === 0
+                    ? "border-border text-muted opacity-40 pointer-events-none"
+                    : "border-border text-muted hover:border-accent hover:text-foreground"
+                }`}
+              >
+                미리보기 열기
+              </a>
+            </div>
+          </div>
+        </div>
 
         {/* QR 코드 & 공유 링크 — 수집중(open)일 때만 표시 */}
         {event.status === "open" && shareUrl && (

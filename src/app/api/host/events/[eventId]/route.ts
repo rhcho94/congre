@@ -39,6 +39,9 @@ export async function GET(
       hostId: data.hostId as string,
       uploadToken: (data.uploadToken ?? undefined) as string | undefined,
       videoUrl: (data.videoUrl ?? undefined) as string | undefined,
+      welcomeText: (data.welcomeText ?? null) as string | null,
+      coverImageUrl: (data.coverImageUrl ?? null) as string | null,
+      galleryUrls: (data.galleryUrls ?? []) as string[],
     });
   } catch (err) {
     console.error("[api/host/events GET] Firestore error:", err);
