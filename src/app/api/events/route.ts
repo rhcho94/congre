@@ -66,7 +66,6 @@ export async function POST(request: NextRequest) {
     plan?: string;
     organizerEmail?: string;
     organizerPhone?: string;
-    welcomeText?: string;
     introText?: string;
     outroText?: string;
   };
@@ -94,7 +93,6 @@ export async function POST(request: NextRequest) {
     createdAt: FieldValue.serverTimestamp(),
     organizerEmail,
     organizerPhone,
-    ...(body.welcomeText !== undefined ? { welcomeText: body.welcomeText } : {}),
     ...(body.introText !== undefined ? { introText: body.introText } : {}),
     ...(body.outroText !== undefined ? { outroText: body.outroText } : {}),
   });
