@@ -4,6 +4,7 @@
 
 ## 2026-05-11
 
+- feat: PATCH /api/host/events/[eventId] — 초대장 필드(welcomeText, coverImageUrl, galleryUrls) 부분 업데이트 API 추가
 - feat: presign 라우트에 kind 파라미터 추가, S3 prefix 분리 (events/{id}/{kind}/...)
 - revert: welcomeText 입력을 이벤트 생성 폼에서 제거 (대시보드 초대장 섹션으로 재배치 예정)
 - feat: /invite/[eventId] 초대 페이지 신설 (status 분기 + OG 메타 + 빈 필드 redirect)
