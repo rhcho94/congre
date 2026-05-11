@@ -5,6 +5,7 @@
 ## 2026-05-11
 
 - feat: presign 라우트에 kind 파라미터 추가, S3 prefix 분리 (events/{id}/{kind}/...)
+- feat(create): 이벤트 생성 폼에 초대 페이지 환영 문구 입력 추가 (welcomeText, 최대 120자)
 
 ## 2026-05-10
 

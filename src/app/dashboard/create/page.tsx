@@ -29,6 +29,7 @@ export default function CreateEventPage() {
     plan: "free" as EventPlan,
     organizerEmail: "",
     organizerPhone: "",
+    welcomeText: "",
     introText: "",
     outroText: "",
   });
@@ -72,6 +73,7 @@ export default function CreateEventPage() {
           plan: form.plan,
           organizerEmail: form.organizerEmail,
           organizerPhone: form.organizerPhone,
+          ...(form.welcomeText.trim() ? { welcomeText: form.welcomeText.trim() } : {}),
           ...(form.introText.trim() ? { introText: form.introText.trim() } : {}),
           ...(form.outroText.trim() ? { outroText: form.outroText.trim() } : {}),
         }),
@@ -253,6 +255,22 @@ export default function CreateEventPage() {
                     />
                   </label>
                 </div>
+              </div>
+
+              <div className="pt-2 border-t border-border">
+                <p className="text-xs tracking-widest uppercase text-muted mb-4">초대 페이지 문구 (선택)</p>
+                <label className="flex flex-col gap-1.5">
+                  <span className="text-xs tracking-widest uppercase text-muted">환영 문구</span>
+                  <input
+                    type="text"
+                    placeholder="예) 졸업을 축하하며 소중한 분들의 영상 메시지를 모읍니다"
+                    value={form.welcomeText}
+                    onChange={(e) => setForm({ ...form, welcomeText: e.target.value })}
+                    maxLength={120}
+                    disabled={submitting}
+                    className="bg-surface border border-border px-4 py-3 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-accent transition-colors duration-200 disabled:opacity-50"
+                  />
+                </label>
               </div>
 
               <div className="pt-2 border-t border-border">
