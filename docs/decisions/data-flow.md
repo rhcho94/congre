@@ -2,6 +2,22 @@
 
 > Firestore·S3·Admin SDK·서버 이전 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-05-11 — 초대장 이미지도 클립과 동일한 presigned GET URL 패턴 사용
+
+- **결정**: `events.coverImageUrl`, `events.galleryUrls` 필드에 공개 URL 대신 S3 키(path) 저장. 표시 시점에 presigned GET URL(1시간 만료)로 변환.
+- **이유**:
+  - S3 버킷 기본 설정("Block all public access" 활성화) 유지. 버킷 정책 변경·ACL 추가 없이 동작.
+  - 클립 영상(presigned GET, 1시간)과 동일 패턴 → 코드 일관성.
+  - 공개 URL(`url.split('?')[0]`) 방식은 버킷 비공개 정책으로 403 반환 확인.
+- **구현**:
+  - 대시보드: `GET /api/host/events/[eventId]/invite-urls` 신설 → presigned GET URL 반환.
+  - `/invite` SSR: 서버 컴포넌트 내부에서 `GetObjectCommand` + `getSignedUrl`로 직접 변환.
+  - `generateMetadata` OG 이미지도 동일 변환 적용.
+- **대안 검토**:
+  - ACL `public-read` 추가: Block public access 비활성화 필요, 버킷 정책 변경 → 기각(인프라 변경 최소화).
+  - CloudFront 배포: 오버엔지니어링 → 기각.
+  - 공개 URL 직접 저장: 버킷 비공개 정책으로 403 → 기각.
+
 ## 2026-05-10 — 닉네임 재사용 정책 폐기 + 식별 키를 이름+전번 복합으로 전환 (PR 1)
 
 - **결정**: 2026-05-09 "닉네임 재사용 정책 변경: '한 닉 = 한 영상' 정식 채택" 폐기. 식별 키를 `eventId + uploaderPhone + uploaderName` 복합으로 변경.

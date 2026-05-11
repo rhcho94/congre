@@ -87,8 +87,10 @@ export default function EventDetailPage() {
   const inviteInitializedRef = useRef(false);
   const [welcomeText, setWelcomeText] = useState("");
   const [savedWelcomeText, setSavedWelcomeText] = useState("");
-  const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null);
-  const [galleryUrls, setGalleryUrls] = useState<string[]>([]);
+  const [coverImageKey, setCoverImageKey] = useState<string | null>(null);
+  const [galleryKeys, setGalleryKeys] = useState<string[]>([]);
+  const [coverDisplayUrl, setCoverDisplayUrl] = useState<string | null>(null);
+  const [galleryDisplayUrls, setGalleryDisplayUrls] = useState<string[]>([]);
   const [coverUploading, setCoverUploading] = useState(false);
   const [galleryUploading, setGalleryUploading] = useState(false);
   const [savingWelcome, setSavingWelcome] = useState(false);
@@ -130,8 +132,11 @@ export default function EventDetailPage() {
           inviteInitializedRef.current = true;
           setWelcomeText(evt.welcomeText ?? "");
           setSavedWelcomeText(evt.welcomeText ?? "");
-          setCoverImageUrl(evt.coverImageUrl ?? null);
-          setGalleryUrls(evt.galleryUrls ?? []);
+          setCoverImageKey(evt.coverImageUrl ?? null);
+          setGalleryKeys(evt.galleryUrls ?? []);
+          if (evt.coverImageUrl || (evt.galleryUrls ?? []).length > 0) {
+            refreshInviteDisplayUrls(idToken);
+          }
         }
         if (evt.uploadToken) {
           setShareUrl(`${window.location.origin}/upload/${eventId}?token=${evt.uploadToken}`);
@@ -302,6 +307,20 @@ export default function EventDetailPage() {
     }
   }
 
+  async function refreshInviteDisplayUrls(idToken: string) {
+    try {
+      const res = await fetch(`/api/host/events/${eventId}/invite-urls`, {
+        headers: { Authorization: `Bearer ${idToken}` },
+      });
+      if (!res.ok) return;
+      const data = await res.json() as { coverImageUrl: string | null; galleryUrls: string[] };
+      setCoverDisplayUrl(data.coverImageUrl);
+      setGalleryDisplayUrls(data.galleryUrls);
+    } catch {
+      // 표시 URL 갱신 실패는 silent (업로드 자체는 성공)
+    }
+  }
+
   async function patchInvite(body: Record<string, unknown>) {
     const idToken = await getFirebaseAuth().currentUser?.getIdToken();
     if (!idToken) throw new Error("인증 토큰 발급 실패");
@@ -311,6 +330,7 @@ export default function EventDetailPage() {
       body: JSON.stringify(body),
     });
     if (!res.ok) throw new Error(`PATCH ${res.status}`);
+    return idToken;
   }
 
   async function handleSaveWelcomeText() {
@@ -332,11 +352,11 @@ export default function EventDetailPage() {
     }
     setCoverUploading(true);
     try {
-      const { url } = await getPresignedUrl(eventId, file.name, file.type, "invite");
+      const { url, key } = await getPresignedUrl(eventId, file.name, file.type, "invite");
       await uploadToS3(url, file, file.type, () => {});
-      const publicUrl = url.split("?")[0];
-      await patchInvite({ coverImageUrl: publicUrl });
-      setCoverImageUrl(publicUrl);
+      const idToken = await patchInvite({ coverImageUrl: key });
+      setCoverImageKey(key);
+      if (idToken) await refreshInviteDisplayUrls(idToken);
     } catch {
       alert("업로드에 실패했습니다.");
     } finally {
@@ -345,12 +365,15 @@ export default function EventDetailPage() {
   }
 
   async function handleCoverDelete() {
-    const prev = coverImageUrl;
-    setCoverImageUrl(null);
+    const prevKey = coverImageKey;
+    const prevDisplay = coverDisplayUrl;
+    setCoverImageKey(null);
+    setCoverDisplayUrl(null);
     try {
       await patchInvite({ coverImageUrl: null });
     } catch {
-      setCoverImageUrl(prev);
+      setCoverImageKey(prevKey);
+      setCoverDisplayUrl(prevDisplay);
       alert("삭제에 실패했습니다.");
     }
   }
@@ -362,12 +385,12 @@ export default function EventDetailPage() {
     }
     setGalleryUploading(true);
     try {
-      const { url } = await getPresignedUrl(eventId, file.name, file.type, "invite");
+      const { url, key } = await getPresignedUrl(eventId, file.name, file.type, "invite");
       await uploadToS3(url, file, file.type, () => {});
-      const publicUrl = url.split("?")[0];
-      const next = [...galleryUrls, publicUrl];
-      await patchInvite({ galleryUrls: next });
-      setGalleryUrls(next);
+      const nextKeys = [...galleryKeys, key];
+      const idToken = await patchInvite({ galleryUrls: nextKeys });
+      setGalleryKeys(nextKeys);
+      if (idToken) await refreshInviteDisplayUrls(idToken);
     } catch {
       alert("업로드에 실패했습니다.");
     } finally {
@@ -375,14 +398,18 @@ export default function EventDetailPage() {
     }
   }
 
-  async function handleGalleryDelete(url: string) {
-    const prev = galleryUrls;
-    const next = galleryUrls.filter((u) => u !== url);
-    setGalleryUrls(next);
+  async function handleGalleryDelete(index: number) {
+    const prevKeys = galleryKeys;
+    const prevDisplayUrls = galleryDisplayUrls;
+    const nextKeys = galleryKeys.filter((_, i) => i !== index);
+    const nextDisplayUrls = galleryDisplayUrls.filter((_, i) => i !== index);
+    setGalleryKeys(nextKeys);
+    setGalleryDisplayUrls(nextDisplayUrls);
     try {
-      await patchInvite({ galleryUrls: next });
+      await patchInvite({ galleryUrls: nextKeys });
     } catch {
-      setGalleryUrls(prev);
+      setGalleryKeys(prevKeys);
+      setGalleryDisplayUrls(prevDisplayUrls);
       alert("삭제에 실패했습니다.");
     }
   }
@@ -625,10 +652,10 @@ export default function EventDetailPage() {
                   <Loader2 size={14} className="animate-spin text-accent" />
                   <span className="text-xs text-muted">업로드 중...</span>
                 </div>
-              ) : coverImageUrl ? (
+              ) : coverDisplayUrl ? (
                 <div className="relative inline-block self-start">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={coverImageUrl} alt="대표 사진" className="max-h-48 object-cover" />
+                  <img src={coverDisplayUrl} alt="대표 사진" className="max-h-48 object-cover" />
                   {!isClosed && (
                     <button
                       onClick={handleCoverDelete}
@@ -660,13 +687,13 @@ export default function EventDetailPage() {
             <div className="flex flex-col gap-1.5">
               <span className="text-xs tracking-widest uppercase text-muted">갤러리 사진 (최대 4장)</span>
               <div className="grid grid-cols-2 gap-2">
-                {galleryUrls.map((url) => (
-                  <div key={url} className="relative aspect-square">
+                {galleryDisplayUrls.map((displayUrl, i) => (
+                  <div key={galleryKeys[i] ?? displayUrl} className="relative aspect-square">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={url} alt="갤러리" className="w-full h-full object-cover" />
+                    <img src={displayUrl} alt="갤러리" className="w-full h-full object-cover" />
                     {!isClosed && (
                       <button
-                        onClick={() => handleGalleryDelete(url)}
+                        onClick={() => handleGalleryDelete(i)}
                         className="absolute top-1 right-1 px-1.5 py-0.5 text-xs text-white transition-all duration-200"
                         style={{ background: "rgba(0,0,0,0.6)" }}
                       >
@@ -681,7 +708,7 @@ export default function EventDetailPage() {
                     <span className="text-xs text-muted">업로드 중...</span>
                   </div>
                 )}
-                {!isClosed && galleryUrls.length < 4 && !galleryUploading && (
+                {!isClosed && galleryKeys.length < 4 && !galleryUploading && (
                   <label className="aspect-square border border-border bg-surface flex items-center justify-center text-xs text-muted hover:border-accent hover:text-foreground transition-all duration-200 cursor-pointer">
                     + 사진 추가
                     <input
@@ -701,7 +728,7 @@ export default function EventDetailPage() {
 
             {/* 미리보기 */}
             <div className="flex flex-col gap-2">
-              {!savedWelcomeText.trim() && !coverImageUrl && galleryUrls.length === 0 && (
+              {!savedWelcomeText.trim() && !coverImageKey && galleryKeys.length === 0 && (
                 <p className="text-xs text-muted" style={{ opacity: 0.7 }}>
                   초대장이 비어있어 게스트는 업로드 페이지로 바로 이동합니다
                 </p>
@@ -710,10 +737,10 @@ export default function EventDetailPage() {
                 href={`/invite/${eventId}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-disabled={!savedWelcomeText.trim() && !coverImageUrl && galleryUrls.length === 0}
-                tabIndex={!savedWelcomeText.trim() && !coverImageUrl && galleryUrls.length === 0 ? -1 : 0}
+                aria-disabled={!savedWelcomeText.trim() && !coverImageKey && galleryKeys.length === 0}
+                tabIndex={!savedWelcomeText.trim() && !coverImageKey && galleryKeys.length === 0 ? -1 : 0}
                 className={`self-start px-4 py-2 border text-xs tracking-widest uppercase transition-all duration-200 ${
-                  !savedWelcomeText.trim() && !coverImageUrl && galleryUrls.length === 0
+                  !savedWelcomeText.trim() && !coverImageKey && galleryKeys.length === 0
                     ? "border-border text-muted opacity-40 pointer-events-none"
                     : "border-border text-muted hover:border-accent hover:text-foreground"
                 }`}

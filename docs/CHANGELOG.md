@@ -4,6 +4,7 @@
 
 ## 2026-05-11
 
+- fix: 초대장 이미지 표시 방식 변경 — 공개 URL 대신 S3 키 저장 + presigned GET URL(1시간) 변환 (버킷 비공개 정책 403 수정)
 - feat: 대시보드 초대장 작성 섹션 — welcomeText·커버·갤러리(최대 4장) 입력 UI + 이미지 즉시 업로드 + welcomeText 저장 버튼
 - feat: PATCH /api/host/events/[eventId] — 초대장 필드(welcomeText, coverImageUrl, galleryUrls) 부분 업데이트 API 추가
 - feat: presign 라우트에 kind 파라미터 추가, S3 prefix 분리 (events/{id}/{kind}/...)

@@ -10,7 +10,7 @@
 - [legal](decisions/legal.md) — 약관·개인정보·미성년자 (2개)
 - [market-product](decisions/market-product.md) — 시장 정의·BM·서비스 모델 (5개)
 - [infra](decisions/infra.md) — Vercel·Firebase·도메인·무료 티어 정책 (3개)
-- [data-flow](decisions/data-flow.md) — Firestore·S3·Admin SDK·서버 이전 (10개)
+- [data-flow](decisions/data-flow.md) — Firestore·S3·Admin SDK·서버 이전 (11개)
 - [misc](decisions/misc.md) — 영역 외 결정 (2개)
 
 ## 메타

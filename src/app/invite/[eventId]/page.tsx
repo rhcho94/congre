@@ -1,8 +1,28 @@
 import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { getAdminDb } from "@/lib/firebase-admin";
 import { BrandName } from "@/components/BrandName";
+
+const isS3Configured = Boolean(process.env.AWS_ACCESS_KEY_ID && process.env.AWS_S3_BUCKET);
+
+async function keyToUrl(key: string): Promise<string> {
+  if (!isS3Configured || !key) return key;
+  const s3 = new S3Client({
+    region: process.env.AWS_REGION!,
+    credentials: {
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+    },
+  });
+  return getSignedUrl(
+    s3,
+    new GetObjectCommand({ Bucket: process.env.AWS_S3_BUCKET!, Key: key }),
+    { expiresIn: 3600 }
+  );
+}
 
 type Props = { params: Promise<{ eventId: string }> };
 
@@ -15,14 +35,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const data = snap.data()!;
     const title = data.title as string;
     const welcomeText = (data.welcomeText ?? "") as string;
-    const coverImageUrl = (data.coverImageUrl ?? "") as string;
+    const coverImageKey = (data.coverImageUrl ?? "") as string;
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
+    const ogImage = coverImageKey.trim()
+      ? await keyToUrl(coverImageKey)
+      : `${appUrl}/logo.png`;
     return {
       title: `${title} — Congre`,
       openGraph: {
         title,
         description: welcomeText.trim() ? welcomeText : `${title} 초대장`,
-        images: coverImageUrl.trim() ? [coverImageUrl] : [`${appUrl}/logo.png`],
+        images: [ogImage],
       },
     };
   } catch {
@@ -42,14 +65,14 @@ export default async function InvitePage({ params }: Props) {
   const status = data.status as string;
   const sessionToken = (data.sessionToken ?? null) as string | null;
   const welcomeText = (data.welcomeText ?? "") as string;
-  const coverImageUrl = (data.coverImageUrl ?? "") as string;
-  const galleryUrls = (data.galleryUrls ?? []) as string[];
+  const coverImageKey = (data.coverImageUrl ?? "") as string;
+  const galleryKeys = (data.galleryUrls ?? []) as string[];
   const rawDate = data.date as { toDate(): Date } | undefined;
   const dateStr = rawDate
     ? rawDate.toDate().toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" })
     : null;
 
-  const hasContent = welcomeText.trim() || coverImageUrl.trim() || galleryUrls.length > 0;
+  const hasContent = welcomeText.trim() || coverImageKey.trim() || galleryKeys.length > 0;
 
   if (!hasContent) {
     redirect(
@@ -61,6 +84,11 @@ export default async function InvitePage({ params }: Props) {
 
   const uploadUrl =
     status === "open" && sessionToken ? `/upload/${eventId}?token=${sessionToken}` : null;
+
+  const [coverImageUrl, ...galleryUrls] = await Promise.all([
+    coverImageKey.trim() ? keyToUrl(coverImageKey) : Promise.resolve(""),
+    ...galleryKeys.map(keyToUrl),
+  ]);
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "var(--bg)", color: "var(--text)" }}>
