@@ -24,7 +24,11 @@ export interface CongreEvent {
   organizerPhone?: string;
   deadlineAt?: Timestamp;        // 마감 시각 — render/start에서 저장, 완료 시간 계산용
   introText?: string;
+  introMediaKey?: string;
+  introMediaType?: "image" | "video";
   outroText?: string;
+  outroMediaKey?: string;
+  outroMediaType?: "image" | "video";
   welcomeText?: string;           // 초대장 환영 문구
   coverImageUrl?: string;         // 대표 사진 1장 (S3 URL)
   galleryUrls?: string[];         // 갤러리 사진 (최대 5장)
