@@ -13,11 +13,15 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "S3_NOT_CONFIGURED" }, { status: 503 });
   }
 
-  const { eventId, fileName, fileType } = await request.json();
+  const { eventId, fileName, fileType, kind } = await request.json();
+
+  if (kind !== "clip" && kind !== "invite") {
+    return Response.json({ error: "INVALID_KIND" }, { status: 400 });
+  }
 
   // codec 파라미터 제거 — presign 서명 값과 PUT Content-Type 헤더가 정확히 일치해야 함
   const contentType = (fileType as string).split(";")[0] || "video/webm";
-  const key = `events/${eventId}/${Date.now()}-${fileName}`;
+  const key = `events/${eventId}/${kind}/${Date.now()}-${fileName}`;
 
   const s3 = new S3Client({
     region: process.env.AWS_REGION!,

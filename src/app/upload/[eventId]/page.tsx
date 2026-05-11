@@ -347,7 +347,7 @@ function UploadInner() {
 
     console.log(`[upload] attempt=${attempt} blobType="${blob.type}" mimeType="${mimeType}" size=${blob.size} ext=${ext}`);
 
-    const { url, key } = await getPresignedUrl(eventId, fileName, mimeType);
+    const { url, key } = await getPresignedUrl(eventId, fileName, mimeType, "clip");
     console.log(`[upload] presign ok → key=${key}`);
     console.log(`[upload] presign url: ${url.slice(0, 150)}...`);
 

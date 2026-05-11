@@ -11,12 +11,13 @@ export async function checkS3(): Promise<boolean> {
 export async function getPresignedUrl(
   eventId: string,
   fileName: string,
-  fileType: string
+  fileType: string,
+  kind: "clip" | "invite"
 ): Promise<{ url: string; key: string }> {
   const res = await fetch("/api/upload/presign", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ eventId, fileName, fileType }),
+    body: JSON.stringify({ eventId, fileName, fileType, kind }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
