@@ -208,9 +208,9 @@ export default function EventDetailPage() {
   }, [eventId, user]);
 
   async function handleCopy() {
-    if (!effectiveShareUrl) return;
+    if (!shareUrl) return;
     try {
-      await navigator.clipboard.writeText(effectiveShareUrl);
+      await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
@@ -491,14 +491,6 @@ export default function EventDetailPage() {
     }
   }
 
-  const hasInviteContent =
-    savedWelcomeText.trim() !== "" ||
-    coverImageKey !== null ||
-    galleryKeys.length > 0;
-
-  const effectiveShareUrl = hasInviteContent
-    ? `${window.location.origin}/invite/${eventId}`
-    : shareUrl;
 
   if (authChecking || eventLoading) {
     return (
@@ -766,7 +758,7 @@ export default function EventDetailPage() {
             <div className="flex flex-col sm:flex-row gap-6 p-6 border border-border bg-surface">
               <div className="shrink-0 flex flex-col items-center gap-2">
                 <QRCodeSVG
-                  value={effectiveShareUrl}
+                  value={shareUrl}
                   size={140}
                   bgColor="#151310"
                   fgColor="#ede8df"
@@ -785,7 +777,7 @@ export default function EventDetailPage() {
                 </p>
                 <div className="flex items-center gap-2">
                   <span className="flex-1 min-w-0 text-xs text-foreground bg-[var(--surface-2)] border border-border px-3 py-2 truncate font-mono">
-                    {effectiveShareUrl}
+                    {shareUrl}
                   </span>
                   <button
                     onClick={handleCopy}
@@ -996,7 +988,7 @@ export default function EventDetailPage() {
           style={{ position: "fixed", left: "-9999px", top: 0 }}
         >
           <QRCodeCanvas
-            value={effectiveShareUrl}
+            value={shareUrl}
             size={512}
             bgColor="#ffffff"
             fgColor="#151310"
