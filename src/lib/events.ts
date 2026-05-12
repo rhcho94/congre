@@ -29,9 +29,6 @@ export interface CongreEvent {
   outroText?: string;
   outroMediaKey?: string;
   outroMediaType?: "image" | "video";
-  welcomeText?: string;           // 초대장 환영 문구
-  coverImageUrl?: string;         // 대표 사진 1장 (S3 URL)
-  galleryUrls?: string[];         // 갤러리 사진 (최대 5장)
 }
 
 export interface Clip {

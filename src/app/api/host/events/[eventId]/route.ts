@@ -39,9 +39,6 @@ export async function GET(
       hostId: data.hostId as string,
       uploadToken: (data.uploadToken ?? undefined) as string | undefined,
       videoUrl: (data.videoUrl ?? undefined) as string | undefined,
-      welcomeText: (data.welcomeText ?? null) as string | null,
-      coverImageUrl: (data.coverImageUrl ?? null) as string | null,
-      galleryUrls: (data.galleryUrls ?? []) as string[],
       introText: (data.introText ?? null) as string | null,
       introMediaKey: (data.introMediaKey ?? null) as string | null,
       introMediaType: (data.introMediaType ?? null) as "image" | "video" | null,
@@ -70,9 +67,6 @@ export async function PATCH(
   const { eventId } = await params;
 
   const body = await request.json().catch(() => null) as {
-    welcomeText?: string | null;
-    coverImageUrl?: string | null;
-    galleryUrls?: string[] | null;
     introText?: string | null;
     outroText?: string | null;
     introMediaKey?: string | null;
@@ -85,9 +79,6 @@ export async function PATCH(
     return Response.json({ error: "INVALID_BODY" }, { status: 400 });
   }
 
-  const hasWelcomeText = "welcomeText" in body;
-  const hasCoverImageUrl = "coverImageUrl" in body;
-  const hasGalleryUrls = "galleryUrls" in body;
   const hasIntroText = "introText" in body;
   const hasOutroText = "outroText" in body;
   const hasIntroMediaKey = "introMediaKey" in body;
@@ -95,19 +86,12 @@ export async function PATCH(
   const hasIntroMediaType = "introMediaType" in body;
   const hasOutroMediaType = "outroMediaType" in body;
 
-  if (!hasWelcomeText && !hasCoverImageUrl && !hasGalleryUrls &&
-      !hasIntroText && !hasOutroText &&
+  if (!hasIntroText && !hasOutroText &&
       !hasIntroMediaKey && !hasOutroMediaKey &&
       !hasIntroMediaType && !hasOutroMediaType) {
     return Response.json({ error: "NO_FIELDS" }, { status: 400 });
   }
 
-  if (hasWelcomeText && typeof body.welcomeText === "string" && body.welcomeText.length > 120) {
-    return Response.json({ error: "INVALID_WELCOME_TEXT" }, { status: 400 });
-  }
-  if (hasGalleryUrls && Array.isArray(body.galleryUrls) && body.galleryUrls.length > 4) {
-    return Response.json({ error: "INVALID_GALLERY_LENGTH" }, { status: 400 });
-  }
   if (hasIntroText && typeof body.introText === "string" && body.introText.length > 60) {
     return Response.json({ error: "INVALID_INTRO_TEXT" }, { status: 400 });
   }
@@ -142,17 +126,6 @@ export async function PATCH(
 
     const updates: Record<string, unknown> = {};
 
-    if (hasWelcomeText) {
-      updates.welcomeText = !body.welcomeText ? FieldValue.delete() : body.welcomeText;
-    }
-    if (hasCoverImageUrl) {
-      updates.coverImageUrl = body.coverImageUrl ?? FieldValue.delete();
-    }
-    if (hasGalleryUrls) {
-      updates.galleryUrls = !body.galleryUrls || body.galleryUrls.length === 0
-        ? FieldValue.delete()
-        : body.galleryUrls;
-    }
     if (hasIntroText) {
       updates.introText = !body.introText ? FieldValue.delete() : body.introText;
     }

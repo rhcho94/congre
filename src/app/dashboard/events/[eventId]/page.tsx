@@ -40,9 +40,6 @@ interface ApiEvent {
   hostId: string;
   uploadToken?: string;
   videoUrl?: string;
-  welcomeText: string | null;
-  coverImageUrl: string | null;
-  galleryUrls: string[];
   introText: string | null;
   introMediaKey: string | null;
   introMediaType: "image" | "video" | null;
@@ -91,15 +88,6 @@ export default function EventDetailPage() {
   const [kakaoReady, setKakaoReady] = useState(false);
   const qrHiResRef = useRef<HTMLDivElement>(null);
   const inviteInitializedRef = useRef(false);
-  const [welcomeText, setWelcomeText] = useState("");
-  const [savedWelcomeText, setSavedWelcomeText] = useState("");
-  const [coverImageKey, setCoverImageKey] = useState<string | null>(null);
-  const [galleryKeys, setGalleryKeys] = useState<string[]>([]);
-  const [coverDisplayUrl, setCoverDisplayUrl] = useState<string | null>(null);
-  const [galleryDisplayUrls, setGalleryDisplayUrls] = useState<string[]>([]);
-  const [coverUploading, setCoverUploading] = useState(false);
-  const [galleryUploading, setGalleryUploading] = useState(false);
-  const [savingWelcome, setSavingWelcome] = useState(false);
   const [introText, setIntroText] = useState("");
   const [savedIntroText, setSavedIntroText] = useState("");
   const [savingIntroText, setSavingIntroText] = useState(false);
@@ -150,10 +138,6 @@ export default function EventDetailPage() {
         setEventLoading(false);
         if (!inviteInitializedRef.current) {
           inviteInitializedRef.current = true;
-          setWelcomeText(evt.welcomeText ?? "");
-          setSavedWelcomeText(evt.welcomeText ?? "");
-          setCoverImageKey(evt.coverImageUrl ?? null);
-          setGalleryKeys(evt.galleryUrls ?? []);
           setIntroText(evt.introText ?? "");
           setSavedIntroText(evt.introText ?? "");
           setIntroMediaKey(evt.introMediaKey ?? null);
@@ -162,8 +146,7 @@ export default function EventDetailPage() {
           setSavedOutroText(evt.outroText ?? "");
           setOutroMediaKey(evt.outroMediaKey ?? null);
           setOutroMediaType(evt.outroMediaType ?? null);
-          if (evt.coverImageUrl || (evt.galleryUrls ?? []).length > 0 ||
-              evt.introMediaKey || evt.outroMediaKey) {
+          if (evt.introMediaKey || evt.outroMediaKey) {
             refreshInviteDisplayUrls(idToken);
           }
         }
@@ -237,9 +220,9 @@ export default function EventDetailPage() {
   }, [eventId, user]);
 
   async function handleCopy() {
-    if (!effectiveShareUrl) return;
+    if (!shareUrl) return;
     try {
-      await navigator.clipboard.writeText(effectiveShareUrl);
+      await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
@@ -314,8 +297,8 @@ export default function EventDetailPage() {
           description: "Congre로 만든 영상입니다 🎬",
           imageUrl: `${appUrl}/logo.png`,
           link: {
-            mobileWebUrl: `${appUrl}/share/${eventId}`,
-            webUrl: `${appUrl}/share/${eventId}`,
+            mobileWebUrl: event.videoUrl,
+            webUrl: event.videoUrl,
           },
         },
       });
@@ -343,13 +326,9 @@ export default function EventDetailPage() {
       });
       if (!res.ok) return;
       const data = await res.json() as {
-        coverImageUrl: string | null;
-        galleryUrls: string[];
         introMediaUrl: string | null;
         outroMediaUrl: string | null;
       };
-      setCoverDisplayUrl(data.coverImageUrl);
-      setGalleryDisplayUrls(data.galleryUrls);
       setIntroDisplayUrl(data.introMediaUrl ?? null);
       setOutroDisplayUrl(data.outroMediaUrl ?? null);
     } catch {
@@ -367,87 +346,6 @@ export default function EventDetailPage() {
     });
     if (!res.ok) throw new Error(`PATCH ${res.status}`);
     return idToken;
-  }
-
-  async function handleSaveWelcomeText() {
-    setSavingWelcome(true);
-    try {
-      await patchInvite({ welcomeText: welcomeText.trim() || null });
-      setSavedWelcomeText(welcomeText);
-    } catch {
-      alert("저장에 실패했습니다.");
-    } finally {
-      setSavingWelcome(false);
-    }
-  }
-
-  async function handleCoverUpload(file: File) {
-    if (file.size > 10 * 1024 * 1024) {
-      alert("파일 크기는 10MB 이하만 가능합니다");
-      return;
-    }
-    setCoverUploading(true);
-    try {
-      const { url, key } = await getPresignedUrl(eventId, file.name, file.type, "invite");
-      await uploadToS3(url, file, file.type, () => {});
-      const idToken = await patchInvite({ coverImageUrl: key });
-      setCoverImageKey(key);
-      if (idToken) await refreshInviteDisplayUrls(idToken);
-    } catch {
-      alert("업로드에 실패했습니다.");
-    } finally {
-      setCoverUploading(false);
-    }
-  }
-
-  async function handleCoverDelete() {
-    const prevKey = coverImageKey;
-    const prevDisplay = coverDisplayUrl;
-    setCoverImageKey(null);
-    setCoverDisplayUrl(null);
-    try {
-      await patchInvite({ coverImageUrl: null });
-    } catch {
-      setCoverImageKey(prevKey);
-      setCoverDisplayUrl(prevDisplay);
-      alert("삭제에 실패했습니다.");
-    }
-  }
-
-  async function handleGalleryUpload(file: File) {
-    if (file.size > 10 * 1024 * 1024) {
-      alert("파일 크기는 10MB 이하만 가능합니다");
-      return;
-    }
-    setGalleryUploading(true);
-    try {
-      const { url, key } = await getPresignedUrl(eventId, file.name, file.type, "invite");
-      await uploadToS3(url, file, file.type, () => {});
-      const nextKeys = [...galleryKeys, key];
-      const idToken = await patchInvite({ galleryUrls: nextKeys });
-      setGalleryKeys(nextKeys);
-      if (idToken) await refreshInviteDisplayUrls(idToken);
-    } catch {
-      alert("업로드에 실패했습니다.");
-    } finally {
-      setGalleryUploading(false);
-    }
-  }
-
-  async function handleGalleryDelete(index: number) {
-    const prevKeys = galleryKeys;
-    const prevDisplayUrls = galleryDisplayUrls;
-    const nextKeys = galleryKeys.filter((_, i) => i !== index);
-    const nextDisplayUrls = galleryDisplayUrls.filter((_, i) => i !== index);
-    setGalleryKeys(nextKeys);
-    setGalleryDisplayUrls(nextDisplayUrls);
-    try {
-      await patchInvite({ galleryUrls: nextKeys });
-    } catch {
-      setGalleryKeys(prevKeys);
-      setGalleryDisplayUrls(prevDisplayUrls);
-      alert("삭제에 실패했습니다.");
-    }
   }
 
   async function handleSaveIntroText() {
@@ -627,15 +525,6 @@ export default function EventDetailPage() {
     }
   }
 
-  const hasInviteContent =
-    savedWelcomeText.trim() !== "" ||
-    coverImageKey !== null ||
-    galleryKeys.length > 0;
-
-  const effectiveShareUrl = hasInviteContent
-    ? `${window.location.origin}/invite/${eventId}`
-    : shareUrl;
-
   if (authChecking || eventLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -753,147 +642,6 @@ export default function EventDetailPage() {
         </div>
 
         <div className="rule mb-8" />
-
-        {/* 초대장 작성 */}
-        <div className={`mb-8 ${isClosed ? "opacity-60" : ""}`}>
-          <p className="text-xs tracking-widest uppercase text-muted mb-1">초대장 작성 (선택)</p>
-          <p className="text-xs text-muted mb-5 leading-relaxed" style={{ opacity: 0.7 }}>
-            게스트에게 보여줄 환영 문구와 사진. 비워두면 업로드 페이지로 바로 이동합니다.
-          </p>
-
-          <div className="flex flex-col gap-6">
-            {/* welcomeText */}
-            <div className="flex flex-col gap-1.5">
-              <span className="flex items-center justify-between">
-                <span className="text-xs tracking-widest uppercase text-muted">환영 문구</span>
-                <span className="text-xs text-muted">{welcomeText.length} / 120</span>
-              </span>
-              <textarea
-                rows={3}
-                maxLength={120}
-                placeholder="예: 우리 아이의 졸업식에 와주셔서 감사합니다"
-                value={welcomeText}
-                onChange={(e) => setWelcomeText(e.target.value)}
-                disabled={isClosed}
-                className="bg-surface border border-border px-4 py-3 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-accent transition-colors duration-200 disabled:opacity-50 resize-none"
-              />
-              {!isClosed && (
-                <button
-                  onClick={handleSaveWelcomeText}
-                  disabled={savingWelcome || welcomeText === savedWelcomeText}
-                  className="self-end px-4 py-2 border border-border text-xs tracking-widest uppercase text-muted hover:border-accent hover:text-foreground transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  {savingWelcome ? "저장 중..." : "저장"}
-                </button>
-              )}
-            </div>
-
-            {/* coverImageUrl */}
-            <div className="flex flex-col gap-1.5">
-              <span className="text-xs tracking-widest uppercase text-muted">대표 사진</span>
-              {coverUploading ? (
-                <div className="flex items-center gap-2 py-4">
-                  <Loader2 size={14} className="animate-spin text-accent" />
-                  <span className="text-xs text-muted">업로드 중...</span>
-                </div>
-              ) : coverDisplayUrl ? (
-                <div className="relative inline-block self-start">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={coverDisplayUrl} alt="대표 사진" className="max-h-48 object-cover" />
-                  {!isClosed && (
-                    <button
-                      onClick={handleCoverDelete}
-                      className="absolute top-2 right-2 px-2 py-1 text-xs text-white transition-all duration-200"
-                      style={{ background: "rgba(0,0,0,0.6)" }}
-                    >
-                      삭제
-                    </button>
-                  )}
-                </div>
-              ) : !isClosed ? (
-                <label className="inline-flex items-center gap-2 px-4 py-2 border border-border text-xs tracking-widest uppercase text-muted hover:border-accent hover:text-foreground transition-all duration-200 cursor-pointer self-start">
-                  + 사진 선택
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="sr-only"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) handleCoverUpload(file);
-                      e.target.value = "";
-                    }}
-                  />
-                </label>
-              ) : null}
-            </div>
-
-            {/* galleryUrls */}
-            <div className="flex flex-col gap-1.5">
-              <span className="text-xs tracking-widest uppercase text-muted">갤러리 사진 (최대 4장)</span>
-              <div className="grid grid-cols-2 gap-2">
-                {galleryDisplayUrls.map((displayUrl, i) => (
-                  <div key={galleryKeys[i] ?? displayUrl} className="relative aspect-square">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={displayUrl} alt="갤러리" className="w-full h-full object-cover" />
-                    {!isClosed && (
-                      <button
-                        onClick={() => handleGalleryDelete(i)}
-                        className="absolute top-1 right-1 px-1.5 py-0.5 text-xs text-white transition-all duration-200"
-                        style={{ background: "rgba(0,0,0,0.6)" }}
-                      >
-                        삭제
-                      </button>
-                    )}
-                  </div>
-                ))}
-                {galleryUploading && (
-                  <div className="aspect-square border border-border bg-surface flex flex-col items-center justify-center gap-1">
-                    <Loader2 size={14} className="animate-spin text-accent" />
-                    <span className="text-xs text-muted">업로드 중...</span>
-                  </div>
-                )}
-                {!isClosed && galleryKeys.length < 4 && !galleryUploading && (
-                  <label className="aspect-square border border-border bg-surface flex items-center justify-center text-xs text-muted hover:border-accent hover:text-foreground transition-all duration-200 cursor-pointer">
-                    + 사진 추가
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="sr-only"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) handleGalleryUpload(file);
-                        e.target.value = "";
-                      }}
-                    />
-                  </label>
-                )}
-              </div>
-            </div>
-
-            {/* 미리보기 */}
-            <div className="flex flex-col gap-2">
-              {!savedWelcomeText.trim() && !coverImageKey && galleryKeys.length === 0 && (
-                <p className="text-xs text-muted" style={{ opacity: 0.7 }}>
-                  초대장이 비어있어 게스트는 업로드 페이지로 바로 이동합니다
-                </p>
-              )}
-              <a
-                href={`/invite/${eventId}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-disabled={!savedWelcomeText.trim() && !coverImageKey && galleryKeys.length === 0}
-                tabIndex={!savedWelcomeText.trim() && !coverImageKey && galleryKeys.length === 0 ? -1 : 0}
-                className={`self-start px-4 py-2 border text-xs tracking-widest uppercase transition-all duration-200 ${
-                  !savedWelcomeText.trim() && !coverImageKey && galleryKeys.length === 0
-                    ? "border-border text-muted opacity-40 pointer-events-none"
-                    : "border-border text-muted hover:border-accent hover:text-foreground"
-                }`}
-              >
-                미리보기 열기
-              </a>
-            </div>
-          </div>
-        </div>
 
         {/* 영상 인트로 / 아웃트로 */}
         <div className={`mb-8 ${isClosed ? "opacity-60" : ""}`}>
@@ -1058,7 +806,7 @@ export default function EventDetailPage() {
             <div className="flex flex-col sm:flex-row gap-6 p-6 border border-border bg-surface">
               <div className="shrink-0 flex flex-col items-center gap-2">
                 <QRCodeSVG
-                  value={effectiveShareUrl}
+                  value={shareUrl}
                   size={140}
                   bgColor="#151310"
                   fgColor="#ede8df"
@@ -1077,7 +825,7 @@ export default function EventDetailPage() {
                 </p>
                 <div className="flex items-center gap-2">
                   <span className="flex-1 min-w-0 text-xs text-foreground bg-[var(--surface-2)] border border-border px-3 py-2 truncate font-mono">
-                    {effectiveShareUrl}
+                    {shareUrl}
                   </span>
                   <button
                     onClick={handleCopy}
@@ -1288,7 +1036,7 @@ export default function EventDetailPage() {
           style={{ position: "fixed", left: "-9999px", top: 0 }}
         >
           <QRCodeCanvas
-            value={effectiveShareUrl}
+            value={shareUrl}
             size={512}
             bgColor="#ffffff"
             fgColor="#151310"

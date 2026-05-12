@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
 
   const { eventId, fileName, fileType, kind } = await request.json();
 
-  if (kind !== "clip" && kind !== "invite" && kind !== "intro" && kind !== "outro") {
+  if (kind !== "clip" && kind !== "intro" && kind !== "outro") {
     return Response.json({ error: "INVALID_KIND" }, { status: 400 });
   }
 
