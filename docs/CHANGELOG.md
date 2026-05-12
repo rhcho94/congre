@@ -4,6 +4,7 @@
 
 ## 2026-05-12
 
+- refactor: outroText overlay 폐기 — [A] 분기 cross-track 동기화 한계 해소. probe API 도입 폐기(WebM duration 미반환 + 비용 미확증). introText overlay 보존. 사고 2①·2③ 해소
 - refactor: shotstack multi-track 구조 도입 — 인트로/아웃트로 미디어(사진 5초/영상 원본) + 텍스트 overlay(fade transition + stroke + 반투명 박스). createRender 시그니처 변경(intro/outro 객체 인자). 단일 track 분기는 기존 동작 보존
 - feat: 대시보드 인트로/아웃트로 업로드 UI + 텍스트 편집 — introText/outroText(60자) 저장 버튼, intro/outro 미디어(이미지·영상, 10MB) 업로드·미리보기·삭제; GET/PATCH API 6필드 확장(introText/introMediaKey/introMediaType/outroText/outroMediaKey/outroMediaType); invite-urls 응답에 introMediaUrl/outroMediaUrl 추가
 

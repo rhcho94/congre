@@ -2,6 +2,20 @@
 
 > 영상 편집·Shotstack·클립·재렌더 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-05-12 — outroText overlay 폐기, probe API 도입 폐기
+
+- **결정**: [A] 분기(듀얼 track)에서 outroText overlay 제거. introText overlay만 보존. [B] 분기(미디어 없음, 단일 track)의 outroText 처리는 변경 없음.
+- **폐기 사유 (probe API)**:
+  - 브라우저 MediaRecorder 생성 WebM에 duration 메타데이터 없음 → probe가 null 반환 (Shotstack 커뮤니티 확인). 참가자 클립 전부가 이 케이스.
+  - probe 호출당 비용 미확증 (Shotstack Help Center에 항목 없음).
+  - 두 한계 모두 해소 불가 → probe 도입 효용 보장 안 됨.
+- **폐기 사유 (outroText overlay)**:
+  - cross-track 동기화 한계: outroText 시작 오프셋을 track[1] outroMedia 시작 시점에 맞출 수 없음 (Shotstack timeline의 cross-track 동기화 미지원).
+  - probe 없이 outroMedia duration을 서버에서 알 방법 없음.
+- **해소된 사고**: 사고 2①(아웃트로 텍스트가 인트로 구간에 차례 표시) + 사고 2③(비대칭 입력에서 outroText 무시).
+- **보존 동작**: [A] 분기 introText overlay(fade + stroke + 반투명 박스). [B] 분기 outroText 단일 track 직렬 배치.
+- **관련 커밋**: `refactor: drop outroText overlay to resolve cross-track sync limitation`
+
 ## 2026-05-12 — Multi-track 구조로 인트로/아웃트로 미디어 + 텍스트 overlay 지원
 
 - **결정**: shotstack timeline을 조건부 분기로 듀얼/단일 track 구성.

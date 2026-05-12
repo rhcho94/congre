@@ -3,6 +3,18 @@
 > known-issues.md에서 분리된 해결 완료 이력. 사고 재발 진단 시 grep 대상.
 > 새 RESOLVED 항목 발생 시 known-issues.md에서 이 파일로 이동.
 
+## ✅ 사고 2① — outroText 인트로 구간 차례 표시 (cross-track 동기화 한계) [RESOLVED 2026-05-12 / refactor: drop outroText overlay]
+
+- **해결**: [A] 분기에서 outroText overlay 자체 폐기. introText overlay만 보존.
+- **원인**: Shotstack timeline cross-track 동기화 미지원. track[0] textClip의 "auto" start가 track[1] outroMedia 시작 시점이 아닌 timeline 전체 시작점 기준으로 배치됨.
+- **위치**: `src/lib/shotstack.ts` createRender [A] 분기 textClips 배열
+
+## ✅ 사고 2③ — 비대칭 입력(introMedia + outroText만)에서 outroText 무시 [RESOLVED 2026-05-12 / refactor: drop outroText overlay]
+
+- **해결**: outroText overlay 폐기로 해당 케이스 자체 소멸. [B] 분기(미디어 없음)의 outroText 단일 track 동작은 사고 없이 정상 유지.
+- **원인**: [A] 분기 textClips 조건이 `outro?.text && hasOutroMedia` 였음. outroText만 있고 outroMedia 없으면 textClip 생성 불가 구조.
+- **위치**: `src/lib/shotstack.ts` createRender [A] 분기 textClips 배열
+
 ## ✅ 한글 인트로/아웃트로 기능 [RESOLVED 2026-05-12 / refactor: shotstack multi-track]
 
 - **해결**: shotstack multi-track 구조 도입. 호스트 미디어 + 텍스트 overlay (Noto Sans KR TTF + fade transition + stroke + 반투명 박스). 트랙 2-A 항목 6 라운드 ①~③ 완결.
