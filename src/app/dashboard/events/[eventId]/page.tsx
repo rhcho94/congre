@@ -934,6 +934,7 @@ export default function EventDetailPage() {
 
               <div className="flex flex-col gap-1.5">
                 <span className="text-xs text-muted">미디어 (이미지 또는 영상)</span>
+                <span className="text-xs text-accent">영상 10초 이내 권장 · 길수록 결과물 길어짐</span>
                 {introUploading ? (
                   <div className="flex items-center gap-2 py-4">
                     <Loader2 size={14} className="animate-spin text-accent" />
@@ -1006,6 +1007,7 @@ export default function EventDetailPage() {
 
               <div className="flex flex-col gap-1.5">
                 <span className="text-xs text-muted">미디어 (이미지 또는 영상)</span>
+                <span className="text-xs text-accent">영상 10초 이내 권장 · 길수록 결과물 길어짐</span>
                 {outroUploading ? (
                   <div className="flex items-center gap-2 py-4">
                     <Loader2 size={14} className="animate-spin text-accent" />
