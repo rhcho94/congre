@@ -2,6 +2,18 @@
 
 > 영상 편집·Shotstack·클립·재렌더 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-05-12 — Multi-track 구조로 인트로/아웃트로 미디어 + 텍스트 overlay 지원
+
+- **결정**: shotstack timeline을 조건부 분기로 듀얼/단일 track 구성.
+  - **[A] 듀얼 track**: 인트로 또는 아웃트로에 미디어 있을 때. track[0] 텍스트 overlay + track[1] 미디어
+  - **[B] 단일 track**: 미디어 둘 다 없을 때. 현재 코드 동작 그대로 보존
+- **길이**: 사진 5초 고정, 영상 원본 길이("auto"). 인트로 텍스트 3초 고정. 아웃트로 텍스트는 outroMedia 길이에 동기화.
+- **outroText 동기화 한계**: outroMedia 없을 때 outroText가 [A] 분기에서 무시됨. cross-track 정확한 끝 동기화는 probe API 필요 — 본 의제 외.
+- **스타일 (overlay 모드)**: stroke 외곽선 + 반투명 박스(opacity 0.5) + fade in/out transition.
+- **스타일 (text-only 모드)**: 기존 동작 보존. background.opacity 명시 안 함 (불투명).
+- **알려진 한계**: [A] 분기에서 outroText 단독(outroMedia 없음) 케이스는 overlay 안 됨. 운영상 비대칭 입력(intro 미디어 있음 + outro 텍스트만)이 실제로 드물 것으로 예상.
+- **관련 커밋**: `refactor: shotstack multi-track with intro/outro media overlay`
+
 ## 2026-05-09 — 렌더링 클립 정렬 책임을 shotstack.ts에서 render/start로 이동
 
 - **결정**: `shotstack.ts`는 입력 순서를 그대로 신뢰. 호출자(`render/start`)가 `uploadedAt` 오름차순 sort를 수행. JS sort callback 방식.

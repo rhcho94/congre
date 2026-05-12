@@ -30,30 +30,74 @@ function assertApiKey(): void {
   }
 }
 
-function makeTextClip(text: string, start: number | "auto") {
+function makeTextClip(
+  text: string,
+  start: number | "auto",
+  overlayMode: boolean,
+  length: number | "auto" = 3,
+) {
+  if (!overlayMode) {
+    // [B] 분기 — 현재 동작 보존 (검은 배경 단독 클립)
+    return {
+      asset: {
+        type: "rich-text",
+        text,
+        font: { family: "Noto Sans KR", size: 64, color: "#c8892c" },
+        background: { color: "#0c0b09" },
+        align: { horizontal: "center", vertical: "middle" },
+      },
+      start,
+      length,
+    };
+  }
+  // [A] 분기 — 미디어 overlay 모드
   return {
     asset: {
       type: "rich-text",
       text,
       font: { family: "Noto Sans KR", size: 64, color: "#c8892c" },
-      background: { color: "#0c0b09" },
+      background: { color: "#0c0b09", opacity: 0.5 },
+      stroke: { width: 4, color: "#0c0b09", opacity: 1 },
       align: { horizontal: "center", vertical: "middle" },
     },
     start,
-    length: 3,
+    length,
+    transition: { in: "fade", out: "fade" },
+  };
+}
+
+function makeMediaClip(
+  src: string,
+  mediaType: "image" | "video",
+  start: number | "auto",
+): {
+  asset: { type: "image" | "video"; src: string };
+  start: number | "auto";
+  length: number | "auto";
+  fit: "cover";
+} {
+  return {
+    asset: { type: mediaType, src },
+    start,
+    length: mediaType === "image" ? 5 : "auto",
+    fit: "cover",
   };
 }
 
 export async function createRender(
   s3Urls: string[],
-  introText?: string,
-  outroText?: string,
+  intro?: { text?: string; mediaUrl?: string; mediaType?: "image" | "video" },
+  outro?: { text?: string; mediaUrl?: string; mediaType?: "image" | "video" },
 ): Promise<string> {
   assertApiKey();
 
-  const hasIntroOutro = !!(introText || outroText);
+  const hasIntroMedia = !!(intro?.mediaUrl && intro.mediaType);
+  const hasOutroMedia = !!(outro?.mediaUrl && outro.mediaType);
+  const useDualTrack = hasIntroMedia || hasOutroMedia;
+
+  const hasAnyText = !!(intro?.text || outro?.text);
   let fontsSrc: string | undefined;
-  if (hasIntroOutro) {
+  if (hasAnyText) {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL;
     if (!appUrl) throw new Error("MISSING_APP_URL_FOR_INTRO_OUTRO");
     fontsSrc = `${appUrl}/fonts/NotoSansKR-Regular.ttf`;
@@ -66,15 +110,44 @@ export async function createRender(
     fit: "cover",
   }));
 
-  const allClips = [
-    ...(introText ? [makeTextClip(introText, 0)] : []),
-    ...videoClips,
-    ...(outroText ? [makeTextClip(outroText, "auto")] : []),
-  ];
+  let tracks;
+  if (useDualTrack) {
+    // [A] 분기 — 듀얼 track: track[0] 텍스트 overlay, track[1] 미디어
+    // outroText 동기화: outroMedia 있을 때만 overlay (cross-track 동기화 한계)
+    const outroLength: number | "auto" = hasOutroMedia
+      ? (outro!.mediaType === "image" ? 5 : "auto")
+      : 3;
+
+    const textClips = [
+      ...(intro?.text ? [makeTextClip(intro.text, 0, true, 3)] : []),
+      ...(outro?.text && hasOutroMedia
+        ? [makeTextClip(outro.text, "auto", true, outroLength)]
+        : []),
+    ];
+
+    const mediaClips = [
+      ...(hasIntroMedia ? [makeMediaClip(intro!.mediaUrl!, intro!.mediaType!, 0)] : []),
+      ...videoClips,
+      ...(hasOutroMedia ? [makeMediaClip(outro!.mediaUrl!, outro!.mediaType!, "auto")] : []),
+    ];
+
+    tracks = [
+      ...(textClips.length > 0 ? [{ clips: textClips }] : []),
+      { clips: mediaClips },
+    ];
+  } else {
+    // [B] 분기 — 단일 track: 현재 동작 그대로 보존
+    const allClips = [
+      ...(intro?.text ? [makeTextClip(intro.text, 0, false, 3)] : []),
+      ...videoClips,
+      ...(outro?.text ? [makeTextClip(outro.text, "auto", false, 3)] : []),
+    ];
+    tracks = [{ clips: allClips }];
+  }
 
   const timeline = {
     background: "#0c0b09",
-    tracks: [{ clips: allClips }],
+    tracks,
     ...(fontsSrc ? { fonts: [{ src: fontsSrc }] } : {}),
   };
 

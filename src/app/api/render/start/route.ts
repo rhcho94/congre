@@ -89,12 +89,39 @@ export async function POST(request: NextRequest) {
   console.log("[render/start] presigned URLs (24h):");
   s3Urls.forEach((url, i) => console.log(`  [${i}] ${url}`));
 
-  const introText = eventData.introText as string | undefined;
-  const outroText = eventData.outroText as string | undefined;
+  const introText      = eventData.introText      as string | undefined;
+  const outroText      = eventData.outroText      as string | undefined;
+  const introMediaKey  = eventData.introMediaKey  as string | undefined;
+  const introMediaType = eventData.introMediaType as "image" | "video" | undefined;
+  const outroMediaKey  = eventData.outroMediaKey  as string | undefined;
+  const outroMediaType = eventData.outroMediaType as "image" | "video" | undefined;
+
+  const introMediaUrl = introMediaKey
+    ? await getSignedUrl(
+        s3,
+        new GetObjectCommand({ Bucket: process.env.AWS_S3_BUCKET!, Key: introMediaKey }),
+        { expiresIn: 86400 }
+      )
+    : undefined;
+  const outroMediaUrl = outroMediaKey
+    ? await getSignedUrl(
+        s3,
+        new GetObjectCommand({ Bucket: process.env.AWS_S3_BUCKET!, Key: outroMediaKey }),
+        { expiresIn: 86400 }
+      )
+    : undefined;
 
   let renderId: string;
   try {
-    renderId = await createRender(s3Urls, introText, outroText);
+    renderId = await createRender(
+      s3Urls,
+      (introText || introMediaUrl)
+        ? { text: introText, mediaUrl: introMediaUrl, mediaType: introMediaType }
+        : undefined,
+      (outroText || outroMediaUrl)
+        ? { text: outroText, mediaUrl: outroMediaUrl, mediaType: outroMediaType }
+        : undefined,
+    );
   } catch (err) {
     const msg = err instanceof Error ? err.message : "render_failed";
     return Response.json({ error: msg }, { status: 500 });

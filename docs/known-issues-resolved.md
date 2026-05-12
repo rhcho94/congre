@@ -3,6 +3,18 @@
 > known-issues.md에서 분리된 해결 완료 이력. 사고 재발 진단 시 grep 대상.
 > 새 RESOLVED 항목 발생 시 known-issues.md에서 이 파일로 이동.
 
+## ✅ 한글 인트로/아웃트로 기능 [RESOLVED 2026-05-12 / refactor: shotstack multi-track]
+
+- **해결**: shotstack multi-track 구조 도입. 호스트 미디어 + 텍스트 overlay (Noto Sans KR TTF + fade transition + stroke + 반투명 박스). 트랙 2-A 항목 6 라운드 ①~③ 완결.
+- **위치**: `src/lib/shotstack.ts`, `src/app/api/render/start/route.ts`
+- **발견 경위**: 기존 코드 주석 "Shotstack 기본 폰트가 한글 미지원"이 잘못된 진단으로 확인. HTML asset + 커스텀 TTF 방식으로 가능함을 정찰로 발견.
+
+## ✅ 인트로/아웃트로 편집 UI [RESOLVED 2026-05-12 / feat: add intro/outro upload UI]
+
+- **해결**: 대시보드 상세 페이지에 인트로/아웃트로 텍스트(60자) + 미디어(이미지·영상 10MB) 편집 UI 추가. PATCH/GET API + invite-urls API + s3.ts 타입 동기화 포함. 트랙 2-A 항목 6 라운드 ② 작업분.
+- **위치**: `src/app/dashboard/events/[eventId]/page.tsx`
+- **발견 경위**: 트랙 2-A 항목 6 의제 진입 시 운영자 요건으로 확정.
+
 ## ✅ renderStartedNotifiedAt + renderCompletedNotifiedAt 알림 플래그 set 누락 [RESOLVED 2026-05-10]
 
 - **해결**: 두 플래그 모두 알림 함수 호출 후 `FieldValue.serverTimestamp()` set 코드가 없었음. 각 호출 직후에 별도 `db.update()` 추가.
