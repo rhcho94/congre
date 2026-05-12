@@ -2,6 +2,10 @@
 
 > 기능 단위 작업 이력. 최신이 위.
 
+## 2026-05-12
+
+- feat: 대시보드 인트로/아웃트로 업로드 UI + 텍스트 편집 — introText/outroText(60자) 저장 버튼, intro/outro 미디어(이미지·영상, 10MB) 업로드·미리보기·삭제; GET/PATCH API 6필드 확장(introText/introMediaKey/introMediaType/outroText/outroMediaKey/outroMediaType); invite-urls 응답에 introMediaUrl/outroMediaUrl 추가
+
 ## 2026-05-11
 
 - feat: 대시보드 QR/링크 target을 invite 콘텐츠 유무에 따라 분기 — welcomeText·coverImage·gallery 중 하나라도 있으면 /invite, 없으면 /upload로 연결

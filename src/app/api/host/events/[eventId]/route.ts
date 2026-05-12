@@ -42,6 +42,12 @@ export async function GET(
       welcomeText: (data.welcomeText ?? null) as string | null,
       coverImageUrl: (data.coverImageUrl ?? null) as string | null,
       galleryUrls: (data.galleryUrls ?? []) as string[],
+      introText: (data.introText ?? null) as string | null,
+      introMediaKey: (data.introMediaKey ?? null) as string | null,
+      introMediaType: (data.introMediaType ?? null) as "image" | "video" | null,
+      outroText: (data.outroText ?? null) as string | null,
+      outroMediaKey: (data.outroMediaKey ?? null) as string | null,
+      outroMediaType: (data.outroMediaType ?? null) as "image" | "video" | null,
     });
   } catch (err) {
     console.error("[api/host/events GET] Firestore error:", err);
@@ -67,6 +73,12 @@ export async function PATCH(
     welcomeText?: string | null;
     coverImageUrl?: string | null;
     galleryUrls?: string[] | null;
+    introText?: string | null;
+    outroText?: string | null;
+    introMediaKey?: string | null;
+    outroMediaKey?: string | null;
+    introMediaType?: "image" | "video" | null;
+    outroMediaType?: "image" | "video" | null;
   } | null;
 
   if (!body) {
@@ -76,17 +88,45 @@ export async function PATCH(
   const hasWelcomeText = "welcomeText" in body;
   const hasCoverImageUrl = "coverImageUrl" in body;
   const hasGalleryUrls = "galleryUrls" in body;
+  const hasIntroText = "introText" in body;
+  const hasOutroText = "outroText" in body;
+  const hasIntroMediaKey = "introMediaKey" in body;
+  const hasOutroMediaKey = "outroMediaKey" in body;
+  const hasIntroMediaType = "introMediaType" in body;
+  const hasOutroMediaType = "outroMediaType" in body;
 
-  if (!hasWelcomeText && !hasCoverImageUrl && !hasGalleryUrls) {
+  if (!hasWelcomeText && !hasCoverImageUrl && !hasGalleryUrls &&
+      !hasIntroText && !hasOutroText &&
+      !hasIntroMediaKey && !hasOutroMediaKey &&
+      !hasIntroMediaType && !hasOutroMediaType) {
     return Response.json({ error: "NO_FIELDS" }, { status: 400 });
   }
 
   if (hasWelcomeText && typeof body.welcomeText === "string" && body.welcomeText.length > 120) {
     return Response.json({ error: "INVALID_WELCOME_TEXT" }, { status: 400 });
   }
-
   if (hasGalleryUrls && Array.isArray(body.galleryUrls) && body.galleryUrls.length > 4) {
     return Response.json({ error: "INVALID_GALLERY_LENGTH" }, { status: 400 });
+  }
+  if (hasIntroText && typeof body.introText === "string" && body.introText.length > 60) {
+    return Response.json({ error: "INVALID_INTRO_TEXT" }, { status: 400 });
+  }
+  if (hasOutroText && typeof body.outroText === "string" && body.outroText.length > 60) {
+    return Response.json({ error: "INVALID_OUTRO_TEXT" }, { status: 400 });
+  }
+  if (hasIntroMediaType && body.introMediaType !== null &&
+      body.introMediaType !== "image" && body.introMediaType !== "video") {
+    return Response.json({ error: "INVALID_INTRO_MEDIA_TYPE" }, { status: 400 });
+  }
+  if (hasOutroMediaType && body.outroMediaType !== null &&
+      body.outroMediaType !== "image" && body.outroMediaType !== "video") {
+    return Response.json({ error: "INVALID_OUTRO_MEDIA_TYPE" }, { status: 400 });
+  }
+  if (hasIntroMediaKey !== hasIntroMediaType) {
+    return Response.json({ error: "INVALID_INTRO_MEDIA" }, { status: 400 });
+  }
+  if (hasOutroMediaKey !== hasOutroMediaType) {
+    return Response.json({ error: "INVALID_OUTRO_MEDIA" }, { status: 400 });
   }
 
   try {
@@ -112,6 +152,20 @@ export async function PATCH(
       updates.galleryUrls = !body.galleryUrls || body.galleryUrls.length === 0
         ? FieldValue.delete()
         : body.galleryUrls;
+    }
+    if (hasIntroText) {
+      updates.introText = !body.introText ? FieldValue.delete() : body.introText;
+    }
+    if (hasOutroText) {
+      updates.outroText = !body.outroText ? FieldValue.delete() : body.outroText;
+    }
+    if (hasIntroMediaKey) {
+      updates.introMediaKey = body.introMediaKey ?? FieldValue.delete();
+      updates.introMediaType = body.introMediaType ?? FieldValue.delete();
+    }
+    if (hasOutroMediaKey) {
+      updates.outroMediaKey = body.outroMediaKey ?? FieldValue.delete();
+      updates.outroMediaType = body.outroMediaType ?? FieldValue.delete();
     }
 
     await db.collection("events").doc(eventId).update(updates);

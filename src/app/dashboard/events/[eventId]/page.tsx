@@ -43,6 +43,12 @@ interface ApiEvent {
   welcomeText: string | null;
   coverImageUrl: string | null;
   galleryUrls: string[];
+  introText: string | null;
+  introMediaKey: string | null;
+  introMediaType: "image" | "video" | null;
+  outroText: string | null;
+  outroMediaKey: string | null;
+  outroMediaType: "image" | "video" | null;
 }
 
 interface ApiClip {
@@ -94,6 +100,20 @@ export default function EventDetailPage() {
   const [coverUploading, setCoverUploading] = useState(false);
   const [galleryUploading, setGalleryUploading] = useState(false);
   const [savingWelcome, setSavingWelcome] = useState(false);
+  const [introText, setIntroText] = useState("");
+  const [savedIntroText, setSavedIntroText] = useState("");
+  const [savingIntroText, setSavingIntroText] = useState(false);
+  const [introMediaKey, setIntroMediaKey] = useState<string | null>(null);
+  const [introMediaType, setIntroMediaType] = useState<"image" | "video" | null>(null);
+  const [introDisplayUrl, setIntroDisplayUrl] = useState<string | null>(null);
+  const [introUploading, setIntroUploading] = useState(false);
+  const [outroText, setOutroText] = useState("");
+  const [savedOutroText, setSavedOutroText] = useState("");
+  const [savingOutroText, setSavingOutroText] = useState(false);
+  const [outroMediaKey, setOutroMediaKey] = useState<string | null>(null);
+  const [outroMediaType, setOutroMediaType] = useState<"image" | "video" | null>(null);
+  const [outroDisplayUrl, setOutroDisplayUrl] = useState<string | null>(null);
+  const [outroUploading, setOutroUploading] = useState(false);
 
   useEffect(() => {
     if (!isFirebaseConfigured) return;
@@ -134,7 +154,16 @@ export default function EventDetailPage() {
           setSavedWelcomeText(evt.welcomeText ?? "");
           setCoverImageKey(evt.coverImageUrl ?? null);
           setGalleryKeys(evt.galleryUrls ?? []);
-          if (evt.coverImageUrl || (evt.galleryUrls ?? []).length > 0) {
+          setIntroText(evt.introText ?? "");
+          setSavedIntroText(evt.introText ?? "");
+          setIntroMediaKey(evt.introMediaKey ?? null);
+          setIntroMediaType(evt.introMediaType ?? null);
+          setOutroText(evt.outroText ?? "");
+          setSavedOutroText(evt.outroText ?? "");
+          setOutroMediaKey(evt.outroMediaKey ?? null);
+          setOutroMediaType(evt.outroMediaType ?? null);
+          if (evt.coverImageUrl || (evt.galleryUrls ?? []).length > 0 ||
+              evt.introMediaKey || evt.outroMediaKey) {
             refreshInviteDisplayUrls(idToken);
           }
         }
@@ -313,9 +342,16 @@ export default function EventDetailPage() {
         headers: { Authorization: `Bearer ${idToken}` },
       });
       if (!res.ok) return;
-      const data = await res.json() as { coverImageUrl: string | null; galleryUrls: string[] };
+      const data = await res.json() as {
+        coverImageUrl: string | null;
+        galleryUrls: string[];
+        introMediaUrl: string | null;
+        outroMediaUrl: string | null;
+      };
       setCoverDisplayUrl(data.coverImageUrl);
       setGalleryDisplayUrls(data.galleryUrls);
+      setIntroDisplayUrl(data.introMediaUrl ?? null);
+      setOutroDisplayUrl(data.outroMediaUrl ?? null);
     } catch {
       // 표시 URL 갱신 실패는 silent (업로드 자체는 성공)
     }
@@ -410,6 +446,106 @@ export default function EventDetailPage() {
     } catch {
       setGalleryKeys(prevKeys);
       setGalleryDisplayUrls(prevDisplayUrls);
+      alert("삭제에 실패했습니다.");
+    }
+  }
+
+  async function handleSaveIntroText() {
+    setSavingIntroText(true);
+    try {
+      await patchInvite({ introText: introText.trim() || null });
+      setSavedIntroText(introText);
+    } catch {
+      alert("저장에 실패했습니다.");
+    } finally {
+      setSavingIntroText(false);
+    }
+  }
+
+  async function handleSaveOutroText() {
+    setSavingOutroText(true);
+    try {
+      await patchInvite({ outroText: outroText.trim() || null });
+      setSavedOutroText(outroText);
+    } catch {
+      alert("저장에 실패했습니다.");
+    } finally {
+      setSavingOutroText(false);
+    }
+  }
+
+  async function handleIntroMediaUpload(file: File) {
+    if (file.size > 10 * 1024 * 1024) {
+      alert("파일 크기는 10MB 이하만 가능합니다");
+      return;
+    }
+    setIntroUploading(true);
+    try {
+      const mediaType = file.type.startsWith("video/") ? "video" : "image";
+      const { url, key } = await getPresignedUrl(eventId, file.name, file.type, "intro");
+      await uploadToS3(url, file, file.type, () => {});
+      const idToken = await patchInvite({ introMediaKey: key, introMediaType: mediaType });
+      setIntroMediaKey(key);
+      setIntroMediaType(mediaType);
+      if (idToken) await refreshInviteDisplayUrls(idToken);
+    } catch {
+      alert("업로드에 실패했습니다.");
+    } finally {
+      setIntroUploading(false);
+    }
+  }
+
+  async function handleIntroMediaDelete() {
+    const prevKey = introMediaKey;
+    const prevType = introMediaType;
+    const prevDisplay = introDisplayUrl;
+    setIntroMediaKey(null);
+    setIntroMediaType(null);
+    setIntroDisplayUrl(null);
+    try {
+      await patchInvite({ introMediaKey: null, introMediaType: null });
+    } catch {
+      setIntroMediaKey(prevKey);
+      setIntroMediaType(prevType);
+      setIntroDisplayUrl(prevDisplay);
+      alert("삭제에 실패했습니다.");
+    }
+  }
+
+  async function handleOutroMediaUpload(file: File) {
+    if (file.size > 10 * 1024 * 1024) {
+      alert("파일 크기는 10MB 이하만 가능합니다");
+      return;
+    }
+    setOutroUploading(true);
+    try {
+      const mediaType = file.type.startsWith("video/") ? "video" : "image";
+      const { url, key } = await getPresignedUrl(eventId, file.name, file.type, "outro");
+      await uploadToS3(url, file, file.type, () => {});
+      const idToken = await patchInvite({ outroMediaKey: key, outroMediaType: mediaType });
+      setOutroMediaKey(key);
+      setOutroMediaType(mediaType);
+      if (idToken) await refreshInviteDisplayUrls(idToken);
+    } catch {
+      alert("업로드에 실패했습니다.");
+    } finally {
+      setOutroUploading(false);
+    }
+  }
+
+  async function handleOutroMediaDelete() {
+    const prevKey = outroMediaKey;
+    const prevType = outroMediaType;
+    const prevDisplay = outroDisplayUrl;
+    setOutroMediaKey(null);
+    setOutroMediaType(null);
+    setOutroDisplayUrl(null);
+    try {
+      await patchInvite({ outroMediaKey: null, outroMediaType: null });
+    } catch {
+      setOutroMediaKey(prevKey);
+      setOutroMediaType(prevType);
+      setOutroDisplayUrl(prevDisplay);
       alert("삭제에 실패했습니다.");
     }
   }
@@ -755,6 +891,160 @@ export default function EventDetailPage() {
               >
                 미리보기 열기
               </a>
+            </div>
+          </div>
+        </div>
+
+        {/* 영상 인트로 / 아웃트로 */}
+        <div className={`mb-8 ${isClosed ? "opacity-60" : ""}`}>
+          <p className="text-xs tracking-widest uppercase text-muted mb-1">영상 인트로 / 아웃트로 (선택)</p>
+          <p className="text-xs text-muted mb-5 leading-relaxed" style={{ opacity: 0.7 }}>
+            영상 처음과 끝에 표시될 텍스트와 미디어. 비워두면 참가자 영상만 편집됩니다.
+          </p>
+
+          <div className="flex flex-col gap-6">
+            {/* 인트로 */}
+            <div className="flex flex-col gap-3">
+              <span className="text-xs tracking-widest uppercase text-muted">인트로</span>
+
+              <div className="flex flex-col gap-1.5">
+                <span className="flex items-center justify-between">
+                  <span className="text-xs text-muted">텍스트</span>
+                  <span className="text-xs text-muted">{introText.length} / 60</span>
+                </span>
+                <textarea
+                  rows={2}
+                  maxLength={60}
+                  placeholder="예: 결혼식이 시작됩니다"
+                  value={introText}
+                  onChange={(e) => setIntroText(e.target.value)}
+                  disabled={isClosed}
+                  className="bg-surface border border-border px-4 py-3 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-accent transition-colors duration-200 disabled:opacity-50 resize-none"
+                />
+                {!isClosed && (
+                  <button
+                    onClick={handleSaveIntroText}
+                    disabled={savingIntroText || introText === savedIntroText}
+                    className="self-end px-4 py-2 border border-border text-xs tracking-widest uppercase text-muted hover:border-accent hover:text-foreground transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    {savingIntroText ? "저장 중..." : "저장"}
+                  </button>
+                )}
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <span className="text-xs text-muted">미디어 (이미지 또는 영상)</span>
+                {introUploading ? (
+                  <div className="flex items-center gap-2 py-4">
+                    <Loader2 size={14} className="animate-spin text-accent" />
+                    <span className="text-xs text-muted">업로드 중...</span>
+                  </div>
+                ) : introDisplayUrl ? (
+                  <div className="relative inline-block self-start">
+                    {introMediaType === "video" ? (
+                      <video src={introDisplayUrl} controls playsInline className="max-h-48 object-cover" />
+                    ) : (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={introDisplayUrl} alt="인트로 미디어" className="max-h-48 object-cover" />
+                    )}
+                    {!isClosed && (
+                      <button
+                        onClick={handleIntroMediaDelete}
+                        className="absolute top-2 right-2 px-2 py-1 text-xs text-white transition-all duration-200"
+                        style={{ background: "rgba(0,0,0,0.6)" }}
+                      >
+                        삭제
+                      </button>
+                    )}
+                  </div>
+                ) : !isClosed ? (
+                  <label className="inline-flex items-center gap-2 px-4 py-2 border border-border text-xs tracking-widest uppercase text-muted hover:border-accent hover:text-foreground transition-all duration-200 cursor-pointer self-start">
+                    + 미디어 선택
+                    <input
+                      type="file"
+                      accept="image/*,video/*"
+                      className="sr-only"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleIntroMediaUpload(file);
+                        e.target.value = "";
+                      }}
+                    />
+                  </label>
+                ) : null}
+              </div>
+            </div>
+
+            {/* 아웃트로 */}
+            <div className="flex flex-col gap-3">
+              <span className="text-xs tracking-widest uppercase text-muted">아웃트로</span>
+
+              <div className="flex flex-col gap-1.5">
+                <span className="flex items-center justify-between">
+                  <span className="text-xs text-muted">텍스트</span>
+                  <span className="text-xs text-muted">{outroText.length} / 60</span>
+                </span>
+                <textarea
+                  rows={2}
+                  maxLength={60}
+                  placeholder="예: 함께해 주셔서 감사합니다"
+                  value={outroText}
+                  onChange={(e) => setOutroText(e.target.value)}
+                  disabled={isClosed}
+                  className="bg-surface border border-border px-4 py-3 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-accent transition-colors duration-200 disabled:opacity-50 resize-none"
+                />
+                {!isClosed && (
+                  <button
+                    onClick={handleSaveOutroText}
+                    disabled={savingOutroText || outroText === savedOutroText}
+                    className="self-end px-4 py-2 border border-border text-xs tracking-widest uppercase text-muted hover:border-accent hover:text-foreground transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    {savingOutroText ? "저장 중..." : "저장"}
+                  </button>
+                )}
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <span className="text-xs text-muted">미디어 (이미지 또는 영상)</span>
+                {outroUploading ? (
+                  <div className="flex items-center gap-2 py-4">
+                    <Loader2 size={14} className="animate-spin text-accent" />
+                    <span className="text-xs text-muted">업로드 중...</span>
+                  </div>
+                ) : outroDisplayUrl ? (
+                  <div className="relative inline-block self-start">
+                    {outroMediaType === "video" ? (
+                      <video src={outroDisplayUrl} controls playsInline className="max-h-48 object-cover" />
+                    ) : (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={outroDisplayUrl} alt="아웃트로 미디어" className="max-h-48 object-cover" />
+                    )}
+                    {!isClosed && (
+                      <button
+                        onClick={handleOutroMediaDelete}
+                        className="absolute top-2 right-2 px-2 py-1 text-xs text-white transition-all duration-200"
+                        style={{ background: "rgba(0,0,0,0.6)" }}
+                      >
+                        삭제
+                      </button>
+                    )}
+                  </div>
+                ) : !isClosed ? (
+                  <label className="inline-flex items-center gap-2 px-4 py-2 border border-border text-xs tracking-widest uppercase text-muted hover:border-accent hover:text-foreground transition-all duration-200 cursor-pointer self-start">
+                    + 미디어 선택
+                    <input
+                      type="file"
+                      accept="image/*,video/*"
+                      className="sr-only"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleOutroMediaUpload(file);
+                        e.target.value = "";
+                      }}
+                    />
+                  </label>
+                ) : null}
+              </div>
             </div>
           </div>
         </div>

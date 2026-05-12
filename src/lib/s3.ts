@@ -12,7 +12,7 @@ export async function getPresignedUrl(
   eventId: string,
   fileName: string,
   fileType: string,
-  kind: "clip" | "invite"
+  kind: "clip" | "invite" | "intro" | "outro"
 ): Promise<{ url: string; key: string }> {
   const res = await fetch("/api/upload/presign", {
     method: "POST",

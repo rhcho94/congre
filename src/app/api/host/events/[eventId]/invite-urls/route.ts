@@ -50,20 +50,24 @@ export async function GET(
     }
 
     if (!isS3Configured) {
-      return Response.json({ coverImageUrl: null, galleryUrls: [] });
+      return Response.json({ coverImageUrl: null, galleryUrls: [], introMediaUrl: null, outroMediaUrl: null });
     }
 
     const data = snap.data()!;
     const coverKey = (data.coverImageUrl ?? null) as string | null;
     const galleryKeys = (data.galleryUrls ?? []) as string[];
+    const introMediaKey = (data.introMediaKey ?? null) as string | null;
+    const outroMediaKey = (data.outroMediaKey ?? null) as string | null;
 
     const s3 = makeS3Client();
-    const [coverImageUrl, ...galleryUrls] = await Promise.all([
+    const [coverImageUrl, introMediaUrl, outroMediaUrl, ...galleryUrls] = await Promise.all([
       coverKey ? keyToPresignedUrl(s3, coverKey) : Promise.resolve(null),
+      introMediaKey ? keyToPresignedUrl(s3, introMediaKey) : Promise.resolve(null),
+      outroMediaKey ? keyToPresignedUrl(s3, outroMediaKey) : Promise.resolve(null),
       ...galleryKeys.map((k) => keyToPresignedUrl(s3, k)),
     ]);
 
-    return Response.json({ coverImageUrl, galleryUrls });
+    return Response.json({ coverImageUrl, galleryUrls, introMediaUrl, outroMediaUrl });
   } catch (err) {
     console.error("[invite-urls GET]", err);
     return Response.json({ error: "INTERNAL_ERROR" }, { status: 500 });
