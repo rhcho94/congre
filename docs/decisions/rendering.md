@@ -2,6 +2,12 @@
 
 > 영상 편집·Shotstack·클립·재렌더 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-05-13 — BGM volume 조정 (0.3 → 0.2)
+
+- **결정**: `timeline.soundtrack.volume`을 0.3에서 0.2로 낮춤.
+- **변경 영역**: `src/lib/shotstack.ts`
+- **사유**: 직전 결정(BGM 도입, volume 0.3) 시각·청각 확인 결과 참가자 음성이 BGM에 묻힘 발생. 0.2로 낮춰 음성 우선 정합 강화. ducking 옵션 A 유지 (수동 ducking 옵션 C 격상 안 함 — 첫 조정으로 묻힘 해결 여부 재확인 후 판단).
+
 ## 2026-05-13 — BGM 도입 (timeline.soundtrack)
 
 - **결정**: Shotstack `timeline.soundtrack`으로 BGM 삽입.

@@ -166,7 +166,7 @@ export async function createRender(
     soundtrack: {
       src: `${appUrl}/audio/bgm.mp3`,
       effect: "fadeInFadeOut",
-      volume: 0.3,
+      volume: 0.2,
     },
     tracks,
     ...(fontsSrc ? { fonts: [{ src: fontsSrc }] } : {}),
