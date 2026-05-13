@@ -2,6 +2,17 @@
 
 > 영상 편집·Shotstack·클립·재렌더 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-05-13 — Ken Burns effect (트랙 2-A 항목 3)
+
+- **결정**: 참가자 video clip 각각에 `effect` 속성 추가. `zoomInSlow` / `zoomOutSlow` 2종 풀, 인접 회피로 교차 패턴.
+- **풀**: `zoomInSlow`, `zoomOutSlow` (Ken Burns 정의 — 줌 계열만)
+- **속도**: Slow suffix 고정 (감성적 미세 줌)
+- **인접 회피**: 풀 2종이므로 결과적으로 zoomInSlow → zoomOutSlow → zoomInSlow 교차.
+- **적용 범위**: 참가자 클립만. intro/outro 미디어 클립(makeMediaClip)·텍스트 클립(makeTextClip)은 변경 없음.
+- **사유**: 항목 4(transition) 완료 후 항목 3 진입. Slow 속도로 클립 재생 중 미세한 줌 움직임 적용.
+- **추가 리팩터**: transition·effect 선택 루프를 `pickSequence` 헬퍼로 추출 (동일 패턴 2회 사용).
+- **변경 영역**: `src/lib/shotstack.ts`
+
 ## 2026-05-13 — 참가자 클립 인아웃 transition 효과 (트랙 2-A 항목 4)
 
 - **결정**: 참가자 video clip 각각에 `transition: { in, out }` 속성 추가. 7종 풀에서 무작위 선택 + 인접 회피.

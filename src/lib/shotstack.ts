@@ -94,6 +94,20 @@ const TRANSITION_POOL = [
   "wipeRightFast",
 ] as const;
 
+const EFFECT_POOL = ["zoomInSlow", "zoomOutSlow"] as const;
+
+function pickSequence(pool: readonly string[], count: number): string[] {
+  const result: string[] = [];
+  for (let i = 0; i < count; i++) {
+    let pick: string;
+    do {
+      pick = pool[Math.floor(Math.random() * pool.length)];
+    } while (i > 0 && pick === result[i - 1]);
+    result.push(pick);
+  }
+  return result;
+}
+
 export async function createRender(
   s3Urls: string[],
   intro?: { text?: string; mediaUrl?: string; mediaType?: "image" | "video" },
@@ -113,14 +127,8 @@ export async function createRender(
     fontsSrc = `${appUrl}/fonts/NotoSansKR-Regular.ttf`;
   }
 
-  const transitions: string[] = [];
-  for (let i = 0; i < s3Urls.length; i++) {
-    let pick: string;
-    do {
-      pick = TRANSITION_POOL[Math.floor(Math.random() * TRANSITION_POOL.length)];
-    } while (i > 0 && pick === transitions[i - 1]);
-    transitions.push(pick);
-  }
+  const transitions = pickSequence(TRANSITION_POOL, s3Urls.length);
+  const effects = pickSequence(EFFECT_POOL, s3Urls.length);
 
   const videoClips = [...s3Urls].map((src, i) => ({
     asset: { type: "video", src },
@@ -128,6 +136,7 @@ export async function createRender(
     length: "auto",
     fit: "cover",
     transition: { in: transitions[i], out: transitions[i] },
+    effect: effects[i],
   }));
 
   let tracks;
