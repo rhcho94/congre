@@ -11,7 +11,7 @@ import CongreBadge from "@/components/CongreBadge";
 // "preview"  = 녹화 완료 후 blob 재생 (기존)
 type Stage = "verifying" | "invalid" | "uploader" | "idle" | "standby" | "recording" | "preview" | "uploading" | "done" | "error";
 
-const MAX_SEC = 10;
+const MAX_SEC = 16;
 
 // 가상 카메라 키워드 (iOS 라벨 필터용) — triple/dual/ultra/telephoto 조합
 const VIRTUAL_CAM_RE = /triple|dual|ultra|telephoto|망원|광각/i;
@@ -576,7 +576,7 @@ function UploadInner() {
                 <p className="text-base tracking-widest uppercase font-medium text-muted group-hover:text-accent transition-colors duration-300">
                   카메라 켜기
                 </p>
-                <p className="text-xs text-muted opacity-60">최대 10초 · 탭하여 시작</p>
+                <p className="text-xs text-muted opacity-60">최대 16초 · 탭하여 시작</p>
               </div>
             </button>
 
