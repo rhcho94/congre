@@ -84,6 +84,16 @@ function makeMediaClip(
   };
 }
 
+const TRANSITION_POOL = [
+  "fadeFast",
+  "slideLeftFast",
+  "slideRightFast",
+  "slideUpFast",
+  "slideDownFast",
+  "wipeLeftFast",
+  "wipeRightFast",
+] as const;
+
 export async function createRender(
   s3Urls: string[],
   intro?: { text?: string; mediaUrl?: string; mediaType?: "image" | "video" },
@@ -103,11 +113,21 @@ export async function createRender(
     fontsSrc = `${appUrl}/fonts/NotoSansKR-Regular.ttf`;
   }
 
-  const videoClips = [...s3Urls].map((src) => ({
+  const transitions: string[] = [];
+  for (let i = 0; i < s3Urls.length; i++) {
+    let pick: string;
+    do {
+      pick = TRANSITION_POOL[Math.floor(Math.random() * TRANSITION_POOL.length)];
+    } while (i > 0 && pick === transitions[i - 1]);
+    transitions.push(pick);
+  }
+
+  const videoClips = [...s3Urls].map((src, i) => ({
     asset: { type: "video", src },
     start: "auto",
     length: "auto",
     fit: "cover",
+    transition: { in: transitions[i], out: transitions[i] },
   }));
 
   let tracks;

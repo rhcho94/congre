@@ -2,6 +2,17 @@
 
 > 영상 편집·Shotstack·클립·재렌더 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-05-13 — 참가자 클립 인아웃 transition 효과 (트랙 2-A 항목 4)
+
+- **결정**: 참가자 video clip 각각에 `transition: { in, out }` 속성 추가. 7종 풀에서 무작위 선택 + 인접 회피.
+- **풀**: `fadeFast`, `slideLeftFast`, `slideRightFast`, `slideUpFast`, `slideDownFast`, `wipeLeftFast`, `wipeRightFast`
+- **속도**: Fast suffix 고정 (Shotstack transition 속도 제어는 Fast/기본/Slow suffix 3단계만 가능, 수치 지정 불가).
+- **in/out**: 같은 종류로 통일. 분기 없음.
+- **인접 회피**: 직전 클립과 같은 종류면 재추첨. 풀 크기 7 ≥ 2이므로 무한 루프 없음.
+- **적용 범위**: 참가자 클립만. intro/outro 미디어 클립(makeMediaClip)·텍스트 클립(makeTextClip)은 변경 없음.
+- **사유**: 다양성 + 인접 회피로 연속 동일 효과 방지. cont5 정찰로 duration 수치 지정 불가 확인 후 Fast suffix 채택.
+- **변경 영역**: `src/lib/shotstack.ts`
+
 ## 2026-05-12 — outroText overlay 폐기, probe API 도입 폐기
 
 - **결정**: [A] 분기(듀얼 track)에서 outroText overlay 제거. introText overlay만 보존. [B] 분기(미디어 없음, 단일 track)의 outroText 처리는 변경 없음.
