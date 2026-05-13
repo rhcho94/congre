@@ -643,17 +643,57 @@ export default function EventDetailPage() {
 
         <div className="rule mb-8" />
 
-        {/* 영상 인트로 / 아웃트로 */}
-        <div className={`mb-8 ${isClosed ? "opacity-60" : ""}`}>
-          <p className="text-xs tracking-widest uppercase text-muted mb-1">영상 인트로 / 아웃트로 (선택)</p>
+        {/* QR 코드 & 공유 링크 — 수집중(open)일 때만 표시 */}
+        {event.status === "open" && shareUrl && (
+          <div className="mb-8 w-full overflow-hidden">
+            <p className="text-xs tracking-widest uppercase text-muted mb-4">참가자 초대</p>
+            <div className="flex flex-col sm:flex-row gap-6 p-6 border border-border bg-surface">
+              <div className="shrink-0 flex flex-col items-center gap-2">
+                <QRCodeSVG
+                  value={shareUrl}
+                  size={140}
+                  bgColor="#151310"
+                  fgColor="#ede8df"
+                  level="M"
+                />
+                <button
+                  onClick={handleQRDownload}
+                  className="px-3 py-1.5 border border-border text-xs text-foreground hover:border-accent hover:text-accent transition-all duration-200"
+                >
+                  QR 이미지 저장
+                </button>
+              </div>
+              <div className="flex-1 min-w-0 flex flex-col justify-center gap-3">
+                <p className="text-xs text-muted leading-relaxed">
+                  QR코드를 스캔하거나 링크를 공유하세요.
+                </p>
+                <div className="flex items-center gap-2">
+                  <span className="flex-1 min-w-0 text-xs text-foreground bg-[var(--surface-2)] border border-border px-3 py-2 truncate font-mono">
+                    {shareUrl}
+                  </span>
+                  <button
+                    onClick={handleCopy}
+                    className="shrink-0 px-3 py-2 border border-border text-xs text-muted hover:border-accent hover:text-foreground transition-all duration-200"
+                  >
+                    {copied ? "복사됨" : "복사"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 영상 시작·끝 꾸미기 */}
+        <div className={`mb-8 p-6 border border-border bg-[var(--surface-2)] rounded-xl ${isClosed ? "opacity-60" : ""}`}>
+          <p className="text-xs tracking-widest uppercase text-muted mb-1">선택 옵션 — 영상 시작·끝 꾸미기</p>
           <p className="text-xs text-muted mb-5 leading-relaxed" style={{ opacity: 0.7 }}>
-            영상 처음과 끝에 표시될 텍스트와 미디어. 비워두면 참가자 영상만 편집됩니다.
+            이벤트 영상 시작과 끝에 짧은 동영상, 텍스트, 사진을 추가할 수 있어요. 비워두면 참가자 영상만으로 만들어집니다.
           </p>
 
           <div className="flex flex-col gap-6">
-            {/* 인트로 */}
+            {/* 영상 시작 화면 */}
             <div className="flex flex-col gap-3">
-              <span className="text-xs tracking-widest uppercase text-muted">인트로</span>
+              <span className="text-xs tracking-widest uppercase text-muted">영상 시작 화면</span>
 
               <div className="flex flex-col gap-1.5">
                 <span className="flex items-center justify-between">
@@ -682,7 +722,6 @@ export default function EventDetailPage() {
 
               <div className="flex flex-col gap-1.5">
                 <span className="text-xs text-muted">미디어 (이미지 또는 영상)</span>
-                <span className="text-xs text-accent">영상 16초 이내 권장 · 길수록 결과물 길어짐</span>
                 {introUploading ? (
                   <div className="flex items-center gap-2 py-4">
                     <Loader2 size={14} className="animate-spin text-accent" />
@@ -724,9 +763,9 @@ export default function EventDetailPage() {
               </div>
             </div>
 
-            {/* 아웃트로 */}
+            {/* 영상 마무리 화면 */}
             <div className="flex flex-col gap-3">
-              <span className="text-xs tracking-widest uppercase text-muted">아웃트로</span>
+              <span className="text-xs tracking-widest uppercase text-muted">영상 마무리 화면</span>
 
               <div className="flex flex-col gap-1.5">
                 <span className="flex items-center justify-between">
@@ -755,7 +794,6 @@ export default function EventDetailPage() {
 
               <div className="flex flex-col gap-1.5">
                 <span className="text-xs text-muted">미디어 (이미지 또는 영상)</span>
-                <span className="text-xs text-accent">영상 16초 이내 권장 · 길수록 결과물 길어짐</span>
                 {outroUploading ? (
                   <div className="flex items-center gap-2 py-4">
                     <Loader2 size={14} className="animate-spin text-accent" />
@@ -798,46 +836,6 @@ export default function EventDetailPage() {
             </div>
           </div>
         </div>
-
-        {/* QR 코드 & 공유 링크 — 수집중(open)일 때만 표시 */}
-        {event.status === "open" && shareUrl && (
-          <div className="mb-8 w-full overflow-hidden">
-            <p className="text-xs tracking-widest uppercase text-muted mb-4">참가자 초대</p>
-            <div className="flex flex-col sm:flex-row gap-6 p-6 border border-border bg-surface">
-              <div className="shrink-0 flex flex-col items-center gap-2">
-                <QRCodeSVG
-                  value={shareUrl}
-                  size={140}
-                  bgColor="#151310"
-                  fgColor="#ede8df"
-                  level="M"
-                />
-                <button
-                  onClick={handleQRDownload}
-                  className="px-3 py-1.5 border border-border text-xs text-foreground hover:border-accent hover:text-accent transition-all duration-200"
-                >
-                  QR 이미지 저장
-                </button>
-              </div>
-              <div className="flex-1 min-w-0 flex flex-col justify-center gap-3">
-                <p className="text-xs text-muted leading-relaxed">
-                  QR코드를 스캔하거나 링크를 공유하세요.
-                </p>
-                <div className="flex items-center gap-2">
-                  <span className="flex-1 min-w-0 text-xs text-foreground bg-[var(--surface-2)] border border-border px-3 py-2 truncate font-mono">
-                    {shareUrl}
-                  </span>
-                  <button
-                    onClick={handleCopy}
-                    className="shrink-0 px-3 py-2 border border-border text-xs text-muted hover:border-accent hover:text-foreground transition-all duration-200"
-                  >
-                    {copied ? "복사됨" : "복사"}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* 렌더링 / 완성 상태 */}
         {event.status === "rendering" ? (
