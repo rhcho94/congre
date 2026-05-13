@@ -133,7 +133,7 @@ export default function LandingPage() {
               </div>
 
               <p className="text-base leading-relaxed text-muted max-w-md">
-                결혼식·돌잔치 하객의 10초 영상이 모여,<br />
+                결혼식·돌잔치 하객의 짧은 축하 동영상이 모여,<br />
                 평생 간직할 한 편의 영상이 됩니다.
               </p>
 
