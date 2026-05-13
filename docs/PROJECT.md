@@ -96,4 +96,4 @@ npx firebase emulators:start --only firestore
 - 한글 인트로/아웃트로 (이벤트 생성 폼 입력 → Firestore 저장 → Shotstack rich-text 클립 삽입, NotoSansKR TTF 호스팅)
 - 자동 삭제 cron (`/api/cron/cleanup`, KST 03:00 daily) — 클립 24h, 완성본 7d. 멱등성 마커: clipsDeletedAt, videoDeletedAt
 - 이용약관 / 개인정보처리방침 페이지 (`/terms`, `/privacy`) — v0.1 시행. 푸터 링크. 변경 이력은 `docs/legal/CHANGELOG.md`.
-- BGM (Shotstack timeline.soundtrack, fadeInFadeOut volume 0.2, public/audio/bgm.mp3 호스팅)
+- BGM (Shotstack timeline.soundtrack, fadeInFadeOut volume 0.1, public/audio/bgm.mp3 호스팅)

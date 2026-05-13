@@ -4,7 +4,7 @@
 
 ## 영역별
 
-- [rendering](decisions/rendering.md) — 영상 편집·Shotstack·클립 (16개)
+- [rendering](decisions/rendering.md) — 영상 편집·Shotstack·클립 (17개)
 - [notifications](decisions/notifications.md) — 이메일·SMS·알림 시나리오 (7개)
 - [auth-model](decisions/auth-model.md) — 호스트 인증·이벤트-바운드 (3개)
 - [legal](decisions/legal.md) — 약관·개인정보·미성년자 (2개)
