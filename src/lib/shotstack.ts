@@ -88,13 +88,8 @@ const TRANSITION_POOL = [
   "fadeFast",
   "slideLeftFast",
   "slideRightFast",
-  "slideUpFast",
-  "slideDownFast",
-  "wipeLeftFast",
-  "wipeRightFast",
+  "zoom",
 ] as const;
-
-const EFFECT_POOL = ["zoomInSlow", "zoomOutSlow"] as const;
 
 function pickSequence(pool: readonly string[], count: number): string[] {
   const result: string[] = [];
@@ -128,7 +123,6 @@ export async function createRender(
   }
 
   const transitions = pickSequence(TRANSITION_POOL, s3Urls.length);
-  const effects = pickSequence(EFFECT_POOL, s3Urls.length);
 
   const videoClips = [...s3Urls].map((src, i) => ({
     asset: { type: "video", src },
@@ -136,7 +130,6 @@ export async function createRender(
     length: "auto",
     fit: "cover",
     transition: { in: transitions[i], out: transitions[i] },
-    effect: effects[i],
   }));
 
   let tracks;

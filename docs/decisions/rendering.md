@@ -2,6 +2,16 @@
 
 > 영상 편집·Shotstack·클립·재렌더 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-05-13 — TRANSITION_POOL 재조정 + Ken Burns effect 폐기 (트랙 2-A 항목 4 조정, 항목 3 폐기)
+
+- **결정**: TRANSITION_POOL을 7종 → 4종으로 축소, EFFECT_POOL(Ken Burns) 완전 제거.
+- **새 TRANSITION_POOL**: `fadeFast`, `slideLeftFast`, `slideRightFast`, `zoom` (4종)
+- **제거 항목**: `slideUpFast`, `slideDownFast`, `wipeLeftFast`, `wipeRightFast` (세로/와이프 계열 — 첫 시각 테스트에서 세로 방향 영상에 어색)
+- **zoom 추가**: speed suffix 없는 유일한 transition 타입. Shotstack 레퍼런스 확인 후 추가.
+- **Ken Burns(effect) 폐기 사유**: 10초 내외 영상에서 zoomInSlow/zoomOutSlow 효과가 시각적으로 감지 불가. transition으로 충분한 동적 효과 확보 판단.
+- **EFFECT_POOL 전면 제거**: 코드에서 EFFECT_POOL 상수, effects 배열, videoClips의 effect 속성 모두 삭제.
+- **변경 영역**: `src/lib/shotstack.ts`
+
 ## 2026-05-13 — Ken Burns effect (트랙 2-A 항목 3)
 
 - **결정**: 참가자 video clip 각각에 `effect` 속성 추가. `zoomInSlow` / `zoomOutSlow` 2종 풀, 인접 회피로 교차 패턴.
