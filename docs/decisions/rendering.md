@@ -2,6 +2,18 @@
 
 > 영상 편집·Shotstack·클립·재렌더 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-05-13 — BGM 도입 (timeline.soundtrack)
+
+- **결정**: Shotstack `timeline.soundtrack`으로 BGM 삽입.
+  - `src`: `${NEXT_PUBLIC_APP_URL}/audio/bgm.mp3` (public 호스팅)
+  - `effect`: `fadeInFadeOut`
+  - `volume`: 0.3
+- **호스트 옵션 없음**: 음악 1개 코드 고정. UI 미노출.
+- **영상 클립 volume**: 손대지 않음 (기본 1.0 유지).
+- **변경 영역**: `src/lib/shotstack.ts`, `public/audio/bgm.mp3`
+- **부수 정리**: `appUrl` 변수 스코프 상향 (hasAnyText 분기 위로), 에러 메시지 `MISSING_APP_URL_FOR_INTRO_OUTRO` → `MISSING_APP_URL` 일반화.
+- **사유**: 트랙 2-A 시각 확인 결과 "기능적 OK, 감성적 미달" → 감성 영역 보완. 정찰 결과 BGM 감성 기여도 높음. 음악 1개 고정은 YAGNI 정합 (다양성 가치 미검증 → 첫 회차 시각·청각 확인 후 평가). volume 0.3은 ducking 옵션 A 채택 (참가자 음성 우선, BGM은 깔린 듯이). 첫 시각·청각 확인 결과에 따라 조정 가능.
+
 ## 2026-05-13 — TRANSITION_POOL 재조정 + Ken Burns effect 폐기 (트랙 2-A 항목 4 조정, 항목 3 폐기)
 
 - **결정**: TRANSITION_POOL을 7종 → 4종으로 축소, EFFECT_POOL(Ken Burns) 완전 제거.

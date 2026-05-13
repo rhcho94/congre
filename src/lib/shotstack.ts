@@ -114,11 +114,12 @@ export async function createRender(
   const hasOutroMedia = !!(outro?.mediaUrl && outro.mediaType);
   const useDualTrack = hasIntroMedia || hasOutroMedia;
 
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+  if (!appUrl) throw new Error("MISSING_APP_URL");
+
   const hasAnyText = !!(intro?.text || outro?.text);
   let fontsSrc: string | undefined;
   if (hasAnyText) {
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL;
-    if (!appUrl) throw new Error("MISSING_APP_URL_FOR_INTRO_OUTRO");
     fontsSrc = `${appUrl}/fonts/NotoSansKR-Regular.ttf`;
   }
 
@@ -162,6 +163,11 @@ export async function createRender(
 
   const timeline = {
     background: "#0c0b09",
+    soundtrack: {
+      src: `${appUrl}/audio/bgm.mp3`,
+      effect: "fadeInFadeOut",
+      volume: 0.3,
+    },
     tracks,
     ...(fontsSrc ? { fonts: [{ src: fontsSrc }] } : {}),
   };
