@@ -79,6 +79,14 @@
 - **격상 트리거**: 호스트가 클립 제외 후 "잘못 뺀 것 같다" 사고 발생 시. 양방향 토글이라 복구 가능하나 발견까지 시간 소요.
 - **처리 시점**: 격상 트리거 대기. 필드 테스트 첫 회차에서 흐름 직접 관찰.
 
+## GitHub 저장소 Public 유지 — 보안·비즈니스 정보 노출 (실전 테스트 후 결정)
+
+- **현황**: `rhcho94/congre` 저장소 Public 상태. 코드 + docs(DECISIONS·PROJECT·known-issues·CHANGELOG 등) 전체 공개. .env 노출은 없음 (2026-05-14 검색 확인). GitHub Secrets + Vercel 환경변수로 시크릿 분리 완료.
+- **위험**: 비즈니스 로직(API 엔드포인트·Firestore 구조·인증 흐름) + 비즈니스 정보(시장 정의·BM·기술 결정·알려진 약점) 노출. 1단계 환경변수 누출 위험은 차단됐으나 2·3단계는 노출 중.
+- **처리 보류**: 실전 테스트 우선. 테스트 도중 코드 변경 최소화 원칙으로 Private 전환은 테스트 끝난 후 처리.
+- **Private 전환 시 부작용**: GitHub Actions cron 5분 간격 운영 시 월 8,640분 사용 추정. Private free 한도 월 2,000분 초과. 격상 옵션: (a) GitHub Pro $4/월, (b) Vercel Cron Jobs 이전(이미 Vercel Pro 가입), (c) cron 간격 늘리기.
+- **권장**: Vercel Cron Jobs 이전 후 Private 전환. 코드 변경 필요(workflow → vercel.json + /api/cron/* 엔드포인트 검증).
+
 ## 영상 호스팅 CDN 이전 — 비용 검토 보류 (메모)
 
 - **현황**: 영상 호스팅이 Shotstack CDN (cdn.shotstack.io) 경유. bandwidth 비용은 Shotstack 마진 포함 추정.

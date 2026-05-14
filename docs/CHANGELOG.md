@@ -4,6 +4,7 @@
 
 ## 2026-05-14
 
+- chore: 외부 서비스 인벤토리 정찰 + 실전 테스트 전 사전 차단 액션 (Firebase Blaze 전환, SOLAPI 충전, GitHub Public 유지 결정)
 - refactor: Track 4 강화 — 배경 토큰 추가 명도 상향(#1f1c18/#2a261f/#34302a), Primary 버튼 그라디언트 강화(from-[#f5b04a] to-[#a06f1f] + shadow 입체감 풀세트 + glow-accent 제거), 헤일로 4곳 opacity-25·ellipse 100% 90%로 강화
 - feat: 배경 토큰 명도 조정(bg/surface/surface-2), Primary 버튼 gradient 통일(from-accent-bright to-accent), 헤일로 효과 3페이지 확산(host·upload standby·events done)
 
