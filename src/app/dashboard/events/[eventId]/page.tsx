@@ -280,6 +280,54 @@ export default function EventDetailPage() {
     return () => { script.remove(); };
   }, []);
 
+  useEffect(() => {
+    if (introText.trim() === savedIntroText.trim()) return;
+    if (introText.trim() === "") return;
+    if (!user) return;
+    if (event?.status !== "open") return;
+
+    setSavingIntroText(true);
+    const timer = setTimeout(async () => {
+      try {
+        await patchInvite({ introText: introText.trim() });
+        setSavedIntroText(introText);
+      } catch {
+        alert("저장에 실패했습니다.");
+      } finally {
+        setSavingIntroText(false);
+      }
+    }, 500);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [introText, savedIntroText, user, event?.status]);
+
+  useEffect(() => {
+    if (outroText.trim() === savedOutroText.trim()) return;
+    if (outroText.trim() === "") return;
+    if (!user) return;
+    if (event?.status !== "open") return;
+
+    setSavingOutroText(true);
+    const timer = setTimeout(async () => {
+      try {
+        await patchInvite({ outroText: outroText.trim() });
+        setSavedOutroText(outroText);
+      } catch {
+        alert("저장에 실패했습니다.");
+      } finally {
+        setSavingOutroText(false);
+      }
+    }, 500);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [outroText, savedOutroText, user, event?.status]);
+
   function handleKakaoShare() {
     if (!event?.videoUrl) return;
     const K = (window as Window & { Kakao?: KakaoInstance }).Kakao;
@@ -346,30 +394,6 @@ export default function EventDetailPage() {
     });
     if (!res.ok) throw new Error(`PATCH ${res.status}`);
     return idToken;
-  }
-
-  async function handleSaveIntroText() {
-    setSavingIntroText(true);
-    try {
-      await patchInvite({ introText: introText.trim() || null });
-      setSavedIntroText(introText);
-    } catch {
-      alert("저장에 실패했습니다.");
-    } finally {
-      setSavingIntroText(false);
-    }
-  }
-
-  async function handleSaveOutroText() {
-    setSavingOutroText(true);
-    try {
-      await patchInvite({ outroText: outroText.trim() || null });
-      setSavedOutroText(outroText);
-    } catch {
-      alert("저장에 실패했습니다.");
-    } finally {
-      setSavingOutroText(false);
-    }
   }
 
   async function handleIntroMediaUpload(file: File) {
@@ -709,15 +733,16 @@ export default function EventDetailPage() {
                   disabled={isClosed}
                   className="bg-surface border border-border px-4 py-3 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-accent transition-colors duration-200 disabled:opacity-50 resize-none"
                 />
-                {!isClosed && (
-                  <button
-                    onClick={handleSaveIntroText}
-                    disabled={savingIntroText || introText === savedIntroText}
-                    className="self-end px-4 py-2 border border-border text-xs tracking-widest uppercase text-muted hover:border-accent hover:text-foreground transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
-                  >
-                    {savingIntroText ? "저장 중..." : "저장"}
-                  </button>
-                )}
+                {(introText.trim() !== "" || savedIntroText.trim() !== "") && !isClosed ? (
+                  <span className="self-end text-xs text-muted">
+                    {savingIntroText
+                      ? "저장 중..."
+                      : introText !== savedIntroText
+                      ? "변경 중..."
+                      : <span style={{ color: "var(--accent)" }}>✓ 저장됨</span>
+                    }
+                  </span>
+                ) : null}
               </div>
 
               <div className="flex flex-col gap-1.5">
@@ -781,15 +806,16 @@ export default function EventDetailPage() {
                   disabled={isClosed}
                   className="bg-surface border border-border px-4 py-3 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-accent transition-colors duration-200 disabled:opacity-50 resize-none"
                 />
-                {!isClosed && (
-                  <button
-                    onClick={handleSaveOutroText}
-                    disabled={savingOutroText || outroText === savedOutroText}
-                    className="self-end px-4 py-2 border border-border text-xs tracking-widest uppercase text-muted hover:border-accent hover:text-foreground transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
-                  >
-                    {savingOutroText ? "저장 중..." : "저장"}
-                  </button>
-                )}
+                {(outroText.trim() !== "" || savedOutroText.trim() !== "") && !isClosed ? (
+                  <span className="self-end text-xs text-muted">
+                    {savingOutroText
+                      ? "저장 중..."
+                      : outroText !== savedOutroText
+                      ? "변경 중..."
+                      : <span style={{ color: "var(--accent)" }}>✓ 저장됨</span>
+                    }
+                  </span>
+                ) : null}
               </div>
 
               <div className="flex flex-col gap-1.5">
