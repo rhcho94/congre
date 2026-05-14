@@ -875,7 +875,15 @@ export default function EventDetailPage() {
             </p>
           </div>
         ) : event.status === "done" ? (
-          <div className="mb-8">
+          <div className="relative isolate mb-8">
+            <div
+              className="pointer-events-none absolute inset-0 opacity-15"
+              style={{
+                background: "radial-gradient(ellipse 70% 60% at 50% 50%, #c8892c 0%, transparent 70%)",
+                zIndex: -1,
+              }}
+              aria-hidden
+            />
             {event.videoUrl ? (
               <div className="border border-border bg-surface p-5 flex flex-col gap-4">
                 <div className="flex items-center gap-2">
@@ -905,7 +913,7 @@ export default function EventDetailPage() {
                   href={event.videoUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full py-3 bg-accent text-background text-xs tracking-widest uppercase font-medium text-center hover:brightness-110 transition-all duration-200 glow-accent block"
+                  className="w-full py-3 bg-gradient-to-b from-accent-bright to-accent text-background text-xs tracking-widest uppercase font-medium text-center hover:brightness-110 transition-all duration-200 glow-accent block"
                 >
                   영상 다운로드 →
                 </a>

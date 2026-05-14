@@ -539,7 +539,7 @@ function UploadInner() {
             <button
               onClick={handleUploaderNext}
               disabled={!name.trim() || !phone.trim()}
-              className="w-full py-4 bg-accent text-background text-sm tracking-widest uppercase font-medium hover:brightness-110 transition-all duration-200 glow-accent disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:brightness-100"
+              className="w-full py-4 bg-gradient-to-b from-accent-bright to-accent text-background text-sm tracking-widest uppercase font-medium hover:brightness-110 transition-all duration-200 glow-accent disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:brightness-100"
             >
               다음
             </button>
@@ -588,7 +588,15 @@ function UploadInner() {
 
         {/* ── standby: 카메라 미리보기 (녹화 전) ── */}
         {stage === "standby" && (
-          <div className="w-full flex flex-col items-center gap-4">
+          <div className="relative isolate w-full flex flex-col items-center gap-4">
+            <div
+              className="pointer-events-none absolute inset-0 opacity-15"
+              style={{
+                background: "radial-gradient(ellipse 70% 60% at 50% 50%, #c8892c 0%, transparent 70%)",
+                zIndex: -1,
+              }}
+              aria-hidden
+            />
             <div
               className="relative w-full bg-black overflow-hidden"
               style={{ aspectRatio: "9 / 16", maxHeight: "54vh" }}
@@ -615,7 +623,7 @@ function UploadInner() {
 
             <button
               onClick={() => { if (streamRef.current) beginRecording(streamRef.current); }}
-              className="w-full py-4 bg-accent text-background text-sm tracking-widest uppercase font-medium hover:brightness-110 transition-all duration-200 glow-accent"
+              className="w-full py-4 bg-gradient-to-b from-accent-bright to-accent text-background text-sm tracking-widest uppercase font-medium hover:brightness-110 transition-all duration-200 glow-accent"
             >
               촬영 시작
             </button>
@@ -694,7 +702,7 @@ function UploadInner() {
             <button
               onClick={handleUpload}
               disabled={s3Ready === false}
-              className="w-full py-4 bg-accent text-background text-sm tracking-widest uppercase font-medium hover:brightness-110 transition-all duration-200 glow-accent disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:brightness-100"
+              className="w-full py-4 bg-gradient-to-b from-accent-bright to-accent text-background text-sm tracking-widest uppercase font-medium hover:brightness-110 transition-all duration-200 glow-accent disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:brightness-100"
             >
               업로드하기
             </button>
@@ -777,7 +785,7 @@ function UploadInner() {
               {blobRef.current && (
                 <button
                   onClick={handleUpload}
-                  className="px-5 py-2.5 bg-accent text-background text-xs tracking-widest uppercase hover:brightness-110 transition-all duration-200"
+                  className="px-5 py-2.5 bg-gradient-to-b from-accent-bright to-accent text-background text-xs tracking-widest uppercase hover:brightness-110 transition-all duration-200 glow-accent"
                 >
                   다시 시도
                 </button>

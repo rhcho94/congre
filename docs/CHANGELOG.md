@@ -2,6 +2,10 @@
 
 > 기능 단위 작업 이력. 최신이 위.
 
+## 2026-05-14
+
+- feat: 배경 토큰 명도 조정(bg/surface/surface-2), Primary 버튼 gradient 통일(from-accent-bright to-accent), 헤일로 효과 3페이지 확산(host·upload standby·events done)
+
 ## 2026-05-12
 
 - refactor: 초대장 기능 전체 제거 — /invite, /share 페이지 삭제; 대시보드 초대장 섹션(환영 문구·커버·갤러리) 제거; welcomeText/coverImageUrl/galleryUrls 필드 제거; 카카오 공유 링크 → 영상 직링크

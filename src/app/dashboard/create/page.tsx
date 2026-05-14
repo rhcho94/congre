@@ -256,7 +256,7 @@ export default function CreateEventPage() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="mt-2 py-3.5 bg-accent text-background text-sm tracking-widest uppercase font-medium hover:brightness-110 transition-all duration-200 glow-accent disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:brightness-100"
+                className="mt-2 py-3.5 bg-gradient-to-b from-accent-bright to-accent text-background text-sm tracking-widest uppercase font-medium hover:brightness-110 transition-all duration-200 glow-accent disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:brightness-100"
               >
                 {submitting ? "생성 중..." : "이벤트 만들기"}
               </button>
@@ -319,7 +319,7 @@ export default function CreateEventPage() {
             <div className="flex flex-col gap-3">
               <Link
                 href={`/dashboard/events/${createdEventId}`}
-                className="w-full py-3.5 bg-accent text-background text-sm tracking-widest uppercase font-medium text-center hover:brightness-110 transition-all duration-200 glow-accent block"
+                className="w-full py-3.5 bg-gradient-to-b from-accent-bright to-accent text-background text-sm tracking-widest uppercase font-medium text-center hover:brightness-110 transition-all duration-200 glow-accent block"
               >
                 이벤트 대시보드로 이동 →
               </Link>

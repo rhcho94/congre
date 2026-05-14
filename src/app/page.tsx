@@ -140,7 +140,7 @@ export default function LandingPage() {
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <Link
                   href="/host"
-                  className="inline-block px-8 py-4 text-sm tracking-widest uppercase font-medium bg-accent text-background glow-accent text-center transition-all duration-200 ease-out hover:brightness-110 hover:scale-[1.02] hover:shadow-[0_0_60px_0_rgba(200,137,44,0.38)] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                  className="inline-block px-8 py-4 text-sm tracking-widest uppercase font-medium bg-gradient-to-b from-accent-bright to-accent text-background glow-accent text-center transition-all duration-200 ease-out hover:brightness-110 hover:scale-[1.02] hover:shadow-[0_0_60px_0_rgba(200,137,44,0.38)] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 >
                   이벤트 만들기
                 </Link>
@@ -313,7 +313,7 @@ export default function LandingPage() {
 
           <Link
             href="/host"
-            className="inline-block px-10 py-4 text-sm tracking-widest uppercase font-medium bg-accent text-background glow-accent transition-all duration-200 ease-out hover:brightness-110 hover:scale-[1.02] hover:shadow-[0_0_60px_0_rgba(200,137,44,0.38)] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            className="inline-block px-10 py-4 text-sm tracking-widest uppercase font-medium bg-gradient-to-b from-accent-bright to-accent text-background glow-accent transition-all duration-200 ease-out hover:brightness-110 hover:scale-[1.02] hover:shadow-[0_0_60px_0_rgba(200,137,44,0.38)] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             이벤트 만들기
           </Link>

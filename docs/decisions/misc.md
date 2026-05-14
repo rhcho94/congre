@@ -2,6 +2,12 @@
 
 > 영역 외 결정 (프로세스 룰·UI 라이브러리 등). 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-05-14 — 디자인 시스템 통합: 토큰 명도·버튼 입체감·헤일로 확산
+
+- **결정**: (1) 배경 토큰 3개 명도 상향 (#0c0b09→#13110f / #151310→#1c1916 / #1e1a13→#26211a). (2) Primary 버튼 `bg-accent` → `bg-gradient-to-b from-accent-bright to-accent`로 통일. Primary C 불일관 2건(재설정 메일·다시 시도)도 `glow-accent` 추가해 정규화. (3) Final CTA 헤일로 패턴(`radial-gradient amber opacity-15`)을 host 로그인·upload standby·events done 3곳에 확산.
+- **이유**: 배경이 너무 어두워 가독성 낮았음. 버튼 3개 분류가 불일관으로 디자인 시스템 신뢰도 저하. 헤일로는 핵심 전환·감동 포인트에만 선택적 적용.
+- **적용**: `src/app/globals.css` 토큰 3개. 6개 파일 12개 Primary 버튼 className. 3개 페이지 헤일로(`relative isolate` 컨테이너 + `absolute zIndex:-1` halo div 패턴).
+
 ## 2026-05-08 — 갈래 패턴: 정찰 → 코드 커밋 → 문서 커밋
 
 - **결정**: 큰 기능은 갈래로 분리. 각 갈래: 정찰(코드 변경 없음) → 코드 atomic 커밋 → 다음 갈래 정찰... → 완료 후 문서 갱신 atomic 커밋 1개.
