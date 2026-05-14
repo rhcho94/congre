@@ -338,6 +338,10 @@ export default function EventDetailPage() {
     }
     try {
       const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
+      if (!appUrl) {
+        console.warn("[kakao-share] NEXT_PUBLIC_APP_URL not set, falling back to direct video URL");
+      }
+      const shareUrl = appUrl ? `${appUrl}/share/${eventId}` : event.videoUrl;
       K.Share.sendDefault({
         objectType: "feed",
         content: {
@@ -345,8 +349,8 @@ export default function EventDetailPage() {
           description: "Congre로 만든 영상입니다 🎬",
           imageUrl: `${appUrl}/logo.png`,
           link: {
-            mobileWebUrl: event.videoUrl,
-            webUrl: event.videoUrl,
+            mobileWebUrl: shareUrl,
+            webUrl: shareUrl,
           },
         },
       });
