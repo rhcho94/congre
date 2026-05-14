@@ -284,6 +284,74 @@ export default function LandingPage() {
         <div className="rule mt-16" />
       </section>
 
+      {/* ── Guide preview ── */}
+      <section className="relative z-10 mx-auto max-w-5xl px-6 py-24 md:py-32">
+        <div className="mb-14 flex flex-col gap-3">
+          <span className="text-xs tracking-[0.4em] uppercase text-accent">User Guide</span>
+          <h2
+            className="text-3xl italic text-foreground md:text-4xl"
+            style={{ fontFamily: "var(--font-display, serif)" }}
+          >
+            처음이라면, 한 번만 보면 충분합니다
+          </h2>
+          <p className="text-sm text-muted">호스트와 참가자, 양쪽 흐름을 짧게 정리했습니다.</p>
+        </div>
+
+        <div
+          className="grid grid-cols-1 gap-px md:grid-cols-2"
+          style={{ background: "var(--border)" }}
+        >
+          {/* 호스트 카드 */}
+          <div className="flex flex-col gap-5 p-8 bg-surface">
+            <span className="text-xs tracking-[0.4em] uppercase text-accent">HOST · 5 STEPS</span>
+            <h3
+              className="text-base font-medium text-foreground"
+              style={{ fontFamily: "var(--font-display, serif)" }}
+            >
+              행사 주최자라면
+            </h3>
+            <ol className="list-decimal pl-4 flex flex-col gap-1 text-sm text-muted">
+              <li>로그인</li>
+              <li>새 이벤트 만들기</li>
+              <li>참가자에게 공유 (QR · 링크)</li>
+              <li>마감과 클립 확인</li>
+              <li>완성본 받기와 공유</li>
+            </ol>
+            <Link
+              href="/guide/host"
+              className="mt-auto text-sm text-accent hover:underline transition-colors duration-200"
+            >
+              호스트 가이드 자세히 보기 →
+            </Link>
+          </div>
+
+          {/* 참가자 카드 */}
+          <div className="flex flex-col gap-5 p-8 bg-surface">
+            <span className="text-xs tracking-[0.4em] uppercase text-accent">GUEST · 4 STEPS</span>
+            <h3
+              className="text-base font-medium text-foreground"
+              style={{ fontFamily: "var(--font-display, serif)" }}
+            >
+              행사 참가자라면
+            </h3>
+            <ol className="list-decimal pl-4 flex flex-col gap-1 text-sm text-muted">
+              <li>이름과 전화번호 입력</li>
+              <li>카메라 켜기</li>
+              <li>촬영하고 확인하기</li>
+              <li>업로드 완료</li>
+            </ol>
+            <Link
+              href="/guide/guest"
+              className="mt-auto text-sm text-accent hover:underline transition-colors duration-200"
+            >
+              참가자 가이드 자세히 보기 →
+            </Link>
+          </div>
+        </div>
+
+        <div className="rule mt-16" />
+      </section>
+
       {/* ── Final CTA ── */}
       <section className="relative z-10 mx-auto max-w-3xl px-6 py-24 text-center md:py-36">
         <div
@@ -340,6 +408,12 @@ export default function LandingPage() {
               className="text-xs tracking-widest uppercase text-muted hover:text-accent transition-colors duration-200"
             >
               이용약관
+            </Link>
+            <Link
+              href="/guide"
+              className="text-xs tracking-widest uppercase text-muted hover:text-accent transition-colors duration-200"
+            >
+              사용 가이드
             </Link>
             <a
               href="mailto:hello@congre.kr"

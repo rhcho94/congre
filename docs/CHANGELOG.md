@@ -2,6 +2,10 @@
 
 > 기능 단위 작업 이력. 최신이 위.
 
+## 2026-05-15
+
+- feat(guide): 사용 가이드 페이지 3종(/guide, /guide/host, /guide/guest) 신설 + 랜딩 미리보기 섹션 + 푸터 링크
+
 ## 2026-05-14
 
 - fix(share): /share/{eventId} 재도입으로 카카오 공유 fallback 사고 해소 (regression of d74152e)
