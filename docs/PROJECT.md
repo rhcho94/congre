@@ -43,9 +43,9 @@ npx firebase emulators:start --only firestore
 
 | 토큰 | 값 | 용도 |
 |---|---|---|
-| `--bg` | #13110f | 페이지 배경 |
-| `--surface` | #1c1916 | 카드 배경 |
-| `--surface-2` | #26211a | 카드 내부 강조 |
+| `--bg` | #1f1c18 | 페이지 배경 |
+| `--surface` | #2a261f | 카드 배경 |
+| `--surface-2` | #34302a | 카드 내부 강조 |
 | `--accent` | #c8892c | 앰버/골드 액센트 |
 | `--text` | #ede8df | 본문 텍스트 |
 | `--muted` | #79716a | 보조 텍스트 |

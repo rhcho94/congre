@@ -2,6 +2,12 @@
 
 > 영역 외 결정 (프로세스 룰·UI 라이브러리 등). 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-05-14 (2) — Track 4 강화: 1차 변경 폭 부족 → 한 단계 상향
+
+- **결정**: (1) 배경 토큰 추가 명도 상향 (#13110f→#1f1c18 / #1c1916→#2a261f / #26211a→#34302a). (2) Primary 버튼 그라디언트를 더 밝은 팔레트(from-[#f5b04a] to-[#a06f1f])로 교체 + inset highlight·drop shadow·amber glow 복합 shadow 풀세트 적용 + glow-accent 클래스 제거(shadow에 통합). (3) 헤일로 4곳(landing Final CTA·host·upload·events done) opacity-15→opacity-25, ellipse 70% 60%→100% 90%로 강화.
+- **이유**: 1차(cc255f8) 변경 후 실제 화면에서 변화 폭이 시각적으로 부족했음. 배경 너무 어두움, 버튼 입체감 부족, 헤일로 너무 희미. 한 단계 추가 상향.
+- **적용**: `globals.css` 토큰 3개. 5개 파일 12개 버튼 shadow 풀세트 교체. 4곳 헤일로 opacity·ellipse 수정(page.tsx Final CTA에 zIndex:-1 추가 포함).
+
 ## 2026-05-14 — 디자인 시스템 통합: 토큰 명도·버튼 입체감·헤일로 확산
 
 - **결정**: (1) 배경 토큰 3개 명도 상향 (#0c0b09→#13110f / #151310→#1c1916 / #1e1a13→#26211a). (2) Primary 버튼 `bg-accent` → `bg-gradient-to-b from-accent-bright to-accent`로 통일. Primary C 불일관 2건(재설정 메일·다시 시도)도 `glow-accent` 추가해 정규화. (3) Final CTA 헤일로 패턴(`radial-gradient amber opacity-15`)을 host 로그인·upload standby·events done 3곳에 확산.

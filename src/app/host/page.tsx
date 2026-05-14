@@ -193,9 +193,9 @@ export default function HostPage() {
           <>
           <div className="relative isolate flex flex-col items-center">
             <div
-              className="pointer-events-none absolute inset-0 opacity-15"
+              className="pointer-events-none absolute inset-0 opacity-25"
               style={{
-                background: "radial-gradient(ellipse 70% 60% at 50% 50%, #c8892c 0%, transparent 70%)",
+                background: "radial-gradient(ellipse 100% 90% at 50% 50%, #c8892c 0%, transparent 70%)",
                 zIndex: -1,
               }}
               aria-hidden
@@ -259,7 +259,7 @@ export default function HostPage() {
                 <button
                   type="submit"
                   disabled={loginLoading}
-                  className="mt-2 py-3.5 bg-gradient-to-b from-accent-bright to-accent text-background text-sm tracking-widest uppercase font-medium hover:brightness-110 transition-all duration-200 glow-accent disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:brightness-100"
+                  className="mt-2 py-3.5 bg-gradient-to-b from-[#f5b04a] to-[#a06f1f] text-background text-sm tracking-widest uppercase font-medium hover:brightness-110 transition-all duration-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_4px_12px_rgba(0,0,0,0.4),0_0_40px_rgba(200,137,44,0.3)] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_6px_16px_rgba(0,0,0,0.5),0_0_50px_rgba(200,137,44,0.4)] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:brightness-100"
                 >
                   {loginLoading ? "로그인 중..." : "로그인"}
                 </button>
@@ -344,7 +344,7 @@ export default function HostPage() {
                     <button
                       type="submit"
                       disabled={resetLoading}
-                      className="py-3 bg-gradient-to-b from-accent-bright to-accent text-background text-xs tracking-widest uppercase font-medium hover:brightness-110 transition-all duration-200 glow-accent disabled:opacity-60 disabled:cursor-not-allowed"
+                      className="py-3 bg-gradient-to-b from-[#f5b04a] to-[#a06f1f] text-background text-xs tracking-widest uppercase font-medium hover:brightness-110 transition-all duration-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_4px_12px_rgba(0,0,0,0.4),0_0_40px_rgba(200,137,44,0.3)] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_6px_16px_rgba(0,0,0,0.5),0_0_50px_rgba(200,137,44,0.4)] disabled:opacity-60 disabled:cursor-not-allowed"
                     >
                       {resetLoading ? "발송 중..." : "재설정 메일 보내기"}
                     </button>
@@ -469,7 +469,7 @@ export default function HostPage() {
 
               <button
                 type="submit"
-                className="mt-2 py-3.5 bg-gradient-to-b from-accent-bright to-accent text-background text-sm tracking-widest uppercase font-medium hover:brightness-110 transition-all duration-200 glow-accent"
+                className="mt-2 py-3.5 bg-gradient-to-b from-[#f5b04a] to-[#a06f1f] text-background text-sm tracking-widest uppercase font-medium hover:brightness-110 transition-all duration-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_4px_12px_rgba(0,0,0,0.4),0_0_40px_rgba(200,137,44,0.3)] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_6px_16px_rgba(0,0,0,0.5),0_0_50px_rgba(200,137,44,0.4)]"
               >
                 이벤트 만들기
               </button>

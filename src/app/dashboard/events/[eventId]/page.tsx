@@ -877,9 +877,9 @@ export default function EventDetailPage() {
         ) : event.status === "done" ? (
           <div className="relative isolate mb-8">
             <div
-              className="pointer-events-none absolute inset-0 opacity-15"
+              className="pointer-events-none absolute inset-0 opacity-25"
               style={{
-                background: "radial-gradient(ellipse 70% 60% at 50% 50%, #c8892c 0%, transparent 70%)",
+                background: "radial-gradient(ellipse 100% 90% at 50% 50%, #c8892c 0%, transparent 70%)",
                 zIndex: -1,
               }}
               aria-hidden
@@ -913,7 +913,7 @@ export default function EventDetailPage() {
                   href={event.videoUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full py-3 bg-gradient-to-b from-accent-bright to-accent text-background text-xs tracking-widest uppercase font-medium text-center hover:brightness-110 transition-all duration-200 glow-accent block"
+                  className="w-full py-3 bg-gradient-to-b from-[#f5b04a] to-[#a06f1f] text-background text-xs tracking-widest uppercase font-medium text-center hover:brightness-110 transition-all duration-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_4px_12px_rgba(0,0,0,0.4),0_0_40px_rgba(200,137,44,0.3)] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_6px_16px_rgba(0,0,0,0.5),0_0_50px_rgba(200,137,44,0.4)] block"
                 >
                   영상 다운로드 →
                 </a>

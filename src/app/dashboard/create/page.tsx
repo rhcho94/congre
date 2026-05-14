@@ -256,7 +256,7 @@ export default function CreateEventPage() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="mt-2 py-3.5 bg-gradient-to-b from-accent-bright to-accent text-background text-sm tracking-widest uppercase font-medium hover:brightness-110 transition-all duration-200 glow-accent disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:brightness-100"
+                className="mt-2 py-3.5 bg-gradient-to-b from-[#f5b04a] to-[#a06f1f] text-background text-sm tracking-widest uppercase font-medium hover:brightness-110 transition-all duration-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_4px_12px_rgba(0,0,0,0.4),0_0_40px_rgba(200,137,44,0.3)] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_6px_16px_rgba(0,0,0,0.5),0_0_50px_rgba(200,137,44,0.4)] disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:brightness-100"
               >
                 {submitting ? "생성 중..." : "이벤트 만들기"}
               </button>
@@ -319,7 +319,7 @@ export default function CreateEventPage() {
             <div className="flex flex-col gap-3">
               <Link
                 href={`/dashboard/events/${createdEventId}`}
-                className="w-full py-3.5 bg-gradient-to-b from-accent-bright to-accent text-background text-sm tracking-widest uppercase font-medium text-center hover:brightness-110 transition-all duration-200 glow-accent block"
+                className="w-full py-3.5 bg-gradient-to-b from-[#f5b04a] to-[#a06f1f] text-background text-sm tracking-widest uppercase font-medium text-center hover:brightness-110 transition-all duration-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_4px_12px_rgba(0,0,0,0.4),0_0_40px_rgba(200,137,44,0.3)] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_6px_16px_rgba(0,0,0,0.5),0_0_50px_rgba(200,137,44,0.4)] block"
               >
                 이벤트 대시보드로 이동 →
               </Link>

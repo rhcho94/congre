@@ -140,7 +140,7 @@ export default function LandingPage() {
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <Link
                   href="/host"
-                  className="inline-block px-8 py-4 text-sm tracking-widest uppercase font-medium bg-gradient-to-b from-accent-bright to-accent text-background glow-accent text-center transition-all duration-200 ease-out hover:brightness-110 hover:scale-[1.02] hover:shadow-[0_0_60px_0_rgba(200,137,44,0.38)] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                  className="inline-block px-8 py-4 text-sm tracking-widest uppercase font-medium bg-gradient-to-b from-[#f5b04a] to-[#a06f1f] text-background text-center transition-all duration-200 ease-out shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_4px_12px_rgba(0,0,0,0.4),0_0_40px_rgba(200,137,44,0.3)] hover:brightness-110 hover:scale-[1.02] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_6px_16px_rgba(0,0,0,0.5),0_0_50px_rgba(200,137,44,0.4)] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 >
                   이벤트 만들기
                 </Link>
@@ -287,9 +287,10 @@ export default function LandingPage() {
       {/* ── Final CTA ── */}
       <section className="relative z-10 mx-auto max-w-3xl px-6 py-24 text-center md:py-36">
         <div
-          className="pointer-events-none absolute inset-0 opacity-15"
+          className="pointer-events-none absolute inset-0 opacity-25"
           style={{
-            background: "radial-gradient(ellipse 70% 60% at 50% 50%, #c8892c 0%, transparent 70%)",
+            background: "radial-gradient(ellipse 100% 90% at 50% 50%, #c8892c 0%, transparent 70%)",
+            zIndex: -1,
           }}
           aria-hidden
         />
@@ -313,7 +314,7 @@ export default function LandingPage() {
 
           <Link
             href="/host"
-            className="inline-block px-10 py-4 text-sm tracking-widest uppercase font-medium bg-gradient-to-b from-accent-bright to-accent text-background glow-accent transition-all duration-200 ease-out hover:brightness-110 hover:scale-[1.02] hover:shadow-[0_0_60px_0_rgba(200,137,44,0.38)] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            className="inline-block px-10 py-4 text-sm tracking-widest uppercase font-medium bg-gradient-to-b from-[#f5b04a] to-[#a06f1f] text-background transition-all duration-200 ease-out shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_4px_12px_rgba(0,0,0,0.4),0_0_40px_rgba(200,137,44,0.3)] hover:brightness-110 hover:scale-[1.02] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_6px_16px_rgba(0,0,0,0.5),0_0_50px_rgba(200,137,44,0.4)] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             이벤트 만들기
           </Link>
