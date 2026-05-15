@@ -4,6 +4,7 @@
 
 ## 2026-05-15
 
+- feat(shotstack): output에 fps 30 + quality high 명시 (단가 무영향, 압축 아티팩트 완화)
 - feat(guide): 사용 가이드 페이지 3종(/guide, /guide/host, /guide/guest) 신설 + 랜딩 미리보기 섹션 + 푸터 링크
 
 ## 2026-05-14

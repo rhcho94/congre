@@ -176,6 +176,8 @@ export async function createRender(
     timeline,
     output: {
       format: "mp4",
+      fps: 30,
+      quality: "high",
       size: { width: 1080, height: 1920 },
     },
   };

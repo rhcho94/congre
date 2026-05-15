@@ -2,6 +2,15 @@
 
 > 영상 편집·Shotstack·클립·재렌더 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-05-15 — Shotstack output에 fps 30 + quality high 명시
+
+- **결정**: `createRender` output 블록에 `fps: 30`, `quality: "high"` 명시 추가.
+- **변경 영역**: `src/lib/shotstack.ts` — output 블록
+- **단가 영향**: 없음. Shotstack 공식 문서 확인: 렌더 크레딧은 영상 길이 기준 (1분 = 1크레딧), fps·quality 값 무관.
+- **화질 마진**: 실제 체감 개선 폭은 제한적. 원본이 스마트폰 MediaRecorder WebM 480p 내외 천장이라 업스케일 없음. 후반부 MP4 인코딩 압축 아티팩트는 완화 기대.
+- **진짜 화질 개선 경로**: 업로드 MediaRecorder 설정 개선 (비트레이트·해상도 상향) 갈래에서 처리 예정. 본 결정은 서버 사이드에서 할 수 있는 최선 적용.
+- **출처**: Shotstack 공식 API 문서 (output object 스펙) WebFetch 실측 기반. DECISIONS 2026-05-08 "Shotstack 필드 추가 전 공식 문서 WebFetch 선행" 원칙 적용.
+
 ## 2026-05-13 — BGM volume 재조정 (0.2 → 0.1)
 
 - **결정**: `timeline.soundtrack.volume`을 0.2에서 0.1로 낮춤.
