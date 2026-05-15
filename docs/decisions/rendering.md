@@ -2,6 +2,17 @@
 
 > 영상 편집·Shotstack·클립·재렌더 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-05-16 — 참가자 영상 최대 길이를 호스트가 5~30초 가변 설정
+
+- **결정**: 이벤트 생성 시 호스트가 6옵션 셀렉터(5/10/15/20/25/30초)로 maxClipSeconds 선택. default 15.
+- **근거**: 졸업식·결혼식 등 시장별 적정 클립 길이 차이. 기존 16초 고정 대비 유연성 확보.
+  5초 미만은 발화 내용 담기 어려움, 30초 초과는 결과 영상 길어져 시청 이탈 위험.
+- **영향**:
+  - events Firestore 스키마에 maxClipSeconds 필드 추가.
+  - 사양 B: 참가자 upload 페이지에서 maxClipSeconds 읽어 카운트다운 변수화.
+  - 사양 C: Shotstack render API에서 maxClipSeconds로 length 동적 계산.
+- **사양 시리즈**: A(본 결정) → B(참가자 페이지) → C(Shotstack) → D(후속 정리)
+
 ## 2026-05-15 — MediaRecorder → native capture 전환 결정 (사양 확정, 미실행)
 
 - **문제**: getUserMedia constraints 명시(가설 A 처방)로 해상도/비트레이트 개선

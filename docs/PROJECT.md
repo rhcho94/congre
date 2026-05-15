@@ -116,3 +116,4 @@ npx firebase emulators:start --only firestore
 - 자동 삭제 cron (`/api/cron/cleanup`, KST 03:00 daily) — 클립 24h, 완성본 7d. 멱등성 마커: clipsDeletedAt, videoDeletedAt
 - 이용약관 / 개인정보처리방침 페이지 (`/terms`, `/privacy`) — v0.1 시행. 푸터 링크. 변경 이력은 `docs/legal/CHANGELOG.md`.
 - BGM (Shotstack timeline.soundtrack, fadeInFadeOut volume 0.1, public/audio/bgm.mp3 호스팅)
+- 이벤트별 영상 최대 길이 설정 (maxClipSeconds: 5/10/15/20/25/30초, default 15, 이벤트 생성 시 호스트 선택)

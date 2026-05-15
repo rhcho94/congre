@@ -27,9 +27,9 @@ export default function CreateEventPage() {
     title: "",
     date: "",
     plan: "free" as EventPlan,
+    maxClipSeconds: 15,
     organizerEmail: "",
     organizerPhone: "",
-
   });
   const [submitting, setSubmitting] = useState(false);
   const [createdEventId, setCreatedEventId] = useState("");
@@ -69,9 +69,9 @@ export default function CreateEventPage() {
           title: form.title,
           date: form.date,
           plan: form.plan,
+          maxClipSeconds: form.maxClipSeconds,
           organizerEmail: form.organizerEmail,
           organizerPhone: form.organizerPhone,
-
         }),
       });
 
@@ -218,6 +218,33 @@ export default function CreateEventPage() {
                       />
                       <span className="text-sm text-foreground font-medium">{opt.label}</span>
                       <span className="text-xs text-muted">{opt.desc}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <span className="text-xs tracking-widest uppercase text-muted">영상 최대 길이</span>
+                <div className="grid grid-cols-3 gap-2">
+                  {([5, 10, 15, 20, 25, 30] as const).map((sec) => (
+                    <label
+                      key={sec}
+                      className={`flex items-center justify-center p-4 border cursor-pointer transition-all duration-150 ${
+                        form.maxClipSeconds === sec
+                          ? "border-accent bg-[var(--surface-2)]"
+                          : "border-border bg-surface hover:border-muted"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="maxClipSeconds"
+                        value={sec}
+                        checked={form.maxClipSeconds === sec}
+                        onChange={() => setForm({ ...form, maxClipSeconds: sec })}
+                        disabled={submitting}
+                        className="sr-only"
+                      />
+                      <span className="text-sm text-foreground font-medium">{sec}초</span>
                     </label>
                   ))}
                 </div>

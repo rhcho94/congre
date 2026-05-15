@@ -25,5 +25,9 @@ export async function GET(
     return Response.json({ error: "NOT_FOUND" }, { status: 404 });
   }
 
-  return Response.json({ id: snap.id, title: data.title as string });
+  return Response.json({
+    id: snap.id,
+    title: data.title as string,
+    maxClipSeconds: data.maxClipSeconds as number | undefined,
+  });
 }

@@ -40,6 +40,7 @@ export async function GET(request: NextRequest) {
           organizerEmail: (data.organizerEmail ?? undefined) as string | undefined,
           organizerPhone: (data.organizerPhone ?? undefined) as string | undefined,
           deadlineAt: tsToMs(data.deadlineAt),
+          maxClipSeconds: (data.maxClipSeconds ?? undefined) as number | undefined,
         };
       })
       .sort((a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0));
@@ -68,11 +69,19 @@ export async function POST(request: NextRequest) {
     organizerPhone?: string;
     introText?: string;
     outroText?: string;
+    maxClipSeconds?: number;
   };
-  const { title, date, plan, organizerEmail, organizerPhone } = body;
+  const { title, date, plan, organizerEmail, organizerPhone, maxClipSeconds } = body;
 
   if (!title || !date || !plan || !organizerEmail || !organizerPhone) {
     return Response.json({ error: "MISSING_FIELDS" }, { status: 400 });
+  }
+
+  if (
+    maxClipSeconds !== undefined &&
+    (typeof maxClipSeconds !== "number" || !Number.isInteger(maxClipSeconds) || maxClipSeconds < 5 || maxClipSeconds > 30)
+  ) {
+    return Response.json({ error: "INVALID_MAX_CLIP_SECONDS" }, { status: 400 });
   }
 
   if (!/^010\d{8}$/.test(organizerPhone)) {
@@ -95,6 +104,7 @@ export async function POST(request: NextRequest) {
     organizerPhone,
     ...(body.introText !== undefined ? { introText: body.introText } : {}),
     ...(body.outroText !== undefined ? { outroText: body.outroText } : {}),
+    ...(maxClipSeconds !== undefined ? { maxClipSeconds } : {}),
   });
 
   const eventId = ref.id;

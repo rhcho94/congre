@@ -2,6 +2,10 @@
 
 > 기능 단위 작업 이력. 최신이 위.
 
+## 2026-05-16
+
+- feat: events 모델에 maxClipSeconds 필드 추가 (사양 A, native capture 전환 1단계)
+
 ## 2026-05-15
 
 - upload 페이지 getUserMedia constraints에 width/height 1080×1920 ideal 추가 + MediaRecorder videoBitsPerSecond 5Mbps 명시. 참가자 영상 480p 압축 → 1080p 캡처로 전환 (가설 A 처방).
