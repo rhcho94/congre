@@ -3,6 +3,11 @@
 > known-issues.md에서 분리된 해결 완료 이력. 사고 재발 진단 시 grep 대상.
 > 새 RESOLVED 항목 발생 시 known-issues.md에서 이 파일로 이동.
 
+## ✅ GitHub Actions cron throttling — `* * * * *` 매분 스케줄 실질적 미동작 [RESOLVED 2026-05-15]
+
+- **해결**: Vercel Cron Jobs로 이전 완료 (vercel.json + `/api/cron/*` 엔드포인트). GitHub Actions workflow 제거. GitHub 저장소 Public 상태에서도 무제한 사용 가능한 Vercel Pro 크론으로 대체.
+- **원인**: GitHub Actions free tier의 고빈도 cron throttling (`* * * * *` 등록 후 약 4시간에 1회 실행). 공식 보장 없음 (2026-05-05 관측).
+
 ## ✅ 사고 2① — outroText 인트로 구간 차례 표시 (cross-track 동기화 한계) [RESOLVED 2026-05-12 / refactor: drop outroText overlay]
 
 - **해결**: [A] 분기에서 outroText overlay 자체 폐기. introText overlay만 보존.
