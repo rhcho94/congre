@@ -2,6 +2,21 @@
 
 > 영상 편집·Shotstack·클립·재렌더 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-05-15 — 참가자 영상 캡처 해상도·비트레이트 코드 명시
+
+- **문제**: 참가자 업로드 영상이 480×640 + 낮은 비트레이트로 캡처돼 화질 천장이 480p로 고정됨. Shotstack 1080p 업스케일해도 체감 화질 개선 없음.
+- **원인**: `src/app/upload/[eventId]/page.tsx`의 getUserMedia / MediaRecorder가 해상도·비트레이트를 명시하지 않아 브라우저(Chrome MediaRecorder) 기본값 480×640 사용.
+- **결정**:
+  - getUserMedia constraints에 `width: { ideal: 1080 }, height: { ideal: 1920 }` 추가 (3개 호출 위치 모두).
+  - MediaRecorder 생성 시 `videoBitsPerSecond: 5_000_000` (5 Mbps) 명시.
+  - 폴백 경로 `video: true`는 변경하지 않음 (constraint 거부 시 안전망 유지).
+- **트레이드오프**:
+  - 1080p 채택 사유: 최종 렌더 1080p이므로 원본 끝까지 유지가 합당.
+  - 5 Mbps 채택 사유: 8 Mbps 대비 차이 체감 작은데 업로드 부담만 증가 (YAGNI).
+  - iOS Safari가 `videoBitsPerSecond` 무시할 가능성 있음. 무시되어도 에러 없이 기본값 사용 → 손해 없음 구조.
+- **검증**: 필드테스트 재실시 후 ffprobe로 원본 해상도/비트레이트 확인. 480×640 → 1080×1920 변경 확인.
+- **관련 핸드오프**: 2026-05-15-fieldtest-quality-and-handoff-cleanup.md Track A
+
 ## 2026-05-15 — Shotstack output에 fps 30 + quality high 명시
 
 - **결정**: `createRender` output 블록에 `fps: 30`, `quality: "high"` 명시 추가.

@@ -4,6 +4,7 @@
 
 ## 2026-05-15
 
+- upload 페이지 getUserMedia constraints에 width/height 1080×1920 ideal 추가 + MediaRecorder videoBitsPerSecond 5Mbps 명시. 참가자 영상 480p 압축 → 1080p 캡처로 전환 (가설 A 처방).
 - feat(shotstack): output에 fps 30 + quality high 명시 (단가 무영향, 압축 아티팩트 완화)
 - feat(guide): 사용 가이드 페이지 3종(/guide, /guide/host, /guide/guest) 신설 + 랜딩 미리보기 섹션 + 푸터 링크
 

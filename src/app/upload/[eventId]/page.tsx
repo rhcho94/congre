@@ -45,13 +45,21 @@ async function pickStandardBackCamera(currentStream: MediaStream): Promise<Media
 
   try {
     return await navigator.mediaDevices.getUserMedia({
-      video: { deviceId: { exact: targetDeviceId } },
+      video: {
+        deviceId: { exact: targetDeviceId },
+        width: { ideal: 1080 },
+        height: { ideal: 1920 },
+      },
       audio: true,
     });
   } catch {
     // deviceId 재호출 실패 → facingMode fallback (ultrawide 가능성 있지만 카메라 불가보다 나음)
     return navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { ideal: "environment" } },
+      video: {
+        facingMode: { ideal: "environment" },
+        width: { ideal: 1080 },
+        height: { ideal: 1920 },
+      },
       audio: true,
     });
   }
@@ -181,7 +189,11 @@ function UploadInner() {
       try {
         // 기본 시도: facingMode ideal constraints
         stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { ideal: facing } },
+          video: {
+            facingMode: { ideal: facing },
+            width: { ideal: 1080 },
+            height: { ideal: 1920 },
+          },
           audio: true,
         });
       } catch {
@@ -280,7 +292,12 @@ function UploadInner() {
       "video/webm",
     ].find((m) => MediaRecorder.isTypeSupported(m)) ?? "";
 
-    const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+    const recorder = new MediaRecorder(
+      stream,
+      mimeType
+        ? { mimeType, videoBitsPerSecond: 5_000_000 }
+        : { videoBitsPerSecond: 5_000_000 }
+    );
     recorderRef.current = recorder;
 
     recorder.ondataavailable = (e) => {
