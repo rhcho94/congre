@@ -2,6 +2,28 @@
 
 > 영상 편집·Shotstack·클립·재렌더 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-05-15 — MediaRecorder → native capture 전환 결정 (사양 확정, 미실행)
+
+- **문제**: getUserMedia constraints 명시(가설 A 처방)로 해상도/비트레이트 개선
+  후 발견된 회전 메타 부재 문제. 폰 세로로 들고 촬영해도 가로 영상 저장.
+  MediaRecorder API의 구조적 한계 (WebKit Bugzilla #198912, RecordRTC #395 등).
+- **결정**: `<input type="file" accept="video/*">` (W3C HTML Media Capture)
+  전환. OS 카메라 앱이 회전·코덱·해상도·인코딩 전부 처리.
+- **동반 결정** (호스트 가변 시간 제한):
+  - 호스트가 이벤트 생성 시 maxClipSeconds 선택 (5/10/15/20/25/30초, default 15)
+  - 초과 길이는 Shotstack trim으로 서버 컷
+  - preview stage 유지
+  - file input capture 속성 미지정 (사용자가 OS UI에서 선택)
+- **트레이드오프**:
+  - 잃는 것: "Congre 안에서 직접 녹화" 일체감, 클라이언트 16초 시간 제한 강제
+  - 얻는 것: 폰 네이티브 카메라 화질, 회전 정상, AAC 오디오, High 프로파일,
+    iOS Safari 호환성, 200줄 코드 제거
+- **검증 결정타**: H.264 High 프로파일 / AAC / rotation 메타 있음 — 3개 시그니처
+- **미확정 부분 (다음 세션 첫 정찰)**: Shotstack `length` > 원본 영상일 때 동작
+  공식 미명시. 검은 화면 / freeze / 짧게 끝남 중 어느 것인지 정찰 필요. 결과에
+  따라 `length: "auto"` + `asset.trim` 조합으로 사양 정정 가능성.
+- **관련 핸드오프**: 2026-05-15-native-capture-decision.md
+
 ## 2026-05-15 — 참가자 영상 캡처 해상도·비트레이트 코드 명시
 
 - **문제**: 참가자 업로드 영상이 480×640 + 낮은 비트레이트로 캡처돼 화질 천장이 480p로 고정됨. Shotstack 1080p 업스케일해도 체감 화질 개선 없음.

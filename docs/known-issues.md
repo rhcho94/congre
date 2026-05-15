@@ -94,6 +94,22 @@
 - **미완 정찰 영역**: R2 한국 PoP 위치, R2 한국 결제·세금 처리, Shotstack 자체 호스팅 옵트아웃 정확한 사양.
 - **관련 정찰**: 2026-05-09 채팅 클로드 세션. ROADMAP 보류 중 항목 참조.
 
+## getUserMedia constraints 처방 (5Mbps 코드) — native capture 전환으로 제거 예정
+
+- **현황**: 2026-05-15 커밋 6ccd731로 `src/app/upload/[eventId]/page.tsx`에
+  getUserMedia width/height 1080×1920 ideal + MediaRecorder
+  videoBitsPerSecond: 5_000_000 명시.
+- **후속 발견**: MediaRecorder API가 rotation 메타데이터를 박지 못하는 구조적
+  한계로 세로 촬영 영상이 가로로 저장됨 (외부 자료 결정타 4건 확인).
+- **결정**: native capture 전환 사양 확정. 사양 B 실행 시 본 처방 코드
+  (constraints 명시 + videoBitsPerSecond)를 포함한 MediaRecorder 관련 약 200줄
+  전체 제거됨.
+- **5Mbps 처방의 가치**: 본 처방이 실패는 아님. 480p → 2160p / 2Mbps → 5Mbps
+  개선 자체는 가설 A 진단의 정확한 처방. 다만 그 다음 단계로 회전 문제 발견
+  → 처방 무대 자체가 다른 영역으로 이동.
+- **관련 결정**: DECISIONS rendering.md 2026-05-15 native capture 전환 항목.
+- **관련 핸드오프**: 2026-05-15-native-capture-decision.md
+
 ---
 
 ## 1a784d0 회귀 의심 → 미재현 확인 (2026-05-11)
