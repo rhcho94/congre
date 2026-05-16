@@ -2,6 +2,18 @@
 
 > 영상 편집·Shotstack·클립·재렌더 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-05-16 — Android Chrome 14/15 file input 사고 — 카메라/갤러리 두 input 분리
+
+- **결정**: idle stage에 큰 박스(`capture="environment"`, "지금 촬영하기")와
+  보조 텍스트 링크(capture 없음, "갤러리에서 선택") 두 input 분리. addpipe Solution 2 패턴.
+  두 input 모두 동일한 handleFileSelected 핸들러 재사용.
+- **근거**: addpipe 검증 결과 (Android 14/15 Chrome/Edge에서 단일
+  `<input type="file" accept="video/*">`는 갤러리만 열림). Chrome 이슈 트래커
+  issuetracker.google.com/issues/317289301 미해결. 비표준 트릭 대비 표준 사양 안에서
+  안정적이고 양쪽 OS 일관 동작 보장.
+- **영향**: 게스트 흐름 사고 해소. 1순위 시장(즉석 촬영) 우선, 보조 시장
+  (미리 찍은 영상) 갤러리 옵션 보존.
+
 ## 2026-05-16 — Shotstack 클립별 length 동적 계산 (사양 C)
 
 - **결정**: createRender 시그니처를 `s3Urls: string[]` → `clips: Array<{src: string; length: number}>`로 변경.

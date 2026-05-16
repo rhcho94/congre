@@ -419,6 +419,7 @@ function UploadInner() {
               <input
                 type="file"
                 accept="video/*"
+                capture="environment"
                 className="sr-only"
                 onChange={handleFileSelected}
               />
@@ -438,10 +439,20 @@ function UploadInner() {
                   </svg>
                 </div>
                 <p className="text-base tracking-widest uppercase font-medium text-muted group-hover:text-accent transition-colors duration-300">
-                  카메라 켜기
+                  지금 촬영하기
                 </p>
                 <p className="text-xs text-muted opacity-60">최대 {maxClipSeconds}초 · 탭하여 시작</p>
               </div>
+            </label>
+
+            <label className="text-xs text-muted hover:text-accent transition-colors duration-200 tracking-widest uppercase cursor-pointer">
+              <input
+                type="file"
+                accept="video/*"
+                className="sr-only"
+                onChange={handleFileSelected}
+              />
+              갤러리에서 선택
             </label>
 
             <p className="text-xs text-center text-muted leading-relaxed opacity-70">

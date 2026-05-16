@@ -3,6 +3,13 @@
 > known-issues.md에서 분리된 해결 완료 이력. 사고 재발 진단 시 grep 대상.
 > 새 RESOLVED 항목 발생 시 known-issues.md에서 이 파일로 이동.
 
+## ✅ Android Chrome 14/15 file input 갤러리 직행 사고 [RESOLVED 2026-05-16 / fix: split file input]
+
+- **해결**: idle stage에 두 input 분리. 큰 박스: `<input capture="environment">` (카메라 직접 호출). 보조 링크: `<input>` capture 없음 (갤러리). addpipe Solution 2 패턴.
+- **원인**: Android 14/15 + Chrome 134-137에서 `<input type="file" accept="video/*">` 단독 사용 시 갤러리만 열리고 카메라 옵션 미노출. 사양 B(native capture 전환) 직후 발견.
+- **외부 근거**: addpipe 2025-07 검증 (OnePlus 13 Android 15, Galaxy S21 FE Android 14). Chrome 이슈 트래커 issuetracker.google.com/issues/317289301 미해결.
+- **위치**: `src/app/upload/[eventId]/page.tsx` idle stage JSX
+
 ## ✅ GitHub Actions cron throttling — `* * * * *` 매분 스케줄 실질적 미동작 [RESOLVED 2026-05-15]
 
 - **해결**: Vercel Cron Jobs로 이전 완료 (vercel.json + `/api/cron/*` 엔드포인트). GitHub Actions workflow 제거. GitHub 저장소 Public 상태에서도 무제한 사용 가능한 Vercel Pro 크론으로 대체.
