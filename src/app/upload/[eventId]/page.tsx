@@ -441,7 +441,7 @@ function UploadInner() {
                 <p className="text-base tracking-widest uppercase font-medium text-muted group-hover:text-accent transition-colors duration-300">
                   지금 촬영하기
                 </p>
-                <p className="text-xs text-muted opacity-60">최대 {maxClipSeconds}초 · 탭하여 시작</p>
+                <p className="text-sm text-muted">최대 {maxClipSeconds}초 · 탭하여 시작</p>
               </div>
             </label>
 

@@ -4,6 +4,7 @@
 
 ## 2026-05-16
 
+- fix(upload): 업로드 idle 화면 촬영 시간 안내 가독성 강화 (text-xs + opacity-60 → text-sm)
 - fix(upload): 안드로이드 Chrome 14/15 갤러리 직행 사고 정정 — 카메라/갤러리 두 input 분리
 - feat: Shotstack 클립별 length 동적 계산 (사양 C, native capture 전환 3단계)
 - feat: 참가자 upload 페이지 native capture 전환 + duration 측정·저장 (사양 B, native capture 전환 2단계)
