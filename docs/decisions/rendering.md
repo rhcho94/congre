@@ -2,6 +2,15 @@
 
 > 영상 편집·Shotstack·클립·재렌더 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-05-16 — 참가자 업로드 native capture 전환 + duration 측정
+
+- **결정**: MediaRecorder 파이프라인 제거 (~200줄). `<input type="file" accept="video/*">`으로 교체.
+  preview stage 유지, capture 속성 미지정 (사용자가 OS UI에서 카메라·갤러리 선택).
+  duration은 `<video>.duration`으로 측정하고 NaN/Infinity/≤0/120초 초과는 차단.
+- **근거**: MediaRecorder 회전 메타 한계 (2026-05-15 외부 자료 결정타 4건).
+  클라이언트 duration 측정으로 사양 C의 Shotstack length 동적 계산에 필요한 데이터 확보.
+- **영향**: clips Firestore 스키마에 duration(초, float) 필드 추가. 사양 C에서 length 계산에 사용.
+
 ## 2026-05-16 — 참가자 영상 최대 길이를 호스트가 5~30초 가변 설정
 
 - **결정**: 이벤트 생성 시 호스트가 6옵션 셀렉터(5/10/15/20/25/30초)로 maxClipSeconds 선택. default 15.

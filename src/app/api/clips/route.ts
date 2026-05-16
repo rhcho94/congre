@@ -11,9 +11,14 @@ export async function POST(request: NextRequest) {
     typeof body.s3Key !== "string" ||
     typeof body.token !== "string" ||
     typeof body.uploaderName !== "string" ||
-    typeof body.uploaderPhone !== "string"
+    typeof body.uploaderPhone !== "string" ||
+    typeof body.duration !== "number"
   ) {
     return Response.json({ error: "BAD_REQUEST" }, { status: 400 });
+  }
+
+  if (!Number.isFinite(body.duration) || body.duration <= 0 || body.duration > 120) {
+    return Response.json({ error: "INVALID_DURATION" }, { status: 400 });
   }
 
   const uploaderName = body.uploaderName.trim();
@@ -61,6 +66,7 @@ export async function POST(request: NextRequest) {
     s3Key,
     uploaderName,
     uploaderPhone: phoneClean,
+    duration: body.duration,
     uploadedAt: FieldValue.serverTimestamp(),
   });
 

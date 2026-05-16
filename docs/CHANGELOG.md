@@ -4,6 +4,7 @@
 
 ## 2026-05-16
 
+- feat: 참가자 upload 페이지 native capture 전환 + duration 측정·저장 (사양 B, native capture 전환 2단계)
 - feat: events 모델에 maxClipSeconds 필드 추가 (사양 A, native capture 전환 1단계)
 
 ## 2026-05-15

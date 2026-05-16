@@ -1,68 +1,33 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback, Suspense } from "react";
+import { useState, useRef, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { BrandName } from "@/components/BrandName";
 import { useParams, useSearchParams } from "next/navigation";
 import { checkS3, getPresignedUrl, uploadToS3 } from "@/lib/s3";
 import CongreBadge from "@/components/CongreBadge";
 
-// "standby" = 카메라 켜진 미리보기 (녹화 전)
-// "preview"  = 녹화 완료 후 blob 재생 (기존)
-type Stage = "verifying" | "invalid" | "uploader" | "idle" | "standby" | "recording" | "preview" | "uploading" | "done" | "error";
+type Stage = "verifying" | "invalid" | "uploader" | "idle" | "preview" | "uploading" | "done" | "error";
 
-const MAX_SEC = 16;
-
-// 가상 카메라 키워드 (iOS 라벨 필터용) — triple/dual/ultra/telephoto 조합
-const VIRTUAL_CAM_RE = /triple|dual|ultra|telephoto|망원|광각/i;
-
-// 후면 표준 wide 카메라 자동 선택 휴리스틱.
-// iOS: 라벨이 "후면 카메라" 또는 "Back Camera"로 정확 매칭 (가상 카메라 제외).
-// Android 등: facing back 디바이스(label에 "front" 없는 것) 2개 이상이면 두 번째 선택.
-// 후보 없거나 현재 active와 동일하면 null 반환 (호출자가 원본 stream 유지).
-async function pickStandardBackCamera(currentStream: MediaStream): Promise<MediaStream | null> {
-  const devices = await navigator.mediaDevices.enumerateDevices();
-  const videoDevices = devices.filter((d) => d.kind === "videoinput");
-  const activeDeviceId = (currentStream.getVideoTracks()[0]?.getSettings?.() ?? {}).deviceId as string | undefined;
-
-  const isIOS = /iPhone|iPad/.test(navigator.userAgent);
-  let targetDeviceId: string | undefined;
-
-  if (isIOS) {
-    const candidate = videoDevices.find(
-      (d) => (d.label === "후면 카메라" || d.label === "Back Camera") && !VIRTUAL_CAM_RE.test(d.label)
-    );
-    targetDeviceId = candidate?.deviceId;
-  } else {
-    const backCams = videoDevices.filter((d) => !d.label.toLowerCase().includes("front"));
-    if (backCams.length >= 2) targetDeviceId = backCams[1].deviceId;
-  }
-
-  if (!targetDeviceId || targetDeviceId === activeDeviceId) return null;
-
-  // Android 카메라 센서 점유 해제 — 새 stream 요청 전 반드시 먼저 정지
-  currentStream.getTracks().forEach((t) => t.stop());
-
-  try {
-    return await navigator.mediaDevices.getUserMedia({
-      video: {
-        deviceId: { exact: targetDeviceId },
-        width: { ideal: 1080 },
-        height: { ideal: 1920 },
-      },
-      audio: true,
-    });
-  } catch {
-    // deviceId 재호출 실패 → facingMode fallback (ultrawide 가능성 있지만 카메라 불가보다 나음)
-    return navigator.mediaDevices.getUserMedia({
-      video: {
-        facingMode: { ideal: "environment" },
-        width: { ideal: 1080 },
-        height: { ideal: 1920 },
-      },
-      audio: true,
-    });
-  }
+async function measureDuration(file: File): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const video = document.createElement("video");
+    video.preload = "metadata";
+    video.onloadedmetadata = () => {
+      URL.revokeObjectURL(video.src);
+      const d = video.duration;
+      if (!Number.isFinite(d) || d <= 0) {
+        reject(new Error("INVALID_DURATION"));
+      } else {
+        resolve(d);
+      }
+    };
+    video.onerror = () => {
+      URL.revokeObjectURL(video.src);
+      reject(new Error("VIDEO_LOAD_ERROR"));
+    };
+    video.src = URL.createObjectURL(file);
+  });
 }
 
 function UploadInner() {
@@ -71,8 +36,7 @@ function UploadInner() {
   const urlToken = searchParams.get("token") ?? "";
 
   const [stage, setStage] = useState<Stage>("verifying");
-  const [event, setEvent] = useState<{ id: string; title: string } | null>(null);
-  const [timer, setTimer] = useState(0);
+  const [event, setEvent] = useState<{ id: string; title: string; maxClipSeconds?: number } | null>(null);
   const [progress, setProgress] = useState(0);
   const [retryNum, setRetryNum] = useState(0);
   const [errorMsg, setErrorMsg] = useState("");
@@ -81,18 +45,11 @@ function UploadInner() {
   const [uploaderError, setUploaderError] = useState("");
   const [isReturning, setIsReturning] = useState(false);
   const [s3Ready, setS3Ready] = useState<boolean | null>(null);
-  const [facingMode, setFacingMode] = useState<"user" | "environment">("environment");
-  // streamKey: openCamera 호출마다 증가 → useEffect([stage, streamKey])가 재실행되어 video.srcObject 갱신
-  const [streamKey, setStreamKey] = useState(0);
 
-  const liveRef = useRef<HTMLVideoElement>(null);
   const previewRef = useRef<HTMLVideoElement>(null);
-  const streamRef = useRef<MediaStream | null>(null);
-  const recorderRef = useRef<MediaRecorder | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
   const blobRef = useRef<Blob | null>(null);
-  const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const previewUrlRef = useRef<string>("");
+  const durationRef = useRef<number>(0);
 
   // Verify token via server API (sessionToken never sent to client)
   useEffect(() => {
@@ -109,7 +66,7 @@ function UploadInner() {
           setStage("invalid");
           return;
         }
-        const evt = await res.json() as { id: string; title: string };
+        const evt = await res.json() as { id: string; title: string; maxClipSeconds?: number };
         setEvent(evt);
         setStage("uploader");
       } catch {
@@ -143,29 +100,11 @@ function UploadInner() {
     setIsReturning(false);
   }, [stage, eventId]);
 
-  const stopStream = useCallback(() => {
-    streamRef.current?.getTracks().forEach((t) => t.stop());
-    streamRef.current = null;
-    // 이전 스트림 잔재 제거 — srcObject를 null로 초기화하지 않으면 검은 화면 잔류
-    if (liveRef.current) liveRef.current.srcObject = null;
-  }, []);
-
   useEffect(() => {
     return () => {
-      if (tickRef.current) clearInterval(tickRef.current);
-      stopStream();
       if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
     };
-  }, [stopStream]);
-
-  // standby·recording 진입 시, 또는 streamKey가 바뀔 때(카메라 전환) video에 스트림 연결
-  useEffect(() => {
-    if (stage !== "standby" && stage !== "recording") return;
-    const video = liveRef.current;
-    if (!video || !streamRef.current) return;
-    video.srcObject = streamRef.current;
-    video.play().catch(() => {});
-  }, [stage, streamKey]);
+  }, []);
 
   // stage가 "preview"로 바뀐 뒤 video 엘리먼트가 마운트되면 blob URL을 연결
   useEffect(() => {
@@ -175,55 +114,6 @@ function UploadInner() {
     video.src = previewUrlRef.current;
     video.load();
   }, [stage]);
-
-  // 카메라 스트림 획득만 담당. streamRef·streamKey 갱신. 녹화 시작 안 함.
-  async function openCamera(facing: "user" | "environment"): Promise<MediaStream | null> {
-    setErrorMsg("");
-    if (typeof MediaRecorder === "undefined") {
-      setErrorMsg("이 브라우저에서는 녹화가 지원되지 않습니다. iOS 15 이상의 Safari를 사용해주세요.");
-      setStage("error");
-      return null;
-    }
-    try {
-      let stream: MediaStream;
-      try {
-        // 기본 시도: facingMode ideal constraints
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: { ideal: facing },
-            width: { ideal: 1080 },
-            height: { ideal: 1920 },
-          },
-          audio: true,
-        });
-      } catch {
-        // iOS 일부 버전에서 constraints 거부 시 최소 constraints로 폴백
-        stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      }
-      // 후면 카메라일 때 표준 wide 자동 선택 (전면은 적용 안 함)
-      if (facing === "environment") {
-        try {
-          const betterStream = await pickStandardBackCamera(stream);
-          if (betterStream) {
-            // stream already stopped inside pickStandardBackCamera
-            stream = betterStream;
-          }
-        } catch {
-          // 재호출·fallback 모두 실패 — 첫 stream은 내부에서 이미 정지됨
-          setErrorMsg("카메라를 열 수 없습니다. 다시 시도해주세요.");
-          setStage("error");
-          return null;
-        }
-      }
-      streamRef.current = stream;
-      setStreamKey((k) => k + 1); // useEffect 재실행 트리거
-      return stream;
-    } catch {
-      setErrorMsg("카메라 접근 권한이 필요합니다. 브라우저 설정을 확인해주세요.");
-      setStage("error");
-      return null;
-    }
-  }
 
   async function handleUploaderNext() {
     const trimmedName = name.trim();
@@ -261,82 +151,29 @@ function UploadInner() {
     }
   }
 
-  // idle → standby: 카메라 켜고 미리보기 진입 (녹화 없음)
-  async function startPreview() {
-    const stream = await openCamera(facingMode);
-    if (!stream) return;
-    setStage("standby");
-  }
-
-  // standby 전용 카메라 전환 — 녹화 중 전환은 데이터 손실을 유발하므로 허용하지 않음
-  async function switchCamera() {
-    if (stage !== "standby") return;
-
-    const newFacing = facingMode === "environment" ? "user" : "environment";
-    setFacingMode(newFacing);
-
-    stopStream();
-
-    const stream = await openCamera(newFacing);
-    if (!stream) return;
-    // streamKey 증가만으로 useEffect가 video.srcObject 갱신
-  }
-
-  function beginRecording(stream: MediaStream) {
-    chunksRef.current = [];
-    // H.264 MP4를 우선 시도 — Shotstack sandbox는 VP9 WebM을 비디오 트랙으로 인식 못하는 경우 있음
-    const mimeType = [
-      "video/mp4;codecs=avc1",
-      "video/mp4",
-      "video/webm;codecs=vp9",
-      "video/webm",
-    ].find((m) => MediaRecorder.isTypeSupported(m)) ?? "";
-
-    const recorder = new MediaRecorder(
-      stream,
-      mimeType
-        ? { mimeType, videoBitsPerSecond: 5_000_000 }
-        : { videoBitsPerSecond: 5_000_000 }
-    );
-    recorderRef.current = recorder;
-
-    recorder.ondataavailable = (e) => {
-      if (e.data.size > 0) chunksRef.current.push(e.data);
-    };
-
-    recorder.onstop = () => {
-      const blob = new Blob(chunksRef.current, { type: recorder.mimeType });
-      blobRef.current = blob;
-      stopStream();
+  async function handleFileSelected(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setErrorMsg("");
+    try {
+      const duration = await measureDuration(file);
+      if (duration > 120) {
+        setErrorMsg("영상이 너무 깁니다. 2분 이내로 촬영해주세요.");
+        setStage("error");
+        return;
+      }
+      durationRef.current = duration;
+      blobRef.current = file;
       if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
-      previewUrlRef.current = URL.createObjectURL(blob);
+      previewUrlRef.current = URL.createObjectURL(file);
       setStage("preview");
-    };
-
-    recorder.start(100);
-    setStage("recording");
-    setTimer(0);
-
-    tickRef.current = setInterval(() => {
-      setTimer((t) => {
-        const next = t + 1;
-        if (next >= MAX_SEC) {
-          clearInterval(tickRef.current!);
-          tickRef.current = null;
-          if (recorderRef.current?.state === "recording") recorderRef.current.stop();
-          return MAX_SEC;
-        }
-        return next;
-      });
-    }, 1000);
-  }
-
-  function stopEarly() {
-    if (tickRef.current) {
-      clearInterval(tickRef.current);
-      tickRef.current = null;
+    } catch {
+      setErrorMsg("영상을 읽을 수 없습니다. 다시 촬영해주세요.");
+      setStage("error");
+    } finally {
+      // 같은 파일 재선택 가능하도록 input value 리셋
+      e.target.value = "";
     }
-    if (recorderRef.current?.state === "recording") recorderRef.current.stop();
   }
 
   function reRecord() {
@@ -345,7 +182,6 @@ function UploadInner() {
       previewUrlRef.current = "";
     }
     blobRef.current = null;
-    setTimer(0);
     setProgress(0);
     setRetryNum(0);
     setErrorMsg("");
@@ -356,17 +192,31 @@ function UploadInner() {
 
   async function doUpload(attempt: number): Promise<void> {
     const blob = blobRef.current!;
-    // codec 파라미터 제거 ("video/webm;codecs=vp9" → "video/webm")
-    // presign 서명과 XHR Content-Type이 일치해야 S3가 403을 내지 않음
-    const mimeType = blob.type.split(";")[0] || "video/webm";
-    const ext = mimeType.includes("mp4") ? "mp4" : "webm";
+    const rawType = blob.type.split(";")[0] || "video/mp4";
+
+    let mimeType: string;
+    let ext: string;
+    if (rawType.includes("quicktime")) {
+      mimeType = "video/quicktime";
+      ext = "mov";
+    } else if (rawType.includes("mp4")) {
+      mimeType = "video/mp4";
+      ext = "mp4";
+    } else if (rawType.includes("webm")) {
+      mimeType = "video/webm";
+      ext = "webm";
+    } else {
+      // 알 수 없는 타입 — mp4로 기본 처리 (native capture 대부분 mp4/mov)
+      mimeType = "video/mp4";
+      ext = "mp4";
+    }
+
     const fileName = `clip-${Date.now()}.${ext}`;
 
-    console.log(`[upload] attempt=${attempt} blobType="${blob.type}" mimeType="${mimeType}" size=${blob.size} ext=${ext}`);
+    console.log(`[upload] attempt=${attempt} blobType="${blob.type}" mimeType="${mimeType}" size=${blob.size} ext=${ext} duration=${durationRef.current}`);
 
     const { url, key } = await getPresignedUrl(eventId, fileName, mimeType, "clip");
     console.log(`[upload] presign ok → key=${key}`);
-    console.log(`[upload] presign url: ${url.slice(0, 150)}...`);
 
     await uploadToS3(url, blob, mimeType, setProgress);
     console.log(`[upload] S3 PUT success`);
@@ -374,7 +224,14 @@ function UploadInner() {
     const clipSave = fetch("/api/clips", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ eventId, s3Key: key, token: urlToken, uploaderName: name, uploaderPhone: phone.replace(/\D/g, "") }),
+      body: JSON.stringify({
+        eventId,
+        s3Key: key,
+        token: urlToken,
+        uploaderName: name,
+        uploaderPhone: phone.replace(/\D/g, ""),
+        duration: durationRef.current,
+      }),
     });
     const clipTimeout = new Promise<never>((_, reject) =>
       setTimeout(() => reject(new Error("clip_save_timeout")), 5000)
@@ -428,22 +285,7 @@ function UploadInner() {
     }
   }
 
-  const timerPct = (timer / MAX_SEC) * 100;
-
-  // 카메라 전환 버튼 — standby 전용
-  const flipButton = (
-    <button
-      onClick={switchCamera}
-      className="absolute top-4 right-4 z-10 w-10 h-10 flex items-center justify-center rounded-full bg-black/50"
-      aria-label="카메라 전환"
-    >
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M1 4v6h6" />
-        <path d="M23 20v-6h-6" />
-        <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15" />
-      </svg>
-    </button>
-  );
+  const maxClipSeconds = event?.maxClipSeconds ?? 15;
 
   // ── verifying ──
   if (stage === "verifying") {
@@ -477,7 +319,7 @@ function UploadInner() {
     );
   }
 
-  // ── idle / standby / recording / preview / uploading / done / error ──
+  // ── idle / preview / uploading / done / error ──
   return (
     <div className="min-h-screen bg-background flex flex-col" style={{ maxWidth: "480px", margin: "0 auto" }}>
       {/* Header */}
@@ -570,11 +412,16 @@ function UploadInner() {
               소중한 순간을 영상으로 남겨주세요 📹
             </p>
 
-            <button
-              onClick={startPreview}
+            <label
               className="group relative w-full bg-surface hover:bg-[var(--surface-2)] border-2 border-border hover:border-accent transition-all duration-300 flex flex-col items-center justify-center gap-5 cursor-pointer"
               style={{ aspectRatio: "9 / 16", maxHeight: "58vh" }}
             >
+              <input
+                type="file"
+                accept="video/*"
+                className="sr-only"
+                onChange={handleFileSelected}
+              />
               {/* 모서리 프레임 */}
               <span className="absolute top-4 left-4 w-6 h-6 border-t-2 border-l-2 border-muted group-hover:border-accent transition-colors duration-300" />
               <span className="absolute top-4 right-4 w-6 h-6 border-t-2 border-r-2 border-muted group-hover:border-accent transition-colors duration-300" />
@@ -593,9 +440,9 @@ function UploadInner() {
                 <p className="text-base tracking-widest uppercase font-medium text-muted group-hover:text-accent transition-colors duration-300">
                   카메라 켜기
                 </p>
-                <p className="text-xs text-muted opacity-60">최대 16초 · 탭하여 시작</p>
+                <p className="text-xs text-muted opacity-60">최대 {maxClipSeconds}초 · 탭하여 시작</p>
               </div>
-            </button>
+            </label>
 
             <p className="text-xs text-center text-muted leading-relaxed opacity-70">
               AI가 모든 순간을 모아 하나의 영상으로 편집해드려요.
@@ -603,101 +450,7 @@ function UploadInner() {
           </>
         )}
 
-        {/* ── standby: 카메라 미리보기 (녹화 전) ── */}
-        {stage === "standby" && (
-          <div className="relative isolate w-full flex flex-col items-center gap-4">
-            <div
-              className="pointer-events-none absolute inset-0 opacity-25"
-              style={{
-                background: "radial-gradient(ellipse 100% 90% at 50% 50%, #c8892c 0%, transparent 70%)",
-                zIndex: -1,
-              }}
-              aria-hidden
-            />
-            <div
-              className="relative w-full bg-black overflow-hidden"
-              style={{ aspectRatio: "9 / 16", maxHeight: "54vh" }}
-            >
-              <span className="absolute top-3 left-3 w-5 h-5 border-t border-l border-accent z-10" />
-              <span className="absolute top-3 right-3 w-5 h-5 border-t border-r border-accent z-10" />
-              <span className="absolute bottom-3 left-3 w-5 h-5 border-b border-l border-accent z-10" />
-              <span className="absolute bottom-3 right-3 w-5 h-5 border-b border-r border-accent z-10" />
-
-              {flipButton}
-
-              <video
-                ref={liveRef}
-                autoPlay
-                playsInline
-                muted
-                className="w-full h-full object-cover"
-              />
-            </div>
-
-            <p className="text-xs text-muted opacity-60 text-center">
-              카메라를 선택한 뒤 촬영을 시작하세요
-            </p>
-
-            <button
-              onClick={() => { if (streamRef.current) beginRecording(streamRef.current); }}
-              className="w-full py-4 bg-gradient-to-b from-[#f5b04a] to-[#a06f1f] text-background text-sm tracking-widest uppercase font-medium hover:brightness-110 transition-all duration-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_4px_12px_rgba(0,0,0,0.4),0_0_40px_rgba(200,137,44,0.3)] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_6px_16px_rgba(0,0,0,0.5),0_0_50px_rgba(200,137,44,0.4)]"
-            >
-              촬영 시작
-            </button>
-          </div>
-        )}
-
-        {/* ── recording ── */}
-        {stage === "recording" && (
-          <div className="w-full flex flex-col items-center gap-4">
-            {/* Timer bar */}
-            <div className="w-full flex items-center gap-3">
-              <div className="flex-1 h-px bg-border relative overflow-hidden">
-                <div
-                  className="absolute inset-y-0 left-0 transition-all duration-1000 ease-linear"
-                  style={{ width: `${timerPct}%`, background: "var(--accent)" }}
-                />
-              </div>
-              <span className="text-xs text-accent tabular-nums shrink-0">
-                {MAX_SEC - timer}s
-              </span>
-            </div>
-
-            {/* Live viewfinder */}
-            <div
-              className="relative w-full bg-black overflow-hidden"
-              style={{ aspectRatio: "9 / 16", maxHeight: "54vh" }}
-            >
-              <span className="absolute top-3 left-3 w-5 h-5 border-t border-l border-accent z-10" />
-              <span className="absolute top-3 right-3 w-5 h-5 border-t border-r border-accent z-10" />
-              <span className="absolute bottom-3 left-3 w-5 h-5 border-b border-l border-accent z-10" />
-              <span className="absolute bottom-3 right-3 w-5 h-5 border-b border-r border-accent z-10" />
-
-              {/* REC indicator */}
-              <div className="absolute top-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-10">
-                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                <span className="text-xs text-white tracking-widest uppercase">REC</span>
-              </div>
-
-              <video
-                ref={liveRef}
-                autoPlay
-                playsInline
-                muted
-                className="w-full h-full object-cover"
-              />
-            </div>
-
-            <button
-              onClick={stopEarly}
-              className="px-8 py-3 border border-border text-muted text-xs tracking-widest uppercase hover:border-accent hover:text-foreground transition-all duration-200"
-            >
-              촬영 완료
-            </button>
-          </div>
-        )}
-
-        {/* ── preview (녹화 후 blob 재생) ── */}
+        {/* ── preview (파일 선택 후 재생) ── */}
         {stage === "preview" && (
           <div className="w-full flex flex-col gap-5">
             <div
