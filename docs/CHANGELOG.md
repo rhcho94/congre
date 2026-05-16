@@ -4,6 +4,7 @@
 
 ## 2026-05-16
 
+- docs: 게스트 가이드 STEP 02·03 통합·재작성 (native capture 흐름 반영) + 랜딩 STEP 라벨 동기화
 - fix(upload): 업로드 idle 화면 촬영 시간 안내 가독성 강화 (text-xs + opacity-60 → text-sm)
 - fix(upload): 안드로이드 Chrome 14/15 갤러리 직행 사고 정정 — 카메라/갤러리 두 input 분리
 - feat: Shotstack 클립별 length 동적 계산 (사양 C, native capture 전환 3단계)

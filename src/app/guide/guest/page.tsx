@@ -28,7 +28,7 @@ export default function GuideGuestPage() {
           >
             참가자 가이드
           </h1>
-          <p className="text-sm text-muted mt-3">QR 한 번이면 끝 — 앱 설치 없이 네 단계</p>
+          <p className="text-sm text-muted mt-3">QR 한 번이면 끝 — 앱 설치 없이 세 단계</p>
         </div>
 
         <div className="rule mb-10" />
@@ -97,35 +97,31 @@ export default function GuideGuestPage() {
           {/* STEP 02 */}
           <section className="flex flex-col gap-4">
             <span className="text-xs tracking-[0.4em] uppercase text-accent">STEP 02</span>
-            <h2 className="text-base font-medium text-foreground tracking-wide">카메라 켜기</h2>
+            <h2 className="text-base font-medium text-foreground tracking-wide">촬영 시작</h2>
             <p>이름 입력 후 "다음"을 누르면 촬영 화면이 나옵니다.</p>
             <ul className="list-disc pl-5 flex flex-col gap-1">
-              <li>"카메라 켜기" 탭</li>
-              <li>브라우저가 카메라 권한을 묻습니다. "허용" 선택</li>
-              <li>카메라 미리보기가 나타나면 준비 완료</li>
+              <li>"지금 촬영하기"를 탭하면 폰 카메라 앱이 열립니다.</li>
+              <li>촬영을 마치면 자동으로 가이드 화면으로 돌아옵니다.</li>
             </ul>
             <div className="flex flex-col gap-1">
-              <p className="text-sm font-medium text-foreground">전·후면 전환</p>
-              <p>
-                미리보기 우측 상단 전환 버튼으로 카메라 방향 변경. 셀카는 전면, 풍경·다른 사람은
-                후면.
-              </p>
+              <p className="text-sm font-medium text-foreground">카메라 권한</p>
+              <p>처음 촬영할 때 폰이 카메라 권한을 묻습니다. "허용" 선택.</p>
             </div>
             <div className="flex flex-col gap-1">
               <p className="text-sm font-medium text-foreground">촬영 시간</p>
-              <p>최대 16초. 권장은 인당 10초 이내.</p>
+              <p>
+                호스트가 정한 최대 시간이 있어요 (5~30초). 촬영 화면에서 "최대 N초"로 확인.
+                그 시간을 넘으면 잘립니다.
+              </p>
               <p>짧고 진심 어린 한마디가 더 좋은 영상이 됩니다.</p>
             </div>
-          </section>
-
-          {/* STEP 03 */}
-          <section className="flex flex-col gap-4">
-            <span className="text-xs tracking-[0.4em] uppercase text-accent">STEP 03</span>
-            <h2 className="text-base font-medium text-foreground tracking-wide">촬영하고 확인하기</h2>
-            <p>
-              "촬영 시작"을 누르면 녹화가 시작됩니다. 정해진 시간이 지나면 자동으로 멈추거나,
-              다시 한 번 눌러 직접 멈출 수 있습니다.
-            </p>
+            <div className="flex flex-col gap-1">
+              <p className="text-sm font-medium text-foreground">갤러리에서 선택</p>
+              <p>
+                이미 찍어둔 영상도 올릴 수 있어요. "지금 촬영하기" 아래의 "갤러리에서 선택"
+                링크를 누르세요.
+              </p>
+            </div>
             <div className="flex flex-col gap-2">
               <p className="text-sm font-medium text-foreground">촬영이 끝나면</p>
               <ul className="list-disc pl-5 flex flex-col gap-1">

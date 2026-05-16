@@ -327,7 +327,7 @@ export default function LandingPage() {
 
           {/* 참가자 카드 */}
           <div className="flex flex-col gap-5 p-8 bg-surface">
-            <span className="text-xs tracking-[0.4em] uppercase text-accent">GUEST · 4 STEPS</span>
+            <span className="text-xs tracking-[0.4em] uppercase text-accent">GUEST · 3 STEPS</span>
             <h3
               className="text-base font-medium text-foreground"
               style={{ fontFamily: "var(--font-display, serif)" }}
@@ -336,8 +336,7 @@ export default function LandingPage() {
             </h3>
             <ol className="list-decimal pl-4 flex flex-col gap-1 text-sm text-muted">
               <li>이름과 전화번호 입력</li>
-              <li>카메라 켜기</li>
-              <li>촬영하고 확인하기</li>
+              <li>촬영 시작</li>
               <li>업로드 완료</li>
             </ol>
             <Link
