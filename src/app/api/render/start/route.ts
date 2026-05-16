@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "NO_CLIPS_AFTER_EXCLUSION" }, { status: 400 });
   }
 
-  const s3Keys = includedDocs.map((d) => d.data().s3Key as string);
+  const maxClipSeconds = (eventData.maxClipSeconds as number | undefined) ?? 15;
 
   const s3 = new S3Client({
     region: process.env.AWS_REGION!,
@@ -75,19 +75,23 @@ export async function POST(request: NextRequest) {
   });
 
   // Presigned GET URLs valid 24 h — Shotstack downloads them during render
-  const s3Urls = await Promise.all(
-    s3Keys.map((key) =>
-      getSignedUrl(
+  const clipsWithLength = await Promise.all(
+    includedDocs.map(async (doc) => {
+      const data = doc.data();
+      const duration = data.duration as number | undefined;
+      if (typeof duration !== "number" || !Number.isFinite(duration) || duration <= 0) {
+        throw new Error(`MISSING_DURATION:${doc.id}`);
+      }
+      const src = await getSignedUrl(
         s3,
-        new GetObjectCommand({ Bucket: process.env.AWS_S3_BUCKET!, Key: key }),
+        new GetObjectCommand({ Bucket: process.env.AWS_S3_BUCKET!, Key: data.s3Key as string }),
         { expiresIn: 86400 }
-      )
-    )
+      );
+      return { src, length: Math.min(duration, maxClipSeconds) };
+    })
   );
 
-  console.log("[render/start] s3Keys:", s3Keys);
-  console.log("[render/start] presigned URLs (24h):");
-  s3Urls.forEach((url, i) => console.log(`  [${i}] ${url}`));
+  console.log("[render/start] clipsWithLength:", clipsWithLength.map((c) => ({ length: c.length, src: c.src.slice(0, 80) })));
 
   const introText      = eventData.introText      as string | undefined;
   const outroText      = eventData.outroText      as string | undefined;
@@ -114,7 +118,7 @@ export async function POST(request: NextRequest) {
   let renderId: string;
   try {
     renderId = await createRender(
-      s3Urls,
+      clipsWithLength,
       (introText || introMediaUrl)
         ? { text: introText, mediaUrl: introMediaUrl, mediaType: introMediaType }
         : undefined,
@@ -127,7 +131,7 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: msg }, { status: 500 });
   }
 
-  const renderEstimateMin = Math.max(15, Math.round(s3Keys.length * 0.5 + 10));
+  const renderEstimateMin = Math.max(15, Math.round(clipsWithLength.length * 0.5 + 10));
   const now = Date.now();
 
   await db.collection("events").doc(eventId).update({
@@ -154,7 +158,7 @@ export async function POST(request: NextRequest) {
     await notifyRenderStarted({
       eventId,
       title: eventData.title as string,
-      clipCount: s3Keys.length,
+      clipCount: clipsWithLength.length,
       renderEstimateMin,
       organizerEmail: eventData.organizerEmail,
       organizerPhone: eventData.organizerPhone,

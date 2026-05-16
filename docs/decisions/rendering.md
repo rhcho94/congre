@@ -2,6 +2,16 @@
 
 > 영상 편집·Shotstack·클립·재렌더 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-05-16 — Shotstack 클립별 length 동적 계산 (사양 C)
+
+- **결정**: createRender 시그니처를 `s3Urls: string[]` → `clips: Array<{src: string; length: number}>`로 변경.
+  videoClips 조립 시 `length: clip.length`, `trim: 0` 명시.
+  호출부에서 `length = Math.min(duration, maxClipSeconds)` 계산 후 전달.
+- **근거**: Shotstack 공식 문서에서 `length > 원본 영상`일 때 last frame freeze 동작 확인.
+  결혼식·졸업식 시장에서 영상 늘어짐은 상품성 손실 — 운영자 결정 (옵션 B 선택).
+- **영향**: createRender 시그니처 변경. 호출처 1곳(render/start/route.ts) 동시 수정.
+  native capture 전환 시리즈 사양 D(구 MediaRecorder 코드 정리)만 남음.
+
 ## 2026-05-16 — 참가자 업로드 native capture 전환 + duration 측정
 
 - **결정**: MediaRecorder 파이프라인 제거 (~200줄). `<input type="file" accept="video/*">`으로 교체.

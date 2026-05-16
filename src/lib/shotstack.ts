@@ -104,7 +104,7 @@ function pickSequence(pool: readonly string[], count: number): string[] {
 }
 
 export async function createRender(
-  s3Urls: string[],
+  clips: Array<{ src: string; length: number }>,
   intro?: { text?: string; mediaUrl?: string; mediaType?: "image" | "video" },
   outro?: { text?: string; mediaUrl?: string; mediaType?: "image" | "video" },
 ): Promise<string> {
@@ -123,12 +123,13 @@ export async function createRender(
     fontsSrc = `${appUrl}/fonts/NotoSansKR-Regular.ttf`;
   }
 
-  const transitions = pickSequence(TRANSITION_POOL, s3Urls.length);
+  const transitions = pickSequence(TRANSITION_POOL, clips.length);
 
-  const videoClips = [...s3Urls].map((src, i) => ({
-    asset: { type: "video", src },
+  const videoClips = clips.map((clip, i) => ({
+    asset: { type: "video", src: clip.src },
     start: "auto",
-    length: "auto",
+    length: clip.length,
+    trim: 0,
     fit: "cover",
     transition: { in: transitions[i], out: transitions[i] },
   }));
