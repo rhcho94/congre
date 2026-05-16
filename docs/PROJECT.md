@@ -119,3 +119,5 @@ npx firebase emulators:start --only firestore
 - 이벤트별 영상 최대 길이 설정 (maxClipSeconds: 5/10/15/20/25/30초, default 15, 이벤트 생성 시 호스트 선택)
 - 참가자 업로드 native capture 전환 (OS 카메라 호출, 회전 메타 정상, duration 측정 후 Firestore 저장)
 - Shotstack 클립별 length 동적 계산 (Math.min(duration, maxClipSeconds), trim: 0 명시). 짧은 영상 freeze 회피.
+- 안드로이드 Chrome 14/15 갤러리 직행 사고 정정 (카메라/갤러리 input 분리, 2026-05-16)
+- 업로드 idle 화면 촬영 시간 안내 가독성 강화 (text-xs + opacity-60 → text-sm, 2026-05-16)
