@@ -4,6 +4,7 @@
 
 ## 2026-05-16
 
+- chore(rules): add "단편 단서로 전체 단정 금지" rule to CLAUDE.md
 - chore(rules): add "사양 외 자체 판단 명시" rule to CLAUDE.md
 - docs: 호스트 가이드 STEP 02 클립 길이 항목 추가 + PROJECT.md 사양 A·B·C 동기화
 - docs: 게스트 가이드 STEP 02·03 통합·재작성 (native capture 흐름 반영) + 랜딩 STEP 라벨 동기화
