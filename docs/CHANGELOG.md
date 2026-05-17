@@ -4,6 +4,7 @@
 
 ## 2026-05-16
 
+- chore(rules): add "운영자 기억 의존 신호 = CC 정찰 병렬 트리거" to CLAUDE.md (2026-05-17 사양 C 검증 사고 사례)
 - docs(PROJECT): 디자인 토큰 표 동기화 (--border, --accent-bright 추가, --font-display italic 표기 정정, 폰트 정의 위치 메모 추가)
 - chore(rules): add "단편 단서로 전체 단정 금지" rule to CLAUDE.md
 - chore(rules): add "사양 외 자체 판단 명시" rule to CLAUDE.md
