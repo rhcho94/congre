@@ -4,6 +4,7 @@
 
 ## 2026-05-16
 
+- docs(PROJECT): 디자인 토큰 표 동기화 (--border, --accent-bright 추가, --font-display italic 표기 정정, 폰트 정의 위치 메모 추가)
 - chore(rules): add "단편 단서로 전체 단정 금지" rule to CLAUDE.md
 - chore(rules): add "사양 외 자체 판단 명시" rule to CLAUDE.md
 - docs: 호스트 가이드 STEP 02 클립 길이 항목 추가 + PROJECT.md 사양 A·B·C 동기화

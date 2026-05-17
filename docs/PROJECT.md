@@ -47,10 +47,15 @@ npx firebase emulators:start --only firestore
 | `--surface` | #2a261f | 카드 배경 |
 | `--surface-2` | #34302a | 카드 내부 강조 |
 | `--accent` | #c8892c | 앰버/골드 액센트 |
+| `--accent-bright` | #e8a038 | accent 밝은 버전 (현재 미사용, 향후 hover/glow 영역 후보) |
+| `--border` | #2d2720 | 그리드 구분선·경계선 |
 | `--text` | #ede8df | 본문 텍스트 |
 | `--muted` | #79716a | 보조 텍스트 |
-| `--font-display` | Cormorant Garamond italic | 디스플레이 |
+| `--font-display` | Cormorant Garamond | 디스플레이 (italic 활용) |
 | `--font-body` | DM Sans | 본문 |
+
+> 폰트 토큰은 `src/app/layout.tsx`에서 next/font/google 경유 주입
+> (`--font-display`, `--font-body` 변수명으로 노출).
 
 글로벌 유틸리티: `.rule` (장식 수평선), `.glow-accent`, body::after film grain.
 
