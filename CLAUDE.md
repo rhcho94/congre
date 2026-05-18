@@ -12,7 +12,7 @@
 
 1. CLAUDE.md (이 파일 전체)
 2. AGENTS.md (위 import) — Next.js 버전 특화 규칙
-3. docs/handoff/ 최신 2개 파일 — 직전 + 직직전 세션 인계
+3. docs/handoff/ 최신 2개 파일 — 직전 + 직직전 세션 인계 (단일 핸드오프 misremember·누락 사고 차단용 이중 채널)
 4. docs/DECISIONS.md — 도메인 결정 (사고 진단 시 첫 grep 대상)
 5. docs/known-issues.md — 알려진 이슈 (재발견 방지)
 
