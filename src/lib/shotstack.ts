@@ -129,7 +129,6 @@ export async function createRender(
     asset: { type: "video", src: clip.src },
     start: "auto",
     length: clip.length,
-    trim: 0,
     fit: "cover",
     transition: { in: transitions[i], out: transitions[i] },
   }));
