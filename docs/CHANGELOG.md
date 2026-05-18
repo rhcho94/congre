@@ -2,6 +2,11 @@
 
 > 기능 단위 작업 이력. 최신이 위.
 
+## 2026-05-18
+
+- docs: PROJECT.md / DECISIONS.md / known-issues.md 현 코드 상태와 동기화 (자동 첨부 자료 stale 발견 후 정상화)
+- rules: CLAUDE.md Kickoff 룰 6번 신설 (핸드오프 2개 교차 검증 의무) + 핸드오프 파일 명명 규칙 명시
+
 ## 2026-05-17
 
 - chore(rules): add "운영자 기억 의존 신호 = CC 정찰 병렬 트리거" to CLAUDE.md (2026-05-17 사양 C 검증 사고 사례)

@@ -3,6 +3,44 @@
 > known-issues.md에서 분리된 해결 완료 이력. 사고 재발 진단 시 grep 대상.
 > 새 RESOLVED 항목 발생 시 known-issues.md에서 이 파일로 이동.
 
+## ✅ getUserMedia constraints 처방 (5Mbps 코드) — native capture 전환으로 제거 완료 [RESOLVED 2026-05-18]
+
+- **현황**: 2026-05-15 커밋 6ccd731로 `src/app/upload/[eventId]/page.tsx`에
+  getUserMedia width/height 1080×1920 ideal + MediaRecorder
+  videoBitsPerSecond: 5_000_000 명시.
+- **후속 발견**: MediaRecorder API가 rotation 메타데이터를 박지 못하는 구조적
+  한계로 세로 촬영 영상이 가로로 저장됨 (외부 자료 결정타 4건 확인).
+- **결정**: native capture 전환 사양 확정. 사양 B 실행 시 본 처방 코드
+  (constraints 명시 + videoBitsPerSecond)를 포함한 MediaRecorder 관련 약 200줄
+  전체 제거됨.
+- **5Mbps 처방의 가치**: 본 처방이 실패는 아님. 480p → 2160p / 2Mbps → 5Mbps
+  개선 자체는 가설 A 진단의 정확한 처방. 다만 그 다음 단계로 회전 문제 발견
+  → 처방 무대 자체가 다른 영역으로 이동.
+- **관련 결정**: DECISIONS rendering.md 2026-05-15 native capture 전환 항목.
+- **관련 핸드오프**: 2026-05-15-native-capture-decision.md
+- **종결 일자**: 2026-05-18 / **종결 사유**: 사양 B 실행 시 src/ 전역 MediaRecorder·getUserMedia 0건 확인 (2026-05-18 정찰)
+
+## ✅ 1a784d0 회귀 의심 → 미재현 확인 [RESOLVED 2026-05-18]
+
+- **현황**: 1a784d0 (커밋 6: branch share URL target by invite content presence) 배포
+  직후 일부 이벤트에서 "화면 stuck + 무한 호출" 사고로 보고됨. b98cb2c로 revert.
+  이후 4f05a44로 동일 변경 재배포 + 운영자 단독 회귀 테스트 결과 **미재현**.
+- **실제 진단**:
+  - "무한 호출"은 5초 간격 정상 폴링 (setTimeout(fetchEvent, 5000),
+    setTimeout(fetchClips, 5000))의 오진. 호출 빈도만 보고 무한 루프로 단정함.
+  - "화면 stuck"은 실재 여부 불명. 무한 호출 오진과 묶여 회귀로 분류됐으나
+    재검증 시 Console 깨끗, 화면 정상, 분기 양방향 동작 모두 정상.
+- **학습**:
+  - fetch 반복 보고 시 첫 질문은 호출 빈도가 아니라 **간격**. 5초·30초·1초
+    어느 쪽이냐로 정상 폴링/실제 루프 즉시 갈림.
+  - 사고 보고 두 가지가 동시 발생했을 때 한 원인으로 묶기 전에 각 현상의
+    독립성 먼저 검증.
+  - 검증 안 된 사고 보고는 가설로 표시. revert 결정의 근거가 다른 오진과
+    묶여 있는지 점검.
+- **관련 커밋**: 1a784d0, b98cb2c, 4f05a44
+- **관련 핸드오프**: docs/handoff/2026-05-11-pr9-cont2.md
+- **종결 일자**: 2026-05-18 / **종결 사유**: 항목 본문에 미재현 확인 종결 명시
+
 ## ✅ Android Chrome 14/15 file input 갤러리 직행 사고 [RESOLVED 2026-05-16 / fix: split file input]
 
 - **해결**: idle stage에 두 input 분리. 큰 박스: `<input capture="environment">` (카메라 직접 호출). 보조 링크: `<input>` capture 없음 (갤러리). addpipe Solution 2 패턴.
