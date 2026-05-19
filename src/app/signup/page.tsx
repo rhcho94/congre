@@ -51,6 +51,7 @@ export default function SignupPage() {
       await signUpWithEmail({ email, password, name, phone: phoneClean });
       router.push("/dashboard");
     } catch (err) {
+      console.error("[signup] error:", err);
       const code = (err as { code?: string }).code ?? "";
       setError(getSignupErrorMessage(code));
     } finally {
@@ -105,9 +106,11 @@ export default function SignupPage() {
             )}
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-              <label className="flex flex-col gap-1.5">
+              <label htmlFor="signup-email" className="flex flex-col gap-1.5">
                 <span className="text-xs tracking-widest uppercase text-muted">이메일</span>
                 <input
+                  id="signup-email"
+                  name="email"
                   type="email"
                   placeholder="host@congre.io"
                   value={email}
@@ -118,9 +121,11 @@ export default function SignupPage() {
                 />
               </label>
 
-              <label className="flex flex-col gap-1.5">
+              <label htmlFor="signup-password" className="flex flex-col gap-1.5">
                 <span className="text-xs tracking-widest uppercase text-muted">비밀번호</span>
                 <input
+                  id="signup-password"
+                  name="password"
                   type="password"
                   placeholder="6자 이상"
                   value={password}
@@ -132,9 +137,11 @@ export default function SignupPage() {
                 />
               </label>
 
-              <label className="flex flex-col gap-1.5">
+              <label htmlFor="signup-name" className="flex flex-col gap-1.5">
                 <span className="text-xs tracking-widest uppercase text-muted">이름</span>
                 <input
+                  id="signup-name"
+                  name="name"
                   type="text"
                   placeholder="홍길동"
                   value={name}
@@ -145,9 +152,11 @@ export default function SignupPage() {
                 />
               </label>
 
-              <label className="flex flex-col gap-1.5">
+              <label htmlFor="signup-phone" className="flex flex-col gap-1.5">
                 <span className="text-xs tracking-widest uppercase text-muted">전화번호</span>
                 <input
+                  id="signup-phone"
+                  name="phone"
                   type="tel"
                   placeholder="01012345678"
                   value={phone}
