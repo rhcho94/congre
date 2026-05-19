@@ -4,7 +4,8 @@ service cloud.firestore {
 
     match /events/{eventId} {
       allow read: if false;
-      allow create: if request.auth != null;
+      allow create: if request.auth != null
+                    && exists(/databases/$(database)/documents/users/$(request.auth.uid));
       allow update: if request.auth != null && request.auth.uid == resource.data.hostId;
     }
 
@@ -17,5 +18,10 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    match /users/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null && request.auth.uid == userId;
+      allow update, delete: if false;
+    }
   }
 }
