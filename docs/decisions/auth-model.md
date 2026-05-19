@@ -2,7 +2,22 @@
 
 > 호스트 인증·이벤트-바운드 모델 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
-## 2026-05-19 — 호스트 가입 페이지 + users 컬렉션 채택, 5/9 보류 정정
+## 2026-05-19 v3 — 이메일 인증 차단 흐름 (P3) + Custom Action URL + congre.kr 발신 도메인
+
+- **결정**: 미인증 호스트에 대한 이메일 인증 차단 흐름 3개 레이어 구현.
+  1. Firestore 보안 규칙: events create에 `request.auth.token.email_verified == true` 조건 추가. 콘솔 게시 완료 (2026-05-19 v3).
+  2. 대시보드 UI: 미인증 시 "새 이벤트" 버튼 비활성 + "이메일 인증 후 이용 가능" 라벨 + `EmailVerificationBanner` (재발송 60s 쿨다운 + 인증 완료 확인 버튼).
+  3. `/dashboard/create` 가드: 미인증 접근 시 `/dashboard` 리디렉션.
+- **P3b 추가**: Custom Action URL (`/verify-email`) + `applyActionCode` 처리 페이지. `useRef` 이중 실행 가드 (React Strict Mode 대응).
+- **P3d 추가**: `congre.kr` 이메일 발신 도메인 커스텀 설정. DNS 4개 레코드 (TXT SPF, TXT verification, CNAME DKIM ×2). Firebase Console Templates Action URL: `https://congre-three.vercel.app/verify-email`.
+- **YAGNI 결정**: `actionCodeSettings` 공용화 안 함 (사용처 2곳 — `auth.ts` + `EmailVerificationBanner.tsx`. 3곳 이상 시 격상).
+- **이유**:
+  - Firestore 규칙 단독으론 사용자 피드백 없음 → UI 레이어 병행.
+  - 미인증 호스트 이벤트 생성 차단은 결제 연동 시 신뢰 이메일 보장 전제.
+  - Custom Action URL 없으면 Firebase 기본 도메인 `/action?oobCode=...` 랜딩 → 앱 내 처리 불가.
+- **관련 커밋**: `bada6d0` (P3a), `08be31f` (P3b).
+
+## 2026-05-19 v2 — 호스트 가입 페이지 + users 컬렉션 채택, 5/9 보류 정정
 
 - **결정**: 같은 영역에서 2026-05-09에 두 번 등록된 결정(첫째: 가입/로그인 페이지 분리, 둘째: 이벤트-바운드 모델)과 셋째 보류 결정을 사실상 정정. **계정 모델로 진입 — `/signup` 가입 페이지 + `users/{uid}` 컬렉션 + 이메일 인증 발송**.
 - **결정 배경**:
@@ -14,7 +29,7 @@
   - users 컬렉션: `email` (lowercase), `name`, `phone` (10~11자리 숫자), `createdAt`, `termsAgreedAt`, `privacyAgreedAt`. doc ID = Firebase Auth UID.
   - emailVerified 필드: users 컬렉션에 저장 안 함. 보안 규칙에서 `request.auth.token.email_verified` 직접 활용 가능.
   - 고아 계정 처리: setDoc 실패 시 `createdUser.delete()` rollback.
-  - 가입 직후 동선: `/dashboard` 직행. 이메일 미인증 차단 흐름은 별도 단계(launch-roadmap S2-03 P3).
+  - 가입 직후 동선: `/dashboard` 직행. 이메일 미인증 차단 흐름: **2026-05-19 v3 P3 완료** (아래 v3 결정 참조).
   - 토큰 전파: 가입 직후 `getIdToken(true)` 호출 (외부 자료 표준 edge case 예방).
 - **이유**:
   - 외부 자료 조사 결과 Admin SDK 가입은 invite·도메인 검증 같은 특수 케이스용. 일반 가입은 클라이언트 SDK 직접이 표준.

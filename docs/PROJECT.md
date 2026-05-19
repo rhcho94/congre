@@ -63,6 +63,13 @@ npx firebase emulators:start --only firestore
 - 공통 컴포넌트 `src/components/BrandName.tsx` 사용
 - 변수명·파일명·환경변수·도메인 등 기술 식별자는 소문자 (congre-mvp, congre-three.vercel.app)
 
+## Firebase 커스텀 이메일 발신 도메인
+
+- 발신 도메인: `congre.kr` (Firebase Console → Authentication → Settings → Email Sender Domain)
+- DNS 레코드 (가비아 등록): TXT SPF, TXT verification, CNAME DKIM ×2
+- Firebase Console Templates Action URL: `https://congre-three.vercel.app/verify-email`
+- 설정 완료: 2026-05-19 v3 (P3d)
+
 ## 환경변수 (Vercel)
 
 | 변수 | Production | Preview/Development |
@@ -78,6 +85,8 @@ npx firebase emulators:start --only firestore
 - 주최자 로그인/대시보드 (Firebase Auth, 비밀번호 찾기 포함)
 - **호스트 가입 흐름** (`/signup` 페이지 + users 컬렉션 + 이메일 인증 발송 + rollback. 2026-05-19 v2)
 - **대시보드 사용 가이드 링크** (3곳 nav: dashboard/, dashboard/create/, dashboard/events/[eventId]/. 2026-05-19 v2)
+- **이메일 인증 차단 흐름** (EmailVerificationBanner + 대시보드 이벤트 생성 버튼 비활성 + /dashboard/create 미인증 리디렉션 + Firestore email_verified 규칙. P3a. 2026-05-19 v3)
+- **이메일 인증 Custom Action URL + /verify-email 페이지** (Firebase actionCodeSettings + applyActionCode + Suspense 래퍼. P3b. 2026-05-19 v3)
 - 이벤트 생성 + QR 코드 + 공유 링크 + QR 이미지 저장
 - 참가자 영상 촬영 (카메라 미리보기 → 촬영 → 업로드)
 - S3 업로드 (presigned URL)
@@ -96,8 +105,8 @@ npx firebase emulators:start --only firestore
 - 알림 시스템 (Resend 이메일 + SOLAPI SMS, 채널 어댑터 패턴, notifications 컬렉션 이력 저장)
   - 트리거 연결 6건: 이벤트 생성, 렌더 시작, 렌더 완료, 렌더 지연(10분 초과), 렌더 실패, **참가자 결과**
   - 함수만 구현 1건: 첫 클립 업로드
-- **Firestore 보안 규칙 현 상태 (2026-05-19 v2 콘솔 게시 완료)**:
-  - `events`: read 차단, create는 `request.auth != null` + `users/{auth.uid}` 존재 검증, update는 호스트 본인만
+- **Firestore 보안 규칙 현 상태 (2026-05-19 v3 콘솔 게시 완료)**:
+  - `events`: read 차단, create는 `request.auth != null` + **`email_verified`** + `users/{auth.uid}` 존재 검증, update는 호스트 본인만
   - `clips`: read·create 차단, update·delete는 `request.auth != null` (클라이언트 열림 영역 — clips 정비 보정 큐 등재)
   - `notifications`: read·write 차단 (Admin SDK 전용)
   - `users`: read·create는 본인 doc만 (`request.auth.uid == userId`), update·delete 차단

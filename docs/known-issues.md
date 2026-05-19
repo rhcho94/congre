@@ -122,7 +122,7 @@
 - **현황**: 2026-05-19 v2 P2 작업에서 대시보드 3곳(dashboard, dashboard/create, dashboard/events/[eventId]) nav에 "사용 가이드" 링크 추가. 가입 직후 신규 호스트가 가이드를 발견하는 동선은 운영자 우려 영역에서 출발했으나, 실제 신규 호스트 첫 진입 시 발견·이용 흐름은 필드 테스트에서 관찰 예정.
 - **격상 트리거**: 신규 호스트가 "뭘 해야 할지 모르겠다" 보고 발생 시
 - **처리 후보**: 가입 직후 first-time 안내 모달 / 온보딩 페이지 / 대시보드 빈 상태 placeholder에 가이드 링크 강조 등
-- **관련 영역**: launch-roadmap S2-03 P3 (이메일 인증 차단 흐름) 작업과 연계 가능
+- **관련 영역**: S2-03 P3 이메일 인증 차단 흐름 완료 (2026-05-19 v3). onboarding 개선(first-time 안내 모달 등)은 보정 큐 등재.
 
 ## clips 컬렉션 보안 규칙 정비 필요
 
@@ -133,6 +133,29 @@
 - **격상 트리거**: 클라이언트 SDK가 clips 직접 쓰는 흐름 추가 시점 + 영업 진입 전 보안 점검
 - **관련 영역**: launch-roadmap S4-09 D2 완성본 보존 (서브컬렉션 전환) 작업과 묶음 가능
 - **출처**: 2026-05-19 v2 P1 정찰
+
+## host/page.tsx dead code — dashboard·create 뷰 도달 불가
+
+- **현황**: `/host/page.tsx`는 login·signup·forgotPassword 3뷰를 포함하지만 dashboard·create 뷰는 `/dashboard`, `/dashboard/create`로 이동했고 host 파일 내 해당 분기는 도달 불가. `mockEvents` 같은 테스트 픽스처도 잔류.
+- **위치**: `src/app/host/page.tsx` — view 분기 상태 중 "dashboard", "create" 케이스
+- **격상 트리거**: 코드베이스 정리 또는 /host 리팩터 착수 시. 현재 dead code라 사용자 영향 없음.
+
+## Firebase sendEmailVerification too-many-requests 방어 상태
+
+- **현황**: `auth.ts`의 `sendEmailVerification` 호출이 inner try/catch로 방어됨 (실패해도 가입 계속 진행). 인증 메일 미수신 시점에만 발현 가능. P3a EmailVerificationBanner 재발송으로 복구 경로 확보.
+- **격상 트리거**: 가입 실패 사고 발생 시 본 영역 1순위 가설. Vercel 로그 `[signup] sendEmailVerification failed:` 검색.
+- **위치**: `src/lib/auth.ts` — `sendEmailVerification` inner catch 블록
+
+## Firebase 이메일 발송 일일 한도 (Spark 플랜)
+
+- **현황**: Firebase Auth 이메일 발송 (인증 메일, 비밀번호 재설정) 일일 한도가 Spark 플랜에 존재. 정확한 수치 비공개 (외부 자료 기준 약 100~200/일 추정). 영업 차단도 중 — 졸업식 시즌 대량 가입 시 격상 가능.
+- **격상 트리거**: 발송 실패 사고 (사용자 "인증 메일 안 옴" 다수 신고) 시 → Identity Platform 격상 (Blaze 플랜 + API 활성화) 또는 Firebase 지원팀 한도 증액 요청.
+
+## 루트 congre.kr SPF 미래 통합 영역
+
+- **현황**: P3d에서 Firebase Auth용 SPF를 루트 `congre.kr`에 등록 (`v=spf1 include:_spf.firebasemail.com ~all`). SPF는 도메인당 1개 원칙 (Firebase 공식 명시). Resend는 현재 `send.congre.kr` 서브도메인 SPF 별도 사용 중이라 충돌 없음.
+- **잠재 리스크**: 향후 다른 메일 서비스가 루트 `congre.kr` SPF 통합을 요구할 경우 Firebase SPF와 병합 필요. `v=spf1 include:A include:B ~all` 방식으로 통합 가능하나 작업 필요.
+- **격상 트리거**: 새 메일 서비스 도입 시 SPF 충돌 경고 발생 시.
 
 ---
 

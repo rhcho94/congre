@@ -4,6 +4,9 @@
 
 ## 2026-05-19
 
+- feat(auth): 이메일 인증 차단 흐름 (P3a) — Firestore email_verified 조건 추가 + EmailVerificationBanner + 대시보드 이벤트 생성 버튼 비활성 + /dashboard/create 미인증 리디렉션 (커밋 bada6d0)
+- feat(auth): 이메일 인증 Custom Action URL + /verify-email 페이지 (P3b) — Firebase actionCodeSettings + applyActionCode + Suspense 래퍼 + useRef 이중 실행 가드 (커밋 08be31f)
+- chore(firebase): congre.kr 이메일 발신 도메인 커스텀 설정 완료 (P3d) — DNS TXT SPF·TXT verification·CNAME DKIM ×2 등록 + Firebase Console Templates Action URL 설정
 - iOS Safari capture 480p 사고 처리 (옵션 B) — iPhone 검출 시 즉석 촬영 버튼 숨김, 갤러리 전용 흐름 + iOS 정책 안내 문구
 
 ## 2026-05-18 v1
