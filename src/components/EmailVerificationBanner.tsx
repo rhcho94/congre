@@ -34,7 +34,11 @@ export function EmailVerificationBanner() {
     setResending(true);
     setMessage(null);
     try {
-      await sendEmailVerification(user);
+      const actionCodeSettings = {
+        url: `${process.env.NEXT_PUBLIC_APP_URL}/verify-email`,
+        handleCodeInApp: false,
+      };
+      await sendEmailVerification(user, actionCodeSettings);
       setMessage("재발송했습니다.");
       setResendCooldown(60);
     } catch (err) {

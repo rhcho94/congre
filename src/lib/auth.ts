@@ -30,8 +30,12 @@ export async function signUpWithEmail(params: {
     const cred = await createUserWithEmailAndPassword(auth, params.email, params.password);
     createdUser = cred.user;
 
+    const actionCodeSettings = {
+      url: `${process.env.NEXT_PUBLIC_APP_URL}/verify-email`,
+      handleCodeInApp: false,
+    };
     try {
-      await sendEmailVerification(cred.user);
+      await sendEmailVerification(cred.user, actionCodeSettings);
     } catch (e) {
       console.error("[signup] sendEmailVerification failed:", e);
     }
