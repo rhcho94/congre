@@ -19,6 +19,8 @@ npx firebase emulators:start --only firestore
 에뮬레이터는 prod 데이터에 영향 없음. 종료 후 데이터 초기화됨.
 사전 조건: Java 설치 필요 (https://java.com/download). 미설치 시 "Could not spawn `java`" 오류.
 
+**중요**: 에뮬레이터 테스트 통과는 실 배포 아님. 코드 변경 + 커밋 + push만으론 Firestore에 미반영. 실 배포는 Firebase 콘솔 Rules 탭 게시 또는 `firebase deploy --only firestore:rules`. 본 룰 누락 시 클라이언트 동작이 옛 규칙으로 거부됨 (CLAUDE.md 절대 규칙 참조).
+
 ## 배포 / 저장소
 
 - Vercel: https://congre-three.vercel.app
@@ -43,19 +45,14 @@ npx firebase emulators:start --only firestore
 
 | 토큰 | 값 | 용도 |
 |---|---|---|
-| `--bg` | #1f1c18 | 페이지 배경 |
-| `--surface` | #2a261f | 카드 배경 |
-| `--surface-2` | #34302a | 카드 내부 강조 |
+| `--bg` | #0c0b09 | 페이지 배경 |
+| `--surface` | #151310 | 카드 배경 |
+| `--surface-2` | #1e1a13 | 카드 내부 강조 |
 | `--accent` | #c8892c | 앰버/골드 액센트 |
-| `--accent-bright` | #e8a038 | accent 밝은 버전 (현재 미사용, 향후 hover/glow 영역 후보) |
-| `--border` | #2d2720 | 그리드 구분선·경계선 |
 | `--text` | #ede8df | 본문 텍스트 |
 | `--muted` | #79716a | 보조 텍스트 |
-| `--font-display` | Cormorant Garamond | 디스플레이 (italic 활용) |
+| `--font-display` | Cormorant Garamond italic | 디스플레이 |
 | `--font-body` | DM Sans | 본문 |
-
-> 폰트 토큰은 `src/app/layout.tsx`에서 next/font/google 경유 주입
-> (`--font-display`, `--font-body` 변수명으로 노출).
 
 글로벌 유틸리티: `.rule` (장식 수평선), `.glow-accent`, body::after film grain.
 
@@ -76,37 +73,21 @@ npx firebase emulators:start --only firestore
 
 (Firebase, AWS 관련 환경변수는 Vercel 대시보드 참조)
 
-## 외부 서비스 인벤토리
-
-> 정찰 시점: 2026-05-14
-
-| # | 서비스 | 플랜 | 핵심 한도/잔액 | 결제 형태 |
-|---|--------|------|--------------|----------|
-| 1 | Vercel | Pro | 1TB bandwidth, 1M 함수 호출/월 | 월 $20 자동 |
-| 2 | Firebase | Blaze | Spark 한도(read 50K/일) 내 무료, 초과 종량 | 종량제 (예산 알림 $5) |
-| 3 | Shotstack | Pro | 월 200 credits, 매월 1일 갱신 추정 | 월 $39 자동 |
-| 4 | SOLAPI | 충전식 | 일 한도 50건 (신규 가입 제한) | 충전 시 |
-| 5 | Resend | Free | 월 3,000 / 일 100 | — |
-| 6 | AWS | Free Trial | $100 크레딧 + 169일 (~2026-10-28) | 종료 시 카드 청구 |
-| 7 | GitHub Actions | Public 무료 | 무제한 | — |
-| 8 | 카카오 디벨로퍼스 | 무료 API | 월 300만 쿼터 | — |
-| 9 | 도메인 (가비아) | 1년 등록 | 만료일 운영자 확인 | 갱신 시 결제 |
-
-- AWS는 2026-10-28 무료 트라이얼 종료. 만료 전 결제 카드 자동 청구 전환 여부 / 다른 인프라 이전 검토 필요 (격상 트리거: 만료 30일 전).
-
 ## 완료된 기능
 
 - 주최자 로그인/대시보드 (Firebase Auth, 비밀번호 찾기 포함)
+- **호스트 가입 흐름** (`/signup` 페이지 + users 컬렉션 + 이메일 인증 발송 + rollback. 2026-05-19 v2)
+- **대시보드 사용 가이드 링크** (3곳 nav: dashboard/, dashboard/create/, dashboard/events/[eventId]/. 2026-05-19 v2)
 - 이벤트 생성 + QR 코드 + 공유 링크 + QR 이미지 저장
-- 이벤트 플랜 선택 (무료 10클립 / 소형 50 / 중형 200 / 대형 무제한)
-- 참가자 영상 업로드 (이름·전화번호 입력 → OS 네이티브 카메라 → 미리보기 → 업로드)
+- 참가자 영상 촬영 (카메라 미리보기 → 촬영 → 업로드)
 - S3 업로드 (presigned URL)
+- 카메라 전/후면 전환 (standby에서만)
 - 마감 기능 (세션 토큰 만료)
 - Shotstack 환경 분기 (stage/production 자동)
 - 한글 자막
 - SNS 공유 버튼 (카카오·링크 복사)
 - Congre 배지 (BrandName 컴포넌트)
-- iOS Safari 호환성
+- iOS Safari 호환성 (capture 480p 사고 옵션 B 처리, 2026-05-19 v1)
 - 랜딩 페이지 (Hero with 영상 + How / Why / Use cases / CTA / Footer)
 - 마감/렌더링/완료 상태에서 QR/링크 박스 자동 숨김
 - 이벤트 페이지 overflow 정리
@@ -115,19 +96,11 @@ npx firebase emulators:start --only firestore
 - 알림 시스템 (Resend 이메일 + SOLAPI SMS, 채널 어댑터 패턴, notifications 컬렉션 이력 저장)
   - 트리거 연결 6건: 이벤트 생성, 렌더 시작, 렌더 완료, 렌더 지연(10분 초과), 렌더 실패, **참가자 결과**
   - 함수만 구현 1건: 첫 클립 업로드
-- Firestore 보안: events/clips Admin SDK 전용 (Client SDK read 잠금, Phase B-3 완료 2026-05-06)
+- **Firestore 보안 규칙 현 상태 (2026-05-19 v2 콘솔 게시 완료)**:
+  - `events`: read 차단, create는 `request.auth != null` + `users/{auth.uid}` 존재 검증, update는 호스트 본인만
+  - `clips`: read·create 차단, update·delete는 `request.auth != null` (클라이언트 열림 영역 — clips 정비 보정 큐 등재)
+  - `notifications`: read·write 차단 (Admin SDK 전용)
+  - `users`: read·create는 본인 doc만 (`request.auth.uid == userId`), update·delete 차단
 - 한글 인트로/아웃트로 (이벤트 생성 폼 입력 → Firestore 저장 → Shotstack rich-text 클립 삽입, NotoSansKR TTF 호스팅)
 - 자동 삭제 cron (`/api/cron/cleanup`, KST 03:00 daily) — 클립 24h, 완성본 7d. 멱등성 마커: clipsDeletedAt, videoDeletedAt
-- 렌더링 polling cron (`/api/cron/check-rendering`) — Shotstack 렌더 완료 확인 후 videoUrl 저장
-- 렌더 지연·환불 cron (`/api/cron/check-render-deadlines`) — 10분 초과 렌더 감지 후 알림 발송
 - 이용약관 / 개인정보처리방침 페이지 (`/terms`, `/privacy`) — v0.1 시행. 푸터 링크. 변경 이력은 `docs/legal/CHANGELOG.md`.
-- 가이드 페이지 3종 (`/guide`, `/guide/guest`, `/guide/host`)
-- BGM (Shotstack timeline.soundtrack, fadeInFadeOut volume 0.1, public/audio/bgm.mp3 호스팅)
-- 이벤트별 영상 최대 길이 설정 (maxClipSeconds: 5/10/15/20/25/30초, default 15, 이벤트 생성 시 호스트 선택)
-- 참가자 업로드 native capture 전환 (OS 카메라 호출, 회전 메타 정상, duration 측정 후 Firestore 저장)
-- Shotstack 클립별 length 동적 계산 (Math.min(duration, maxClipSeconds), trim: 0 명시). 짧은 영상 freeze 회피.
-- 안드로이드 Chrome 14/15 갤러리 직행 사고 정정 (카메라/갤러리 input 분리, 2026-05-16)
-- iOS Safari capture 480p 사고 분기 처리 (iPhone 검출 시 갤러리 전용 흐름, 안내 문구 노출, 2026-05-19)
-- 업로드 idle 화면 촬영 시간 안내 가독성 강화 (text-xs + opacity-60 → text-sm, 2026-05-16)
-- 렌더 상태 조회 API (`/api/render/status`) — GET, renderId 파라미터, Shotstack 상태 polling
-- 렌더 완료 처리 API (`/api/render/complete`) — POST, 잠김 (401), 향후 Shotstack webhook 수신용으로 보존

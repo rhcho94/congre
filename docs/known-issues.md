@@ -2,15 +2,6 @@
 
 > 진행 중·보류·메모 항목만 둔다. 해결 완료 항목은 known-issues-resolved.md로 이동.
 
-## iPad — iOS Safari capture 480p 사고 미처리 (deferred)
-
-- **현황**: `isIOS()`는 `/iPhone|iPod/` UA 패턴만 감지. iPad는 iOS 13+부터 데스크톱 UA
-  ("Macintosh; Intel Mac OS X")를 반환하므로 감지 불가.
-- **영향**: iPad Safari에서 `capture="environment"` 경로를 선택하면 동일한 480p 화질 사고 재현 가능성 있음.
-- **보류 근거**: 1순위 시장이 iPhone이므로 옵션 B(iPhone 전용)로 우선 처리.
-  iPad 추가 처리는 별도 트랙으로 격상 필요 시 재검토.
-- **격상 트리거**: iPad 사용자 보고 발생 시.
-
 ## Firestore composite index — eventId + uploaderPhone + uploaderName 3조건 쿼리
 
 - **현황**: `/api/clips/check` GET 및 `POST /api/clips` 중복 체크에서 `eventId + uploaderPhone + uploaderName` 3조건 composite where 쿼리 사용. Firestore는 이 복합 인덱스를 자동 생성하지 않음.
@@ -22,6 +13,12 @@
 
 - **CRON_SECRET**: `/api/cron/check-render-deadlines` Bearer 인증 토큰. 코드 준비 완료, Vercel + GitHub Secrets 등록 필요.
 - **NEXT_PUBLIC_APP_URL**: 크론에서 dashboardUrl 구성 시 사용 (`https://congre-three.vercel.app`). Vercel 등록 필요.
+
+## GitHub Actions cron throttling — `* * * * *` 매분 스케줄 실질적 미동작
+
+- **현상**: `* * * * *` 스케줄 등록 후 약 4시간에 1회만 자동 실행됨 (2026-05-05 관측).
+- **원인**: GitHub Actions free tier에서 고빈도 cron을 throttling. 공식 보장 없음.
+- **조치**: `*/5 * * * *` (5분 간격)으로 변경 후 재관측 예정. 여전히 부족하면 외부 cron 서비스 또는 Vercel Cron Jobs로 이전 검토.
 
 ## 네이버 메일 도달성 — 1차 점검 포인트 (메모)
 
@@ -53,6 +50,7 @@
 - **위치**: `src/lib/shotstack.ts` — `if (!res.ok)` 블록
 - **이유**: Vercel 서버 로그가 유일한 원격 디버깅 채널. throw 전 전체 응답 본문 출력이 진단에 결정적이었음 (width/height 오류 발견).
 - **운영 메모**: 프로덕션에서 Shotstack API 스키마 변경/오류 발생 시 Vercel 로그 → Functions 탭 → "non-OK response" 검색으로 바로 확인 가능.
+- **2026-05-19 v2 격상**: 본 룰을 CLAUDE.md 절대 규칙으로 격상. 모든 catch 블록에 `console.error("[context] failed:", err)` 의무. 본 세션 가입 흐름 진단에서 catch console.error 누락이 사고 #3 영역.
 
 ## 재렌더 UX 갭 — done 상태 버튼 미노출, 클립 토글 모달 없음
 
@@ -82,14 +80,6 @@
 - **격상 트리거**: 호스트가 클립 제외 후 "잘못 뺀 것 같다" 사고 발생 시. 양방향 토글이라 복구 가능하나 발견까지 시간 소요.
 - **처리 시점**: 격상 트리거 대기. 필드 테스트 첫 회차에서 흐름 직접 관찰.
 
-## GitHub 저장소 Public 유지 — 보안·비즈니스 정보 노출 (실전 테스트 후 결정)
-
-- **현황**: `rhcho94/congre` 저장소 Public 상태. 코드 + docs(DECISIONS·PROJECT·known-issues·CHANGELOG 등) 전체 공개. .env 노출은 없음 (2026-05-14 검색 확인). GitHub Secrets + Vercel 환경변수로 시크릿 분리 완료.
-- **위험**: 비즈니스 로직(API 엔드포인트·Firestore 구조·인증 흐름) + 비즈니스 정보(시장 정의·BM·기술 결정·알려진 약점) 노출. 1단계 환경변수 누출 위험은 차단됐으나 2·3단계는 노출 중.
-- **처리 보류**: 실전 테스트 우선. 테스트 도중 코드 변경 최소화 원칙으로 Private 전환은 테스트 끝난 후 처리.
-- **Private 전환 시 부작용**: GitHub Actions cron 5분 간격 운영 시 월 8,640분 사용 추정. Private free 한도 월 2,000분 초과. 격상 옵션: (a) GitHub Pro $4/월, (b) Vercel Cron Jobs 이전(이미 Vercel Pro 가입), (c) cron 간격 늘리기.
-- **권장**: Vercel Cron Jobs 이전 후 Private 전환. 코드 변경 필요(workflow → vercel.json + /api/cron/* 엔드포인트 검증).
-
 ## 영상 호스팅 CDN 이전 — 비용 검토 보류 (메모)
 
 - **현황**: 영상 호스팅이 Shotstack CDN (cdn.shotstack.io) 경유. bandwidth 비용은 Shotstack 마진 포함 추정.
@@ -102,3 +92,66 @@
 - **격상 트리거**: Shotstack fair use 한도 도달 / 100명+ 규모 시장 진입 / 첫 회차 후 사용량 데이터 재평가.
 - **미완 정찰 영역**: R2 한국 PoP 위치, R2 한국 결제·세금 처리, Shotstack 자체 호스팅 옵트아웃 정확한 사양.
 - **관련 정찰**: 2026-05-09 채팅 클로드 세션. ROADMAP 보류 중 항목 참조.
+
+## 호스트 가이드 PDF — iOS 분기 갱신 필요
+
+- **현황**: `congre-host-guide.pdf` 8페이지 작성 완료 상태. 2026-05-19 v1에서 처리된 iOS Safari capture 480p 사고 처리(옵션 B)가 가이드 본문에 반영 안 됨.
+- **갱신 영역**:
+  - STEP 03 또는 STEP 04 영역에 "참가자 iPhone 사용 시 갤러리 영상 업로드 흐름" 안내 추가
+  - FAQ에 "iPhone 사용자가 영상 못 올린다" 영역 추가
+- **격상 트리거**: 영업 진입 시점 + 첫 학교 시장 호스트 인터뷰 후 발견 이슈
+- **관련 영역**: 게스트 가이드 PDF + 합본 PDF 재합본 작업 묶음
+
+## 게스트 가이드 PDF — iOS 분기 갱신 필요
+
+- **현황**: `congreguestguide.pdf` 7페이지 (추정) 작성 완료 상태. 2026-05-19 v1 iOS Safari 480p 사고 처리 전 버전.
+- **갱신 영역**:
+  - iPhone 사용자 흐름 분기 추가 ("지금 촬영하기" 안 보임, "갤러리에서 선택" 우선 안내)
+  - iOS 정책 안내 본문 ("iOS 정책상 즉석 촬영 화질 제한")
+- **격상 트리거**: 동일 (영업 진입 시점)
+- **관련 영역**: 호스트 가이드 PDF + 합본 PDF 재합본 작업 묶음
+
+## 합본 PDF (15p) — 호스트 가이드 + 게스트 가이드 단순 합본 재작성
+
+- **현황**: 호스트 가이드 8p + 게스트 가이드 7p 단순 합본 = 15p. v1 v2 잔여 작업.
+- **선행 조건**: 위 호스트 가이드 + 게스트 가이드 iOS 분기 갱신 완료
+- **격상 트리거**: 영업 진입 시점
+
+## 신규 호스트 가입 직후 대시보드 가이드 동선 검증
+
+- **현황**: 2026-05-19 v2 P2 작업에서 대시보드 3곳(dashboard, dashboard/create, dashboard/events/[eventId]) nav에 "사용 가이드" 링크 추가. 가입 직후 신규 호스트가 가이드를 발견하는 동선은 운영자 우려 영역에서 출발했으나, 실제 신규 호스트 첫 진입 시 발견·이용 흐름은 필드 테스트에서 관찰 예정.
+- **격상 트리거**: 신규 호스트가 "뭘 해야 할지 모르겠다" 보고 발생 시
+- **처리 후보**: 가입 직후 first-time 안내 모달 / 온보딩 페이지 / 대시보드 빈 상태 placeholder에 가이드 링크 강조 등
+- **관련 영역**: launch-roadmap S2-03 P3 (이메일 인증 차단 흐름) 작업과 연계 가능
+
+## clips 컬렉션 보안 규칙 정비 필요
+
+- **현황**: `clips` 컬렉션 보안 규칙이 `allow update, delete: if request.auth != null`. 인증된 호스트면 다른 호스트 클립도 update·delete 가능. 현재 클라이언트가 직접 Firestore에 쓰지 않고 Admin SDK 경유라 실질 위험 낮음.
+- **개선 영역**:
+  - `allow update, delete: if request.auth != null && exists(/databases/$(database)/documents/events/$(resource.data.eventId))` 같은 조건 추가 → 이벤트 호스트 검증
+  - 또는 events 보안 규칙처럼 hostId 매칭 추가
+- **격상 트리거**: 클라이언트 SDK가 clips 직접 쓰는 흐름 추가 시점 + 영업 진입 전 보안 점검
+- **관련 영역**: launch-roadmap S4-09 D2 완성본 보존 (서브컬렉션 전환) 작업과 묶음 가능
+- **출처**: 2026-05-19 v2 P1 정찰
+
+---
+
+## 1a784d0 회귀 의심 → 미재현 확인 (2026-05-11)
+
+- **현황**: 1a784d0 (커밋 6: branch share URL target by invite content presence) 배포
+  직후 일부 이벤트에서 "화면 stuck + 무한 호출" 사고로 보고됨. b98cb2c로 revert.
+  이후 4f05a44로 동일 변경 재배포 + 운영자 단독 회귀 테스트 결과 **미재현**.
+- **실제 진단**:
+  - "무한 호출"은 5초 간격 정상 폴링 (setTimeout(fetchEvent, 5000),
+    setTimeout(fetchClips, 5000))의 오진. 호출 빈도만 보고 무한 루프로 단정함.
+  - "화면 stuck"은 실재 여부 불명. 무한 호출 오진과 묶여 회귀로 분류됐으나
+    재검증 시 Console 깨끗, 화면 정상, 분기 양방향 동작 모두 정상.
+- **학습**:
+  - fetch 반복 보고 시 첫 질문은 호출 빈도가 아니라 **간격**. 5초·30초·1초
+    어느 쪽이냐로 정상 폴링/실제 루프 즉시 갈림.
+  - 사고 보고 두 가지가 동시 발생했을 때 한 원인으로 묶기 전에 각 현상의
+    독립성 먼저 검증.
+  - 검증 안 된 사고 보고는 가설로 표시. revert 결정의 근거가 다른 오진과
+    묶여 있는지 점검.
+- **관련 커밋**: 1a784d0, b98cb2c, 4f05a44
+- **관련 핸드오프**: docs/handoff/2026-05-11-pr9-cont2.md
