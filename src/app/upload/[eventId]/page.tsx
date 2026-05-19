@@ -6,6 +6,7 @@ import { BrandName } from "@/components/BrandName";
 import { useParams, useSearchParams } from "next/navigation";
 import { checkS3, getPresignedUrl, uploadToS3 } from "@/lib/s3";
 import CongreBadge from "@/components/CongreBadge";
+import { isIOS } from "@/lib/device";
 
 type Stage = "verifying" | "invalid" | "uploader" | "idle" | "preview" | "uploading" | "done" | "error";
 
@@ -45,6 +46,7 @@ function UploadInner() {
   const [uploaderError, setUploaderError] = useState("");
   const [isReturning, setIsReturning] = useState(false);
   const [s3Ready, setS3Ready] = useState<boolean | null>(null);
+  const [iosDevice, setIosDevice] = useState(false);
 
   const previewRef = useRef<HTMLVideoElement>(null);
   const blobRef = useRef<Blob | null>(null);
@@ -105,6 +107,8 @@ function UploadInner() {
       if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
     };
   }, []);
+
+  useEffect(() => { setIosDevice(isIOS()); }, []);
 
   // stage가 "preview"로 바뀐 뒤 video 엘리먼트가 마운트되면 blob URL을 연결
   useEffect(() => {
@@ -412,48 +416,92 @@ function UploadInner() {
               소중한 순간을 영상으로 남겨주세요 📹
             </p>
 
-            <label
-              className="group relative w-full bg-surface hover:bg-[var(--surface-2)] border-2 border-border hover:border-accent transition-all duration-300 flex flex-col items-center justify-center gap-5 cursor-pointer"
-              style={{ aspectRatio: "9 / 16", maxHeight: "58vh" }}
-            >
-              <input
-                type="file"
-                accept="video/*"
-                capture="environment"
-                className="sr-only"
-                onChange={handleFileSelected}
-              />
-              {/* 모서리 프레임 */}
-              <span className="absolute top-4 left-4 w-6 h-6 border-t-2 border-l-2 border-muted group-hover:border-accent transition-colors duration-300" />
-              <span className="absolute top-4 right-4 w-6 h-6 border-t-2 border-r-2 border-muted group-hover:border-accent transition-colors duration-300" />
-              <span className="absolute bottom-4 left-4 w-6 h-6 border-b-2 border-l-2 border-muted group-hover:border-accent transition-colors duration-300" />
-              <span className="absolute bottom-4 right-4 w-6 h-6 border-b-2 border-r-2 border-muted group-hover:border-accent transition-colors duration-300" />
-
-              {/* 카메라 아이콘 */}
-              <div className="flex flex-col items-center gap-3">
-                <div className="w-20 h-20 rounded-full border-2 border-muted group-hover:border-accent flex items-center justify-center transition-colors duration-300">
-                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"
-                    className="text-muted group-hover:text-accent transition-colors duration-300">
-                    <path d="M23 7l-7 5 7 5V7z" />
-                    <rect x="1" y="5" width="15" height="14" rx="2" />
-                  </svg>
+            {iosDevice ? (
+              <>
+                {/* iOS 안내 박스 */}
+                <div className="w-full border border-border bg-surface p-4 flex flex-col gap-2">
+                  <p className="text-xs text-accent font-medium tracking-wide">iPhone 사용 중이시군요</p>
+                  <p className="text-xs text-muted leading-relaxed">
+                    iOS 정책상 앱 내 즉석 촬영은 화질이 낮습니다.<br />
+                    미리 카메라 앱으로 영상을 찍어두신 뒤 아래 버튼을 눌러주세요.
+                  </p>
                 </div>
-                <p className="text-base tracking-widest uppercase font-medium text-muted group-hover:text-accent transition-colors duration-300">
-                  지금 촬영하기
-                </p>
-                <p className="text-sm text-muted">최대 {maxClipSeconds}초 · 탭하여 시작</p>
-              </div>
-            </label>
 
-            <label className="text-xs text-muted hover:text-accent transition-colors duration-200 tracking-widest uppercase cursor-pointer">
-              <input
-                type="file"
-                accept="video/*"
-                className="sr-only"
-                onChange={handleFileSelected}
-              />
-              갤러리에서 선택
-            </label>
+                {/* 갤러리 선택 — 큰 박스로 격상 */}
+                <label
+                  className="group relative w-full bg-surface hover:bg-[var(--surface-2)] border-2 border-border hover:border-accent transition-all duration-300 flex flex-col items-center justify-center gap-5 cursor-pointer"
+                  style={{ aspectRatio: "9 / 16", maxHeight: "58vh" }}
+                >
+                  <input
+                    type="file"
+                    accept="video/*"
+                    className="sr-only"
+                    onChange={handleFileSelected}
+                  />
+                  <span className="absolute top-4 left-4 w-6 h-6 border-t-2 border-l-2 border-muted group-hover:border-accent transition-colors duration-300" />
+                  <span className="absolute top-4 right-4 w-6 h-6 border-t-2 border-r-2 border-muted group-hover:border-accent transition-colors duration-300" />
+                  <span className="absolute bottom-4 left-4 w-6 h-6 border-b-2 border-l-2 border-muted group-hover:border-accent transition-colors duration-300" />
+                  <span className="absolute bottom-4 right-4 w-6 h-6 border-b-2 border-r-2 border-muted group-hover:border-accent transition-colors duration-300" />
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="w-20 h-20 rounded-full border-2 border-muted group-hover:border-accent flex items-center justify-center transition-colors duration-300">
+                      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"
+                        className="text-muted group-hover:text-accent transition-colors duration-300">
+                        <rect x="3" y="3" width="18" height="18" rx="2" />
+                        <circle cx="8.5" cy="8.5" r="1.5" />
+                        <polyline points="21 15 16 10 5 21" />
+                      </svg>
+                    </div>
+                    <p className="text-base tracking-widest uppercase font-medium text-muted group-hover:text-accent transition-colors duration-300">
+                      갤러리에서 선택
+                    </p>
+                    <p className="text-sm text-muted">최대 {maxClipSeconds}초</p>
+                  </div>
+                </label>
+              </>
+            ) : (
+              <>
+                {/* 카메라 촬영 — 큰 박스 */}
+                <label
+                  className="group relative w-full bg-surface hover:bg-[var(--surface-2)] border-2 border-border hover:border-accent transition-all duration-300 flex flex-col items-center justify-center gap-5 cursor-pointer"
+                  style={{ aspectRatio: "9 / 16", maxHeight: "58vh" }}
+                >
+                  <input
+                    type="file"
+                    accept="video/*"
+                    capture="environment"
+                    className="sr-only"
+                    onChange={handleFileSelected}
+                  />
+                  <span className="absolute top-4 left-4 w-6 h-6 border-t-2 border-l-2 border-muted group-hover:border-accent transition-colors duration-300" />
+                  <span className="absolute top-4 right-4 w-6 h-6 border-t-2 border-r-2 border-muted group-hover:border-accent transition-colors duration-300" />
+                  <span className="absolute bottom-4 left-4 w-6 h-6 border-b-2 border-l-2 border-muted group-hover:border-accent transition-colors duration-300" />
+                  <span className="absolute bottom-4 right-4 w-6 h-6 border-b-2 border-r-2 border-muted group-hover:border-accent transition-colors duration-300" />
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="w-20 h-20 rounded-full border-2 border-muted group-hover:border-accent flex items-center justify-center transition-colors duration-300">
+                      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"
+                        className="text-muted group-hover:text-accent transition-colors duration-300">
+                        <path d="M23 7l-7 5 7 5V7z" />
+                        <rect x="1" y="5" width="15" height="14" rx="2" />
+                      </svg>
+                    </div>
+                    <p className="text-base tracking-widest uppercase font-medium text-muted group-hover:text-accent transition-colors duration-300">
+                      지금 촬영하기
+                    </p>
+                    <p className="text-sm text-muted">최대 {maxClipSeconds}초 · 탭하여 시작</p>
+                  </div>
+                </label>
+
+                <label className="text-xs text-muted hover:text-accent transition-colors duration-200 tracking-widest uppercase cursor-pointer">
+                  <input
+                    type="file"
+                    accept="video/*"
+                    className="sr-only"
+                    onChange={handleFileSelected}
+                  />
+                  갤러리에서 선택
+                </label>
+              </>
+            )}
 
             <p className="text-xs text-center text-muted leading-relaxed opacity-70">
               AI가 모든 순간을 모아 하나의 영상으로 편집해드려요.

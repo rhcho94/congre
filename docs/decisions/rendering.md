@@ -2,6 +2,18 @@
 
 > 영상 편집·Shotstack·클립·재렌더 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-05-19 — iOS Safari capture 480p 사고 — 옵션 B (iPhone 검출 → 갤러리 전용)
+
+- **결정**: iPhone UA 검출 시 즉석 촬영 버튼을 DOM에서 제거하고 갤러리 전용 흐름으로 전환.
+  iOS 안내 박스("iOS 정책상 앱 내 즉석 촬영은 화질이 낮습니다. 미리 카메라 앱으로 찍어두세요")를
+  갤러리 큰 박스 위에 표시. `src/lib/device.ts` `isIOS()` + SSR-safe useEffect 패턴 도입.
+- **근거**: Apple이 `capture="environment"` 경로를 480×360 Baseline H.264 ~0.7 Mbps로 하드코딩
+  (WebKit Bug #238366, 미해결). 갤러리 선택 경로는 1920×1080 High 15.5 Mbps 원본 전달 확인.
+  옵션 A(accept 트릭)·C(MediaRecorder)·D(네이티브 앱)보다 구현 비용이 가장 낮고 화질 보장 확실.
+- **영향**: iPhone 사용자는 즉석 촬영 불가 → 미리 촬영 후 갤러리 업로드 안내.
+  iPad는 iOS 13+ 데스크톱 UA 스푸핑으로 감지 불가 → known-issues 등재 (deferred).
+  Android / 데스크톱은 기존 카메라 큰 박스 + 갤러리 보조 링크 유지.
+
 ## 2026-05-16 — Android Chrome 14/15 file input 사고 — 카메라/갤러리 두 input 분리
 
 - **결정**: idle stage에 큰 박스(`capture="environment"`, "지금 촬영하기")와

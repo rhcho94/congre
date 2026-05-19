@@ -2,6 +2,15 @@
 
 > 진행 중·보류·메모 항목만 둔다. 해결 완료 항목은 known-issues-resolved.md로 이동.
 
+## iPad — iOS Safari capture 480p 사고 미처리 (deferred)
+
+- **현황**: `isIOS()`는 `/iPhone|iPod/` UA 패턴만 감지. iPad는 iOS 13+부터 데스크톱 UA
+  ("Macintosh; Intel Mac OS X")를 반환하므로 감지 불가.
+- **영향**: iPad Safari에서 `capture="environment"` 경로를 선택하면 동일한 480p 화질 사고 재현 가능성 있음.
+- **보류 근거**: 1순위 시장이 iPhone이므로 옵션 B(iPhone 전용)로 우선 처리.
+  iPad 추가 처리는 별도 트랙으로 격상 필요 시 재검토.
+- **격상 트리거**: iPad 사용자 보고 발생 시.
+
 ## Firestore composite index — eventId + uploaderPhone + uploaderName 3조건 쿼리
 
 - **현황**: `/api/clips/check` GET 및 `POST /api/clips` 중복 체크에서 `eventId + uploaderPhone + uploaderName` 3조건 composite where 쿼리 사용. Firestore는 이 복합 인덱스를 자동 생성하지 않음.

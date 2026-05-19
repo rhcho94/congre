@@ -2,6 +2,10 @@
 
 > 기능 단위 작업 이력. 최신이 위.
 
+## 2026-05-19
+
+- iOS Safari capture 480p 사고 처리 (옵션 B) — iPhone 검출 시 즉석 촬영 버튼 숨김, 갤러리 전용 흐름 + iOS 정책 안내 문구
+
 ## 2026-05-18 v1
 
 - docs: PROJECT.md / DECISIONS.md / known-issues.md 현 코드 상태와 동기화 (자동 첨부 자료 stale 발견 후 정상화)

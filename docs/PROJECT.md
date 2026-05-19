@@ -127,6 +127,7 @@ npx firebase emulators:start --only firestore
 - 참가자 업로드 native capture 전환 (OS 카메라 호출, 회전 메타 정상, duration 측정 후 Firestore 저장)
 - Shotstack 클립별 length 동적 계산 (Math.min(duration, maxClipSeconds), trim: 0 명시). 짧은 영상 freeze 회피.
 - 안드로이드 Chrome 14/15 갤러리 직행 사고 정정 (카메라/갤러리 input 분리, 2026-05-16)
+- iOS Safari capture 480p 사고 분기 처리 (iPhone 검출 시 갤러리 전용 흐름, 안내 문구 노출, 2026-05-19)
 - 업로드 idle 화면 촬영 시간 안내 가독성 강화 (text-xs + opacity-60 → text-sm, 2026-05-16)
 - 렌더 상태 조회 API (`/api/render/status`) — GET, renderId 파라미터, Shotstack 상태 polling
 - 렌더 완료 처리 API (`/api/render/complete`) — POST, 잠김 (401), 향후 Shotstack webhook 수신용으로 보존
