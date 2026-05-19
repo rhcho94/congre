@@ -2,17 +2,52 @@
 
 > 영상 편집·Shotstack·클립·재렌더 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
-## 2026-05-19 — iOS Safari capture 480p 사고 — 옵션 B (iPhone 검출 → 갤러리 전용)
+## 2026-05-19 — iOS Safari capture 480p 사고 처리 정책 (옵션 B)
 
-- **결정**: iPhone UA 검출 시 즉석 촬영 버튼을 DOM에서 제거하고 갤러리 전용 흐름으로 전환.
-  iOS 안내 박스("iOS 정책상 iPhone 즉석 촬영은 화질이 낮습니다. 미리 카메라 앱으로 찍어두세요")를
-  갤러리 큰 박스 위에 표시. `src/lib/device.ts` `isIOS()` + SSR-safe useEffect 패턴 도입.
-- **근거**: Apple이 `capture="environment"` 경로를 480×360 Baseline H.264 ~0.7 Mbps로 하드코딩
-  (WebKit Bug #238366, 미해결). 갤러리 선택 경로는 1920×1080 High 15.5 Mbps 원본 전달 확인.
-  옵션 A(accept 트릭)·C(MediaRecorder)·D(네이티브 앱)보다 구현 비용이 가장 낮고 화질 보장 확실.
-- **영향**: iPhone 사용자는 즉석 촬영 불가 → 미리 촬영 후 갤러리 업로드 안내.
-  iPad는 iOS 13+ 데스크톱 UA 스푸핑으로 감지 불가 → known-issues 등재 (deferred).
-  Android / 데스크톱은 기존 카메라 큰 박스 + 갤러리 보조 링크 유지.
+### 사고
+
+iPhone Safari에서 `<input type="file" capture="environment">`로 촬영 시
+영상이 **480×360 H.264 Baseline 0.7 Mbps**로 강제 다운샘플링됨. 갤러리
+경로(capture 속성 없음)는 1920×1080 High 15.5 Mbps 정상. 안드로이드 Chrome
+은 native capture 정상(1920×1080 High 16.9 Mbps).
+
+원인: WebKit Bug #238366 — Apple 의도적 제한. capture 속성값 무관 동일
+파이프라인. JS 단 우회 불가.
+
+### 결정
+
+옵션 B — iOS 감지 → "지금 촬영하기" 버튼 숨김 + 갤러리 전용 안내.
+
+근거:
+- 1순위 시장(학교 졸업식) = 추억 보존 목적. 480p는 졸업식 추억으로 부적합
+- 옵션 A(capture 속성 제거)는 사용자가 카메라 선택해도 480p — 근본 해결 아님
+- 옵션 C(안내만 추가, 버튼 유지)는 안내 못 본 사용자 480p 사고 그대로 — 결과 양분
+- 옵션 D(현재 흐름 유지)는 "알면서 영업 진입" 후속 호스트 클레임 약점
+
+### 사양
+
+- **OS 판정**: iOS 전체 (iPhone + iPod). 브라우저 무관 — Apple WebKit
+  강제 정책으로 iOS Chrome·Firefox도 동일 사고. iPad는 iOS 13+ 데스크톱
+  UA 스푸핑으로 감지 불가 → known-issues 등재 (deferred)
+- **iOS 검출 시 UI**:
+  - "지금 촬영하기" 버튼 DOM에서 제거
+  - "갤러리에서 선택"을 메인 버튼 스타일로 격상 (큰 박스, 앰버 액센트)
+  - 안내 박스 추가:
+    > iPhone 사용 중이시군요
+    > iOS 정책상 iPhone 즉석 촬영은 화질이 낮습니다.
+    > 미리 카메라 앱으로 영상을 찍어두신 뒤 아래 버튼을 눌러주세요.
+- **안드로이드 + 데스크톱**: 기존 흐름 유지 (촬영 + 갤러리 둘 다 노출)
+
+### 트레이드오프
+
+- 학생이 졸업식 당일 즉석 한마디 찍는 흐름이 iPhone에서 3단계로 늘어남
+  (카메라 앱 열기 → 촬영 → 우리 앱 갤러리 선택)
+- 사전 촬영 흐름은 1080p 보장
+
+### 관련 영역
+
+- known-issues "iPad — iOS Safari capture 480p 사고 미처리" 항목
+- WebKit Bug #238366 외부 영역. 해결 시점 미정
 
 ## 2026-05-16 — Android Chrome 14/15 file input 사고 — 카메라/갤러리 두 input 분리
 
