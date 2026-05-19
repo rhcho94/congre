@@ -5,7 +5,7 @@
 ## 2026-05-19 — iOS Safari capture 480p 사고 — 옵션 B (iPhone 검출 → 갤러리 전용)
 
 - **결정**: iPhone UA 검출 시 즉석 촬영 버튼을 DOM에서 제거하고 갤러리 전용 흐름으로 전환.
-  iOS 안내 박스("iOS 정책상 앱 내 즉석 촬영은 화질이 낮습니다. 미리 카메라 앱으로 찍어두세요")를
+  iOS 안내 박스("iOS 정책상 iPhone 즉석 촬영은 화질이 낮습니다. 미리 카메라 앱으로 찍어두세요")를
   갤러리 큰 박스 위에 표시. `src/lib/device.ts` `isIOS()` + SSR-safe useEffect 패턴 도입.
 - **근거**: Apple이 `capture="environment"` 경로를 480×360 Baseline H.264 ~0.7 Mbps로 하드코딩
   (WebKit Bug #238366, 미해결). 갤러리 선택 경로는 1920×1080 High 15.5 Mbps 원본 전달 확인.

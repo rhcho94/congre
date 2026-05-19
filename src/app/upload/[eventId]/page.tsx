@@ -422,7 +422,7 @@ function UploadInner() {
                 <div className="w-full border border-border bg-surface p-4 flex flex-col gap-2">
                   <p className="text-xs text-accent font-medium tracking-wide">iPhone 사용 중이시군요</p>
                   <p className="text-xs text-muted leading-relaxed">
-                    iOS 정책상 앱 내 즉석 촬영은 화질이 낮습니다.<br />
+                    iOS 정책상 iPhone 즉석 촬영은 화질이 낮습니다.<br />
                     미리 카메라 앱으로 영상을 찍어두신 뒤 아래 버튼을 눌러주세요.
                   </p>
                 </div>
