@@ -618,12 +618,20 @@ export default function EventDetailPage() {
         >
           <BrandName />
         </Link>
-        <Link
-          href="/dashboard"
-          className="text-xs tracking-widest uppercase text-muted hover:text-accent transition-colors duration-200"
-        >
-          ← 대시보드
-        </Link>
+        <div className="flex items-center gap-4">
+          <Link
+            href="/guide/host"
+            className="text-xs tracking-widest uppercase text-muted hover:text-accent transition-colors duration-200"
+          >
+            사용 가이드
+          </Link>
+          <Link
+            href="/dashboard"
+            className="text-xs tracking-widest uppercase text-muted hover:text-accent transition-colors duration-200"
+          >
+            ← 대시보드
+          </Link>
+        </div>
       </nav>
 
       <main className="mx-auto max-w-3xl px-6 py-16">

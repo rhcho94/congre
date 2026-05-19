@@ -120,6 +120,12 @@ export default function DashboardPage() {
         </Link>
         <div className="flex items-center gap-6">
           <span className="text-xs text-muted truncate max-w-[180px]">{user?.email}</span>
+          <Link
+            href="/guide/host"
+            className="text-xs tracking-widest uppercase text-muted hover:text-accent transition-colors duration-200"
+          >
+            사용 가이드
+          </Link>
           <button
             onClick={() => logout()}
             className="text-xs tracking-widest uppercase text-muted hover:text-accent transition-colors duration-200"

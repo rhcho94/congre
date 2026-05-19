@@ -1,5 +1,7 @@
 import {
   signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
   signOut,
   onAuthStateChanged,
   sendPasswordResetEmail,
@@ -7,11 +9,50 @@ import {
   type NextOrObserver,
 } from "firebase/auth";
 import { getFirebaseAuth } from "./firebase";
+import { createUserDoc } from "./users";
 
 export type { User };
 
 export async function loginWithEmail(email: string, password: string) {
   return signInWithEmailAndPassword(getFirebaseAuth(), email, password);
+}
+
+export async function signUpWithEmail(params: {
+  email: string;
+  password: string;
+  name: string;
+  phone: string;
+}) {
+  const auth = getFirebaseAuth();
+  let createdUser: User | null = null;
+
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, params.email, params.password);
+    createdUser = cred.user;
+
+    try {
+      await sendEmailVerification(cred.user);
+    } catch (e) {
+      console.error("[signup] sendEmailVerification failed:", e);
+    }
+
+    await createUserDoc(cred.user.uid, {
+      email: params.email,
+      name: params.name,
+      phone: params.phone,
+    });
+
+    return cred.user;
+  } catch (err) {
+    if (createdUser) {
+      try {
+        await createdUser.delete();
+      } catch (deleteErr) {
+        console.error("[signup] rollback delete failed:", deleteErr);
+      }
+    }
+    throw err;
+  }
 }
 
 export async function logout() {

@@ -265,7 +265,7 @@ export default function HostPage() {
                 </button>
               </form>
 
-              <div className="mt-4 text-center">
+              <div className="mt-4 text-center flex items-center justify-center gap-3">
                 <button
                   type="button"
                   onClick={openResetModal}
@@ -273,6 +273,13 @@ export default function HostPage() {
                 >
                   비밀번호를 잊으셨나요?
                 </button>
+                <span className="text-xs text-muted">·</span>
+                <Link
+                  href="/signup"
+                  className="text-xs text-muted hover:text-accent transition-colors duration-200"
+                >
+                  회원가입
+                </Link>
               </div>
             </div>
           </div>
