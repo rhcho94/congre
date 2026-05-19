@@ -36,6 +36,9 @@ export async function signUpWithEmail(params: {
       console.error("[signup] sendEmailVerification failed:", e);
     }
 
+    // 토큰을 Firestore SDK로 전파 강제. 가입 직후 setDoc 시 permission-denied 방지
+    await cred.user.getIdToken(true);
+
     await createUserDoc(cred.user.uid, {
       email: params.email,
       name: params.name,
