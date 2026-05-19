@@ -44,6 +44,8 @@ export default function CreateEventPage() {
       setAuthChecking(false);
       if (!firebaseUser) {
         router.push("/host");
+      } else if (!firebaseUser.emailVerified) {
+        router.push("/dashboard");
       } else if (firebaseUser.email && !form.organizerEmail) {
         setForm((f) => ({ ...f, organizerEmail: firebaseUser.email! }));
       }

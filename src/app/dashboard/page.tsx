@@ -5,6 +5,7 @@ import Link from "next/link";
 import { BrandName } from "@/components/BrandName";
 import { useRouter } from "next/navigation";
 import { subscribeToAuthChanges, logout, type User } from "@/lib/auth";
+import { EmailVerificationBanner } from "@/components/EmailVerificationBanner";
 import { type EventPlan, type EventStatus } from "@/lib/events";
 import { isFirebaseConfigured, getFirebaseAuth } from "@/lib/firebase";
 
@@ -40,7 +41,14 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!isFirebaseConfigured) return;
-    return subscribeToAuthChanges((firebaseUser) => {
+    return subscribeToAuthChanges(async (firebaseUser) => {
+      if (firebaseUser && !firebaseUser.emailVerified) {
+        try {
+          await firebaseUser.reload();
+        } catch (e) {
+          console.error("[dashboard] reload failed:", e);
+        }
+      }
       setUser(firebaseUser);
       setAuthChecking(false);
       if (!firebaseUser) router.push("/host");
@@ -146,13 +154,27 @@ export default function DashboardPage() {
               내 이벤트
             </h1>
           </div>
-          <Link
-            href="/dashboard/create"
-            className="px-5 py-2.5 border border-border text-muted text-xs tracking-widest uppercase hover:border-accent hover:text-foreground transition-all duration-200"
-          >
-            + 새 이벤트
-          </Link>
+          {user?.emailVerified ? (
+            <Link
+              href="/dashboard/create"
+              className="px-5 py-2.5 border border-border text-muted text-xs tracking-widest uppercase hover:border-accent hover:text-foreground transition-all duration-200"
+            >
+              + 새 이벤트
+            </Link>
+          ) : (
+            <div className="flex flex-col items-end gap-1">
+              <button
+                disabled
+                className="px-5 py-2.5 border border-border text-muted text-xs tracking-widest uppercase opacity-50 cursor-not-allowed"
+              >
+                + 새 이벤트
+              </button>
+              <span className="text-xs text-muted">이메일 인증 후 이용 가능</span>
+            </div>
+          )}
         </div>
+
+        {user && !user.emailVerified && <EmailVerificationBanner />}
 
         <div className="rule mb-8" />
 
