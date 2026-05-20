@@ -4,6 +4,7 @@
 
 ## 2026-05-20
 
+- feat: S2-04 P2 완료 (마이페이지 프로필 수정 — name·phone + Firestore users update 규칙)
 - feat: S2-04 P1 완료 (마이페이지 골격 + 이벤트 요약 + 프로필 표시)
 
 ## 2026-05-19

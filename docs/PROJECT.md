@@ -113,4 +113,4 @@ npx firebase emulators:start --only firestore
 - 한글 인트로/아웃트로 (이벤트 생성 폼 입력 → Firestore 저장 → Shotstack rich-text 클립 삽입, NotoSansKR TTF 호스팅)
 - 자동 삭제 cron (`/api/cron/cleanup`, KST 03:00 daily) — 클립 24h, 완성본 7d. 멱등성 마커: clipsDeletedAt, videoDeletedAt
 - 이용약관 / 개인정보처리방침 페이지 (`/terms`, `/privacy`) — v0.1 시행. 푸터 링크. 변경 이력은 `docs/legal/CHANGELOG.md`.
-- **마이페이지 P1** (`/mypage` — 이벤트 요약 + 프로필 표시. dashboard nav 링크. 2026-05-20)
+- **마이페이지 P1·P2** (`/mypage` — 이벤트 요약 + 프로필 표시 + name·phone 수정. dashboard nav 링크. 2026-05-20)

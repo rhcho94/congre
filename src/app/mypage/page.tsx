@@ -8,7 +8,7 @@ import { subscribeToAuthChanges, logout, type User } from "@/lib/auth";
 import { EmailVerificationBanner } from "@/components/EmailVerificationBanner";
 import { type EventStatus } from "@/lib/events";
 import { isFirebaseConfigured, getFirebaseAuth } from "@/lib/firebase";
-import { getUserDoc, type UserDoc } from "@/lib/users";
+import { getUserDoc, updateUserDoc, type UserDoc } from "@/lib/users";
 
 interface ApiEvent {
   id: string;
@@ -23,6 +23,10 @@ export default function MyPage() {
   const [eventsLoading, setEventsLoading] = useState(false);
   const [userDoc, setUserDoc] = useState<UserDoc | null>(null);
   const [userDocLoading, setUserDocLoading] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [editPhone, setEditPhone] = useState("");
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (!isFirebaseConfigured) return;
@@ -86,6 +90,36 @@ export default function MyPage() {
     (["open", "closed", "rendering"] as EventStatus[]).includes(e.status)
   ).length;
   const doneCount = events.filter((e) => e.status === "done").length;
+
+  function handleEditStart() {
+    setEditName(userDoc?.name ?? "");
+    setEditPhone(userDoc?.phone ?? "");
+    setEditMode(true);
+  }
+
+  function handleCancel() {
+    setEditMode(false);
+  }
+
+  async function handleSave() {
+    if (editName.trim() === "" || editPhone.trim() === "") {
+      alert("이름과 전화번호를 입력해주세요");
+      return;
+    }
+    if (!user) return;
+    setSaving(true);
+    try {
+      await updateUserDoc(user.uid, { name: editName.trim(), phone: editPhone.trim() });
+      setUserDoc((prev) => prev ? { ...prev, name: editName.trim(), phone: editPhone.trim() } : prev);
+      alert("프로필이 저장되었습니다");
+      setEditMode(false);
+    } catch (err) {
+      console.error("[mypage] updateUserDoc failed:", err);
+      alert("저장 실패: " + (err instanceof Error ? err.message : "알 수 없는 오류"));
+    } finally {
+      setSaving(false);
+    }
+  }
 
   if (!isFirebaseConfigured) {
     return (
@@ -196,14 +230,43 @@ export default function MyPage() {
                 <span className="text-xs uppercase text-muted tracking-widest">이메일</span>
                 <span className="text-sm text-foreground">{user?.email ?? "—"}</span>
               </div>
-              <div className="flex flex-col gap-1">
-                <span className="text-xs uppercase text-muted tracking-widest">이름</span>
-                <span className="text-sm text-foreground">{userDoc?.name ?? "-"}</span>
-              </div>
-              <div className="flex flex-col gap-1">
-                <span className="text-xs uppercase text-muted tracking-widest">전화번호</span>
-                <span className="text-sm text-foreground">{userDoc?.phone ?? "-"}</span>
-              </div>
+
+              {editMode ? (
+                <>
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-xs uppercase text-muted tracking-widest">이름</span>
+                    <input
+                      type="text"
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      disabled={saving}
+                      className="bg-surface border border-border px-4 py-3 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-accent transition-colors duration-200 disabled:opacity-50"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-xs uppercase text-muted tracking-widest">전화번호</span>
+                    <input
+                      type="text"
+                      value={editPhone}
+                      onChange={(e) => setEditPhone(e.target.value)}
+                      disabled={saving}
+                      className="bg-surface border border-border px-4 py-3 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-accent transition-colors duration-200 disabled:opacity-50"
+                    />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-xs uppercase text-muted tracking-widest">이름</span>
+                    <span className="text-sm text-foreground">{userDoc?.name ?? "-"}</span>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-xs uppercase text-muted tracking-widest">전화번호</span>
+                    <span className="text-sm text-foreground">{userDoc?.phone ?? "-"}</span>
+                  </div>
+                </>
+              )}
+
               <div className="flex flex-col gap-1">
                 <span className="text-xs uppercase text-muted tracking-widest">가입일</span>
                 <span className="text-sm text-foreground">
@@ -212,6 +275,34 @@ export default function MyPage() {
                     : "-"}
                 </span>
               </div>
+
+              {editMode ? (
+                <div className="flex gap-3 pt-2">
+                  <button
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="px-5 py-2.5 bg-gradient-to-b from-[#f5b04a] to-[#a06f1f] text-background text-xs tracking-widest uppercase font-medium hover:brightness-110 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {saving ? "저장 중..." : "저장"}
+                  </button>
+                  <button
+                    onClick={handleCancel}
+                    disabled={saving}
+                    className="px-5 py-2.5 border border-border text-muted text-xs tracking-widest uppercase hover:border-accent hover:text-foreground transition-all duration-200 disabled:opacity-50"
+                  >
+                    취소
+                  </button>
+                </div>
+              ) : (
+                userDoc !== null && (
+                  <button
+                    onClick={handleEditStart}
+                    className="self-start text-xs tracking-widest uppercase text-muted hover:text-accent transition-colors duration-200"
+                  >
+                    프로필 수정
+                  </button>
+                )
+              )}
             </div>
           )}
         </div>

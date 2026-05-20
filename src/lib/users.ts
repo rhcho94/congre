@@ -1,4 +1,4 @@
-import { doc, setDoc, getDoc, serverTimestamp, Timestamp } from "firebase/firestore";
+import { doc, setDoc, getDoc, updateDoc, serverTimestamp, Timestamp } from "firebase/firestore";
 import { getFirebaseFirestore } from "./firebase";
 
 export async function createUserDoc(
@@ -39,4 +39,15 @@ export async function getUserDoc(uid: string): Promise<UserDoc | null> {
     termsAgreedAt: (data.termsAgreedAt ?? null) as Timestamp | null,
     privacyAgreedAt: (data.privacyAgreedAt ?? null) as Timestamp | null,
   };
+}
+
+export async function updateUserDoc(
+  uid: string,
+  data: { name: string; phone: string }
+) {
+  const db = getFirebaseFirestore();
+  await updateDoc(doc(db, "users", uid), {
+    name: data.name,
+    phone: data.phone,
+  });
 }
