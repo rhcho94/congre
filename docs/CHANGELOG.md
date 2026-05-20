@@ -2,6 +2,10 @@
 
 > 기능 단위 작업 이력. 최신이 위.
 
+## 2026-05-20
+
+- feat: S2-04 P1 완료 (마이페이지 골격 + 이벤트 요약 + 프로필 표시)
+
 ## 2026-05-19
 
 - feat(auth): 이메일 인증 차단 흐름 (P3a) — Firestore email_verified 조건 추가 + EmailVerificationBanner + 대시보드 이벤트 생성 버튼 비활성 + /dashboard/create 미인증 리디렉션 (커밋 bada6d0)

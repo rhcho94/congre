@@ -134,6 +134,12 @@ export default function DashboardPage() {
           >
             사용 가이드
           </Link>
+          <Link
+            href="/mypage"
+            className="text-xs tracking-widest uppercase text-muted hover:text-accent transition-colors duration-200"
+          >
+            마이페이지
+          </Link>
           <button
             onClick={() => logout()}
             className="text-xs tracking-widest uppercase text-muted hover:text-accent transition-colors duration-200"

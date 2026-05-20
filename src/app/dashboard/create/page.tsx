@@ -158,6 +158,12 @@ export default function CreateEventPage() {
               사용 가이드
             </Link>
             <Link
+              href="/mypage"
+              className="text-xs tracking-widest uppercase text-muted hover:text-accent transition-colors duration-200"
+            >
+              마이페이지
+            </Link>
+            <Link
               href="/dashboard"
               className="text-xs tracking-widest uppercase text-muted hover:text-accent transition-colors duration-200"
             >
