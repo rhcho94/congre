@@ -157,6 +157,26 @@
 - **잠재 리스크**: 향후 다른 메일 서비스가 루트 `congre.kr` SPF 통합을 요구할 경우 Firebase SPF와 병합 필요. `v=spf1 include:A include:B ~all` 방식으로 통합 가능하나 작업 필요.
 - **격상 트리거**: 새 메일 서비스 도입 시 SPF 충돌 경고 발생 시.
 
+## 잔여 호스트 계정 — Auth만 있고 Firestore users 문서 없음
+
+- **현황**: S2-03 P2 (2026-05-19 v2 가입 흐름 도입) 이전 가입한 호스트 계정은 Firebase Auth에만 존재. Firestore users 컬렉션에 프로필 문서 없음.
+- **발현**: 이런 계정으로 `/mypage` 진입 시 이름·전화번호·가입일 필드에 "-" 표시 (P1.5 보정으로 UI 깨짐은 회피).
+- **처리**: S2-03 P0 (운영자 콘솔 cleanup)에서 해소. 영업 개시 직전 작업 영역.
+- **격상 트리거**: 잔여 계정이 사용자(외부 호스트)에게 노출되는 경우.
+- **관련 결정**: DECISIONS auth-model 2026-05-19 v2, launch-roadmap S2-03 P0.
+- **발견 경위**: 2026-05-20 S2-04 P1 검증 영역.
+
+## Hydration 에러 — dev 환경, Next.js 16.2.4 + 브라우저 확장
+
+- **현황**: dev 서버 (`npm run dev`) 영역에서 좌하단 토스트로 hydration mismatch 경고 노출. 에러 위치 `src/app/layout.tsx:29` (`<html>` 태그).
+- **원인 영역**: 브라우저 확장 (LanguageTool 등)이 HTML 태그에 `data-lt-installed` 같은 속성 주입. 서버 렌더 HTML과 클라이언트 HTML 불일치 영역.
+- **production 영향**: 없음 (production 빌드는 dev overlay 미노출).
+- **사용자 노출**: 없음 (운영자 dev 환경만).
+- **Next.js 버전 영역**: 16.2.4 (stale) 신호 — 버전 업그레이드 별도 영역.
+- **격상 트리거**: production 빌드에서 hydration mismatch 발견 시 (현재 미발현).
+- **처리**: 본인 작업 없음. 보정 큐 메모 영역.
+- **발견 경위**: 2026-05-20 S2-04 P1 검증 영역.
+
 ---
 
 ## 1a784d0 회귀 의심 → 미재현 확인 (2026-05-11)

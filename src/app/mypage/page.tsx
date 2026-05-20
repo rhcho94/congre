@@ -198,18 +198,18 @@ export default function MyPage() {
               </div>
               <div className="flex flex-col gap-1">
                 <span className="text-xs uppercase text-muted tracking-widest">이름</span>
-                <span className="text-sm text-foreground">{userDoc?.name ?? "—"}</span>
+                <span className="text-sm text-foreground">{userDoc?.name ?? "-"}</span>
               </div>
               <div className="flex flex-col gap-1">
                 <span className="text-xs uppercase text-muted tracking-widest">전화번호</span>
-                <span className="text-sm text-foreground">{userDoc?.phone ?? "—"}</span>
+                <span className="text-sm text-foreground">{userDoc?.phone ?? "-"}</span>
               </div>
               <div className="flex flex-col gap-1">
                 <span className="text-xs uppercase text-muted tracking-widest">가입일</span>
                 <span className="text-sm text-foreground">
                   {userDoc?.createdAt
                     ? userDoc.createdAt.toDate().toLocaleDateString("ko-KR")
-                    : "—"}
+                    : "-"}
                 </span>
               </div>
             </div>
