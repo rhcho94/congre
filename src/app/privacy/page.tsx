@@ -28,7 +28,7 @@ export default function PrivacyPage() {
           >
             Congre 개인정보처리방침
           </h1>
-          <p className="text-xs text-muted mt-3">시행일: 2026년 5월 11일</p>
+          <p className="text-xs text-muted mt-3">시행일: 2026년 5월 11일 (v0.1) | v0.2 개정: 2026년 5월 20일</p>
         </div>
 
         <div className="rule mb-10" />
@@ -155,6 +155,7 @@ export default function PrivacyPage() {
               <li>관련 법령에 따른 보존 의무가 있는 경우</li>
               <li>정보주체와의 분쟁 또는 소송이 진행 중인 경우</li>
             </ol>
+            <p>⑤ 회원이 회원 탈퇴를 신청하는 경우, 본 조 ②항의 보유 기간과 무관하게 회원 계정 정보, 회원이 생성한 모든 이벤트 정보, 부속 클립 및 완성본 영상이 즉시 일괄 삭제됩니다. 자세한 사항은 「Congre 서비스 이용약관」 제18조에서 정합니다.</p>
           </section>
 
           <section className="flex flex-col gap-2">
@@ -414,7 +415,8 @@ export default function PrivacyPage() {
 
           <section className="flex flex-col gap-2">
             <h2 className="text-sm font-medium text-foreground">부칙</h2>
-            <p>이 개인정보 처리방침은 2026년 5월 11일부터 시행합니다.</p>
+            <p>이 개인정보 처리방침은 2026년 5월 11일부터 시행합니다. (v0.1)</p>
+            <p>이 개인정보 처리방침(v0.2)은 2026년 5월 20일부터 시행합니다.</p>
           </section>
         </div>
 

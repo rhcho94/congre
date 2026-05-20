@@ -28,7 +28,7 @@ export default function TermsPage() {
           >
             Congre 서비스 이용약관
           </h1>
-          <p className="text-xs text-muted mt-3">시행일: 2026년 5월 11일</p>
+          <p className="text-xs text-muted mt-3">시행일: 2026년 5월 11일 (v0.1) | v0.2 개정: 2026년 5월 20일</p>
         </div>
 
         <div className="rule mb-10" />
@@ -271,9 +271,16 @@ export default function TermsPage() {
 
             <article className="flex flex-col gap-2">
               <h3 className="text-sm font-medium text-foreground">제18조 (회원 탈퇴 및 자료 삭제)</h3>
-              <p>① 회원은 언제든지 회사에 회원 탈퇴를 요청할 수 있으며, 회사는 정당한 사유가 없는 한 지체 없이 탈퇴를 처리합니다.</p>
-              <p>② 회원 탈퇴 시 회원이 생성한 이벤트, 업로드된 클립, 완성본 영상 등은 본 약관 제11조에 따른 자동 삭제 일정에 따라 또는 회원의 요청에 따라 삭제됩니다.</p>
-              <p>③ 회사는 관련 법령에 따라 일정 기간 보존하여야 하는 정보가 있는 경우, 해당 기간 동안 해당 정보를 분리 보관할 수 있습니다.</p>
+              <p>① 회원은 마이페이지의 "회원 탈퇴" 기능을 통하여 언제든지 회원 탈퇴를 신청할 수 있습니다.</p>
+              <p>② 회원은 진행 중인 이벤트(상태가 "오픈", "마감", "렌더링 중"인 이벤트)가 존재하는 경우 회원 탈퇴를 신청할 수 없으며, 모든 이벤트를 마감하여 완료 상태로 전환한 후에 탈퇴를 신청하여야 합니다.</p>
+              <p>③ 회원 탈퇴가 처리되는 즉시 다음 각 호의 정보가 일괄 삭제됩니다.</p>
+              <ol className="list-decimal pl-6 flex flex-col gap-1">
+                <li>회원 계정 정보 (이메일, 이름, 휴대전화번호 등 회원가입 시 등록한 모든 정보)</li>
+                <li>회원이 생성한 모든 이벤트 및 부속 정보 (인트로·아웃트로 텍스트 등 포함)</li>
+                <li>해당 이벤트에 업로드된 모든 클립 및 완성본 영상</li>
+              </ol>
+              <p>④ 전항에 따라 삭제된 정보는 복구할 수 없으며, 회원은 탈퇴 신청 전 필요한 영상을 본인의 기기에 저장하여야 합니다.</p>
+              <p>⑤ 회사는 관련 법령에 따라 일정 기간 보존하여야 하는 정보가 있는 경우, 해당 기간 동안 해당 정보를 분리 보관할 수 있습니다.</p>
             </article>
 
             <article className="flex flex-col gap-2">
@@ -322,7 +329,8 @@ export default function TermsPage() {
           {/* 부칙 */}
           <section className="flex flex-col gap-4">
             <h2 className="text-base font-medium text-foreground tracking-wide">부칙</h2>
-            <p>이 약관은 2026년 5월 11일부터 시행합니다.</p>
+            <p>이 약관은 2026년 5월 11일부터 시행합니다. (v0.1)</p>
+            <p>이 약관(v0.2)은 2026년 5월 20일부터 시행합니다.</p>
           </section>
         </div>
 

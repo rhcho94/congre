@@ -5,7 +5,7 @@ import Link from "next/link";
 import { BrandName } from "@/components/BrandName";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
-import { subscribeToAuthChanges, logout, changePassword, type User } from "@/lib/auth";
+import { subscribeToAuthChanges, logout, changePassword, deleteAccount, type User } from "@/lib/auth";
 import { EmailVerificationBanner } from "@/components/EmailVerificationBanner";
 import { type EventStatus } from "@/lib/events";
 import { isFirebaseConfigured, getFirebaseAuth } from "@/lib/firebase";
@@ -34,6 +34,10 @@ export default function MyPage() {
   const [showCurrentPw, setShowCurrentPw] = useState(false);
   const [showNewPw, setShowNewPw] = useState(false);
   const [pwSaving, setPwSaving] = useState(false);
+  const [delMode, setDelMode] = useState(false);
+  const [delPw, setDelPw] = useState("");
+  const [showDelPw, setShowDelPw] = useState(false);
+  const [delSaving, setDelSaving] = useState(false);
 
   useEffect(() => {
     if (!isFirebaseConfigured) return;
@@ -166,6 +170,48 @@ export default function MyPage() {
       }
     } finally {
       setPwSaving(false);
+    }
+  }
+
+  function handleDelStart() {
+    setDelPw("");
+    setShowDelPw(false);
+    setDelMode(true);
+  }
+
+  function handleDelCancel() {
+    setDelMode(false);
+  }
+
+  async function handleDelSubmit() {
+    if (delPw.trim() === "") {
+      alert("현재 비밀번호를 입력해주세요");
+      return;
+    }
+    const confirmed = confirm(
+      "정말 탈퇴하시겠습니까?\n\n회원 정보, 모든 이벤트, 업로드된 클립, 완성본 영상이 즉시 삭제되며 복구할 수 없습니다."
+    );
+    if (!confirmed) return;
+
+    setDelSaving(true);
+    try {
+      await deleteAccount(delPw);
+      alert("회원 탈퇴가 완료되었습니다");
+      router.push("/");
+    } catch (err) {
+      console.error("[mypage] deleteAccount failed:", err);
+      const code = err instanceof Error && "code" in err
+        ? (err as { code: string }).code
+        : "";
+      if (code === "auth/wrong-password" || code === "auth/invalid-credential") {
+        alert("현재 비밀번호가 올바르지 않습니다");
+      } else if (code === "INCOMPLETE_EVENTS") {
+        alert(err instanceof Error ? err.message : "진행 중 이벤트를 먼저 마감해주세요");
+      } else {
+        alert("탈퇴 실패: " + (err instanceof Error ? err.message : "알 수 없는 오류"));
+      }
+    } finally {
+      setDelSaving(false);
     }
   }
 
@@ -331,6 +377,67 @@ export default function MyPage() {
               className="self-start text-xs tracking-widest uppercase text-muted hover:text-accent transition-colors duration-200"
             >
               비밀번호 변경
+            </button>
+          )}
+        </div>
+
+        <div className="rule mb-8" />
+
+        <div className="mb-10">
+          <p className="text-xs tracking-[0.4em] uppercase text-accent mb-6">회원 탈퇴</p>
+          {inProgress > 0 ? (
+            <p className="text-sm text-muted leading-relaxed">
+              진행 중 이벤트가 {inProgress}개 있습니다. 모든 이벤트를 마감한 후 탈퇴할 수 있습니다.
+            </p>
+          ) : delMode ? (
+            <div className="flex flex-col gap-6">
+              <div className="p-4 border border-border bg-surface">
+                <p className="text-sm text-foreground leading-relaxed">
+                  회원 탈퇴 시 회원 정보, 모든 이벤트, 업로드된 클립, 완성본 영상이 즉시 삭제되며 복구할 수 없습니다.
+                </p>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <span className="text-xs uppercase text-muted tracking-widest">현재 비밀번호</span>
+                <div className="relative">
+                  <input
+                    type={showDelPw ? "text" : "password"}
+                    value={delPw}
+                    onChange={(e) => setDelPw(e.target.value)}
+                    disabled={delSaving}
+                    className="w-full bg-surface border border-border px-4 py-3 pr-10 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-accent transition-colors duration-200 disabled:opacity-50"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowDelPw((v) => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground transition-colors"
+                  >
+                    {showDelPw ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={handleDelSubmit}
+                  disabled={delSaving}
+                  className="px-5 py-2.5 border border-red-900 text-red-400 text-xs tracking-widest uppercase hover:bg-red-900/20 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {delSaving ? "처리 중..." : "탈퇴"}
+                </button>
+                <button
+                  onClick={handleDelCancel}
+                  disabled={delSaving}
+                  className="px-5 py-2.5 border border-border text-muted text-xs tracking-widest uppercase hover:border-accent hover:text-foreground transition-all duration-200 disabled:opacity-50"
+                >
+                  취소
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={handleDelStart}
+              className="self-start text-xs tracking-widest uppercase text-muted hover:text-red-400 transition-colors duration-200"
+            >
+              회원 탈퇴
             </button>
           )}
         </div>

@@ -78,6 +78,30 @@ export function subscribeToAuthChanges(callback: NextOrObserver<User>) {
   return onAuthStateChanged(getFirebaseAuth(), callback);
 }
 
+export async function deleteAccount(currentPassword: string): Promise<void> {
+  const auth = getFirebaseAuth();
+  const user = auth.currentUser;
+  if (!user || !user.email) throw new Error("로그인 상태가 아닙니다");
+
+  const credential = EmailAuthProvider.credential(user.email, currentPassword);
+  await reauthenticateWithCredential(user, credential);
+
+  const idToken = await user.getIdToken(true);
+  const res = await fetch("/api/user/delete", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${idToken}` },
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({})) as { message?: string; code?: string };
+    const error = new Error(data.message ?? "탈퇴 처리 실패");
+    (error as Error & { code?: string }).code = data.code ?? "UNKNOWN";
+    throw error;
+  }
+
+  await signOut(auth);
+}
+
 export async function changePassword(
   currentPassword: string,
   newPassword: string

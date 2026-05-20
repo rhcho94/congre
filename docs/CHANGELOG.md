@@ -4,6 +4,7 @@
 
 ## 2026-05-20
 
+- S2-04 P4 마이페이지 회원 탈퇴 (Admin SDK 일괄 삭제, 진행 중 이벤트 마감 요구, 약관·처리방침 v0.2)
 - S2-04 P3 마이페이지 비밀번호 변경 (reauthenticate + updatePassword, show/hide 토글)
 - feat: S2-04 P2 완료 (마이페이지 프로필 수정 — name·phone + Firestore users update 규칙)
 - feat: S2-04 P1 완료 (마이페이지 골격 + 이벤트 요약 + 프로필 표시)
