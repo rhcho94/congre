@@ -5,6 +5,9 @@ import {
   signOut,
   onAuthStateChanged,
   sendPasswordResetEmail,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+  updatePassword,
   type User,
   type NextOrObserver,
 } from "firebase/auth";
@@ -73,4 +76,16 @@ export async function resetPassword(email: string) {
 // onAuthStateChanged를 직접 노출하지 않고 래핑 — auth 인스턴스를 숨김
 export function subscribeToAuthChanges(callback: NextOrObserver<User>) {
   return onAuthStateChanged(getFirebaseAuth(), callback);
+}
+
+export async function changePassword(
+  currentPassword: string,
+  newPassword: string
+): Promise<void> {
+  const auth = getFirebaseAuth();
+  const user = auth.currentUser;
+  if (!user || !user.email) throw new Error("로그인 상태가 아닙니다");
+  const credential = EmailAuthProvider.credential(user.email, currentPassword);
+  await reauthenticateWithCredential(user, credential);
+  await updatePassword(user, newPassword);
 }

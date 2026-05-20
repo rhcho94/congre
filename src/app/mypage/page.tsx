@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { BrandName } from "@/components/BrandName";
 import { useRouter } from "next/navigation";
-import { subscribeToAuthChanges, logout, type User } from "@/lib/auth";
+import { Eye, EyeOff } from "lucide-react";
+import { subscribeToAuthChanges, logout, changePassword, type User } from "@/lib/auth";
 import { EmailVerificationBanner } from "@/components/EmailVerificationBanner";
 import { type EventStatus } from "@/lib/events";
 import { isFirebaseConfigured, getFirebaseAuth } from "@/lib/firebase";
@@ -27,6 +28,12 @@ export default function MyPage() {
   const [editName, setEditName] = useState("");
   const [editPhone, setEditPhone] = useState("");
   const [saving, setSaving] = useState(false);
+  const [pwMode, setPwMode] = useState(false);
+  const [currentPw, setCurrentPw] = useState("");
+  const [newPw, setNewPw] = useState("");
+  const [showCurrentPw, setShowCurrentPw] = useState(false);
+  const [showNewPw, setShowNewPw] = useState(false);
+  const [pwSaving, setPwSaving] = useState(false);
 
   useEffect(() => {
     if (!isFirebaseConfigured) return;
@@ -118,6 +125,47 @@ export default function MyPage() {
       alert("저장 실패: " + (err instanceof Error ? err.message : "알 수 없는 오류"));
     } finally {
       setSaving(false);
+    }
+  }
+
+  function handlePwStart() {
+    setCurrentPw("");
+    setNewPw("");
+    setShowCurrentPw(false);
+    setShowNewPw(false);
+    setPwMode(true);
+  }
+
+  function handlePwCancel() {
+    setPwMode(false);
+  }
+
+  async function handlePwSave() {
+    if (currentPw.trim() === "" || newPw.trim() === "") {
+      alert("현재 비밀번호와 새 비밀번호를 입력해주세요");
+      return;
+    }
+    if (newPw.length < 6) {
+      alert("새 비밀번호는 6자 이상이어야 합니다");
+      return;
+    }
+    setPwSaving(true);
+    try {
+      await changePassword(currentPw, newPw);
+      alert("비밀번호가 변경되었습니다");
+      setPwMode(false);
+    } catch (err) {
+      console.error("[mypage] changePassword failed:", err);
+      const code = err instanceof Error && "code" in err
+        ? (err as { code: string }).code
+        : "";
+      if (code === "auth/wrong-password" || code === "auth/invalid-credential") {
+        alert("현재 비밀번호가 올바르지 않습니다");
+      } else {
+        alert("변경 실패: " + (err instanceof Error ? err.message : "알 수 없는 오류"));
+      }
+    } finally {
+      setPwSaving(false);
     }
   }
 
@@ -217,6 +265,75 @@ export default function MyPage() {
             </Link>
           </div>
         )}
+
+        <div className="mb-10">
+          <p className="text-xs tracking-[0.4em] uppercase text-accent mb-6">비밀번호</p>
+          {pwMode ? (
+            <div className="flex flex-col gap-6">
+              <div className="flex flex-col gap-1.5">
+                <span className="text-xs uppercase text-muted tracking-widest">현재 비밀번호</span>
+                <div className="relative">
+                  <input
+                    type={showCurrentPw ? "text" : "password"}
+                    value={currentPw}
+                    onChange={(e) => setCurrentPw(e.target.value)}
+                    disabled={pwSaving}
+                    className="w-full bg-surface border border-border px-4 py-3 pr-10 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-accent transition-colors duration-200 disabled:opacity-50"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowCurrentPw((v) => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground transition-colors"
+                  >
+                    {showCurrentPw ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <span className="text-xs uppercase text-muted tracking-widest">새 비밀번호 (6자 이상)</span>
+                <div className="relative">
+                  <input
+                    type={showNewPw ? "text" : "password"}
+                    value={newPw}
+                    onChange={(e) => setNewPw(e.target.value)}
+                    disabled={pwSaving}
+                    className="w-full bg-surface border border-border px-4 py-3 pr-10 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-accent transition-colors duration-200 disabled:opacity-50"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPw((v) => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground transition-colors"
+                  >
+                    {showNewPw ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={handlePwSave}
+                  disabled={pwSaving}
+                  className="px-5 py-2.5 bg-gradient-to-b from-[#f5b04a] to-[#a06f1f] text-background text-xs tracking-widest uppercase font-medium hover:brightness-110 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {pwSaving ? "변경 중..." : "변경"}
+                </button>
+                <button
+                  onClick={handlePwCancel}
+                  disabled={pwSaving}
+                  className="px-5 py-2.5 border border-border text-muted text-xs tracking-widest uppercase hover:border-accent hover:text-foreground transition-all duration-200 disabled:opacity-50"
+                >
+                  취소
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={handlePwStart}
+              className="self-start text-xs tracking-widest uppercase text-muted hover:text-accent transition-colors duration-200"
+            >
+              비밀번호 변경
+            </button>
+          )}
+        </div>
 
         <div className="rule mb-8" />
 
