@@ -2,6 +2,52 @@
 
 > Firestore·S3·Admin SDK·서버 이전 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-05-21 — D2 사양 재작성 (B5 결정 반영)
+
+### 배경
+
+2026-05-09 D2 원본 본문 = "서브컬렉션 `events/{eventId}/renders/{renderId}` 전환, 재렌더 무제한 무료 안전망". 2026-05-21 B5 결정 (market-product.md 참조)에서 재렌더 매번 유료 채택 → D2 전제(무제한 무료 안전망) 더 이상 유효 아님.
+
+### 재작성된 결정
+
+#### 완성본 보존 구조
+
+기존 결정과 동일: `events/{eventId}/renders/{renderId}` 서브컬렉션. 단일 `videoUrl` 필드 덮어쓰기 폐기.
+
+#### 보관 기간
+
+- 모든 완성본: 완성 시점부터 **7일**
+- 매일 1회 cron 일괄 삭제 (현재 `/api/cron/cleanup` 확장)
+- 매 문서별 정확한 만료 시간 추적 안 함 — cron 실행 시점에 `completedAt + 7d < now` 조건으로 일괄 처리
+
+#### 호스트 다중 완성본 보유
+
+재렌더 매번 결제 → 호스트당 N개 완성본 동시 보존 가능. 호스트는 N개 모두에서 다운로드·공유 가능.
+
+#### 삭제 멱등성
+
+기존 cleanup cron의 `videoDeletedAt` 마커 패턴 유지. 서브컬렉션 문서별로 동일 마커 적용.
+
+### 본 결정으로 영향받는 영역
+
+- `src/app/api/cron/check-rendering/route.ts` — 단일 `videoUrl` 필드 덮어쓰기 폐기, 서브컬렉션 신규 문서 생성으로 전환
+- `src/app/api/cron/cleanup/route.ts` — 서브컬렉션 순회 + 만료 문서 삭제 로직 추가
+- `src/lib/events.ts` — CongreEvent 인터페이스에서 `videoUrl` 필드 제거 또는 호환 영역 짚어둠
+- `src/app/dashboard/events/[eventId]/page.tsx` — done 상태 UI에서 최신 1개 → N개 목록 표시
+- `src/app/share/[eventId]/page.tsx` — 공유 페이지에서 어느 완성본 보여줄지 결정 필요 (최신? 첫? 호스트 선택?)
+
+### 본 결정에 미포함 — 다음 결정 영역
+
+- 서브컬렉션 필드 스키마 상세 (renderId, completedAt, videoUrl, renderCost 등)
+- 공유 페이지 다중 완성본 노출 방식 (드롭다운? 최신만?)
+- 기존 events 문서의 videoUrl 필드 마이그레이션 (있는 데이터 어떻게 처리?)
+
+### 본 결정 진입 시점
+
+S4-09 본격 진입 시. S3-05·S3-06·S3-07·S3-08 (결제 코드) 완료 후가 자연 순서.
+
+---
+
 ## 2026-05-11 — 초대장 이미지도 클립과 동일한 presigned GET URL 패턴 사용
 
 - **결정**: `events.coverImageUrl`, `events.galleryUrls` 필드에 공개 URL 대신 S3 키(path) 저장. 표시 시점에 presigned GET URL(1시간 만료)로 변환.
