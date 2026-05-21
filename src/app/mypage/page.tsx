@@ -98,7 +98,7 @@ export default function MyPage() {
   }, [user]);
 
   const inProgress = events.filter((e) =>
-    (["open", "closed", "rendering"] as EventStatus[]).includes(e.status)
+    (["open", "rendering"] as EventStatus[]).includes(e.status)
   ).length;
   const doneCount = events.filter((e) => e.status === "done").length;
 

@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
   const inProgressSnap = await db
     .collection("events")
     .where("hostId", "==", uid)
-    .where("status", "in", ["open", "closed", "rendering"])
+    .where("status", "in", ["open", "rendering"])
     .get();
 
   if (inProgressSnap.size > 0) {

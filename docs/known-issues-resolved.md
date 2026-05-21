@@ -3,6 +3,14 @@
 > known-issues.md에서 분리된 해결 완료 이력. 사고 재발 진단 시 grep 대상.
 > 새 RESOLVED 항목 발생 시 known-issues.md에서 이 파일로 이동.
 
+## ✅ 회원 탈퇴 데드락 — closed 상태 차단 범위에서 제외 [RESOLVED 2026-05-21]
+
+- **원인**: S2-04 P4 회원 탈퇴 사양에서 차단 대상 상태를 `["open", "closed", "rendering"]`으로 설정. 클립 0개로 마감한 이벤트는 rendering으로 전이 불가 → closed 영구 정체 → 탈퇴 불가.
+- **발견 경위**: 2026-05-20 P4 실측 테스트. 빈 이벤트 마감 후 마이페이지 "진행 중 이벤트 1개" 차단 메시지 무한 노출. Firebase 콘솔 events 문서 직접 삭제로 우회.
+- **해결**: 차단 범위를 `["open", "rendering"]`으로 축소. `api/user/delete/route.ts` + `mypage/page.tsx` 2곳 변경.
+- **Race 평가**: closed → rendering 자동 전이 경로 없음 (사용자 명시적 호출만). race 확률 무시 가능.
+- **종결 일자**: 2026-05-21 / **종결 사유**: 옵션 1 실행. 관련 결정: auth-model.md 2026-05-21 항목.
+
 ## ✅ getUserMedia constraints 처방 (5Mbps 코드) — native capture 전환으로 제거 완료 [RESOLVED 2026-05-18]
 
 - **현황**: 2026-05-15 커밋 6ccd731로 `src/app/upload/[eventId]/page.tsx`에

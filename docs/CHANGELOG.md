@@ -2,6 +2,10 @@
 
 > 기능 단위 작업 이력. 최신이 위.
 
+## 2026-05-21
+
+- fix: 회원 탈퇴 차단 범위에서 closed 상태 제외 (데드락 해소)
+
 ## 2026-05-20
 
 - docs: P3d 이메일 발신 도메인 DNS 검증 완료 확인 — Gmail 도달 실측 + Firebase Auth 인증 메일 noreply@congre.kr 통합 확인 + 회원 탈퇴 데드락 known-issues 등재
