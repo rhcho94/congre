@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import { FieldValue } from "firebase-admin/firestore";
 import { getAdminDb } from "@/lib/firebase-admin";
+import { getPlanClipLimit, type PlanId } from "@/lib/plans";
 
 export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => null);
@@ -48,6 +49,14 @@ export async function POST(request: NextRequest) {
 
   if (data.status !== "open") {
     return Response.json({ error: "EVENT_CLOSED" }, { status: 409 });
+  }
+
+  const plan = (data.plan as string | undefined ?? "free") as PlanId;
+  const limit = getPlanClipLimit(plan);
+  const countSnap = await db.collection("clips").where("eventId", "==", eventId).count().get();
+  const current = countSnap.data().count;
+  if (current >= limit) {
+    return Response.json({ code: "PLAN_LIMIT_REACHED", limit, current }, { status: 409 });
   }
 
   const dupSnap = await db

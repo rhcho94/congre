@@ -243,12 +243,16 @@ function UploadInner() {
     try {
       const clipRes = await Promise.race([clipSave, clipTimeout]);
       if (!clipRes.ok) {
-        const body = await clipRes.json().catch(() => ({})) as { error?: string };
+        const body = await clipRes.json().catch(() => ({})) as { error?: string; code?: string; limit?: number; current?: number };
         if (body.error === "DUPLICATE_UPLOADER") throw new Error("DUPLICATE_UPLOADER");
+        if (body.code === "PLAN_LIMIT_REACHED") {
+          throw new Error(`PLAN_LIMIT_REACHED:${body.current ?? 0}:${body.limit ?? 0}`);
+        }
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       if (msg === "DUPLICATE_UPLOADER") throw err;
+      if (msg.startsWith("PLAN_LIMIT_REACHED:")) throw err;
       console.error("[clip] save skipped:", msg);
     }
   }
@@ -276,6 +280,12 @@ function UploadInner() {
         if (msg === "DUPLICATE_UPLOADER") {
           setUploaderError("이전 영상과 다른 이름을 입력해주세요");
           setStage("uploader");
+          return;
+        }
+        if (msg.startsWith("PLAN_LIMIT_REACHED:")) {
+          const parts = msg.split(":");
+          setErrorMsg(`이 이벤트의 플랜 한도에 도달했어요 (현재 ${parts[1]}/${parts[2]}명). 호스트에게 문의해주세요.`);
+          setStage("error");
           return;
         }
         if (attempt === 3) {
