@@ -1,5 +1,5 @@
 import {
-  collection, addDoc, doc, updateDoc,
+  collection, addDoc,
   serverTimestamp, Timestamp,
 } from "firebase/firestore";
 import { getFirebaseFirestore, isFirebaseConfigured } from "./firebase";
@@ -19,7 +19,7 @@ export interface CongreEvent {
   createdAt: Timestamp;
   renderId?: string;
   videoUrl?: string;
-  draftVideoUrl?: string;
+  renderDoneAt?: Timestamp;
   organizerEmail?: string;
   organizerPhone?: string;
   deadlineAt?: Timestamp;        // 마감 시각 — render/start에서 저장, 완료 시간 계산용
@@ -62,19 +62,4 @@ export async function createEvent(input: {
     createdAt: serverTimestamp(),
   });
   return { eventId: ref.id, sessionToken };
-}
-
-
-export async function updateEventRender(
-  eventId: string,
-  data: {
-    status?: EventStatus;
-    renderId?: string;
-    videoUrl?: string;
-    draftVideoUrl?: string;
-  }
-): Promise<void> {
-  if (!isFirebaseConfigured) return;
-  const db = getFirebaseFirestore();
-  await updateDoc(doc(db, "events", eventId), data);
 }

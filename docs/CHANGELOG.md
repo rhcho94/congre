@@ -4,6 +4,7 @@
 
 ## 2026-05-21
 
+- chore: S4-09 D2 진입 전 데드코드 정리 (renderDoneAt 타입 추가 + updateEventRender 제거 + draftVideoUrl 제거)
 - fix: 회원 탈퇴 차단 범위에서 closed 상태 제외 (데드락 해소)
 
 ## 2026-05-20
