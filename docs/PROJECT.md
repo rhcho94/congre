@@ -87,6 +87,7 @@ npx firebase emulators:start --only firestore
 - **대시보드 사용 가이드 링크** (3곳 nav: dashboard/, dashboard/create/, dashboard/events/[eventId]/. 2026-05-19 v2)
 - **이메일 인증 차단 흐름** (EmailVerificationBanner + 대시보드 이벤트 생성 버튼 비활성 + /dashboard/create 미인증 리디렉션 + Firestore email_verified 규칙. P3a. 2026-05-19 v3)
 - **이메일 인증 Custom Action URL + /verify-email 페이지** (Firebase actionCodeSettings + applyActionCode + Suspense 래퍼. P3b. 2026-05-19 v3)
+- **Firebase Auth 커스텀 이메일 발신 도메인** (auth.congre.kr DNS 검증 완료, 발신 주소 noreply@congre.kr. P3d. 2026-05-20)
 - 이벤트 생성 + QR 코드 + 공유 링크 + QR 이미지 저장
 - 참가자 영상 촬영 (카메라 미리보기 → 촬영 → 업로드)
 - S3 업로드 (presigned URL)

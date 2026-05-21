@@ -2,6 +2,18 @@
 
 > 진행 중·보류·메모 항목만 둔다. 해결 완료 항목은 known-issues-resolved.md로 이동.
 
+## 회원 탈퇴 데드락 — 클립 0개 마감 이벤트는 done까지 못 감 (사양 사고)
+
+- **현황**: S2-04 P4 회원 탈퇴 사양에서 차단 대상 상태를 "open, closed, rendering"으로 결정했으나, 클립을 1개도 안 올리고 마감(close)한 이벤트는 렌더링이 시작되지 않아 자동으로 done 상태로 전이하지 않음. 결과적으로 closed 상태로 영구 정체 → 호스트는 탈퇴 불가.
+- **발견 경위**: 2026-05-20 P4 실측 테스트 중. 빈 이벤트 마감 후 마이페이지에서 "진행 중 이벤트 1개" 차단 메시지 무한 노출. Firebase 콘솔에서 events 문서 직접 삭제하여 우회.
+- **사양 사고 학습**: 차단할 상태 목록만 보고 각 상태에서 다음 상태로 전이 가능한지 점검 안 함. 상태 머신의 전이 가능성을 사양 단계에서 검증할 것.
+- **해결 옵션** (다음 세션 결정):
+  1. 차단 범위 축소 — closed를 차단 대상에서 제외. 단점: 렌더링 직전 race 가능
+  2. 자동 done 전환 — 클립 0개 상태로 마감 시 즉시 done. 단점: done 상태 흐름과 충돌 가능성 (완성본 URL 없는 done)
+  3. 호스트 이벤트 삭제 기능 — 마이페이지/대시보드에 추가. 단점: 추가 코드, 기존 결정(자동 만료 의존)과 충돌
+- **임시 우회**: Firebase 콘솔 → Firestore → events 컬렉션 → 해당 문서 직접 삭제
+- **처리 시점**: 다음 세션 우선순위. 격상 트리거 = 호스트가 빈 이벤트 마감 후 탈퇴 시도 시 발생 (필드 테스트에서 재현 가능성 높음)
+
 ## Firestore composite index — eventId + uploaderPhone + uploaderName 3조건 쿼리
 
 - **현황**: `/api/clips/check` GET 및 `POST /api/clips` 중복 체크에서 `eventId + uploaderPhone + uploaderName` 3조건 composite where 쿼리 사용. Firestore는 이 복합 인덱스를 자동 생성하지 않음.
@@ -33,6 +45,7 @@
      b. 코드 From 주소를 noreply@send.congre.kr로 변경
   3. 둘 중 어느 게 적절한지는 그 시점 Resend 권장 사항 + 발신자 표시 UX 우선순위로 결정
 - 관련 결정: DECISIONS 2026-05-02 (이메일 발송 도메인 congre.kr)
+- 2026-05-20 갱신: Firebase Auth 인증 메일도 noreply@congre.kr 발신으로 통합됨. Gmail 도달 실측 확인. 네이버 메일 실측은 미실시, 트리거 발생 시 점검.
 
 ## 미성년자 영상 법적 리스크 — 시장 진입 전 검토 필요
 
