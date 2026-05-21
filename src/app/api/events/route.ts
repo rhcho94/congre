@@ -3,6 +3,7 @@ import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { verifyIdToken } from "@/lib/auth-server";
 import { getAdminDb } from "@/lib/firebase-admin";
 import { notifyEventCreated } from "@/lib/notifications/scenarios/event-created";
+import { getPlanMaxClipSeconds, type PlanId } from "@/lib/plans";
 
 function tsToMs(v: unknown): number | null {
   return v instanceof Timestamp ? v.toMillis() : null;
@@ -81,6 +82,13 @@ export async function POST(request: NextRequest) {
     (typeof maxClipSeconds !== "number" || !Number.isInteger(maxClipSeconds) || maxClipSeconds < 5 || maxClipSeconds > 30)
   ) {
     return Response.json({ error: "INVALID_MAX_CLIP_SECONDS" }, { status: 400 });
+  }
+
+  if (maxClipSeconds !== undefined) {
+    const maxAllowed = getPlanMaxClipSeconds(plan as PlanId);
+    if (maxClipSeconds > maxAllowed) {
+      return Response.json({ code: "INVALID_CLIP_SECONDS", plan, maxAllowed }, { status: 400 });
+    }
   }
 
   if (!/^010\d{8}$/.test(organizerPhone)) {
