@@ -8,12 +8,14 @@ import { QRCodeSVG, QRCodeCanvas } from "qrcode.react";
 import { subscribeToAuthChanges, type User } from "@/lib/auth";
 import { type EventPlan } from "@/lib/events";
 import { isFirebaseConfigured, getFirebaseAuth } from "@/lib/firebase";
+import { getPlanMaxClipSeconds } from "@/lib/plans";
+import { Lock } from "lucide-react";
 
 const planOptions: { value: EventPlan; label: string; desc: string }[] = [
-  { value: "free",   label: "무료", desc: "최대 10클립" },
-  { value: "small",  label: "소형", desc: "최대 50클립" },
-  { value: "medium", label: "중형", desc: "최대 200클립" },
-  { value: "large",  label: "대형", desc: "무제한" },
+  { value: "free",   label: "무료", desc: "최대 10클립 · 10초" },
+  { value: "small",  label: "소형", desc: "최대 50클립 · 30초" },
+  { value: "medium", label: "중형", desc: "최대 200클립 · 30초" },
+  { value: "large",  label: "대형", desc: "무제한 · 30초" },
 ];
 
 type View = "form" | "created";
@@ -77,7 +79,14 @@ export default function CreateEventPage() {
         }),
       });
 
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({})) as { code?: string };
+        if (errBody.code === "INVALID_CLIP_SECONDS") {
+          alert("무료 플랜은 최대 10초까지 가능해요. 더 긴 영상이 필요하면 유료 플랜을 선택해주세요.");
+          return;
+        }
+        throw new Error(`HTTP ${res.status}`);
+      }
       const { eventId, sessionToken } = await res.json() as {
         eventId: string;
         sessionToken: string;
@@ -228,7 +237,15 @@ export default function CreateEventPage() {
                         name="plan"
                         value={opt.value}
                         checked={form.plan === opt.value}
-                        onChange={() => setForm({ ...form, plan: opt.value })}
+                        onChange={() => {
+                          const newPlan = opt.value;
+                          const maxAllowed = getPlanMaxClipSeconds(newPlan);
+                          setForm({
+                            ...form,
+                            plan: newPlan,
+                            maxClipSeconds: form.maxClipSeconds > maxAllowed ? maxAllowed : form.maxClipSeconds,
+                          });
+                        }}
                         disabled={submitting}
                         className="sr-only"
                       />
@@ -242,27 +259,35 @@ export default function CreateEventPage() {
               <div className="flex flex-col gap-1.5">
                 <span className="text-xs tracking-widest uppercase text-muted">영상 최대 길이</span>
                 <div className="grid grid-cols-3 gap-2">
-                  {([5, 10, 15, 20, 25, 30] as const).map((sec) => (
-                    <label
-                      key={sec}
-                      className={`flex items-center justify-center p-4 border cursor-pointer transition-all duration-150 ${
-                        form.maxClipSeconds === sec
-                          ? "border-accent bg-[var(--surface-2)]"
-                          : "border-border bg-surface hover:border-muted"
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="maxClipSeconds"
-                        value={sec}
-                        checked={form.maxClipSeconds === sec}
-                        onChange={() => setForm({ ...form, maxClipSeconds: sec })}
-                        disabled={submitting}
-                        className="sr-only"
-                      />
-                      <span className="text-sm text-foreground font-medium">{sec}초</span>
-                    </label>
-                  ))}
+                  {([5, 10, 15, 20, 25, 30] as const).map((sec) => {
+                    const isLocked = sec > getPlanMaxClipSeconds(form.plan);
+                    return (
+                      <label
+                        key={sec}
+                        className={`relative flex items-center justify-center p-4 border transition-all duration-150 ${
+                          isLocked
+                            ? "border-border bg-surface opacity-40 cursor-not-allowed"
+                            : form.maxClipSeconds === sec
+                            ? "border-accent bg-[var(--surface-2)] cursor-pointer"
+                            : "border-border bg-surface cursor-pointer hover:border-muted"
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="maxClipSeconds"
+                          value={sec}
+                          checked={form.maxClipSeconds === sec}
+                          onChange={() => setForm({ ...form, maxClipSeconds: sec })}
+                          disabled={submitting || isLocked}
+                          className="sr-only"
+                        />
+                        <span className="text-sm text-foreground font-medium">{sec}초</span>
+                        {isLocked && (
+                          <Lock size={12} className="absolute top-1.5 right-1.5 text-muted" />
+                        )}
+                      </label>
+                    );
+                  })}
                 </div>
               </div>
 
