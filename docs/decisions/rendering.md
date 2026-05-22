@@ -2,6 +2,14 @@
 
 > 영상 편집·Shotstack·클립·재렌더 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-05-23 — clip 개별 volumeEffect 도입 (참가자 video clip만)
+
+- **사양**: videoClips.map 영역 asset에 `volumeEffect: "fadeInFadeOut"` 추가. volume 미지정 (현재 그대로 — 일률 조절 부작용 회피).
+- **적용 범위**: 참가자 video clip 전용. makeMediaClip(intro/outro 미디어) 영역과 rich-text overlay 영역에는 적용 안 함.
+- **사유**: 야외 촬영 30개 영상 cut 영역 음량 급변 흡수. BGM volume 0.1로 충분히 낮아 인터뷰 음성 묻힘 부담 없음.
+- **검증 영역**: 페이드 시간 영역 Shotstack 공식 명시 없음 — 실제 렌더 후 시각·청각 확인 영역.
+- **변경 영역**: src/lib/shotstack.ts
+
 ## 2026-05-19 — iOS Safari capture 480p 사고 처리 정책 (옵션 B)
 
 ### 사고
