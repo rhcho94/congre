@@ -29,7 +29,7 @@ export default function CreateEventPage() {
     title: "",
     date: "",
     plan: "free" as EventPlan,
-    maxClipSeconds: 15,
+    maxClipSeconds: 10,
     organizerEmail: "",
     organizerPhone: "",
   });
