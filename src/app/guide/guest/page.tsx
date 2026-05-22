@@ -56,8 +56,7 @@ export default function GuideGuestPage() {
             <div className="flex flex-col gap-2">
               <p className="text-sm font-medium text-foreground">개인정보</p>
               <p>
-                촬영한 영상은 행사 영상 편집에만 사용되고, 완성본이 만들어진 직후 자동 삭제됩니다.
-                인터넷에 영구 보존되지 않습니다.
+                촬영한 영상은 행사 영상 편집에만 사용되며, 결과 알림 후 24시간 안에 자동 삭제됩니다. 완성본은 7일간 보관됩니다.
               </p>
             </div>
           </section>
@@ -79,7 +78,7 @@ export default function GuideGuestPage() {
                 <li>
                   이름 — 행사 안에서 알아볼 수 있는 이름 (최대 20자). 본명을 쓰지 않아도 됩니다.
                 </li>
-                <li>전화번호 — 결과 영상 알림용. 010-1234-5678 또는 01012345678 형식</li>
+                <li>전화번호 — 완성본이 나오면 SMS·이메일로 직접 알림 받습니다. 010-1234-5678 또는 01012345678 형식</li>
               </ul>
             </div>
             <div className="flex flex-col gap-1">
@@ -163,7 +162,7 @@ export default function GuideGuestPage() {
               <div className="flex flex-col gap-1">
                 <p className="text-sm font-medium text-foreground">완성본은 언제?</p>
                 <p>
-                  행사 종료 후 주최자가 마감하면 자동 편집이 시작되고 약 5분 내외로 완성됩니다.
+                  행사 종료 후 주최자가 마감하면 자동 편집이 시작되고 약 5분 내외로 완성됩니다. 완성본은 7일간 보관됩니다.
                 </p>
               </div>
             </div>

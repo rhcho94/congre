@@ -28,7 +28,7 @@ export default function GuideHostPage() {
           >
             호스트 가이드
           </h1>
-          <p className="text-sm text-muted mt-3">이벤트 만들기부터 완성본 공유까지 — 다섯 단계</p>
+          <p className="text-sm text-muted mt-3">이벤트 만들기부터 완성본 공유까지 — 여섯 단계</p>
         </div>
 
         <div className="rule mb-10" />
@@ -45,18 +45,15 @@ export default function GuideHostPage() {
             <div className="flex flex-col gap-2">
               <p className="text-sm font-medium text-foreground">필요한 것</p>
               <ul className="list-disc pl-5 flex flex-col gap-1">
-                <li>
-                  호스트 계정 — 현재는 운영자가 수동으로 발급합니다. 카카오톡 채널 @congre 로
-                  문의해 주세요. 이메일과 임시 비밀번호를 전달드립니다.
-                </li>
+                <li>이메일 주소와 휴대폰 번호 — 가입과 결과 알림용</li>
                 <li>행사 기본 정보 — 행사명, 행사 날짜</li>
-                <li>알림 받을 연락처 — 이메일 주소, 휴대폰 번호 (완성본·진행 상태 알림용)</li>
                 <li>
                   참가자에게 공유할 수단 — 단톡방, 인쇄용 QR 게시판, 문자 메시지 중 무엇이든 가능
                 </li>
               </ul>
             </div>
-            <p>이벤트 만들기까지 약 2분. 마감 후 영상 완성까지 5분 내외.</p>
+            <p>가입과 이벤트 만들기까지 약 5분. 마감 후 영상 완성까지 5분 내외.</p>
+            <p>가입 시 이용약관·개인정보처리방침 동의가 필요합니다.</p>
           </section>
 
           <div className="rule" />
@@ -64,16 +61,25 @@ export default function GuideHostPage() {
           {/* STEP 01 */}
           <section className="flex flex-col gap-4">
             <span className="text-xs tracking-[0.4em] uppercase text-accent">STEP 01</span>
-            <h2 className="text-base font-medium text-foreground tracking-wide">로그인</h2>
-            <p>운영자로부터 받은 이메일과 임시 비밀번호로 접속합니다.</p>
-            <ul className="list-disc pl-5 flex flex-col gap-1">
-              <li>브라우저에서 congre-three.vercel.app 접속</li>
-              <li>우측 상단 "주최자 로그인" 클릭</li>
-              <li>이메일과 비밀번호 입력 후 "로그인"</li>
-            </ul>
+            <h2 className="text-base font-medium text-foreground tracking-wide">가입하고 로그인하기</h2>
+            <p>Congre는 호스트가 직접 가입합니다. congre-three.vercel.app 우측 상단 "주최자 로그인" 클릭 후 하단 "회원가입" 클릭.</p>
+            <div className="flex flex-col gap-2">
+              <p className="text-sm font-medium text-foreground">가입 입력</p>
+              <ul className="list-disc pl-5 flex flex-col gap-1">
+                <li>이메일 · 비밀번호 (최소 6자)</li>
+                <li>이름과 전화번호 (10~11자리 숫자)</li>
+                <li>이용약관 · 개인정보처리방침 동의</li>
+              </ul>
+            </div>
+            <div className="flex flex-col gap-2">
+              <p className="text-sm font-medium text-foreground">이메일 인증</p>
+              <ul className="list-disc pl-5 flex flex-col gap-1">
+                <li>가입 직후 인증 메일이 발송됩니다. 메일 안 "인증" 링크를 클릭하면 완료.</li>
+                <li>인증 완료 전까지 이벤트 생성은 차단되며, 대시보드 상단 안내 배너에서 "인증 메일 재발송" 가능.</li>
+              </ul>
+            </div>
             <p className="text-xs opacity-70">
-              첫 로그인 후 비밀번호 변경 권장. 비밀번호를 잊으셨다면 로그인 화면 하단의
-              "비밀번호를 잊으셨나요?" 클릭 후 등록된 이메일로 재설정 링크가 전송됩니다.
+              비밀번호를 잊으셨다면 로그인 화면 "비밀번호를 잊으셨나요?" 클릭 → 등록 이메일로 재설정 링크 발송.
             </p>
           </section>
 
@@ -88,13 +94,19 @@ export default function GuideHostPage() {
                 <li>이벤트 이름 — 행사명 (예: "졸업식 2026")</li>
                 <li>이벤트 날짜 — 행사 당일</li>
                 <li>플랜 — 무료 10클립 / 소형 50 / 중형 200 / 대형 무제한</li>
-                <li>클립 길이 — 참가자가 올릴 수 있는 영상 최대 길이. 5~30초 사이 선택 (기본 15초).</li>
-                <li>알림 수신 정보 — 이메일과 휴대폰. 완성 시 두 채널로 알림.</li>
+                <li>클립 길이 — 참가자가 올릴 수 있는 영상 최대 길이</li>
+              </ul>
+            </div>
+            <div className="flex flex-col gap-2">
+              <p className="text-sm font-medium text-foreground">클립 길이 — 플랜별 한도</p>
+              <ul className="list-disc pl-5 flex flex-col gap-1">
+                <li>무료 플랜은 최대 10초까지 선택 가능</li>
+                <li>유료 플랜에서는 5초 · 10초 · 15초 · 30초 중 자유롭게 선택</li>
+                <li>잠긴 옵션은 자물쇠 아이콘으로 표시됩니다</li>
               </ul>
             </div>
             <p className="text-xs opacity-70">
-              플랜은 생성 후 변경 불가. 인원이 애매하면 한 단계 위로. 알림 받을 연락처는
-              로그인 계정과 달라도 됩니다.
+              플랜은 생성 후 변경 불가. 인원이 애매하면 한 단계 위로.
             </p>
           </section>
 
@@ -144,6 +156,10 @@ export default function GuideHostPage() {
             <p>
               행사 종료 직후가 표준. 지각 참가자가 있다면 30분 정도 여유.
             </p>
+            <div className="flex flex-col gap-2">
+              <p className="text-sm font-medium text-foreground">자동 알림</p>
+              <p>마감 즉시 "렌더 시작" 이메일·SMS 자동 발송 — 진행 상황을 별도로 확인하지 않으셔도 됩니다.</p>
+            </div>
             <p>자동 편집은 마감 즉시 시작되며 약 5분 내외로 완성됩니다.</p>
           </section>
 
@@ -152,8 +168,7 @@ export default function GuideHostPage() {
             <span className="text-xs tracking-[0.4em] uppercase text-accent">STEP 05</span>
             <h2 className="text-base font-medium text-foreground tracking-wide">완성본 받기와 공유</h2>
             <p>
-              자동 편집이 완료되면 등록한 이메일과 휴대폰으로 알림이 도착합니다. 대시보드에서
-              직접 영상을 미리보고 공유할 수 있습니다.
+              자동 편집이 완료되면 등록한 이메일과 휴대폰으로 알림이 도착합니다. 지연·실패 시에도 상태 알림이 자동 발송됩니다.
             </p>
             <div className="flex flex-col gap-2">
               <p className="text-sm font-medium text-foreground">공유 옵션</p>
@@ -169,9 +184,30 @@ export default function GuideHostPage() {
                 완성본이 마음에 들지 않으면 클립을 다시 골라 영상을 새로 만들 수 있습니다.
               </p>
             </div>
-            <p className="text-xs opacity-70">
-              개별 클립은 렌더링 직후, 완성 영상은 며칠 내 자동 삭제됩니다. 다운로드 보관 권장.
-            </p>
+            <div className="flex flex-col gap-2">
+              <p className="text-sm font-medium text-foreground">자동 삭제 — 보관 기한</p>
+              <p>개별 클립은 결과 알림 후 24시간, 완성 영상은 7일 후 자동 삭제됩니다. 다운로드해 보관해 주세요.</p>
+            </div>
+          </section>
+
+          {/* STEP 06 */}
+          <section className="flex flex-col gap-4">
+            <span className="text-xs tracking-[0.4em] uppercase text-accent">STEP 06</span>
+            <h2 className="text-base font-medium text-foreground tracking-wide">내 계정 관리</h2>
+            <p>대시보드 상단 "마이페이지" 링크에서 본인 계정을 관리할 수 있습니다.</p>
+            <div className="flex flex-col gap-2">
+              <p className="text-sm font-medium text-foreground">마이페이지 4가지 영역</p>
+              <ul className="list-disc pl-5 flex flex-col gap-1">
+                <li>이벤트 요약 — 진행 중과 완료된 이벤트 수를 한눈에</li>
+                <li>프로필 — 이름과 전화번호 수정</li>
+                <li>비밀번호 변경 — 현재 비밀번호 + 신규 비밀번호 입력</li>
+                <li>회원 탈퇴 — 비밀번호 재인증 후 모든 데이터 즉시 삭제</li>
+              </ul>
+            </div>
+            <div className="flex flex-col gap-2">
+              <p className="text-sm font-medium text-foreground">주의 — 회원 탈퇴</p>
+              <p>회원 탈퇴 시 진행 중인 이벤트와 완성본도 함께 삭제됩니다. 보관할 영상은 사전에 다운로드해 주세요.</p>
+            </div>
           </section>
 
           <div className="rule" />
@@ -203,7 +239,7 @@ export default function GuideHostPage() {
                 <p className="text-sm font-medium text-foreground">
                   Q. 영상은 며칠까지 받을 수 있나요?
                 </p>
-                <p>A. 완성본은 며칠 내 자동 삭제됩니다. 다운로드해 보관해 주세요.</p>
+                <p>A. 개별 클립 24시간, 완성본 7일 후 자동 삭제됩니다. 다운로드해 보관해 주세요.</p>
               </div>
               <div className="flex flex-col gap-1">
                 <p className="text-sm font-medium text-foreground">

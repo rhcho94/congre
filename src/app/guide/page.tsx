@@ -43,7 +43,7 @@ export default function GuidePage() {
         >
           {/* 카드 A — 호스트 */}
           <div className="flex flex-col gap-5 p-8 bg-surface">
-            <span className="text-xs tracking-[0.4em] uppercase text-accent">HOST · 5 STEPS</span>
+            <span className="text-xs tracking-[0.4em] uppercase text-accent">HOST · 6 STEPS</span>
             <h2
               className="text-xl font-medium text-foreground"
               style={{ fontFamily: "var(--font-display, serif)" }}
@@ -51,7 +51,7 @@ export default function GuidePage() {
               행사 주최자라면
             </h2>
             <p className="text-sm leading-relaxed text-muted">
-              이벤트 만들기·참가자 초대·마감·완성본 받기까지 다섯 단계로 안내합니다.
+              이벤트 만들기·참가자 초대·마감·완성본 받기까지 여섯 단계로 안내합니다.
             </p>
             <Link
               href="/guide/host"
