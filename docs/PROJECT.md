@@ -117,3 +117,4 @@ npx firebase emulators:start --only firestore
 - **마이페이지 P1·P2·P3·P4** (`/mypage` — 이벤트 요약 + 프로필 표시 + name·phone 수정 + 비밀번호 변경 + 회원 탈퇴. dashboard nav 링크. 2026-05-20)
 - 참가자 영상 클립 음량 페이드 (volumeEffect: fadeInFadeOut, BGM mixing 영역)
 - 트랜지션 in/out 분리 (pickSequence 2회 호출, 시각 다양성)
+- outroText + outroMedia 동시 입력 사고 해소 ([A] 분기 직렬 배치)

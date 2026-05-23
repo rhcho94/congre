@@ -2,6 +2,16 @@
 
 > 영상 편집·Shotstack·클립·재렌더 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-05-23 — outroText + outroMedia 동시 입력 사고 해소 (갈래 C: 직렬 배치)
+
+- **사고**: outroText + outroMedia 동시 입력 시 [A] 분기에서 outroText 무시됨. UI "✓ 저장됨" 피드백으로 호스트 입장 원인 파악 불가.
+- **사양**: [A] 분기 mediaClips 배열 끝에 `outro?.text` 조건부로 `makeTextClip(outro.text, "auto", false, 3)` 직렬 추가.
+- **결정 영역**:
+  - overlayMode=false — [B] 분기 outroText 처리와 통일
+  - 같은 track[1] 안 직렬 배치 — cross-track 동기화 문제 해당 없음 (2026-05-12 폐기 결정과 별개)
+- **검증 영역**: 실제 렌더 후 outroMedia 뒤 outroText 정상 출력 시각 확인.
+- **변경 영역**: src/lib/shotstack.ts
+
 ## 2026-05-23 — transition in/out 분리 (pickSequence 2회 호출)
 
 - **사양**: videoClips.map 영역 transition.in과 transition.out을 각각 독립적인 pickSequence 호출로 결정. POOL은 그대로 (TRANSITION_POOL 4종).

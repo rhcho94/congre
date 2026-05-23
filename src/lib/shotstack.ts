@@ -137,7 +137,6 @@ export async function createRender(
   let tracks;
   if (useDualTrack) {
     // [A] 분기 — 듀얼 track: track[0] introText overlay, track[1] 미디어
-    // outroText overlay 폐기 (cross-track 동기화 한계 + probe API WebM 미반환)
     const textClips = [
       ...(intro?.text ? [makeTextClip(intro.text, 0, true, 3)] : []),
     ];
@@ -146,6 +145,7 @@ export async function createRender(
       ...(hasIntroMedia ? [makeMediaClip(intro!.mediaUrl!, intro!.mediaType!, 0)] : []),
       ...videoClips,
       ...(hasOutroMedia ? [makeMediaClip(outro!.mediaUrl!, outro!.mediaType!, "auto")] : []),
+      ...(outro?.text ? [makeTextClip(outro.text, "auto", false, 3)] : []),
     ];
 
     tracks = [
