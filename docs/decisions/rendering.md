@@ -2,6 +2,16 @@
 
 > 영상 편집·Shotstack·클립·재렌더 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-05-23 — transition in/out 분리 (pickSequence 2회 호출)
+
+- **사양**: videoClips.map 영역 transition.in과 transition.out을 각각 독립적인 pickSequence 호출로 결정. POOL은 그대로 (TRANSITION_POOL 4종).
+- **사유**: 시각 다양성 영역 격상. 한 클립이 fadeFast로 들어와 zoom으로 나가는 등 in/out 다양화 가능.
+- **결정 영역**:
+  - 같은 POOL 사용 (POOL 분리 안 함 — YAGNI, 검증 데이터 없음)
+  - 한 클립 in/out 강제 분리 안 함 (우연히 같아도 OK — YAGNI)
+- **검증 영역**: 실제 렌더 후 시각 확인 영역. 인접 회피는 in/out 각각 적용되나 한 클립 내부 in/out 일치 가능.
+- **변경 영역**: src/lib/shotstack.ts
+
 ## 2026-05-23 — clip 개별 volumeEffect 도입 (참가자 video clip만)
 
 - **사양**: videoClips.map 영역 asset에 `volumeEffect: "fadeInFadeOut"` 추가. volume 미지정 (현재 그대로 — 일률 조절 부작용 회피).

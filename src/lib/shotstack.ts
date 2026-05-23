@@ -123,14 +123,15 @@ export async function createRender(
     fontsSrc = `${appUrl}/fonts/NotoSansKR-Regular.ttf`;
   }
 
-  const transitions = pickSequence(TRANSITION_POOL, clips.length);
+  const transitionsIn = pickSequence(TRANSITION_POOL, clips.length);
+  const transitionsOut = pickSequence(TRANSITION_POOL, clips.length);
 
   const videoClips = clips.map((clip, i) => ({
     asset: { type: "video", src: clip.src, volumeEffect: "fadeInFadeOut" },
     start: "auto",
     length: clip.length,
     fit: "cover",
-    transition: { in: transitions[i], out: transitions[i] },
+    transition: { in: transitionsIn[i], out: transitionsOut[i] },
   }));
 
   let tracks;
