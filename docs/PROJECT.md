@@ -118,3 +118,32 @@ npx firebase emulators:start --only firestore
 - 참가자 영상 클립 음량 페이드 (volumeEffect: fadeInFadeOut, BGM mixing 영역)
 - 트랜지션 in/out 분리 (pickSequence 2회 호출, 시각 다양성)
 - outroText + outroMedia 동시 입력 사고 해소 ([A] 분기 직렬 배치)
+
+## 랜딩 페이지 (별도 트랙)
+
+본 앱과 별도 트랙으로 운영되는 정적 HTML 랜딩 페이지.
+
+- 도메인: `https://congre.kr` (307 → www), `https://www.congre.kr` (메인)
+- Vercel 프로젝트: `congre-landing`
+- 작업 폴더: `C:\Users\PC\Downloads\congre\deploy` (git 외부)
+- 배포 명령: `npx vercel --prod --yes`
+- 변경 도구: CD (Claude Design)에서 zip 받아 로컬 풀어덮기 후 배포
+- 변경 이력: Vercel Deployments 탭 (git 외부)
+
+### 자산 인벤토리
+
+영상 (`deploy/videos/`):
+- wedding_1.mp4 — Hero 영상, 결혼식 레퍼런스
+- wedding_2.mp4 — Bento 결혼식 타일, 다국어 셀카
+- wedding_intro.mp4 — 결혼식 인트로
+- graduation.mp4 — Bento 졸업식 타일, 중학교 졸업
+- challenge.mp4 — Bento 챌린지·모임 타일, K-pop 챌린지
+
+이미지: `.image-slots.state.json` (base64 인코딩, 41장)
+- 졸업식 20장 + 결혼식 20장 + K-pop 10장 = 50장 목표 중 41장 채워짐 (known-issues 랜딩 영역 L2)
+
+### 8섹션 흐름
+
+Hero / Why now / How it works / Showcase / Moments / Occasions / Testimonials / Trust / CTA / Footer
+
+(data-screen-label 라벨 중복 이슈는 known-issues 랜딩 영역 L1)
