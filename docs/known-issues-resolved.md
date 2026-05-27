@@ -3,6 +3,28 @@
 > known-issues.md에서 분리된 해결 완료 이력. 사고 재발 진단 시 grep 대상.
 > 새 RESOLVED 항목 발생 시 known-issues.md에서 이 파일로 이동.
 
+## ✅ 랜딩 data-screen-label 중복 [RESOLVED 2026-05-27]
+
+- **현황**: 랜딩 `index.html`에서 `data-screen-label` 값이 두 번 겹침. 실제 중복은 05(Moments+Testimonials)·06(Occasions+Trust) 두 쌍. CTA·Footer는 단독.
+- **위치**: `deploy/index.html`
+- **발견 경위**: CD #4 (Landing v4 상태 확인) 자체 점검 시 발견
+- **해결**: 2026-05-27 재번호화 01~10 순차로 정리. Testimonials 07, Trust 08, CTA 09, Footer 10. `data-screen-label`은 CSS·JS 셀렉터 비사용(grep 0건) 확인 → 시각·기능 영향 0. 본 사이클에선 vercel 재배포 안 함, 본격 디자인 수정 사이클 첫 배포 시 함께 반영.
+- **종결 일자**: 2026-05-27 / **종결 사유**: 재번호화 4건 치환 완료.
+
+## ✅ 랜딩 이미지 슬롯 50장 목표 → 41장 (9장 결손) [RESOLVED 2026-05-27]
+
+- **현황**: 이미지 슬롯 50장 목표 중 41장 채워짐. 졸업·결혼·K-pop 외 Hero 추가 후보 영역
+- **위치**: `deploy/.image-slots.state.json`
+- **해결**: 2026-05-27 운영자 결정: 41장으로 마감. 더 손대지 않음.
+- **종결 일자**: 2026-05-27 / **종결 사유**: 운영자 마감 결정.
+
+## ✅ 랜딩 Occasions 4 타일 placeholder [RESOLVED 2026-05-27]
+
+- **현황**: Occasions 7타일 중 챌린지·모임 외 4타일(기업·동창회·생일·추모)이 placeholder
+- **결정 영역**: 운영자. (a) 영상 생성 후 임베드, (b) 정적 이미지로 유지, (c) 일부만 영상화
+- **해결**: 2026-05-27 운영자 결정: 4타일에 이미지로 마감. 영상화 안 함.
+- **종결 일자**: 2026-05-27 / **종결 사유**: 운영자 결정 옵션 (b).
+
 ## ✅ 회원 탈퇴 데드락 — closed 상태 차단 범위에서 제외 [RESOLVED 2026-05-21]
 
 - **원인**: S2-04 P4 회원 탈퇴 사양에서 차단 대상 상태를 `["open", "closed", "rendering"]`으로 설정. 클립 0개로 마감한 이벤트는 rendering으로 전이 불가 → closed 영구 정체 → 탈퇴 불가.

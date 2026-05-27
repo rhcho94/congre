@@ -178,26 +178,7 @@
 - **처리**: 본인 작업 없음. 보정 큐 메모 영역.
 - **발견 경위**: 2026-05-20 S2-04 P1 검증 영역.
 
-## 랜딩 페이지 영역 (L1~L5)
-
-### L1. data-screen-label 중복 — 라벨 두 번 겹침
-
-- **현황**: 랜딩 `index.html`에서 `data-screen-label` 값이 두 번 겹침. Testimonials/Trust/CTA/Footer가 05~08, Showcase/Moments/Occasions가 04~06. 코멘트 컨텍스트 헷갈릴 수 있음.
-- **위치**: `deploy/index.html`
-- **발견 경위**: CD #4 (Landing v4 상태 확인) 자체 점검 시 발견
-- **처리 시점**: 다음 랜딩 수정 사이클에서 라벨 재번호화
-
-### L2. 이미지 슬롯 50장 목표 → 41장 (9장 결손)
-
-- **현황**: 이미지 슬롯 50장 목표 중 41장 채워짐. 졸업·결혼·K-pop 외 Hero 추가 후보 영역
-- **위치**: `deploy/.image-slots.state.json`
-- **처리 시점**: 다음 랜딩 수정 사이클. Kling으로 9장 추가 생성 (NO-TEXT 룰 적용, decisions/landing.md 2026-05-27 (1) 참조)
-
-### L3. Occasions 4 타일 placeholder — 영상화 미정
-
-- **현황**: Occasions 7타일 중 챌린지·모임 외 4타일(기업·동창회·생일·추모)이 placeholder
-- **결정 영역**: 운영자. (a) 영상 생성 후 임베드, (b) 정적 이미지로 유지, (c) 일부만 영상화
-- **처리 시점**: 다음 랜딩 수정 사이클
+## 랜딩 페이지 영역 (L4~L5)
 
 ### L4. 후기 섹션 실사진/아바타 미적용
 
