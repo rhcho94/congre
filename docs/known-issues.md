@@ -189,7 +189,7 @@
 - **현황**: `src/app/api/lead/route.ts`에 honeypot만 구현(L52~57, 검증 전 평가). rate limit은 미구현 — L78에 TODO 주석(`// TODO: rate limit — 봇 트래픽 발견 시 Upstash 격상`). 사양 §5엔 "같은 IP 1분 3회 초과 429"가 있었으나 이번 배포에서 빠짐.
 - **격상 트리거**: 스팸 폼 트래픽 발생 시 → Upstash 등으로 rate limit 도입(사양 §10).
 
-## 랜딩 페이지 영역 (L4~L6)
+## 랜딩 페이지 영역 (L4~L5, L7)
 
 ### L4. 후기 섹션 실사진/아바타 미적용
 
@@ -201,7 +201,7 @@
 - **현황**: 데스크톱은 38초 1바퀴. 모바일 실측 안 됨
 - **처리 시점**: 다음 랜딩 수정 사이클 또는 필드 테스트 시
 
-### L6. pricing.html Pretendard 미전환
+### L7. pricing.html Pretendard 미전환
 
 - **현황**: `deploy/pricing.html`은 index.html과 동일 Cormorant 톤으로 생성. R1~R3 Pretendard 결정은 CD 안에만 보관, R4~R8 zip 일괄 적용 예정이라 현 배포는 아직 Cormorant.
 - **표식**: pricing.html 상단 `<!-- TODO: R4~R8 Pretendard 전환 시 이 페이지도 포함 -->` 주석 박힘.
