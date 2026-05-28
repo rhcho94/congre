@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server";
 import { emailChannel } from "@/lib/notifications/channels/email";
 
 const ALLOWED_ORIGINS = ["https://congre.kr", "https://www.congre.kr"];
-const LEAD_TO = "hello@congre.kr";
+const LEAD_TO = "rhcho@naver.com";
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const EVENT_TYPE_LABEL: Record<string, string> = {
