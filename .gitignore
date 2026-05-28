@@ -45,3 +45,9 @@ next-env.d.ts
 
 # cleanup script logs
 scripts/cleanup-log-*.txt
+
+# OneDrive / Windows
+desktop.ini
+
+# 운영자 분석·참고 문서 (보관용, 추적 안 함)
+*.docx
