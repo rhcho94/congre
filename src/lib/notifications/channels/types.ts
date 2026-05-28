@@ -2,6 +2,7 @@ export interface NotificationMessage {
   subject?: string;
   html?: string;
   text: string;
+  replyTo?: string;
 }
 
 export interface NotificationResult {

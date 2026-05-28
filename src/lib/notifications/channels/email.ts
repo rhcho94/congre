@@ -19,6 +19,7 @@ export const emailChannel: Channel = {
       subject: message.subject ?? "Congre 알림",
       html: message.html ?? `<pre>${message.text}</pre>`,
       text: message.text,
+      ...(message.replyTo ? { replyTo: message.replyTo } : {}),
     });
     if (error) return { success: false, error: error.message };
     return { success: true, messageId: data?.id };
