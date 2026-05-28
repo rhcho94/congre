@@ -178,7 +178,18 @@
 - **처리**: 본인 작업 없음. 보정 큐 메모 영역.
 - **발견 경위**: 2026-05-20 S2-04 P1 검증 영역.
 
-## 랜딩 페이지 영역 (L4~L5)
+## 리드 폼 수신지 코드 상수 하드코딩 (임시 = 개인 네이버)
+
+- **현황**: `src/app/api/lead/route.ts` L5 `const LEAD_TO = "rhcho@naver.com"` 코드 상수. 환경변수 아님. 원래 `hello@congre.kr` 의도였으나 수신용 MX 레코드 없어(발송 전용 도메인) 변경.
+- **잠재성**: 회사 메일함(`hello@congre.kr`) 수신 MX 부재. 리드 알림이 개인 네이버로만 옴. 운영자만 받는 알림이라 당장 문제는 아님.
+- **격상 트리거**: (a) 회사 메일함 정식 구축 시 → 수신 MX 추가 + 환경변수(`LEAD_TO`)로 분리 + 주소 복원, (b) 영업 인력 추가 시 공용 수신함 필요.
+
+## 리드 폼 rate limit 미구현 (honeypot만)
+
+- **현황**: `src/app/api/lead/route.ts`에 honeypot만 구현(L52~57, 검증 전 평가). rate limit은 미구현 — L78에 TODO 주석(`// TODO: rate limit — 봇 트래픽 발견 시 Upstash 격상`). 사양 §5엔 "같은 IP 1분 3회 초과 429"가 있었으나 이번 배포에서 빠짐.
+- **격상 트리거**: 스팸 폼 트래픽 발생 시 → Upstash 등으로 rate limit 도입(사양 §10).
+
+## 랜딩 페이지 영역 (L4~L6)
 
 ### L4. 후기 섹션 실사진/아바타 미적용
 
@@ -190,6 +201,12 @@
 - **현황**: 데스크톱은 38초 1바퀴. 모바일 실측 안 됨
 - **처리 시점**: 다음 랜딩 수정 사이클 또는 필드 테스트 시
 
+### L6. pricing.html Pretendard 미전환
+
+- **현황**: `deploy/pricing.html`은 index.html과 동일 Cormorant 톤으로 생성. R1~R3 Pretendard 결정은 CD 안에만 보관, R4~R8 zip 일괄 적용 예정이라 현 배포는 아직 Cormorant.
+- **표식**: pricing.html 상단 `<!-- TODO: R4~R8 Pretendard 전환 시 이 페이지도 포함 -->` 주석 박힘.
+- **격상 트리거**: R9 zip 적용 시 index.html은 Pretendard 전환되는데 pricing.html 누락되면 이 페이지만 Cormorant로 남음.
+
 ## 본 앱 환경 (L6)
 
 ### L6. 본 앱 로컬 경로 OneDrive 안 — 잠재 격상 트리거 있음
@@ -200,6 +217,7 @@
   - 한글 폴더명("바탕 화면")이 일부 명령행 도구·환경 변수 호환 이슈
   - Webpack·Next.js 빌드 도중 OneDrive 파일 잠금으로 빌드 실패 사례 보고됨
 - **현재 상태**: 운영자가 지금까지 정상 운영. 큰 사고 없음
+- **발현 이력**: 2026-05-28 B 트랙 작업 중 `.next` 폴더 OneDrive 잠금으로 빌드 1회 실패 → `rm -rf .next` 후 재빌드로 우회 (세션 중 수 회). 격상 트리거(`npm run build` 간헐 실패) 실제 발현. 반복 빈도 증가 시 OneDrive 외부 이전 검토.
 - **격상 트리거**:
   - git 명령이 "index.lock" 에러로 실패
   - `npm run build` 간헐 실패

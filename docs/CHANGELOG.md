@@ -2,6 +2,13 @@
 
 > 기능 단위 작업 이력. 최신이 위.
 
+## 2026-05-28
+
+- feat(api): /api/lead 리드 수집 엔드포인트 (가격 페이지 폼 → Resend → 운영자 메일)
+- feat(api): emailChannel reply-to 지원 (어댑터 확장)
+- feat(landing): /pricing 가격 페이지 + 리드 수집 폼 (cleanUrls, nav·footer 연결)
+- docs: B 트랙 결정·known-issue 정식 반영
+
 ## 2026-05-22
 
 - docs(claude): CC 보고 메타 코멘트 금지 룰 추가 (격상 처리)

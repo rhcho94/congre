@@ -118,6 +118,7 @@ npx firebase emulators:start --only firestore
 - 참가자 영상 클립 음량 페이드 (volumeEffect: fadeInFadeOut, BGM mixing 영역)
 - 트랜지션 in/out 분리 (pickSequence 2회 호출, 시각 다양성)
 - outroText + outroMedia 동시 입력 사고 해소 ([A] 분기 직렬 배치)
+- **가격 페이지 + 리드 수집 폼** (랜딩 `/pricing` → 본 앱 `/api/lead` → Resend → 운영자 메일. emailChannel reply-to 확장. 2026-05-28)
 
 ## 랜딩 페이지 (별도 트랙)
 
@@ -147,3 +148,7 @@ npx firebase emulators:start --only firestore
 Hero / Why now / How it works / Showcase / Moments / Occasions / Testimonials / Trust / CTA / Footer
 
 (data-screen-label 라벨 중복 이슈는 known-issues 랜딩 영역 L1)
+
+### 추가 페이지
+
+- `/pricing` (= `deploy/pricing.html`) — 가격 안내 + 리드 수집 폼 (본 앱 `/api/lead` 호출). `vercel.json {"cleanUrls": true}` 적용. 2026-05-28.

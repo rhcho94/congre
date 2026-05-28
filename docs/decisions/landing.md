@@ -2,6 +2,12 @@
 
 > 랜딩 페이지(congre.kr / www.congre.kr, 정적 HTML `deploy/` 폴더) 디자인·자산·배포 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-05-28 — /pricing 가격 페이지 신규 + nav·footer 처리
+
+- **결정**: `deploy/pricing.html` 신규. Hero + 행사유형 카드 4장 + 리드 폼 + footer. `vercel.json {"cleanUrls": true}`로 `/pricing` 깔끔한 URL.
+- **nav "요금"**: 토스트 placeholder 제거 → `/pricing` 연결 (index.html top nav + footer 2곳).
+- **footer**: index.html literal 복사 시 토스트 핸들러 script 부재로 죽은 링크 발생 → 단순화 + 도입문의(메일·카톡 외부 동작) 2개 삭제.
+
 ## 2026-05-27 (4) — 랜딩 카피 아키텍처 전면 교체 (R1·R2·R3 사이클)
 
 - **결정**: 랜딩 메시지 아키텍처 전면 교체. 주요 카피 변경:
