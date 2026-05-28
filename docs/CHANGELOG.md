@@ -8,6 +8,8 @@
 - feat(api): emailChannel reply-to 지원 (어댑터 확장)
 - feat(landing): /pricing 가격 페이지 + 리드 수집 폼 (cleanUrls, nav·footer 연결)
 - docs: B 트랙 결정·known-issue 정식 반영
+- decision: A 트랙 가격 정책 결정 (B5 빈칸 채우기 — 사진 가격대 기준, 세그먼트 차등 없음, 커스텀 상담 트랙 신설, 워터마크·PG 보류)
+- decision(rendering): D1에 B5 갱신 메모 추가 (7일 누락 정정)
 
 ## 2026-05-22
 
