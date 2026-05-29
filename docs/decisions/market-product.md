@@ -2,6 +2,39 @@
 
 > 시장 정의·BM·서비스 모델·영상 가치 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-05-29 (3) — 워터마크 정책 + 무료/유료 차별화 축 + 무료 플랜 사양 공식화
+
+**배경**: 2026-05-28 (2) 5번 결정에서 "워터마크 = 없는 방향 + 정찰 영역"으로 박힘. 본 세션 채팅 클로드 BM 정찰 → 운영자 결정 뒤집기 → 기술 정찰(CC) + 외부 사양 정찰(채팅 클로드) 종합으로 사양 확정.
+
+**결정**:
+
+1. **워터마크 정책**: 무료 플랜에 박음 / 유료 플랜엔 제거. 2026-05-28 (2) 5번 뒤집힘.
+2. **무료/유료 차별화 축**: 클립 길이 / 클립 수 / 워터마크 3축.
+3. **무료 플랜 = 현재 시스템 사양 유지**:
+   - 클립 길이 10초 (src/lib/plans.ts:8 PLAN_MAX_CLIP_SECONDS.free)
+   - 클립 수 10개 (src/lib/plans.ts:3 PLAN_CLIP_LIMITS.free)
+   - 운영자가 본 세션에 결정한 수치가 코드와 일치. plan 인프라 인지 후 결정.
+4. **유료 플랜 실수치 (small/medium/large 클립 길이·수 상한)**: 본 세션 영역 아님. 별도 트랙. 현재 plans.ts:3~8 초기값(small 50/medium 200/large 5000)은 임시값으로 간주.
+5. **워터마크 시각 사양**:
+   - 위치: 우하 (Shotstack `position: "bottomRight"`)
+   - 크기: 중간 (font.size 정밀치는 CD 시안 후 결정)
+   - 텍스트: "made by Congre"
+   - 투명도: 은은하게 (rich-text `font.opacity` 정밀치는 CD 시안 후 결정, 0.3~0.5 영역)
+   - 폰트: Cormorant Garamond italic
+   - 색: 앰버 #c8892c (디자인 토큰 --accent)
+
+**정찰 결과**:
+
+- Shotstack 자체 워터마크 옵션 없음. 별도 트랙 패턴이 표준 (공식 워터마크 튜토리얼 다 이 패턴).
+- plan 인프라 이미 가동 중: events.plan 필드 저장(api/events/route.ts:104) + 읽기(api/clips/route.ts:54) + PlanId 타입(plans.ts:1) + PLAN_CLIP_LIMITS/PLAN_MAX_CLIP_SECONDS 강제.
+- 워터마크 구현 위치: shotstack.ts createRender() 시그니처에 plan 인자 추가 + render/start route에서 eventData.plan 전달. 무료 플랜에만 워터마크 전용 트랙 추가.
+- Cormorant Garamond italic은 Shotstack 자체 호스팅 폰트 목록에 없음. Google Fonts에서 ttf 받아 public/fonts/에 두고 timeline.fonts에 등록 필요 (NotoSansKR 패턴).
+- rich-text asset의 font.opacity 옵션 존재. clip 레벨 position: "bottomRight" 표준 키워드. length: "auto"로 영상 전체 길이 워터마크 가능.
+
+**구현 영역**: 별도 트랙. 본 결정은 사양·정책 박기까지.
+
+**관련**: 2026-05-28 (2), known-issues 신규 2건 (워터마크 시각 정밀 수치, 유료 플랜 실수치)
+
 ## 2026-05-28 (2) — A 트랙 가격 정책 결정 (B5 빈칸 채우기)
 
 ### 배경
@@ -37,6 +70,7 @@
 
 - 무료 플랜의 워터마크는 가능하면 없는 쪽 선호. 단, Shotstack 자체 워터마크 옵션 / 후처리 구현 비용 / 무료 플랜 인센티브 구조 트레이드오프는 정찰 후 결정.
 - 정찰 결과에 따라 (a) 워터마크 없이 다른 제약으로 무료 차별화, (b) 워터마크 유지 둘 중 결정.
+- **2026-05-29 갱신**: 5번 "워터마크 없는 방향" 뒤집힘. 무료에 박음, 유료엔 제거 방향으로 확정. 2026-05-29 (3) 참조.
 
 #### 6. A 트랙 범위 메타 결정
 
