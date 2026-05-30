@@ -1,39 +1,31 @@
 import Link from "next/link";
 import { BrandName } from "@/components/BrandName";
+import PageBackdrop from "@/components/PageBackdrop";
 
 export default function TermsPage() {
   return (
-    <div className="min-h-screen bg-background">
-      <nav className="flex items-center justify-between px-8 py-6 border-b border-border">
-        <Link
-          href="/"
-          className="text-xl tracking-wider hover:opacity-75 transition-opacity duration-200"
-        >
-          <BrandName />
-        </Link>
-        <Link
-          href="/"
-          className="text-xs tracking-widest uppercase text-muted hover:text-accent transition-colors duration-200"
-        >
-          ← 홈
-        </Link>
-      </nav>
+    <>
+      <PageBackdrop pattern="d" />
+      <div className="min-h-screen">
+        <nav className="flex items-center justify-between px-8 py-6">
+          <Link href="/" className="text-xl tracking-wider hover:opacity-75 transition-opacity duration-200">
+            <BrandName />
+          </Link>
+          <Link href="/" className="btn-quiet text-xs tracking-widest uppercase">
+            ← 홈
+          </Link>
+        </nav>
 
-      <main className="mx-auto max-w-3xl px-6 py-16">
-        <div className="mb-10">
-          <p className="text-xs tracking-[0.4em] uppercase text-accent mb-3">Legal</p>
-          <h1
-            className="text-3xl italic text-foreground"
-            style={{ fontFamily: "var(--font-display, serif)" }}
-          >
-            Congre 서비스 이용약관
-          </h1>
-          <p className="text-xs text-muted mt-3">시행일: 2026년 5월 11일 (v0.1) | v0.2 개정: 2026년 5월 20일</p>
-        </div>
+        <main className="mx-auto max-w-3xl px-6 py-16">
+          <div className="mb-10">
+            <p className="eyebrow mb-3">Legal</p>
+            <h1 className="display text-3xl">Congre 서비스 이용약관</h1>
+            <p className="text-xs text-muted mt-3">시행일: 2026년 5월 11일 (v0.1) | v0.2 개정: 2026년 5월 20일</p>
+          </div>
 
-        <div className="rule mb-10" />
+          <div className="hr mb-10" />
 
-        <div className="flex flex-col gap-12 text-sm leading-relaxed text-muted">
+          <div className="card flex flex-col gap-12 text-sm leading-relaxed text-muted">
           {/* 제1장 총칙 */}
           <section className="flex flex-col gap-4">
             <h2 className="text-base font-medium text-foreground tracking-wide">제1장 총칙</h2>
@@ -351,6 +343,7 @@ export default function TermsPage() {
           </Link>
         </div>
       </main>
-    </div>
+      </div>
+    </>
   );
 }

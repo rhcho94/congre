@@ -1,39 +1,31 @@
 import Link from "next/link";
 import { BrandName } from "@/components/BrandName";
+import PageBackdrop from "@/components/PageBackdrop";
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-background">
-      <nav className="flex items-center justify-between px-8 py-6 border-b border-border">
-        <Link
-          href="/"
-          className="text-xl tracking-wider hover:opacity-75 transition-opacity duration-200"
-        >
-          <BrandName />
-        </Link>
-        <Link
-          href="/"
-          className="text-xs tracking-widest uppercase text-muted hover:text-accent transition-colors duration-200"
-        >
-          ← 홈
-        </Link>
-      </nav>
+    <>
+      <PageBackdrop pattern="d" />
+      <div className="min-h-screen">
+        <nav className="flex items-center justify-between px-8 py-6">
+          <Link href="/" className="text-xl tracking-wider hover:opacity-75 transition-opacity duration-200">
+            <BrandName />
+          </Link>
+          <Link href="/" className="btn-quiet text-xs tracking-widest uppercase">
+            ← 홈
+          </Link>
+        </nav>
 
-      <main className="mx-auto max-w-3xl px-6 py-16">
-        <div className="mb-10">
-          <p className="text-xs tracking-[0.4em] uppercase text-accent mb-3">Legal</p>
-          <h1
-            className="text-3xl italic text-foreground"
-            style={{ fontFamily: "var(--font-display, serif)" }}
-          >
-            Congre 개인정보처리방침
-          </h1>
-          <p className="text-xs text-muted mt-3">시행일: 2026년 5월 11일 (v0.1) | v0.2 개정: 2026년 5월 20일</p>
-        </div>
+        <main className="mx-auto max-w-3xl px-6 py-16">
+          <div className="mb-10">
+            <p className="eyebrow mb-3">Legal</p>
+            <h1 className="display text-3xl">Congre 개인정보처리방침</h1>
+            <p className="text-xs text-muted mt-3">시행일: 2026년 5월 11일 (v0.1) | v0.2 개정: 2026년 5월 20일</p>
+          </div>
 
-        <div className="rule mb-10" />
+          <div className="hr mb-10" />
 
-        <div className="flex flex-col gap-12 text-sm leading-relaxed text-muted">
+          <div className="card flex flex-col gap-12 text-sm leading-relaxed text-muted">
           <section className="flex flex-col gap-2">
             <p>
               Congre(이하 "회사"라 함)는 「개인정보 보호법」 제30조에 따라 정보주체의 개인정보를 보호하고 이와 관련한 고충을 신속하고 원활하게 처리할 수 있도록 다음과 같이 개인정보 처리방침을 수립·공개합니다.
@@ -437,6 +429,7 @@ export default function PrivacyPage() {
           </Link>
         </div>
       </main>
-    </div>
+      </div>
+    </>
   );
 }

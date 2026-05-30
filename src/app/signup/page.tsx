@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { BrandName } from "@/components/BrandName";
+import PageBackdrop from "@/components/PageBackdrop";
 import { useRouter } from "next/navigation";
 import { signUpWithEmail } from "@/lib/auth";
 import { isFirebaseConfigured } from "@/lib/firebase";
@@ -21,6 +22,14 @@ function getSignupErrorMessage(code: string): string {
       return "가입 중 오류가 발생했습니다. 다시 시도해주세요.";
   }
 }
+
+const glassPanel: React.CSSProperties = {
+  background: "color-mix(in srgb, var(--surface-1) 78%, transparent)",
+  backdropFilter: "blur(22px) saturate(140%)",
+  WebkitBackdropFilter: "blur(22px) saturate(140%)",
+  border: "1px solid var(--hairline-strong)",
+  borderRadius: "var(--r-lg)",
+};
 
 export default function SignupPage() {
   const router = useRouter();
@@ -60,44 +69,25 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <nav className="flex items-center justify-between px-8 py-6 border-b border-border">
-        <Link
-          href="/"
-          className="text-xl tracking-wider hover:opacity-75 transition-opacity duration-200"
-        >
-          <BrandName />
-        </Link>
-        <Link
-          href="/host"
-          className="text-xs tracking-widest uppercase text-muted hover:text-accent transition-colors duration-200"
-        >
-          로그인
-        </Link>
-      </nav>
+    <>
+      <PageBackdrop pattern="a" />
+      <div className="min-h-screen">
+        <nav className="flex items-center justify-between px-8 py-6">
+          <Link href="/" className="text-xl tracking-wider hover:opacity-75 transition-opacity duration-200">
+            <BrandName />
+          </Link>
+          <Link href="/host" className="btn-quiet text-xs tracking-widest uppercase">
+            로그인
+          </Link>
+        </nav>
 
-      <main className="mx-auto max-w-md px-6 py-16">
-        <div className="relative isolate flex flex-col items-center">
-          <div
-            className="pointer-events-none absolute inset-0 opacity-25"
-            style={{
-              background: "radial-gradient(ellipse 100% 90% at 50% 50%, #c8892c 0%, transparent 70%)",
-              zIndex: -1,
-            }}
-            aria-hidden
-          />
-
-          <div className="w-full">
-            <p className="text-xs tracking-[0.4em] uppercase text-accent mb-4 text-center">Host</p>
-            <h1
-              className="text-3xl italic text-foreground text-center mb-10"
-              style={{ fontFamily: "var(--font-display, serif)" }}
-            >
-              호스트 가입
-            </h1>
+        <main className="mx-auto max-w-md px-6 py-16">
+          <div className="w-full p-10" style={glassPanel}>
+            <p className="eyebrow mb-4 text-center">Host</p>
+            <h1 className="display text-3xl text-center mb-10">호스트 가입</h1>
 
             {!isFirebaseConfigured && (
-              <div className="mb-6 p-4 border border-border bg-surface">
+              <div className="mb-6 card">
                 <p className="text-xs text-accent mb-1 font-medium tracking-wide">Firebase 미연결</p>
                 <p className="text-xs text-muted leading-relaxed">
                   .env.local에 Firebase 설정값을 추가하면 실제 가입이 가능합니다.
@@ -107,7 +97,7 @@ export default function SignupPage() {
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <label htmlFor="signup-email" className="flex flex-col gap-1.5">
-                <span className="text-xs tracking-widest uppercase text-muted">이메일</span>
+                <span className="eyebrow">이메일</span>
                 <input
                   id="signup-email"
                   name="email"
@@ -117,12 +107,12 @@ export default function SignupPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   disabled={loading}
-                  className="bg-surface border border-border px-4 py-3 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-accent transition-colors duration-200 disabled:opacity-50"
+                  className="input"
                 />
               </label>
 
               <label htmlFor="signup-password" className="flex flex-col gap-1.5">
-                <span className="text-xs tracking-widest uppercase text-muted">비밀번호</span>
+                <span className="eyebrow">비밀번호</span>
                 <input
                   id="signup-password"
                   name="password"
@@ -133,12 +123,12 @@ export default function SignupPage() {
                   required
                   minLength={6}
                   disabled={loading}
-                  className="bg-surface border border-border px-4 py-3 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-accent transition-colors duration-200 disabled:opacity-50"
+                  className="input"
                 />
               </label>
 
               <label htmlFor="signup-name" className="flex flex-col gap-1.5">
-                <span className="text-xs tracking-widest uppercase text-muted">이름</span>
+                <span className="eyebrow">이름</span>
                 <input
                   id="signup-name"
                   name="name"
@@ -148,12 +138,12 @@ export default function SignupPage() {
                   onChange={(e) => setName(e.target.value)}
                   required
                   disabled={loading}
-                  className="bg-surface border border-border px-4 py-3 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-accent transition-colors duration-200 disabled:opacity-50"
+                  className="input"
                 />
               </label>
 
               <label htmlFor="signup-phone" className="flex flex-col gap-1.5">
-                <span className="text-xs tracking-widest uppercase text-muted">전화번호</span>
+                <span className="eyebrow">전화번호</span>
                 <input
                   id="signup-phone"
                   name="phone"
@@ -163,7 +153,7 @@ export default function SignupPage() {
                   onChange={(e) => setPhone(e.target.value)}
                   required
                   disabled={loading}
-                  className="bg-surface border border-border px-4 py-3 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-accent transition-colors duration-200 disabled:opacity-50"
+                  className="input"
                 />
               </label>
 
@@ -177,11 +167,7 @@ export default function SignupPage() {
                     className="mt-0.5 accent-[#c8892c]"
                   />
                   <span className="text-xs text-muted leading-relaxed">
-                    <Link
-                      href="/terms"
-                      target="_blank"
-                      className="text-accent hover:underline"
-                    >
+                    <Link href="/terms" target="_blank" className="text-accent hover:underline">
                       이용약관
                     </Link>
                     에 동의합니다 (필수)
@@ -196,11 +182,7 @@ export default function SignupPage() {
                     className="mt-0.5 accent-[#c8892c]"
                   />
                   <span className="text-xs text-muted leading-relaxed">
-                    <Link
-                      href="/privacy"
-                      target="_blank"
-                      className="text-accent hover:underline"
-                    >
+                    <Link href="/privacy" target="_blank" className="text-accent hover:underline">
                       개인정보처리방침
                     </Link>
                     에 동의합니다 (필수)
@@ -212,27 +194,20 @@ export default function SignupPage() {
                 <p className="text-xs" style={{ color: "#d45040" }}>{error}</p>
               )}
 
-              <button
-                type="submit"
-                disabled={!canSubmit}
-                className="mt-2 py-3.5 bg-gradient-to-b from-[#f5b04a] to-[#a06f1f] text-background text-sm tracking-widest uppercase font-medium hover:brightness-110 transition-all duration-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_4px_12px_rgba(0,0,0,0.4),0_0_40px_rgba(200,137,44,0.3)] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_6px_16px_rgba(0,0,0,0.5),0_0_50px_rgba(200,137,44,0.4)] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:brightness-100"
-              >
+              <button type="submit" disabled={!canSubmit} className="btn btn-primary mt-2">
                 {loading ? "가입 중..." : "가입하기"}
               </button>
             </form>
 
             <div className="mt-4 text-center">
               <span className="text-xs text-muted">이미 계정이 있으신가요? </span>
-              <Link
-                href="/host"
-                className="text-xs text-muted hover:text-accent transition-colors duration-200"
-              >
+              <Link href="/host" className="btn-quiet text-xs">
                 로그인
               </Link>
             </div>
           </div>
-        </div>
-      </main>
-    </div>
+        </main>
+      </div>
+    </>
   );
 }

@@ -11,6 +11,7 @@ import { getClipPlaybackUrl, toggleClipExclusion } from "@/lib/clip-playback";
 import { getPresignedUrl, uploadToS3 } from "@/lib/s3";
 import CongreBadge from "@/components/CongreBadge";
 import { BrandName } from "@/components/BrandName";
+import PageBackdrop from "@/components/PageBackdrop";
 
 const statusLabels: Record<string, string> = {
   open: "수집중",
@@ -19,11 +20,11 @@ const statusLabels: Record<string, string> = {
   done: "편집 완료",
 };
 
-const statusColors: Record<string, string> = {
-  open: "var(--accent)",
-  closed: "var(--muted)",
-  rendering: "#7b8ce0",
-  done: "#5ba06e",
+const statusBadgeClass: Record<string, string> = {
+  open: "badge-live",
+  closed: "badge-draft",
+  rendering: "badge-draft",
+  done: "badge-done",
 };
 
 interface KakaoInstance {
@@ -67,6 +68,11 @@ function formatUploadTime(ts: number | null | undefined): string {
     minute: "numeric",
   });
 }
+
+const dangerBtnStyle: React.CSSProperties = {
+  background: "#b91c1c",
+  color: "#fff",
+};
 
 export default function EventDetailPage() {
   const { eventId } = useParams<{ eventId: string }>();
@@ -263,7 +269,6 @@ export default function EventDetailPage() {
     }
   }, []);
 
-  // Kakao SDK 동적 로드
   useEffect(() => {
     const key = process.env.NEXT_PUBLIC_KAKAO_APP_KEY;
     if (!key) return;
@@ -384,7 +389,7 @@ export default function EventDetailPage() {
       setIntroDisplayUrl(data.introMediaUrl ?? null);
       setOutroDisplayUrl(data.outroMediaUrl ?? null);
     } catch {
-      // 표시 URL 갱신 실패는 silent (업로드 자체는 성공)
+      // silent
     }
   }
 
@@ -555,545 +560,490 @@ export default function EventDetailPage() {
 
   if (authChecking || eventLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-xs tracking-widest uppercase text-muted animate-pulse">로딩 중...</p>
-      </div>
+      <>
+        <PageBackdrop pattern="c" />
+        <div className="min-h-screen flex items-center justify-center">
+          <p className="eyebrow animate-pulse">로딩 중...</p>
+        </div>
+      </>
     );
   }
 
   if (!event) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
-        <p className="text-muted text-sm">이벤트를 찾을 수 없습니다.</p>
-        <Link href="/dashboard" className="text-xs text-accent tracking-widest uppercase">
-          ← 대시보드
-        </Link>
-      </div>
+      <>
+        <PageBackdrop pattern="c" />
+        <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+          <p className="text-muted text-sm">이벤트를 찾을 수 없습니다.</p>
+          <Link href="/dashboard" className="btn-quiet text-xs tracking-widest uppercase text-accent">
+            ← 대시보드
+          </Link>
+        </div>
+      </>
     );
   }
 
   const isClosed = event.status !== "open";
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Close confirmation modal */}
-      {showCloseModal && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-6">
-          <div className="bg-[var(--surface)] border border-border p-8 max-w-sm w-full">
-            <p
-              className="text-lg italic text-foreground mb-3"
-              style={{ fontFamily: "var(--font-display, serif)" }}
-            >
-              정말 마감하시겠습니까?
-            </p>
-            <p className="text-sm text-muted mb-6 leading-relaxed">
-              마감하면 참가자들이 더 이상 영상을 업로드할 수 없습니다.
-              <br />
-              <strong className="text-foreground">이 작업은 되돌릴 수 없습니다.</strong>
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowCloseModal(false)}
-                disabled={closing}
-                className="flex-1 py-3 border border-border text-muted text-xs tracking-widest uppercase hover:border-accent hover:text-foreground transition-all duration-200 disabled:opacity-50"
-              >
-                취소
-              </button>
-              <button
-                onClick={handleClose}
-                disabled={closing}
-                className="flex-1 py-3 bg-red-600 text-white text-xs tracking-widest uppercase hover:bg-red-700 transition-all duration-200 disabled:opacity-50"
-              >
-                {closing ? "처리 중..." : "마감 확인"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <nav className="flex items-center justify-between px-8 py-6 border-b border-border">
-        <Link
-          href="/"
-          className="text-xl tracking-wider hover:opacity-75 transition-opacity duration-200"
-        >
-          <BrandName />
-        </Link>
-        <div className="flex items-center gap-4">
-          <Link
-            href="/guide/host"
-            className="text-xs tracking-widest uppercase text-muted hover:text-accent transition-colors duration-200"
-          >
-            사용 가이드
-          </Link>
-          <Link
-            href="/mypage"
-            className="text-xs tracking-widest uppercase text-muted hover:text-accent transition-colors duration-200"
-          >
-            마이페이지
-          </Link>
-          <Link
-            href="/dashboard"
-            className="text-xs tracking-widest uppercase text-muted hover:text-accent transition-colors duration-200"
-          >
-            ← 대시보드
-          </Link>
-        </div>
-      </nav>
-
-      <main className="mx-auto max-w-3xl px-6 py-16">
-        {/* Event header */}
-        <div className="flex items-start justify-between mb-10 gap-4">
-          <div className="min-w-0">
-            <p className="text-xs tracking-[0.4em] uppercase text-accent mb-2">Event</p>
-            <h1
-              className="text-3xl italic text-foreground"
-              style={{ fontFamily: "var(--font-display, serif)" }}
-            >
-              {event.title}
-            </h1>
-            <p className="text-xs text-muted mt-2">
-              {event.date ? new Date(event.date).toLocaleDateString("ko-KR") : ""}
-            </p>
-          </div>
-          <div className="flex flex-col items-end gap-3 shrink-0">
-            <span
-              className="text-xs tracking-widest uppercase"
-              style={{ color: statusColors[event.status] }}
-            >
-              {statusLabels[event.status]}
-            </span>
-            {!isClosed && (
-              <button
-                onClick={() => setShowCloseModal(true)}
-                disabled={closing}
-                className="px-4 py-2 bg-red-600 text-white text-xs tracking-widest uppercase hover:bg-red-700 transition-all duration-200 disabled:opacity-50"
-              >
-                마감하기
-              </button>
-            )}
-            {event.status === "closed" && clips.length > 0 && (
-              <button
-                onClick={handleRestartRender}
-                disabled={closing}
-                className="px-4 py-2 bg-red-600 text-white text-xs tracking-widest uppercase hover:bg-red-700 transition-all duration-200 disabled:opacity-50"
-              >
-                {closing ? "처리 중..." : "영상 생성 다시 시작"}
-              </button>
-            )}
-          </div>
-        </div>
-
-        <div className="rule mb-8" />
-
-        {/* QR 코드 & 공유 링크 — 수집중(open)일 때만 표시 */}
-        {event.status === "open" && shareUrl && (
-          <div className="mb-8 w-full overflow-hidden">
-            <p className="text-xs tracking-widest uppercase text-muted mb-4">참가자 초대</p>
-            <div className="flex flex-col sm:flex-row gap-6 p-6 border border-border bg-surface">
-              <div className="shrink-0 flex flex-col items-center gap-2">
-                <QRCodeSVG
-                  value={shareUrl}
-                  size={140}
-                  bgColor="#151310"
-                  fgColor="#ede8df"
-                  level="M"
-                />
-                <button
-                  onClick={handleQRDownload}
-                  className="px-3 py-1.5 border border-border text-xs text-foreground hover:border-accent hover:text-accent transition-all duration-200"
-                >
-                  QR 이미지 저장
+    <>
+      <PageBackdrop pattern="c" />
+      <div className="min-h-screen">
+        {/* Close confirmation modal */}
+        {showCloseModal && (
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-6">
+            <div className="card max-w-sm w-full">
+              <p className="display text-lg mb-3">정말 마감하시겠습니까?</p>
+              <p className="text-sm text-muted mb-6 leading-relaxed">
+                마감하면 참가자들이 더 이상 영상을 업로드할 수 없습니다.
+                <br />
+                <strong className="text-foreground">이 작업은 되돌릴 수 없습니다.</strong>
+              </p>
+              <div className="flex gap-3">
+                <button onClick={() => setShowCloseModal(false)} disabled={closing} className="btn btn-secondary flex-1">
+                  취소
                 </button>
-              </div>
-              <div className="flex-1 min-w-0 flex flex-col justify-center gap-3">
-                <p className="text-xs text-muted leading-relaxed">
-                  QR코드를 스캔하거나 링크를 공유하세요.
-                </p>
-                <div className="flex items-center gap-2">
-                  <span className="flex-1 min-w-0 text-xs text-foreground bg-[var(--surface-2)] border border-border px-3 py-2 truncate font-mono">
-                    {shareUrl}
-                  </span>
-                  <button
-                    onClick={handleCopy}
-                    className="shrink-0 px-3 py-2 border border-border text-xs text-muted hover:border-accent hover:text-foreground transition-all duration-200"
-                  >
-                    {copied ? "복사됨" : "복사"}
-                  </button>
-                </div>
+                <button onClick={handleClose} disabled={closing} className="btn flex-1" style={dangerBtnStyle}>
+                  {closing ? "처리 중..." : "마감 확인"}
+                </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* 영상 시작·끝 꾸미기 */}
-        <div className={`mb-8 p-6 border border-border bg-[var(--surface-2)] rounded-xl ${isClosed ? "opacity-60" : ""}`}>
-          <p className="text-xs tracking-widest uppercase text-muted mb-1">선택 옵션 — 영상 시작·끝 꾸미기</p>
-          <p className="text-xs text-muted mb-5 leading-relaxed" style={{ opacity: 0.7 }}>
-            이벤트 영상 시작과 끝에 짧은 동영상, 텍스트, 사진을 추가할 수 있어요. 비워두면 참가자 영상만으로 만들어집니다.
-          </p>
+        <nav className="flex items-center justify-between px-8 py-6">
+          <Link href="/" className="text-xl tracking-wider hover:opacity-75 transition-opacity duration-200">
+            <BrandName />
+          </Link>
+          <div className="flex items-center gap-4">
+            <Link href="/guide/host" className="btn-quiet text-xs tracking-widest uppercase">
+              사용 가이드
+            </Link>
+            <Link href="/mypage" className="btn-quiet text-xs tracking-widest uppercase">
+              마이페이지
+            </Link>
+            <Link href="/dashboard" className="btn-quiet text-xs tracking-widest uppercase">
+              ← 대시보드
+            </Link>
+          </div>
+        </nav>
 
-          <div className="flex flex-col gap-6">
-            {/* 영상 시작 화면 */}
-            <div className="flex flex-col gap-3">
-              <span className="text-xs tracking-widest uppercase text-muted">영상 시작 화면</span>
-
-              <div className="flex flex-col gap-1.5">
-                <span className="flex items-center justify-between">
-                  <span className="text-xs text-muted">텍스트</span>
-                  <span className="text-xs text-muted">{introText.length} / 60</span>
-                </span>
-                <textarea
-                  rows={2}
-                  maxLength={60}
-                  placeholder="예: 결혼식이 시작됩니다"
-                  value={introText}
-                  onChange={(e) => setIntroText(e.target.value)}
-                  disabled={isClosed}
-                  className="bg-surface border border-border px-4 py-3 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-accent transition-colors duration-200 disabled:opacity-50 resize-none"
-                />
-                {(introText.trim() !== "" || savedIntroText.trim() !== "") && !isClosed ? (
-                  <span className="self-end text-xs text-muted">
-                    {savingIntroText
-                      ? "저장 중..."
-                      : introText !== savedIntroText
-                      ? "변경 중..."
-                      : <span style={{ color: "var(--accent)" }}>✓ 저장됨</span>
-                    }
-                  </span>
-                ) : null}
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <span className="text-xs text-muted">미디어 (이미지 또는 영상)</span>
-                {introUploading ? (
-                  <div className="flex items-center gap-2 py-4">
-                    <Loader2 size={14} className="animate-spin text-accent" />
-                    <span className="text-xs text-muted">업로드 중...</span>
-                  </div>
-                ) : introDisplayUrl ? (
-                  <div className="relative inline-block self-start">
-                    {introMediaType === "video" ? (
-                      <video src={introDisplayUrl} controls playsInline className="max-h-48 object-cover" />
-                    ) : (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={introDisplayUrl} alt="인트로 미디어" className="max-h-48 object-cover" />
-                    )}
-                    {!isClosed && (
-                      <button
-                        onClick={handleIntroMediaDelete}
-                        className="absolute top-2 right-2 px-2 py-1 text-xs text-white transition-all duration-200"
-                        style={{ background: "rgba(0,0,0,0.6)" }}
-                      >
-                        삭제
-                      </button>
-                    )}
-                  </div>
-                ) : !isClosed ? (
-                  <label className="inline-flex items-center gap-2 px-4 py-2 border border-border text-xs tracking-widest uppercase text-muted hover:border-accent hover:text-foreground transition-all duration-200 cursor-pointer self-start">
-                    + 미디어 선택
-                    <input
-                      type="file"
-                      accept="image/*,video/*"
-                      className="sr-only"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) handleIntroMediaUpload(file);
-                        e.target.value = "";
-                      }}
-                    />
-                  </label>
-                ) : null}
-              </div>
+        <main className="mx-auto max-w-3xl px-6 py-16">
+          {/* Event header */}
+          <div className="flex items-start justify-between mb-10 gap-4">
+            <div className="min-w-0">
+              <p className="eyebrow mb-2">Event</p>
+              <h1 className="display text-3xl">{event.title}</h1>
+              <p className="text-xs text-muted mt-2">
+                {event.date ? new Date(event.date).toLocaleDateString("ko-KR") : ""}
+              </p>
             </div>
-
-            {/* 영상 마무리 화면 */}
-            <div className="flex flex-col gap-3">
-              <span className="text-xs tracking-widest uppercase text-muted">영상 마무리 화면</span>
-
-              <div className="flex flex-col gap-1.5">
-                <span className="flex items-center justify-between">
-                  <span className="text-xs text-muted">텍스트</span>
-                  <span className="text-xs text-muted">{outroText.length} / 60</span>
-                </span>
-                <textarea
-                  rows={2}
-                  maxLength={60}
-                  placeholder="예: 함께해 주셔서 감사합니다"
-                  value={outroText}
-                  onChange={(e) => setOutroText(e.target.value)}
-                  disabled={isClosed}
-                  className="bg-surface border border-border px-4 py-3 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-accent transition-colors duration-200 disabled:opacity-50 resize-none"
-                />
-                {(outroText.trim() !== "" || savedOutroText.trim() !== "") && !isClosed ? (
-                  <span className="self-end text-xs text-muted">
-                    {savingOutroText
-                      ? "저장 중..."
-                      : outroText !== savedOutroText
-                      ? "변경 중..."
-                      : <span style={{ color: "var(--accent)" }}>✓ 저장됨</span>
-                    }
-                  </span>
-                ) : null}
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <span className="text-xs text-muted">미디어 (이미지 또는 영상)</span>
-                {outroUploading ? (
-                  <div className="flex items-center gap-2 py-4">
-                    <Loader2 size={14} className="animate-spin text-accent" />
-                    <span className="text-xs text-muted">업로드 중...</span>
-                  </div>
-                ) : outroDisplayUrl ? (
-                  <div className="relative inline-block self-start">
-                    {outroMediaType === "video" ? (
-                      <video src={outroDisplayUrl} controls playsInline className="max-h-48 object-cover" />
-                    ) : (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={outroDisplayUrl} alt="아웃트로 미디어" className="max-h-48 object-cover" />
-                    )}
-                    {!isClosed && (
-                      <button
-                        onClick={handleOutroMediaDelete}
-                        className="absolute top-2 right-2 px-2 py-1 text-xs text-white transition-all duration-200"
-                        style={{ background: "rgba(0,0,0,0.6)" }}
-                      >
-                        삭제
-                      </button>
-                    )}
-                  </div>
-                ) : !isClosed ? (
-                  <label className="inline-flex items-center gap-2 px-4 py-2 border border-border text-xs tracking-widest uppercase text-muted hover:border-accent hover:text-foreground transition-all duration-200 cursor-pointer self-start">
-                    + 미디어 선택
-                    <input
-                      type="file"
-                      accept="image/*,video/*"
-                      className="sr-only"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) handleOutroMediaUpload(file);
-                        e.target.value = "";
-                      }}
-                    />
-                  </label>
-                ) : null}
-              </div>
+            <div className="flex flex-col items-end gap-3 shrink-0">
+              <span className={`badge ${statusBadgeClass[event.status] ?? "badge-draft"}`}>
+                {statusLabels[event.status]}
+              </span>
+              {!isClosed && (
+                <button
+                  onClick={() => setShowCloseModal(true)}
+                  disabled={closing}
+                  className="btn"
+                  style={{ ...dangerBtnStyle, height: 40, padding: "0 16px", fontSize: 13 }}
+                >
+                  마감하기
+                </button>
+              )}
+              {event.status === "closed" && clips.length > 0 && (
+                <button
+                  onClick={handleRestartRender}
+                  disabled={closing}
+                  className="btn btn-primary"
+                  style={{ height: 40, padding: "0 16px", fontSize: 13 }}
+                >
+                  {closing ? "처리 중..." : "영상 생성 다시 시작"}
+                </button>
+              )}
             </div>
           </div>
-        </div>
 
-        {/* 렌더링 / 완성 상태 */}
-        {event.status === "rendering" ? (
-          <div className="mb-8 p-5 border border-border bg-surface">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-2 h-2 rounded-full bg-[#7b8ce0] animate-pulse" />
-              <p className="text-sm text-muted">AI가 영상을 편집하고 있습니다...</p>
+          <div className="hr mb-8" />
+
+          {/* QR & 공유 — open일 때만 */}
+          {event.status === "open" && shareUrl && (
+            <div className="mb-8">
+              <p className="eyebrow mb-4">참가자 초대</p>
+              <div className="card flex flex-col sm:flex-row gap-6">
+                <div className="shrink-0 flex flex-col items-center gap-2">
+                  <QRCodeSVG value={shareUrl} size={140} bgColor="#151310" fgColor="#ede8df" level="M" />
+                  <button onClick={handleQRDownload} className="btn btn-secondary" style={{ height: 32, padding: "0 12px", fontSize: 11 }}>
+                    QR 이미지 저장
+                  </button>
+                </div>
+                <div className="flex-1 min-w-0 flex flex-col justify-center gap-3">
+                  <p className="text-xs text-muted leading-relaxed">
+                    QR코드를 스캔하거나 링크를 공유하세요.
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="flex-1 min-w-0 text-xs text-foreground px-3 py-2 truncate font-mono"
+                      style={{ background: "var(--surface-2)", border: "1px solid var(--hairline)", borderRadius: "var(--r-sm)" }}
+                    >
+                      {shareUrl}
+                    </span>
+                    <button onClick={handleCopy} className="btn btn-secondary shrink-0" style={{ height: 36, padding: "0 14px", fontSize: 12 }}>
+                      {copied ? "복사됨" : "복사"}
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
-            <p className="text-xs text-muted opacity-60 pl-5">
-              3~5분 소요 · 완료되면 자동으로 업데이트됩니다
+          )}
+
+          {/* 영상 시작·끝 꾸미기 */}
+          <div className={`card mb-8 ${isClosed ? "opacity-60" : ""}`}>
+            <p className="eyebrow mb-1">선택 옵션 — 영상 시작·끝 꾸미기</p>
+            <p className="text-xs text-muted mb-5 leading-relaxed" style={{ opacity: 0.7 }}>
+              이벤트 영상 시작과 끝에 짧은 동영상, 텍스트, 사진을 추가할 수 있어요. 비워두면 참가자 영상만으로 만들어집니다.
             </p>
+
+            <div className="flex flex-col gap-6">
+              {/* 영상 시작 화면 */}
+              <div className="flex flex-col gap-3">
+                <span className="eyebrow">영상 시작 화면</span>
+
+                <div className="flex flex-col gap-1.5">
+                  <span className="flex items-center justify-between">
+                    <span className="text-xs text-muted">텍스트</span>
+                    <span className="text-xs text-muted">{introText.length} / 60</span>
+                  </span>
+                  <textarea
+                    rows={2}
+                    maxLength={60}
+                    placeholder="예: 결혼식이 시작됩니다"
+                    value={introText}
+                    onChange={(e) => setIntroText(e.target.value)}
+                    disabled={isClosed}
+                    className="input resize-none"
+                    style={{ height: "auto", padding: "12px 14px" }}
+                  />
+                  {(introText.trim() !== "" || savedIntroText.trim() !== "") && !isClosed ? (
+                    <span className="self-end text-xs text-muted">
+                      {savingIntroText
+                        ? "저장 중..."
+                        : introText !== savedIntroText
+                        ? "변경 중..."
+                        : <span style={{ color: "var(--accent)" }}>✓ 저장됨</span>
+                      }
+                    </span>
+                  ) : null}
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-xs text-muted">미디어 (이미지 또는 영상)</span>
+                  {introUploading ? (
+                    <div className="flex items-center gap-2 py-4">
+                      <Loader2 size={14} className="animate-spin text-accent" />
+                      <span className="text-xs text-muted">업로드 중...</span>
+                    </div>
+                  ) : introDisplayUrl ? (
+                    <div className="relative inline-block self-start">
+                      {introMediaType === "video" ? (
+                        <video src={introDisplayUrl} controls playsInline className="max-h-48 object-cover" />
+                      ) : (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={introDisplayUrl} alt="인트로 미디어" className="max-h-48 object-cover" />
+                      )}
+                      {!isClosed && (
+                        <button
+                          onClick={handleIntroMediaDelete}
+                          className="absolute top-2 right-2 px-2 py-1 text-xs text-white transition-all duration-200"
+                          style={{ background: "rgba(0,0,0,0.6)" }}
+                        >
+                          삭제
+                        </button>
+                      )}
+                    </div>
+                  ) : !isClosed ? (
+                    <label className="btn btn-secondary cursor-pointer self-start" style={{ height: 40, padding: "0 16px", fontSize: 12 }}>
+                      + 미디어 선택
+                      <input
+                        type="file"
+                        accept="image/*,video/*"
+                        className="sr-only"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleIntroMediaUpload(file);
+                          e.target.value = "";
+                        }}
+                      />
+                    </label>
+                  ) : null}
+                </div>
+              </div>
+
+              {/* 영상 마무리 화면 */}
+              <div className="flex flex-col gap-3">
+                <span className="eyebrow">영상 마무리 화면</span>
+
+                <div className="flex flex-col gap-1.5">
+                  <span className="flex items-center justify-between">
+                    <span className="text-xs text-muted">텍스트</span>
+                    <span className="text-xs text-muted">{outroText.length} / 60</span>
+                  </span>
+                  <textarea
+                    rows={2}
+                    maxLength={60}
+                    placeholder="예: 함께해 주셔서 감사합니다"
+                    value={outroText}
+                    onChange={(e) => setOutroText(e.target.value)}
+                    disabled={isClosed}
+                    className="input resize-none"
+                    style={{ height: "auto", padding: "12px 14px" }}
+                  />
+                  {(outroText.trim() !== "" || savedOutroText.trim() !== "") && !isClosed ? (
+                    <span className="self-end text-xs text-muted">
+                      {savingOutroText
+                        ? "저장 중..."
+                        : outroText !== savedOutroText
+                        ? "변경 중..."
+                        : <span style={{ color: "var(--accent)" }}>✓ 저장됨</span>
+                      }
+                    </span>
+                  ) : null}
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-xs text-muted">미디어 (이미지 또는 영상)</span>
+                  {outroUploading ? (
+                    <div className="flex items-center gap-2 py-4">
+                      <Loader2 size={14} className="animate-spin text-accent" />
+                      <span className="text-xs text-muted">업로드 중...</span>
+                    </div>
+                  ) : outroDisplayUrl ? (
+                    <div className="relative inline-block self-start">
+                      {outroMediaType === "video" ? (
+                        <video src={outroDisplayUrl} controls playsInline className="max-h-48 object-cover" />
+                      ) : (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={outroDisplayUrl} alt="아웃트로 미디어" className="max-h-48 object-cover" />
+                      )}
+                      {!isClosed && (
+                        <button
+                          onClick={handleOutroMediaDelete}
+                          className="absolute top-2 right-2 px-2 py-1 text-xs text-white transition-all duration-200"
+                          style={{ background: "rgba(0,0,0,0.6)" }}
+                        >
+                          삭제
+                        </button>
+                      )}
+                    </div>
+                  ) : !isClosed ? (
+                    <label className="btn btn-secondary cursor-pointer self-start" style={{ height: 40, padding: "0 16px", fontSize: 12 }}>
+                      + 미디어 선택
+                      <input
+                        type="file"
+                        accept="image/*,video/*"
+                        className="sr-only"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleOutroMediaUpload(file);
+                          e.target.value = "";
+                        }}
+                      />
+                    </label>
+                  ) : null}
+                </div>
+              </div>
+            </div>
           </div>
-        ) : event.status === "done" ? (
-          <div className="relative isolate mb-8">
-            <div
-              className="pointer-events-none absolute inset-0 opacity-25"
-              style={{
-                background: "radial-gradient(ellipse 100% 90% at 50% 50%, #c8892c 0%, transparent 70%)",
-                zIndex: -1,
-              }}
-              aria-hidden
-            />
-            {event.videoUrl ? (
-              <div className="border border-border bg-surface p-5 flex flex-col gap-4">
-                <div className="flex items-center gap-2">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5ba06e" strokeWidth="1.5">
+
+          {/* 렌더링 / 완성 상태 */}
+          {event.status === "rendering" ? (
+            <div className="card mb-8">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-2 h-2 rounded-full bg-[#7b8ce0] animate-pulse" />
+                <p className="text-sm text-muted">AI가 영상을 편집하고 있습니다...</p>
+              </div>
+              <p className="text-xs text-muted opacity-60 pl-5">
+                3~5분 소요 · 완료되면 자동으로 업데이트됩니다
+              </p>
+            </div>
+          ) : event.status === "done" ? (
+            <div className="mb-8">
+              {event.videoUrl ? (
+                <div className="card flex flex-col gap-4">
+                  <div className="flex items-center gap-2">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5ba06e" strokeWidth="1.5">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    <p className="eyebrow" style={{ color: "#5ba06e" }}>편집 완료</p>
+                  </div>
+
+                  {/* 배지 미리보기 */}
+                  <div className="flex flex-col items-center gap-2 py-1">
+                    <CongreBadge />
+                    <p className="text-[10px] tracking-widest uppercase text-muted opacity-60">
+                      공유 시 이 배지가 함께 표시됩니다
+                    </p>
+                  </div>
+
+                  <video
+                    src={event.videoUrl}
+                    controls
+                    playsInline
+                    className="w-full max-w-xs mx-auto"
+                    style={{ aspectRatio: "9/16", background: "#0c0b09", borderRadius: "var(--r-sm)" }}
+                  />
+
+                  {/* 영상 다운로드 — 주인공 (전체폭 primary) */}
+                  <a
+                    href={event.videoUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-primary w-full"
+                  >
+                    영상 다운로드 →
+                  </a>
+
+                  {/* SNS 공유 — 보조 행, 작게 */}
+                  <div className="pt-3" style={{ borderTop: "1px solid var(--hairline)" }}>
+                    <p className="eyebrow mb-3">공유하기</p>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleKakaoShare}
+                        disabled={Boolean(process.env.NEXT_PUBLIC_KAKAO_APP_KEY) && !kakaoReady}
+                        className="btn btn-kakao"
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="#3C1E1E">
+                          <path d="M12 3C6.48 3 2 6.69 2 11.25c0 2.87 1.7 5.39 4.31 6.95L5.25 21l3.96-2.12A12.2 12.2 0 0 0 12 19.5c5.52 0 10-3.69 10-8.25S17.52 3 12 3z" />
+                        </svg>
+                        카카오톡
+                      </button>
+                      <button onClick={handleLinkCopy} className="btn btn-secondary" style={{ height: 46, padding: "0 18px", fontSize: 14 }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                        </svg>
+                        {linkCopied ? "복사됨!" : "링크 복사"}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="card flex items-center gap-3">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5ba06e" strokeWidth="1.5">
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
-                  <p className="text-xs tracking-widest uppercase" style={{ color: "#5ba06e" }}>
-                    편집 완료
-                  </p>
+                  <p className="text-sm" style={{ color: "#5ba06e" }}>편집이 완료되었습니다</p>
                 </div>
-                {/* 배지 미리보기 */}
-                <div className="flex flex-col items-center gap-2 py-1">
-                  <CongreBadge />
-                  <p className="text-[10px] tracking-widest uppercase text-muted opacity-60">
-                    공유 시 이 배지가 함께 표시됩니다
-                  </p>
-                </div>
+              )}
+            </div>
+          ) : null}
 
-                <video
-                  src={event.videoUrl}
-                  controls
-                  playsInline
-                  className="w-full max-w-xs mx-auto"
-                  style={{ aspectRatio: "9/16", background: "#0c0b09" }}
-                />
-                <a
-                  href={event.videoUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full py-3 bg-gradient-to-b from-[#f5b04a] to-[#a06f1f] text-background text-xs tracking-widest uppercase font-medium text-center hover:brightness-110 transition-all duration-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_4px_12px_rgba(0,0,0,0.4),0_0_40px_rgba(200,137,44,0.3)] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_6px_16px_rgba(0,0,0,0.5),0_0_50px_rgba(200,137,44,0.4)] block"
-                >
-                  영상 다운로드 →
-                </a>
-
-                {/* SNS 공유 */}
-                <div className="pt-3 border-t border-border">
-                  <p className="text-xs tracking-widest uppercase text-muted mb-3">공유하기</p>
-                  <div className="grid grid-cols-2 gap-2">
-                    {/* 카카오톡 */}
-                    <button
-                      onClick={handleKakaoShare}
-                      disabled={Boolean(process.env.NEXT_PUBLIC_KAKAO_APP_KEY) && !kakaoReady}
-                      className="flex flex-col items-center gap-1.5 py-3 text-xs font-medium transition-all duration-200 hover:brightness-95 active:scale-95 disabled:opacity-50"
-                      style={{ background: "#FEE500" }}
-                    >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="#3C1E1E">
-                        <path d="M12 3C6.48 3 2 6.69 2 11.25c0 2.87 1.7 5.39 4.31 6.95L5.25 21l3.96-2.12A12.2 12.2 0 0 0 12 19.5c5.52 0 10-3.69 10-8.25S17.52 3 12 3z" />
-                      </svg>
-                      <span style={{ color: "#3C1E1E" }}>카카오톡</span>
-                    </button>
-
-                    {/* 링크 복사 */}
-                    <button
-                      onClick={handleLinkCopy}
-                      className="flex flex-col items-center gap-1.5 py-3 border border-border bg-surface text-muted text-xs hover:border-accent hover:text-foreground transition-all duration-200 active:scale-95"
-                    >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-                      </svg>
-                      <span>{linkCopied ? "복사됨!" : "링크 복사"}</span>
-                    </button>
-                  </div>
-
-                </div>
-              </div>
+          {/* Clips list */}
+          <div>
+            <p className="eyebrow mb-4">업로드된 클립 ({clips.length}개)</p>
+            {clips.length === 0 ? (
+              <p className="text-muted text-sm py-8 text-center">아직 업로드된 클립이 없습니다.</p>
             ) : (
-              <div className="p-4 border border-border bg-surface flex items-center gap-3">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5ba06e" strokeWidth="1.5">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-                <p className="text-sm" style={{ color: "#5ba06e" }}>편집이 완료되었습니다</p>
+              <div className="flex flex-col gap-2">
+                {clips.map((clip, i) => {
+                  const isActive = activeClipId === clip.id;
+                  return (
+                    <div key={clip.id} className="row flex flex-col" style={clip.excludedAt ? { opacity: 0.45 } : {}}>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-xs text-muted tabular-nums shrink-0">
+                          #{clips.length - i}
+                        </span>
+                        <div className="flex flex-col mx-4 flex-1 min-w-0">
+                          <span className="text-xs text-foreground truncate">
+                            {clip.uploaderName ?? <span className="text-muted">(이름 없음)</span>}
+                          </span>
+                          <span className="text-xs text-muted">
+                            {clip.uploaderPhone ?? "(전번 없음)"}
+                          </span>
+                        </div>
+                        <span className="text-xs text-muted shrink-0 mr-3">
+                          {formatUploadTime(clip.uploadedAt)}
+                        </span>
+                        <button
+                          onClick={() => handleToggleExclusion(clip)}
+                          className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 text-xs tracking-widest uppercase transition-all duration-200 mr-2"
+                          style={
+                            clip.excludedAt
+                              ? { border: "1px solid #e05252", color: "#e05252", borderRadius: "var(--r-sm)" }
+                              : { border: "1px solid var(--hairline-strong)", color: "var(--muted)", borderRadius: "var(--r-sm)" }
+                          }
+                          aria-label={clip.excludedAt ? "복원" : "제외"}
+                        >
+                          {clip.excludedAt ? (
+                            <EyeOff size={11} strokeWidth={2} />
+                          ) : (
+                            <Eye size={11} strokeWidth={2} />
+                          )}
+                        </button>
+                        <button
+                          onClick={() => handlePlayClip(clip)}
+                          className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 text-xs tracking-widest uppercase transition-all duration-200"
+                          style={
+                            isActive
+                              ? { border: "1px solid var(--accent)", color: "var(--accent)", borderRadius: "var(--r-sm)" }
+                              : { border: "1px solid var(--hairline-strong)", color: "var(--muted)", borderRadius: "var(--r-sm)" }
+                          }
+                          aria-label={isActive ? "닫기" : "재생"}
+                        >
+                          {isActive ? (
+                            <X size={11} strokeWidth={2} />
+                          ) : (
+                            <Play size={11} strokeWidth={2} />
+                          )}
+                        </button>
+                      </div>
+
+                      {/* 인라인 플레이어 */}
+                      {isActive && (
+                        <div className="mt-4">
+                          {playbackLoading && (
+                            <div className="flex items-center gap-2 py-4">
+                              <Loader2 size={14} className="animate-spin text-accent" />
+                              <span className="text-xs text-muted">재생 URL 발급 중...</span>
+                            </div>
+                          )}
+                          {playbackError && (
+                            <p className="text-xs py-3" style={{ color: "#e05252" }}>
+                              {playbackError}
+                            </p>
+                          )}
+                          {playbackUrl && (
+                            <video
+                              src={playbackUrl}
+                              controls
+                              playsInline
+                              autoPlay
+                              className="w-full max-w-xs mx-auto block"
+                              style={{ aspectRatio: "9/16", background: "var(--surface-1)", borderRadius: "var(--r-sm)" }}
+                            />
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
-        ) : null}
+        </main>
 
-        {/* Clips list */}
-        <div>
-          <p className="text-xs tracking-widest uppercase text-muted mb-4">
-            업로드된 클립 ({clips.length}개)
-          </p>
-          {clips.length === 0 ? (
-            <p className="text-muted text-sm py-8 text-center">
-              아직 업로드된 클립이 없습니다.
-            </p>
-          ) : (
-            <div className="flex flex-col gap-px" style={{ background: "var(--border)" }}>
-              {clips.map((clip, i) => {
-                const isActive = activeClipId === clip.id;
-                return (
-                  <div key={clip.id} className="flex flex-col bg-surface" style={clip.excludedAt ? { opacity: 0.45 } : {}}>
-                    {/* 클립 행 */}
-                    <div className="flex items-center justify-between px-5 py-4">
-                      <span className="text-xs text-muted tabular-nums shrink-0">
-                        #{clips.length - i}
-                      </span>
-                      <div className="flex flex-col mx-4 flex-1 min-w-0">
-                        <span className="text-xs text-foreground truncate">
-                          {clip.uploaderName ?? <span className="text-muted">(이름 없음)</span>}
-                        </span>
-                        <span className="text-xs text-muted">
-                          {clip.uploaderPhone ?? "(전번 없음)"}
-                        </span>
-                      </div>
-                      <span className="text-xs text-muted shrink-0 mr-3">
-                        {formatUploadTime(clip.uploadedAt)}
-                      </span>
-                      <button
-                        onClick={() => handleToggleExclusion(clip)}
-                        className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 border text-xs tracking-widest uppercase transition-all duration-200 mr-2"
-                        style={
-                          clip.excludedAt
-                            ? { borderColor: "#e05252", color: "#e05252" }
-                            : { borderColor: "var(--border)", color: "var(--muted)" }
-                        }
-                        aria-label={clip.excludedAt ? "복원" : "제외"}
-                      >
-                        {clip.excludedAt ? (
-                          <EyeOff size={11} strokeWidth={2} />
-                        ) : (
-                          <Eye size={11} strokeWidth={2} />
-                        )}
-                      </button>
-                      <button
-                        onClick={() => handlePlayClip(clip)}
-                        className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 border text-xs tracking-widest uppercase transition-all duration-200"
-                        style={
-                          isActive
-                            ? { borderColor: "var(--accent)", color: "var(--accent)" }
-                            : { borderColor: "var(--border)", color: "var(--muted)" }
-                        }
-                        aria-label={isActive ? "닫기" : "재생"}
-                      >
-                        {isActive ? (
-                          <X size={11} strokeWidth={2} />
-                        ) : (
-                          <Play size={11} strokeWidth={2} />
-                        )}
-                      </button>
-                    </div>
-
-                    {/* 인라인 플레이어 */}
-                    {isActive && (
-                      <div className="px-5 pb-5">
-                        {playbackLoading && (
-                          <div className="flex items-center gap-2 py-4">
-                            <Loader2 size={14} className="animate-spin text-accent" />
-                            <span className="text-xs text-muted">재생 URL 발급 중...</span>
-                          </div>
-                        )}
-                        {playbackError && (
-                          <p className="text-xs py-3" style={{ color: "#e05252" }}>
-                            {playbackError}
-                          </p>
-                        )}
-                        {playbackUrl && (
-                          <video
-                            src={playbackUrl}
-                            controls
-                            playsInline
-                            autoPlay
-                            className="w-full max-w-xs mx-auto block rounded"
-                            style={{ aspectRatio: "9/16", background: "var(--surface)" }}
-                          />
-                        )}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      </main>
-
-      {/* 고해상도 QR 다운로드용 히든 캔버스 (512×512, 흰 배경) */}
-      {shareUrl && (
-        <div
-          ref={qrHiResRef}
-          aria-hidden="true"
-          style={{ position: "fixed", left: "-9999px", top: 0 }}
-        >
-          <QRCodeCanvas
-            value={shareUrl}
-            size={512}
-            bgColor="#ffffff"
-            fgColor="#151310"
-            level="H"
-          />
-        </div>
-      )}
-    </div>
+        {/* 고해상도 QR 다운로드용 히든 캔버스 */}
+        {shareUrl && (
+          <div
+            ref={qrHiResRef}
+            aria-hidden="true"
+            style={{ position: "fixed", left: "-9999px", top: 0 }}
+          >
+            <QRCodeCanvas value={shareUrl} size={512} bgColor="#ffffff" fgColor="#151310" level="H" />
+          </div>
+        )}
+      </div>
+    </>
   );
 }

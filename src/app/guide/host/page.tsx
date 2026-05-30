@@ -1,39 +1,31 @@
 import Link from "next/link";
 import { BrandName } from "@/components/BrandName";
+import PageBackdrop from "@/components/PageBackdrop";
 
 export default function GuideHostPage() {
   return (
-    <div className="min-h-screen bg-background">
-      <nav className="flex items-center justify-between px-8 py-6 border-b border-border">
-        <Link
-          href="/"
-          className="text-xl tracking-wider hover:opacity-75 transition-opacity duration-200"
-        >
-          <BrandName />
-        </Link>
-        <Link
-          href="/guide"
-          className="text-xs tracking-widest uppercase text-muted hover:text-accent transition-colors duration-200"
-        >
-          ← 가이드
-        </Link>
-      </nav>
+    <>
+      <PageBackdrop pattern="d" />
+      <div className="min-h-screen">
+        <nav className="flex items-center justify-between px-8 py-6">
+          <Link href="/" className="text-xl tracking-wider hover:opacity-75 transition-opacity duration-200">
+            <BrandName />
+          </Link>
+          <Link href="/guide" className="btn-quiet text-xs tracking-widest uppercase">
+            ← 가이드
+          </Link>
+        </nav>
 
-      <main className="mx-auto max-w-3xl px-6 py-16">
-        <div className="mb-10">
-          <p className="text-xs tracking-[0.4em] uppercase text-accent mb-3">HOST GUIDE</p>
-          <h1
-            className="text-3xl italic text-foreground"
-            style={{ fontFamily: "var(--font-display, serif)" }}
-          >
-            호스트 가이드
-          </h1>
-          <p className="text-sm text-muted mt-3">이벤트 만들기부터 완성본 공유까지 — 여섯 단계</p>
-        </div>
+        <main className="mx-auto max-w-3xl px-6 py-16">
+          <div className="mb-10">
+            <p className="eyebrow mb-3">HOST GUIDE</p>
+            <h1 className="display text-3xl">호스트 가이드</h1>
+            <p className="text-sm text-muted mt-3">이벤트 만들기부터 완성본 공유까지 — 여섯 단계</p>
+          </div>
 
-        <div className="rule mb-10" />
+          <div className="hr mb-10" />
 
-        <div className="flex flex-col gap-14 text-sm leading-relaxed text-muted">
+          <div className="card flex flex-col gap-14 text-sm leading-relaxed text-muted">
 
           {/* 시작하기 전에 */}
           <section className="flex flex-col gap-4">
@@ -286,6 +278,7 @@ export default function GuideHostPage() {
           </Link>
         </div>
       </main>
-    </div>
+      </div>
+    </>
   );
 }

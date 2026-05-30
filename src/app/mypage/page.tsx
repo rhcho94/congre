@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { BrandName } from "@/components/BrandName";
+import PageBackdrop from "@/components/PageBackdrop";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import { subscribeToAuthChanges, logout, changePassword, deleteAccount, type User } from "@/lib/auth";
@@ -217,320 +218,285 @@ export default function MyPage() {
 
   if (!isFirebaseConfigured) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-6">
-        <div className="max-w-sm w-full p-6 border border-border bg-surface text-center">
-          <p className="text-xs text-accent font-medium tracking-wide mb-2">Firebase 미연결</p>
-          <p className="text-xs text-muted leading-relaxed mb-4">
-            .env.local에 Firebase 설정값을 추가하면 마이페이지를 사용할 수 있습니다.
-          </p>
-          <Link
-            href="/host"
-            className="text-xs tracking-widest uppercase text-muted hover:text-accent transition-colors"
-          >
-            ← 로그인 페이지
-          </Link>
+      <>
+        <PageBackdrop pattern="b" />
+        <div className="min-h-screen flex items-center justify-center px-6">
+          <div className="max-w-sm w-full card text-center">
+            <p className="text-xs text-accent font-medium tracking-wide mb-2">Firebase 미연결</p>
+            <p className="text-xs text-muted leading-relaxed mb-4">
+              .env.local에 Firebase 설정값을 추가하면 마이페이지를 사용할 수 있습니다.
+            </p>
+            <Link href="/host" className="btn-quiet text-xs tracking-widest uppercase">
+              ← 로그인 페이지
+            </Link>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   if (authChecking) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-xs tracking-widest uppercase text-muted animate-pulse">확인 중...</p>
-      </div>
+      <>
+        <PageBackdrop pattern="b" />
+        <div className="min-h-screen flex items-center justify-center">
+          <p className="eyebrow animate-pulse">확인 중...</p>
+        </div>
+      </>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <nav className="flex items-center justify-between px-8 py-6 border-b border-border">
-        <Link
-          href="/"
-          className="text-xl tracking-wider hover:opacity-75 transition-opacity duration-200"
-        >
-          <BrandName />
-        </Link>
-        <div className="flex items-center gap-6">
-          <span className="text-xs text-muted truncate max-w-[180px]">{user?.email}</span>
-          <Link
-            href="/guide/host"
-            className="text-xs tracking-widest uppercase text-muted hover:text-accent transition-colors duration-200"
-          >
-            사용 가이드
+    <>
+      <PageBackdrop pattern="b" />
+      <div className="min-h-screen">
+        <nav className="flex items-center justify-between px-8 py-6">
+          <Link href="/" className="text-xl tracking-wider hover:opacity-75 transition-opacity duration-200">
+            <BrandName />
           </Link>
-          <button
-            onClick={() => logout()}
-            className="text-xs tracking-widest uppercase text-muted hover:text-accent transition-colors duration-200"
-          >
-            로그아웃
-          </button>
-        </div>
-      </nav>
-
-      <main className="mx-auto max-w-3xl px-6 py-16">
-        <div className="mb-10">
-          <p className="text-xs tracking-[0.4em] uppercase text-accent mb-2">Mypage</p>
-          <h1
-            className="text-3xl italic text-foreground"
-            style={{ fontFamily: "var(--font-display, serif)" }}
-          >
-            내 계정
-          </h1>
-        </div>
-
-        {user && !user.emailVerified && <EmailVerificationBanner />}
-
-        {eventsLoading ? (
-          <p className="text-center text-muted text-sm py-8 animate-pulse">불러오는 중...</p>
-        ) : events.length === 0 ? (
-          <div className="p-6 border border-border bg-surface mb-8 text-center">
-            <p className="text-muted text-sm mb-4">아직 이벤트가 없습니다.</p>
-            {user?.emailVerified ? (
-              <Link
-                href="/dashboard/create"
-                className="text-xs tracking-widest uppercase text-accent hover:brightness-110 transition-all"
-              >
-                첫 이벤트 만들기 →
-              </Link>
-            ) : (
-              <span className="text-xs text-muted">이메일 인증 후 이벤트를 만들 수 있습니다</span>
-            )}
-          </div>
-        ) : (
-          <div className="flex items-center justify-between p-6 border border-border bg-surface mb-8">
-            <div className="flex flex-col gap-1">
-              <span className="text-sm text-foreground">진행 중 {inProgress}개</span>
-              <span className="text-sm text-muted">완료된 {doneCount}개</span>
-            </div>
-            <Link
-              href="/dashboard"
-              className="text-xs tracking-widest uppercase text-muted hover:text-accent transition-colors duration-200"
-            >
-              내 이벤트 관리하기 →
+          <div className="flex items-center gap-6">
+            <span className="text-xs text-muted truncate max-w-[180px]">{user?.email}</span>
+            <Link href="/guide/host" className="btn-quiet text-xs tracking-widest uppercase">
+              사용 가이드
             </Link>
+            <button onClick={() => logout()} className="btn-quiet text-xs tracking-widest uppercase">
+              로그아웃
+            </button>
           </div>
-        )}
+        </nav>
 
-        <div className="mb-10">
-          <p className="text-xs tracking-[0.4em] uppercase text-accent mb-6">비밀번호</p>
-          {pwMode ? (
-            <div className="flex flex-col gap-6">
-              <div className="flex flex-col gap-1.5">
-                <span className="text-xs uppercase text-muted tracking-widest">현재 비밀번호</span>
-                <div className="relative">
-                  <input
-                    type={showCurrentPw ? "text" : "password"}
-                    value={currentPw}
-                    onChange={(e) => setCurrentPw(e.target.value)}
-                    disabled={pwSaving}
-                    className="w-full bg-surface border border-border px-4 py-3 pr-10 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-accent transition-colors duration-200 disabled:opacity-50"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowCurrentPw((v) => !v)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground transition-colors"
-                  >
-                    {showCurrentPw ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
-                </div>
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <span className="text-xs uppercase text-muted tracking-widest">새 비밀번호 (6자 이상)</span>
-                <div className="relative">
-                  <input
-                    type={showNewPw ? "text" : "password"}
-                    value={newPw}
-                    onChange={(e) => setNewPw(e.target.value)}
-                    disabled={pwSaving}
-                    className="w-full bg-surface border border-border px-4 py-3 pr-10 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-accent transition-colors duration-200 disabled:opacity-50"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowNewPw((v) => !v)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground transition-colors"
-                  >
-                    {showNewPw ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
-                </div>
-              </div>
-              <div className="flex gap-3 pt-2">
-                <button
-                  onClick={handlePwSave}
-                  disabled={pwSaving}
-                  className="px-5 py-2.5 bg-gradient-to-b from-[#f5b04a] to-[#a06f1f] text-background text-xs tracking-widest uppercase font-medium hover:brightness-110 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  {pwSaving ? "변경 중..." : "변경"}
-                </button>
-                <button
-                  onClick={handlePwCancel}
-                  disabled={pwSaving}
-                  className="px-5 py-2.5 border border-border text-muted text-xs tracking-widest uppercase hover:border-accent hover:text-foreground transition-all duration-200 disabled:opacity-50"
-                >
-                  취소
-                </button>
-              </div>
-            </div>
-          ) : (
-            <button
-              onClick={handlePwStart}
-              className="self-start text-xs tracking-widest uppercase text-muted hover:text-accent transition-colors duration-200"
-            >
-              비밀번호 변경
-            </button>
-          )}
-        </div>
+        <main className="mx-auto max-w-3xl px-6 py-16">
+          <div className="mb-10">
+            <p className="eyebrow mb-2">Mypage</p>
+            <h1 className="display text-3xl">내 계정</h1>
+          </div>
 
-        <div className="rule mb-8" />
+          {user && !user.emailVerified && <EmailVerificationBanner />}
 
-        <div className="mb-10">
-          <p className="text-xs tracking-[0.4em] uppercase text-accent mb-6">회원 탈퇴</p>
-          {inProgress > 0 ? (
-            <p className="text-sm text-muted leading-relaxed">
-              진행 중 이벤트가 {inProgress}개 있습니다. 모든 이벤트를 마감한 후 탈퇴할 수 있습니다.
-            </p>
-          ) : delMode ? (
-            <div className="flex flex-col gap-6">
-              <div className="p-4 border border-border bg-surface">
-                <p className="text-sm text-foreground leading-relaxed">
-                  회원 탈퇴 시 회원 정보, 모든 이벤트, 업로드된 클립, 완성본 영상이 즉시 삭제되며 복구할 수 없습니다.
-                </p>
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <span className="text-xs uppercase text-muted tracking-widest">현재 비밀번호</span>
-                <div className="relative">
-                  <input
-                    type={showDelPw ? "text" : "password"}
-                    value={delPw}
-                    onChange={(e) => setDelPw(e.target.value)}
-                    disabled={delSaving}
-                    className="w-full bg-surface border border-border px-4 py-3 pr-10 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-accent transition-colors duration-200 disabled:opacity-50"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowDelPw((v) => !v)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground transition-colors"
-                  >
-                    {showDelPw ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
-                </div>
-              </div>
-              <div className="flex gap-3 pt-2">
-                <button
-                  onClick={handleDelSubmit}
-                  disabled={delSaving}
-                  className="px-5 py-2.5 border border-red-900 text-red-400 text-xs tracking-widest uppercase hover:bg-red-900/20 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  {delSaving ? "처리 중..." : "탈퇴"}
-                </button>
-                <button
-                  onClick={handleDelCancel}
-                  disabled={delSaving}
-                  className="px-5 py-2.5 border border-border text-muted text-xs tracking-widest uppercase hover:border-accent hover:text-foreground transition-all duration-200 disabled:opacity-50"
-                >
-                  취소
-                </button>
-              </div>
-            </div>
-          ) : (
-            <button
-              onClick={handleDelStart}
-              className="self-start text-xs tracking-widest uppercase text-muted hover:text-red-400 transition-colors duration-200"
-            >
-              회원 탈퇴
-            </button>
-          )}
-        </div>
-
-        <div className="rule mb-8" />
-
-        <div>
-          <p className="text-xs tracking-[0.4em] uppercase text-accent mb-6">프로필</p>
-          {userDocLoading ? (
-            <p className="text-muted text-sm animate-pulse">불러오는 중...</p>
-          ) : (
-            <div className="flex flex-col gap-6">
-              <div className="flex flex-col gap-1">
-                <span className="text-xs uppercase text-muted tracking-widest">이메일</span>
-                <span className="text-sm text-foreground">{user?.email ?? "—"}</span>
-              </div>
-
-              {editMode ? (
-                <>
-                  <div className="flex flex-col gap-1.5">
-                    <span className="text-xs uppercase text-muted tracking-widest">이름</span>
-                    <input
-                      type="text"
-                      value={editName}
-                      onChange={(e) => setEditName(e.target.value)}
-                      disabled={saving}
-                      className="bg-surface border border-border px-4 py-3 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-accent transition-colors duration-200 disabled:opacity-50"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <span className="text-xs uppercase text-muted tracking-widest">전화번호</span>
-                    <input
-                      type="text"
-                      value={editPhone}
-                      onChange={(e) => setEditPhone(e.target.value)}
-                      disabled={saving}
-                      className="bg-surface border border-border px-4 py-3 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-accent transition-colors duration-200 disabled:opacity-50"
-                    />
-                  </div>
-                </>
+          {eventsLoading ? (
+            <p className="text-center text-muted text-sm py-8 animate-pulse">불러오는 중...</p>
+          ) : events.length === 0 ? (
+            <div className="card mb-8 text-center">
+              <p className="text-muted text-sm mb-4">아직 이벤트가 없습니다.</p>
+              {user?.emailVerified ? (
+                <Link href="/dashboard/create" className="text-xs tracking-widest uppercase text-accent hover:brightness-110 transition-all">
+                  첫 이벤트 만들기 →
+                </Link>
               ) : (
-                <>
-                  <div className="flex flex-col gap-1">
-                    <span className="text-xs uppercase text-muted tracking-widest">이름</span>
-                    <span className="text-sm text-foreground">{userDoc?.name ?? "-"}</span>
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <span className="text-xs uppercase text-muted tracking-widest">전화번호</span>
-                    <span className="text-sm text-foreground">{userDoc?.phone ?? "-"}</span>
-                  </div>
-                </>
+                <span className="text-xs text-muted">이메일 인증 후 이벤트를 만들 수 있습니다</span>
               )}
-
+            </div>
+          ) : (
+            <div className="card flex items-center justify-between mb-8">
               <div className="flex flex-col gap-1">
-                <span className="text-xs uppercase text-muted tracking-widest">가입일</span>
-                <span className="text-sm text-foreground">
-                  {userDoc?.createdAt
-                    ? userDoc.createdAt.toDate().toLocaleDateString("ko-KR")
-                    : "-"}
-                </span>
+                <span className="text-sm text-foreground">진행 중 {inProgress}개</span>
+                <span className="text-sm text-muted">완료된 {doneCount}개</span>
               </div>
+              <Link href="/dashboard" className="btn-quiet text-xs tracking-widest uppercase">
+                내 이벤트 관리하기 →
+              </Link>
+            </div>
+          )}
 
-              {editMode ? (
+          <div className="card mb-10">
+            <p className="eyebrow mb-6">비밀번호</p>
+            {pwMode ? (
+              <div className="flex flex-col gap-6">
+                <div className="flex flex-col gap-1.5">
+                  <span className="eyebrow">현재 비밀번호</span>
+                  <div className="relative">
+                    <input
+                      type={showCurrentPw ? "text" : "password"}
+                      value={currentPw}
+                      onChange={(e) => setCurrentPw(e.target.value)}
+                      disabled={pwSaving}
+                      className="input pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowCurrentPw((v) => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground transition-colors"
+                    >
+                      {showCurrentPw ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <span className="eyebrow">새 비밀번호 (6자 이상)</span>
+                  <div className="relative">
+                    <input
+                      type={showNewPw ? "text" : "password"}
+                      value={newPw}
+                      onChange={(e) => setNewPw(e.target.value)}
+                      disabled={pwSaving}
+                      className="input pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPw((v) => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground transition-colors"
+                    >
+                      {showNewPw ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </div>
                 <div className="flex gap-3 pt-2">
-                  <button
-                    onClick={handleSave}
-                    disabled={saving}
-                    className="px-5 py-2.5 bg-gradient-to-b from-[#f5b04a] to-[#a06f1f] text-background text-xs tracking-widest uppercase font-medium hover:brightness-110 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
-                  >
-                    {saving ? "저장 중..." : "저장"}
+                  <button onClick={handlePwSave} disabled={pwSaving} className="btn btn-primary">
+                    {pwSaving ? "변경 중..." : "변경"}
                   </button>
-                  <button
-                    onClick={handleCancel}
-                    disabled={saving}
-                    className="px-5 py-2.5 border border-border text-muted text-xs tracking-widest uppercase hover:border-accent hover:text-foreground transition-all duration-200 disabled:opacity-50"
-                  >
+                  <button onClick={handlePwCancel} disabled={pwSaving} className="btn btn-secondary">
                     취소
                   </button>
                 </div>
-              ) : (
-                userDoc !== null && (
+              </div>
+            ) : (
+              <button onClick={handlePwStart} className="btn-quiet text-xs tracking-widest uppercase">
+                비밀번호 변경
+              </button>
+            )}
+          </div>
+
+          <div className="card mb-10">
+            <p className="eyebrow mb-6">회원 탈퇴</p>
+            {inProgress > 0 ? (
+              <p className="text-sm text-muted leading-relaxed">
+                진행 중 이벤트가 {inProgress}개 있습니다. 모든 이벤트를 마감한 후 탈퇴할 수 있습니다.
+              </p>
+            ) : delMode ? (
+              <div className="flex flex-col gap-6">
+                <div
+                  className="p-4"
+                  style={{
+                    background: "var(--surface-2)",
+                    border: "1px solid var(--hairline)",
+                    borderRadius: "var(--r-sm)",
+                  }}
+                >
+                  <p className="text-sm text-foreground leading-relaxed">
+                    회원 탈퇴 시 회원 정보, 모든 이벤트, 업로드된 클립, 완성본 영상이 즉시 삭제되며 복구할 수 없습니다.
+                  </p>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <span className="eyebrow">현재 비밀번호</span>
+                  <div className="relative">
+                    <input
+                      type={showDelPw ? "text" : "password"}
+                      value={delPw}
+                      onChange={(e) => setDelPw(e.target.value)}
+                      disabled={delSaving}
+                      className="input pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowDelPw((v) => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground transition-colors"
+                    >
+                      {showDelPw ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </div>
+                <div className="flex gap-3 pt-2">
                   <button
-                    onClick={handleEditStart}
-                    className="self-start text-xs tracking-widest uppercase text-muted hover:text-accent transition-colors duration-200"
+                    onClick={handleDelSubmit}
+                    disabled={delSaving}
+                    className="btn"
+                    style={{
+                      border: "1px solid #7f1d1d",
+                      color: "#fca5a5",
+                      background: "transparent",
+                    }}
                   >
-                    프로필 수정
+                    {delSaving ? "처리 중..." : "탈퇴"}
                   </button>
-                )
-              )}
-            </div>
-          )}
-        </div>
-      </main>
-    </div>
+                  <button onClick={handleDelCancel} disabled={delSaving} className="btn btn-secondary">
+                    취소
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button onClick={handleDelStart} className="btn-quiet text-xs tracking-widest uppercase hover:text-red-400">
+                회원 탈퇴
+              </button>
+            )}
+          </div>
+
+          <div className="card">
+            <p className="eyebrow mb-6">프로필</p>
+            {userDocLoading ? (
+              <p className="text-muted text-sm animate-pulse">불러오는 중...</p>
+            ) : (
+              <div className="flex flex-col gap-6">
+                <div className="flex flex-col gap-1">
+                  <span className="eyebrow">이메일</span>
+                  <span className="text-sm text-foreground">{user?.email ?? "—"}</span>
+                </div>
+
+                {editMode ? (
+                  <>
+                    <div className="flex flex-col gap-1.5">
+                      <span className="eyebrow">이름</span>
+                      <input
+                        type="text"
+                        value={editName}
+                        onChange={(e) => setEditName(e.target.value)}
+                        disabled={saving}
+                        className="input"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <span className="eyebrow">전화번호</span>
+                      <input
+                        type="text"
+                        value={editPhone}
+                        onChange={(e) => setEditPhone(e.target.value)}
+                        disabled={saving}
+                        className="input"
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex flex-col gap-1">
+                      <span className="eyebrow">이름</span>
+                      <span className="text-sm text-foreground">{userDoc?.name ?? "-"}</span>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <span className="eyebrow">전화번호</span>
+                      <span className="text-sm text-foreground">{userDoc?.phone ?? "-"}</span>
+                    </div>
+                  </>
+                )}
+
+                <div className="flex flex-col gap-1">
+                  <span className="eyebrow">가입일</span>
+                  <span className="text-sm text-foreground">
+                    {userDoc?.createdAt
+                      ? userDoc.createdAt.toDate().toLocaleDateString("ko-KR")
+                      : "-"}
+                  </span>
+                </div>
+
+                {editMode ? (
+                  <div className="flex gap-3 pt-2">
+                    <button onClick={handleSave} disabled={saving} className="btn btn-primary">
+                      {saving ? "저장 중..." : "저장"}
+                    </button>
+                    <button onClick={handleCancel} disabled={saving} className="btn btn-secondary">
+                      취소
+                    </button>
+                  </div>
+                ) : (
+                  userDoc !== null && (
+                    <button onClick={handleEditStart} className="btn-quiet text-xs tracking-widest uppercase self-start">
+                      프로필 수정
+                    </button>
+                  )
+                )}
+              </div>
+            )}
+          </div>
+        </main>
+      </div>
+    </>
   );
 }

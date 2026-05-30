@@ -4,6 +4,15 @@ import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { applyActionCode } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebase";
+import PageBackdrop from "@/components/PageBackdrop";
+
+const glassPanel: React.CSSProperties = {
+  background: "color-mix(in srgb, var(--surface-1) 78%, transparent)",
+  backdropFilter: "blur(22px) saturate(140%)",
+  WebkitBackdropFilter: "blur(22px) saturate(140%)",
+  border: "1px solid var(--hairline-strong)",
+  borderRadius: "var(--r-lg)",
+};
 
 function VerifyEmailContent() {
   const searchParams = useSearchParams();
@@ -45,50 +54,46 @@ function VerifyEmailContent() {
   }, [oobCode, router]);
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-6">
-      <div
-        className="w-full max-w-sm p-8 border border-border bg-surface text-center"
-      >
-        {status === "verifying" && (
-          <p className="text-xs tracking-widest uppercase text-muted animate-pulse">
-            인증 중...
-          </p>
-        )}
+    <>
+      <PageBackdrop pattern="a" />
+      <div className="min-h-screen flex items-center justify-center px-6">
+        <div className="w-full max-w-sm p-8 text-center" style={glassPanel}>
+          {status === "verifying" && (
+            <p className="eyebrow animate-pulse">인증 중...</p>
+          )}
 
-        {status === "success" && (
-          <>
-            <div className="flex items-center justify-center gap-2 mb-3">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                style={{ color: "var(--accent)" }}
-              >
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-              <p className="text-sm text-foreground">이메일 인증 완료</p>
-            </div>
-            <p className="text-xs text-muted">대시보드로 이동 중...</p>
-          </>
-        )}
+          {status === "success" && (
+            <>
+              <div className="flex items-center justify-center gap-2 mb-3">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  style={{ color: "var(--accent)" }}
+                >
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                <p className="text-sm text-foreground">이메일 인증 완료</p>
+              </div>
+              <p className="text-xs text-muted">대시보드로 이동 중...</p>
+            </>
+          )}
 
-        {status === "error" && (
-          <>
-            <p className="text-sm text-foreground mb-2">인증 실패</p>
-            <p className="text-xs text-muted mb-6 leading-relaxed">{errorMessage}</p>
-            <button
-              onClick={() => router.push("/dashboard")}
-              className="px-6 py-2.5 border border-border text-xs tracking-widest uppercase text-muted hover:border-accent hover:text-foreground transition-all duration-200"
-            >
-              대시보드로 이동
-            </button>
-          </>
-        )}
+          {status === "error" && (
+            <>
+              <p className="text-sm text-foreground mb-2">인증 실패</p>
+              <p className="text-xs text-muted mb-6 leading-relaxed">{errorMessage}</p>
+              <button onClick={() => router.push("/dashboard")} className="btn btn-secondary">
+                대시보드로 이동
+              </button>
+            </>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 
@@ -96,11 +101,12 @@ export default function Page() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-background flex items-center justify-center">
-          <p className="text-xs tracking-widest uppercase text-muted animate-pulse">
-            로딩 중...
-          </p>
-        </div>
+        <>
+          <PageBackdrop pattern="a" />
+          <div className="min-h-screen flex items-center justify-center">
+            <p className="eyebrow animate-pulse">로딩 중...</p>
+          </div>
+        </>
       }
     >
       <VerifyEmailContent />
