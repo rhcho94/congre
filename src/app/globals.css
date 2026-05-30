@@ -1,14 +1,51 @@
 @import "tailwindcss";
 
 :root {
-  --bg:            #1f1c18;
-  --surface:       #2a261f;
-  --surface-2:     #34302a;
-  --border:        #2d2720;
-  --text:          #ede8df;
-  --muted:         #79716a;
-  --accent:        #c8892c;
-  --accent-bright: #e8a038;
+  /* ───────── 베이스 & 표면 (V6 랜딩 팔레트) ───────── */
+  --bg: #0c0b09;
+  --surface-1: #151310;
+  --surface-2: #1e1a13;
+  --surface-3: #28221a;
+
+  /* ───────── 브랜드 (골드) ───────── */
+  --accent: #c8892c;
+  --accent-hi: #d99a3a;
+  --accent-soft: #c8892c1f;
+  --warm: oklch(0.68 0.16 35);
+  --warm-soft: oklch(0.68 0.16 35 / 0.18);
+
+  /* ───────── 텍스트 ───────── */
+  --text: #ede8df;
+  --text-dim: #c8c2b6;
+  --muted: #79716a;
+
+  /* ───────── 헤어라인 (솔리드 보더 대신) ───────── */
+  --hairline: rgba(237, 232, 223, 0.07);
+  --hairline-strong: rgba(237, 232, 223, 0.14);
+
+  /* ───────── 카카오 ───────── */
+  --kakao: #fee500;
+  --kakao-ink: #181600;
+
+  /* ───────── 타이포 ───────── */
+  --serif: "Cormorant Garamond", "Noto Serif KR", serif;
+  --sans: "DM Sans", system-ui, sans-serif;
+  --pretendard: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', sans-serif;
+
+  /* ───────── radius ───────── */
+  --r-sm: 14px;
+  --r-md: 22px;
+  --r-lg: 28px;
+
+  /* ───────── 레이아웃 ───────── */
+  --content: 1240px;
+  --wide: 1360px;
+  --pad: 32px;
+
+  /* ───────── Legacy 별칭 (기존 변수명 사용처 하위호환) ───────── */
+  --surface: var(--surface-1);
+  --border: var(--hairline-strong);
+  --accent-bright: var(--accent-hi);
 }
 
 @theme inline {
@@ -16,12 +53,23 @@
   --color-foreground:     var(--text);
   --color-surface:        var(--surface);
   --color-surface2:       var(--surface-2);
+  --color-surface3:       var(--surface-3);
   --color-border:         var(--border);
+  --color-hairline:       var(--hairline);
+  --color-hairline-strong: var(--hairline-strong);
   --color-muted:          var(--muted);
+  --color-text-dim:       var(--text-dim);
   --color-accent:         var(--accent);
+  --color-accent-hi:      var(--accent-hi);
+  --color-accent-soft:    var(--accent-soft);
   --color-accent-bright:  var(--accent-bright);
+  --color-warm:           var(--warm);
+  --color-warm-soft:      var(--warm-soft);
+  --color-kakao:          var(--kakao);
+  --color-kakao-ink:      var(--kakao-ink);
   --font-sans:            var(--font-body);
   --font-display:         var(--font-display);
+  --font-pretendard:      var(--pretendard);
 }
 
 *, *::before, *::after {
@@ -31,7 +79,7 @@
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: var(--font-body, 'DM Sans'), sans-serif;
+  font-family: var(--font-body, 'DM Sans'), var(--pretendard);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -58,7 +106,7 @@ body::after {
   80%       { transform: translate(1%, -1.5%); }
 }
 
-/* Decorative rule used across pages */
+/* Decorative rule used across pages (legacy) */
 .rule {
   width: 100%;
   height: 1px;
@@ -69,3 +117,154 @@ body::after {
 .glow-accent {
   box-shadow: 0 0 40px 0 rgba(200, 137, 44, 0.18);
 }
+
+/* ─────────────────────────────────────────────────────────────
+   공통 컴포넌트 클래스 (CD 명세 — 14개 화면 공유 영역)
+   정의만. 화면 파일 적용은 다음 커밋(2/2).
+   ───────────────────────────────────────────────────────────── */
+
+/* 제목 — 랜딩 Hero와 동일 (Pretendard 700 normal). CD 명세의 serif italic은 무시. */
+.display {
+  font-family: var(--pretendard);
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.22;
+}
+
+/* eyebrow 라벨 */
+.eyebrow {
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.28em;
+  color: var(--muted);
+}
+.eyebrow .accent { color: var(--accent); }
+
+/* 버튼 베이스 */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 52px;
+  padding: 0 24px;
+  border-radius: 999px;
+  font-family: var(--pretendard);
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.01em;
+  border: 0;
+  cursor: pointer;
+  transition: background .15s ease, color .15s ease, transform .12s ease, border-color .15s ease;
+}
+.btn:active { transform: translateY(1px); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* Primary (골드) */
+.btn-primary {
+  background: var(--accent);
+  color: #1a1308;
+}
+.btn-primary:hover { background: var(--accent-hi); }
+
+/* Secondary (ghost) */
+.btn-secondary {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--hairline-strong);
+}
+.btn-secondary:hover { border-color: var(--text); }
+
+/* Quiet (link-like) */
+.btn-quiet {
+  background: transparent;
+  color: var(--muted);
+  height: auto;
+  padding: 0;
+  border-radius: 0;
+  font-weight: 500;
+}
+.btn-quiet:hover { color: var(--text); }
+
+/* Kakao */
+.btn-kakao {
+  background: var(--kakao);
+  color: var(--kakao-ink);
+  height: 46px;
+  padding: 0 18px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.btn-kakao:hover { background: #ffd900; }
+
+/* 입력칸 */
+.input {
+  width: 100%;
+  height: 56px;
+  padding: 0 18px;
+  background: var(--surface-2);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 16px;
+  transition: background .15s, border-color .15s, box-shadow .15s;
+}
+.input::placeholder { color: var(--muted); }
+.input:focus {
+  outline: 0;
+  background: var(--surface-3);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.input:disabled { opacity: .5; cursor: not-allowed; }
+
+/* 카드 */
+.card {
+  background: var(--surface-1);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-md);
+  padding: 24px;
+}
+
+/* 리스트 행 */
+.row {
+  background: var(--surface-1);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-md);
+  padding: 22px 24px;
+  transition: border-color .15s, background .15s;
+}
+.row:hover {
+  border-color: var(--hairline-strong);
+  background: var(--surface-2);
+}
+
+/* 배지 / 상태 */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+.badge-live { background: var(--warm-soft); color: var(--warm); }
+.badge-done { background: var(--accent-soft); color: var(--accent); }
+.badge-draft { background: var(--surface-2); color: var(--muted); }
+
+/* 헤어라인 구분선 (솔리드 보더 대안) */
+.hr {
+  width: 100%;
+  height: 1px;
+  background: var(--hairline);
+  border: 0;
+}
+.hr-strong { background: var(--hairline-strong); }
