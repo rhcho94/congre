@@ -2,6 +2,36 @@
 
 > 랜딩 페이지(congre.kr / www.congre.kr, 정적 HTML `deploy/` 폴더) 디자인·자산·배포 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-05-30 (10) V5 R10 — 8섹션 swap + R4 압축
+
+8섹션 순서 변경:
+- 변경 전: Hero → Why now → How → Showcase → Moments → Occasions → Testimonials → CTA
+- 변경 후: Hero → Showcase → How → Why now → Moments → Occasions → Testimonials → CTA
+
+이유: 결과물(시각 hook) 먼저 → 동작 방식 → 외주 대비 우위 흐름. AIDA(주의·관심·욕구·행동) 변형.
+
+R4 (Showcase) 섹션 17인치 노트북 viewport 압축 — 헤드라인 + 서브 + 카드 5장 + 캡션 본문이 100vh 안에 다 들어오도록 padding·gap 압축. 100vh 룰 전 섹션 일관성 유지.
+
+라이브 반영: www.congre.kr (2026-05-30)
+
+## 2026-05-30 (11) 가격 표시 UI 4장 (덩어리 2)
+
+`/pricing` 페이지에 가격 4장 섹션 박음 — Pricing Section.html이 deploy/pricing.html 통째 교체.
+
+4장 카드 사양:
+- 무료: 가격 자리 "무료로 테스트" (eyebrow 없음, 부제 없음), 클립 10개까지, 업로드 클립 길이 10초, 워터마크 포함, 다운로드 가능, CTA "지금 시작"
+- 소형: ₩10,000 / 1회 결제, 클립 50개까지, 업로드 클립 길이 10~30초, 워터마크 없음, 다운로드 가능, CTA "시작하기"
+- 중형 (추천 배지 + 앰버 테두리): ₩50,000 / 1회 결제, 클립 200개까지, 업로드 클립 길이 10~30초, 워터마크 없음, 다운로드 가능, 우선 처리, CTA "시작하기"
+- 라지: 별도 문의 / 클립 200개 초과·커스텀, 클립 200개 이상, 업로드 클립 길이 10~30초, 워터마크 없음, 다운로드 가능, 전담 지원, 현장 옵션 상담 가능, CTA "문의하기"
+
+섹션 헤드라인: 요금 (eyebrow) / "행사 규모에 맞춰 고르세요" / "무료로 먼저 만들어 보고, 필요한 만큼만 올리세요."
+
+Footnote: "* 결제는 이벤트당 1회. 재편집 시 처음 금액의 80%로 재결제됩니다."
+
+폰트: Pretendard (V5 톤). 디자인 토큰 일관.
+
+라이브 반영: www.congre.kr/pricing (2026-05-30)
+
 ## 2026-05-28 — /pricing 가격 페이지 신규 + nav·footer 처리
 
 - **결정**: `deploy/pricing.html` 신규. Hero + 행사유형 카드 4장 + 리드 폼 + footer. `vercel.json {"cleanUrls": true}`로 `/pricing` 깔끔한 URL.

@@ -2,6 +2,29 @@
 
 > 영상 편집·Shotstack·클립·재렌더 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-05-30 — 워터마크 정밀 수치 확정
+
+직전 2026-05-29 (2) "정밀 수치 미정" 영역 해소.
+
+CD 시안 비교 (SMALL 28px/0.30 / MEDIUM 40px/0.40 / LARGE 56px/0.50) 후 MEDIUM 선택.
+
+- 위치: 우하 (Shotstack position: "bottomRight")
+- 텍스트: "made by Congre"
+- 폰트: Cormorant Garamond italic
+- 색: #c8892c (--accent)
+- 크기: 40px (1080×1920 기준, 너비 3.7%)
+- 불투명도: 0.40
+- 여백: 가장자리에서 ~40px
+- 적용 대상: 무료 플랜 완성본 영상 only
+
+운영자 의견 = LARGE 박을 의도였으나 본인 추천 = MEDIUM (MVP + 외부 검증 진입 단계 = 사용 모수 확보 우선, 추후 데이터 보고 격상 영역). 운영자 본인 추천 수용.
+
+다음 본 앱 코드 변경 트랙:
+- shotstack.ts createRender 시그니처에 plan 인자 추가
+- render/start route에서 eventData.plan 전달
+- 무료 플랜에만 워터마크 전용 트랙 추가 (rich-text asset, font.opacity, position: "bottomRight")
+- public/fonts/에 Cormorant Garamond italic ttf 추가 + timeline.fonts 등록
+
 ## 2026-05-23 — outroText + outroMedia 동시 입력 사고 해소 (갈래 C: 직렬 배치)
 
 - **사고**: outroText + outroMedia 동시 입력 시 [A] 분기에서 outroText 무시됨. UI "✓ 저장됨" 피드백으로 호스트 입장 원인 파악 불가.

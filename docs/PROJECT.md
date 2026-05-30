@@ -119,6 +119,8 @@ npx firebase emulators:start --only firestore
 - 트랜지션 in/out 분리 (pickSequence 2회 호출, 시각 다양성)
 - outroText + outroMedia 동시 입력 사고 해소 ([A] 분기 직렬 배치)
 - **가격 페이지 + 리드 수집 폼** (랜딩 `/pricing` → 본 앱 `/api/lead` → Resend → 운영자 메일. emailChannel reply-to 확장. 2026-05-28)
+- **워터마크 사양 확정** (40px / 0.40 / MEDIUM, 무료 플랜만. 본 앱 코드 구현은 별도 트랙. 2026-05-30. decisions/rendering.md 참조)
+- **가격 표시 UI 4장 라이브 반영** (`www.congre.kr/pricing` — 무료·소형·중형·라지. Pricing Section.html로 deploy/pricing.html 교체. 2026-05-30. decisions/landing.md 2026-05-30 (11))
 
 ## 랜딩 페이지 (별도 트랙)
 
@@ -141,14 +143,16 @@ npx firebase emulators:start --only firestore
 - challenge.mp4 — Bento 챌린지·모임 타일, K-pop 챌린지
 
 이미지: `.image-slots.state.json` (base64 인코딩, 41장)
-- 졸업식 20장 + 결혼식 20장 + K-pop 10장 = 50장 목표 중 41장 채워짐 (known-issues 랜딩 영역 L2)
+- 졸업식 20장 + 결혼식 20장 + K-pop 10장 = 운영자 결정 (2026-05-30) — 41장 충분, L2 known-issue 해소 처리 (known-issues-resolved.md 2026-05-27 항목)
 
 ### 8섹션 흐름
 
-Hero / Why now / How it works / Showcase / Moments / Occasions / Testimonials / Trust / CTA / Footer
+Hero / Showcase / How it works / Why now / Moments / Occasions / Testimonials / Trust / CTA / Footer
 
-(data-screen-label 라벨 중복 이슈는 known-issues 랜딩 영역 L1)
+(2026-05-30 V5 R10 swap — Showcase가 Hero 직후로 이동. 결과물 hook 먼저 → 동작 → 비교 흐름. decisions/landing.md 2026-05-30 (10))
+
+(data-screen-label 라벨 중복 이슈는 known-issues 랜딩 영역 L1, 2026-05-27 해소)
 
 ### 추가 페이지
 
-- `/pricing` (= `deploy/pricing.html`) — 가격 안내 + 리드 수집 폼 (본 앱 `/api/lead` 호출). `vercel.json {"cleanUrls": true}` 적용. 2026-05-28.
+- `/pricing` (= `deploy/pricing.html`) — Pricing Section.html로 통째 교체. 가격 4장 카드 (무료·소형·중형·라지) + footnote 박힘. Pretendard 톤 (V5 일관). 라이브 반영 `www.congre.kr/pricing`. 2026-05-30. 직전 리드 폼 영역은 별도 트랙으로 분리 (본 앱 `/api/lead` 백엔드는 유지).
