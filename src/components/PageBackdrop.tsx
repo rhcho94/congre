@@ -30,8 +30,8 @@ export default function PageBackdrop({ pattern }: { pattern: Pattern }) {
           ...(firstImpression
             ? { filter: "saturate(0.9) brightness(0.92)" }
             : {
-                opacity: 0.1,
-                filter: "saturate(0.55) brightness(0.7) blur(7px)",
+                opacity: 0.22,
+                filter: "saturate(0.6) brightness(0.85) blur(3px)",
                 transform: "scale(1.08)",
               }),
         }}
