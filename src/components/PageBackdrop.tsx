@@ -30,8 +30,8 @@ export default function PageBackdrop({ pattern }: { pattern: Pattern }) {
           ...(firstImpression
             ? { filter: "saturate(0.9) brightness(0.92)" }
             : {
-                opacity: 0.22,
-                filter: "saturate(0.6) brightness(0.85) blur(3px)",
+                opacity: 0.4,
+                filter: "saturate(0.85) brightness(1.0) blur(1px)",
                 transform: "scale(1.08)",
               }),
         }}
@@ -43,7 +43,7 @@ export default function PageBackdrop({ pattern }: { pattern: Pattern }) {
           zIndex: -9,
           background: firstImpression
             ? "linear-gradient(180deg, rgba(12,11,9,0.45) 0%, rgba(12,11,9,0.62) 50%, rgba(12,11,9,0.80) 100%)"
-            : "linear-gradient(180deg, rgba(12,11,9,0.45) 0%, rgba(12,11,9,0.60) 100%)",
+            : "linear-gradient(180deg, rgba(12,11,9,0.30) 0%, rgba(12,11,9,0.45) 100%)",
         }}
       />
     </>
