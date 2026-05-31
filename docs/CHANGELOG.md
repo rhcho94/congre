@@ -4,6 +4,7 @@
 
 ## 2026-05-31
 
+- feat(app): 앱 내 좌상단 로고 12곳 + "← 홈" 류 홈 버튼 6곳을 외부 랜딩 `congre.kr`로 연결 (`<Link href="/">` → `<a href={LANDING_URL}>`). 회원 탈퇴 직후 이동도 `/` → `/host`로 명시 (마케팅 랜딩 아닌 로그인 화면). 신규: `src/lib/constants.ts` `LANDING_URL`.
 - refactor(app): 본 앱 루트 `/` 옛 랜딩 제거, `/host` 서버 리디렉트로 교체 (`next/navigation` `redirect()`). `LandingParticles` / `LandingSparkles` / `LandingHeroVideo` 3개 컴포넌트 삭제. 외부 랜딩 `congre.kr`로 일원화. 전역 `<Link href="/">` 19곳은 그대로 (host 거쳐 정상 동작).
 
 ## 2026-05-29

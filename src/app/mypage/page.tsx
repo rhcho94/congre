@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { BrandName } from "@/components/BrandName";
+import { LANDING_URL } from "@/lib/constants";
 import PageBackdrop from "@/components/PageBackdrop";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
@@ -198,7 +199,7 @@ export default function MyPage() {
     try {
       await deleteAccount(delPw);
       alert("회원 탈퇴가 완료되었습니다");
-      router.push("/");
+      router.push("/host");
     } catch (err) {
       console.error("[mypage] deleteAccount failed:", err);
       const code = err instanceof Error && "code" in err
@@ -251,9 +252,9 @@ export default function MyPage() {
       <PageBackdrop pattern="b" />
       <div className="min-h-screen">
         <nav className="flex items-center justify-between px-8 py-6">
-          <Link href="/" className="text-xl tracking-wider hover:opacity-75 transition-opacity duration-200">
+          <a href={LANDING_URL} className="text-xl tracking-wider hover:opacity-75 transition-opacity duration-200">
             <BrandName />
-          </Link>
+          </a>
           <div className="flex items-center gap-6">
             <span className="text-xs text-muted truncate max-w-[180px]">{user?.email}</span>
             <Link href="/guide/host" className="btn-quiet text-xs tracking-widest uppercase">

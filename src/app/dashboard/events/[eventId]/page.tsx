@@ -11,6 +11,7 @@ import { getClipPlaybackUrl, toggleClipExclusion } from "@/lib/clip-playback";
 import { getPresignedUrl, uploadToS3 } from "@/lib/s3";
 import CongreBadge from "@/components/CongreBadge";
 import { BrandName } from "@/components/BrandName";
+import { LANDING_URL } from "@/lib/constants";
 import PageBackdrop from "@/components/PageBackdrop";
 
 const statusLabels: Record<string, string> = {
@@ -612,9 +613,9 @@ export default function EventDetailPage() {
         )}
 
         <nav className="flex items-center justify-between px-8 py-6">
-          <Link href="/" className="text-xl tracking-wider hover:opacity-75 transition-opacity duration-200">
+          <a href={LANDING_URL} className="text-xl tracking-wider hover:opacity-75 transition-opacity duration-200">
             <BrandName />
-          </Link>
+          </a>
           <div className="flex items-center gap-4">
             <Link href="/guide/host" className="btn-quiet text-xs tracking-widest uppercase">
               사용 가이드

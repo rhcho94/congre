@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect, Suspense } from "react";
-import Link from "next/link";
 import { BrandName } from "@/components/BrandName";
+import { LANDING_URL } from "@/lib/constants";
 import PageBackdrop from "@/components/PageBackdrop";
 import { useParams, useSearchParams } from "next/navigation";
 import { checkS3, getPresignedUrl, uploadToS3 } from "@/lib/s3";
@@ -332,9 +332,9 @@ function UploadInner() {
             <p className="display text-xl mb-2">마감된 이벤트입니다</p>
             <p className="text-sm text-muted leading-relaxed">업로드 기간이 종료되었습니다.</p>
           </div>
-          <Link href="/" className="btn-quiet text-xs tracking-widest uppercase">
+          <a href={LANDING_URL} className="btn-quiet text-xs tracking-widest uppercase">
             홈으로
-          </Link>
+          </a>
         </div>
       </>
     );
@@ -347,9 +347,9 @@ function UploadInner() {
       <div className="min-h-screen flex flex-col" style={{ maxWidth: "480px", margin: "0 auto" }}>
         {/* Header */}
         <header className="px-6 py-5 flex items-center justify-between">
-          <Link href="/" className="text-xl tracking-wider hover:opacity-75 transition-opacity duration-200">
+          <a href={LANDING_URL} className="text-xl tracking-wider hover:opacity-75 transition-opacity duration-200">
             <BrandName />
-          </Link>
+          </a>
         </header>
 
         {/* Event info — 사진 위 텍스트, 국소 스크림 */}

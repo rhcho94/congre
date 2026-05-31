@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { BrandName } from "@/components/BrandName";
+import { LANDING_URL } from "@/lib/constants";
 import PageBackdrop from "@/components/PageBackdrop";
 import { useRouter } from "next/navigation";
 import { subscribeToAuthChanges, logout, type User } from "@/lib/auth";
@@ -126,9 +127,9 @@ export default function DashboardPage() {
       <PageBackdrop pattern="b" />
       <div className="min-h-screen">
         <nav className="flex items-center justify-between px-8 py-6">
-          <Link href="/" className="text-xl tracking-wider hover:opacity-75 transition-opacity duration-200">
+          <a href={LANDING_URL} className="text-xl tracking-wider hover:opacity-75 transition-opacity duration-200">
             <BrandName />
-          </Link>
+          </a>
           <div className="flex items-center gap-6">
             <span className="text-xs text-muted truncate max-w-[180px]">{user?.email}</span>
             <Link href="/guide/host" className="btn-quiet text-xs tracking-widest uppercase">

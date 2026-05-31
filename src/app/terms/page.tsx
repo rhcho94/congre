@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BrandName } from "@/components/BrandName";
+import { LANDING_URL } from "@/lib/constants";
 import PageBackdrop from "@/components/PageBackdrop";
 
 export default function TermsPage() {
@@ -8,12 +9,12 @@ export default function TermsPage() {
       <PageBackdrop pattern="d" />
       <div className="min-h-screen">
         <nav className="flex items-center justify-between px-8 py-6">
-          <Link href="/" className="text-xl tracking-wider hover:opacity-75 transition-opacity duration-200">
+          <a href={LANDING_URL} className="text-xl tracking-wider hover:opacity-75 transition-opacity duration-200">
             <BrandName />
-          </Link>
-          <Link href="/" className="btn-quiet text-xs tracking-widest uppercase">
+          </a>
+          <a href={LANDING_URL} className="btn-quiet text-xs tracking-widest uppercase">
             ← 홈
-          </Link>
+          </a>
         </nav>
 
         <main className="mx-auto max-w-3xl px-6 py-16">
@@ -335,12 +336,12 @@ export default function TermsPage() {
               hello@congre.kr
             </a>
           </p>
-          <Link
-            href="/"
+          <a
+            href={LANDING_URL}
             className="text-xs text-muted hover:text-accent tracking-widest uppercase transition-colors duration-200"
           >
             ← 홈으로
-          </Link>
+          </a>
         </div>
       </main>
       </div>

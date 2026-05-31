@@ -99,6 +99,7 @@ npx firebase emulators:start --only firestore
 - Congre 배지 (BrandName 컴포넌트)
 - iOS Safari 호환성 (capture 480p 사고 옵션 B 처리, 2026-05-19 v1)
 - 본 앱 루트 `/` → `/host` 서버 리디렉트 (`src/app/page.tsx` `next/navigation` `redirect()`. 2026-05-31. 옛 본 앱 랜딩 + 파티클 컴포넌트 3개 삭제 — 외부 랜딩 `congre.kr`로 일원화)
+- 앱 내 로고·홈 버튼 18곳 → 외부 랜딩 `congre.kr` 직접 연결 (`LANDING_URL` 상수 `src/lib/constants.ts`. 2026-05-31. 회원 탈퇴 직후만 `/host`로 분리)
 - 마감/렌더링/완료 상태에서 QR/링크 박스 자동 숨김
 - 이벤트 페이지 overflow 정리
 - 클립 재생 Pre-signed URL (주최자 대시보드에서 인라인 미리보기, firebase-admin 인증)
