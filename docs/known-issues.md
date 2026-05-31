@@ -197,6 +197,11 @@
   - 둘 다 메타상 `fixable: "code"`이나 실제 동작 영향 가능성 있어 자동수정 안전성 미검증 → 수동 점검 트랙
 - **격상 트리거**: react-hooks/* 11건 정리 사이클 착수 시. 사용자가 별도로 지시.
 - **검증 게이트 운영**: 신규 작업의 lint 게이트는 "errors ≤ 11 (현 baseline)"으로 운영. delta 0이면 통과.
+- **2026-05-31 B 정찰**: 잔존 11건(set-state-in-effect 9 + refs 2)을 한 건씩 분류. 결과 **[실제 위험] 0 / [무해·관행] 9 / [불확실] 2**.
+  - **무해 9건**: 마운트 1회 초기화(Kakao SDK 로드 2건 — `dashboard/events/[eventId]:277` + `share/[eventId]/ShareActions:25`, iOS 감지 — `upload/[eventId]:118`, verify-email called-ref 가드 1회 — `verify-email:31`) / 외부 트리거 fetch(user 변경) 2건(`dashboard:81`, `mypage:65`) / 화면전환 1회 sessionStorage 복원(`upload/[eventId]:100`) / 500ms 디바운스 자동저장 2건(`dashboard/events/[eventId]:295`·`319` intro/outro). 무한 루프 구조 없음 확인. `setInterval`·반복 `setTimeout` 0건 (1a784d0 오진형 5초 폴링 패턴 없음).
+  - **불확실 2건**: `src/app/upload/[eventId]/page.tsx:613`, `react-hooks/refs` (같은 위치 2건, 실질 1지점). JSX 렌더 중 `blobRef.current`를 직접 읽음 — `{blobRef.current && (<button>다시 시도</button>)}` (stage==="error" 분기 안). 규칙 위반은 명백하나, ref가 stale이라 버튼 노출이 어긋나는 **실제 오작동 여부는 런타임 시퀀스(`blobRef` set 시점 ↔ `stage="error"` set 시점 순서) 확인 필요**라 미확정.
+- **운영자 결정 (2026-05-31)**: 불확실 2건은 수정하지 않고 보류. 지금까지 필드에서 "다시 시도 버튼이 안 뜬다 / 잘못 뜬다" 사고 보고 0건. 잘 도는 업로드 실패 경로를 건드리는 수정 위험이 더 크다고 판단.
+- **격상 트리거 (refs 2건)**: 필드 테스트·운영 중 "녹화·업로드 실패 후 '다시 시도' 버튼이 안 보인다 / 엉뚱하게 보인다" 사고 보고 발생 시 → `upload/[eventId]/page.tsx:613` ref stale 가설 1순위. 진단 순서: `blobRef` set 위치(파일 선택/녹화 완료 핸들러)와 `stage="error"` set 위치(업로드 실패 catch)의 호출 순서 추적.
 
 ## 리드 폼 rate limit 미구현 (honeypot만)
 
