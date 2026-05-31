@@ -2,6 +2,20 @@
 
 > 랜딩 페이지(congre.kr / www.congre.kr, 정적 HTML `deploy/` 폴더) 디자인·자산·배포 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-05-31 (12) 랜딩 푸터 약관·개인정보 링크 → 본 앱 절대경로
+
+랜딩 푸터의 "이용약관" / "개인정보처리방침" 링크 4건(footer 본문 2 + foot-bottom 2)을 자기 도메인 상대경로(`/terms`, `/privacy`)에서 본 앱 절대경로(`https://app.congre.kr/terms`, `https://app.congre.kr/privacy`)로 변경.
+
+**배경**: 랜딩 `deploy/` 폴더에는 `terms.html` / `privacy.html` 파일이 없고 `vercel.json`도 rewrites 없음(`cleanUrls`만). 즉 `congre.kr/terms` · `congre.kr/privacy` 라이브 응답이 **HTTP 404**. 약관·개인정보 페이지는 본 앱(`src/app/terms/page.tsx`, `src/app/privacy/page.tsx`)에만 존재.
+
+**옵션 비교**:
+- (a) 절대경로 — 채택. 본 앱 단일 소스 유지, 약관 v0.x 갱신 시 본 앱 한 곳만 수정. 랜딩 사용자 입장에서 도메인 전환은 한 번 클릭.
+- (b) 랜딩 `deploy/`에 `terms.html`·`privacy.html` 추가 — YAGNI 위반. 약관 v 갱신 시 본 앱·랜딩 양쪽 동기 부담 발생, 두 버전이 어긋날 위험.
+
+**라이브 검증**: `https://app.congre.kr/terms` / `/privacy` 둘 다 HTTP 200 (2026-05-31).
+
+**git 외부 트랙 주의**: 본 변경은 `deploy/index.html` 직접 수정 + Vercel 수동 배포. git 형상에 없음. 다음 CD 랜딩 zip 적용 시 푸터 4건 절대경로가 유지되는지 확인 의무 — known-issues L8 참조.
+
 ## 2026-05-30 (10) V5 R10 — 8섹션 swap + R4 압축
 
 8섹션 순서 변경:

@@ -217,6 +217,15 @@
 - **격상 트리거**: R9 zip 적용 시 index.html은 Pretendard 전환되는데 pricing.html 누락되면 이 페이지만 Cormorant로 남음.
 - **운영자 결정 (2026-05-30)**: 보류, 이대로. Pricing Section.html 교체로 사실상 해소 영역도 있으나 운영자 명시 결정.
 
+### L8. 랜딩 푸터 약관·개인정보 링크 = git 외부 직접 수정분 (CD zip 덮어쓰기 주의)
+
+- **현황**: 2026-05-31 `deploy/index.html` 푸터 4건(L3627·L3628 본문 + L3635·L3636 foot-bottom — `/terms`·`/privacy` 상대경로 → `https://app.congre.kr/terms`·`/privacy` 절대경로)을 CC가 직접 수정·배포. 랜딩은 git 외부 트랙이라 이 수정은 git에 없고 Vercel 배포본(`dpl_9QmSYY5pDJzELxPHPnxiGZv4j86d`)에만 존재.
+- **위험**: 다음에 CD에서 랜딩 zip을 새로 뽑아 풀어덮으면 이 4줄 수정이 사라져 404 재발. CD zip에는 이 수정이 없음.
+- **다음 CD 랜딩 작업 시 의무**: zip 적용 후 푸터 약관·개인정보 href가 `https://app.congre.kr/terms`·`/privacy` 절대경로인지 확인. 아니면 재적용.
+- **근본 해소 후보**: (a) CD 소스(랜딩 원본)에 이 절대경로를 반영해 zip부터 올바르게, (b) 랜딩 `deploy/`에 `terms.html`·`privacy.html` 추가해 자기 도메인 유지. 미정.
+- **관련 결정**: decisions/landing.md 2026-05-31 (12).
+- **L 번호 부여 메모**: 사양 원안은 "L7"이었으나 L7(pricing.html Pretendard) 기존 점유 → 전역 일련번호 룰(CLAUDE.md 학습 룰 #2)에 따라 L8 부여.
+
 ## 본 앱 환경 (L6)
 
 ### L6. 본 앱 로컬 경로 OneDrive 안 — 잠재 격상 트리거 있음
