@@ -184,13 +184,19 @@
 - **잠재성**: 회사 메일함(`hello@congre.kr`) 수신 MX 부재. 리드 알림이 개인 네이버로만 옴. 운영자만 받는 알림이라 당장 문제는 아님.
 - **격상 트리거**: (a) 회사 메일함 정식 구축 시 → 수신 MX 추가 + 환경변수(`LEAD_TO`)로 분리 + 주소 복원, (b) 영업 인력 추가 시 공용 수신함 필요.
 
-## 본 앱 lint errors 103건 (기존부터 존재, 본 작업과 무관)
+## 본 앱 lint errors baseline (2026-05-31 사이클로 103 → 11 축소)
 
-- **현황**: `npm run lint` 베이스라인 = 103 errors + 4 warnings (107 problems). 옛 랜딩 `/` 삭제 작업(2026-05-31) 진입 전 측정에서 발견.
-- **본 작업과 관계**: 본 변경(page.tsx 단순화 + 3개 컴포넌트 삭제 + docs)과 무관. errors 위치는 변경 영역 밖 — 예: `src/app/verify-email/page.tsx:31` (react-hooks/set-state-in-effect), `src/lib/notifications/channels/sms.ts:17` (no-unused-vars) 등.
-- **검증 게이트 운영**: 사양 게이트 "errors 0" → "본 변경이 신규 error 추가하지 않음 (delta 0)"으로 운영자 승인. 본 작업 후 재측정 결과 errors ≤ 103이면 통과.
-- **격상 트리거**: 별도 코드 품질 정리 사이클 착수 시.
-- **처리**: 미정.
+- **2026-05-31 사이클 5 시점 정찰**: `npm run lint` 베이스라인 = 103 errors + 4 warnings (107 problems). 옛 랜딩 `/` 삭제 작업(2026-05-31) 진입 전 측정에서 발견. 규칙별 분포:
+  - `react/no-unescaped-entities` 92건 (3개 파일 집중: guide/guest 34, terms 30, guide/host 26 + privacy 2)
+  - `react-hooks/set-state-in-effect` 9건 (dashboard/events/[eventId] 3, upload/[eventId] 2, dashboard 1, mypage 1, share/[eventId]/ShareActions 1, verify-email 1)
+  - `react-hooks/refs` 2건 (upload/[eventId] 2)
+- **2026-05-31 사이클 6 처리**: `react/no-unescaped-entities` 규칙을 `eslint.config.mjs`에서 `"off"`로 비활성화 (커밋 `69639d2`). 따옴표/아포스트로피 HTML entity 강제 규칙으로 화면 영향 없음, 자동수정 불가 + 92건 대량이라 일괄 비활성화 채택.
+- **현재 baseline**: 11 errors + 3 warnings.
+  - `react-hooks/set-state-in-effect` 9건 — 별도 트랙
+  - `react-hooks/refs` 2건 — 별도 트랙
+  - 둘 다 메타상 `fixable: "code"`이나 실제 동작 영향 가능성 있어 자동수정 안전성 미검증 → 수동 점검 트랙
+- **격상 트리거**: react-hooks/* 11건 정리 사이클 착수 시. 사용자가 별도로 지시.
+- **검증 게이트 운영**: 신규 작업의 lint 게이트는 "errors ≤ 11 (현 baseline)"으로 운영. delta 0이면 통과.
 
 ## 리드 폼 rate limit 미구현 (honeypot만)
 
