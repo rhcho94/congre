@@ -5,6 +5,7 @@ import { createRender } from "@/lib/shotstack";
 import { getAdminDb } from "@/lib/firebase-admin";
 import { verifyIdToken } from "@/lib/auth-server";
 import { notifyRenderStarted } from "@/lib/notifications/scenarios/render-started";
+import { type PlanId } from "@/lib/plans";
 import type { NextRequest } from "next/server";
 
 const isConfigured = Boolean(
@@ -99,6 +100,7 @@ export async function POST(request: NextRequest) {
   const introMediaType = eventData.introMediaType as "image" | "video" | undefined;
   const outroMediaKey  = eventData.outroMediaKey  as string | undefined;
   const outroMediaType = eventData.outroMediaType as "image" | "video" | undefined;
+  const plan = (eventData.plan as string | undefined ?? "free") as PlanId;
 
   const introMediaUrl = introMediaKey
     ? await getSignedUrl(
@@ -125,6 +127,7 @@ export async function POST(request: NextRequest) {
       (outroText || outroMediaUrl)
         ? { text: outroText, mediaUrl: outroMediaUrl, mediaType: outroMediaType }
         : undefined,
+      plan,
     );
   } catch (err) {
     const msg = err instanceof Error ? err.message : "render_failed";

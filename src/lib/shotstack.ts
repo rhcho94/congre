@@ -1,3 +1,5 @@
+import type { PlanId } from "@/lib/plans";
+
 type ShotstackEnv = "stage" | "production";
 
 function resolveShotstackEnv(): ShotstackEnv {
@@ -107,6 +109,7 @@ export async function createRender(
   clips: Array<{ src: string; length: number }>,
   intro?: { text?: string; mediaUrl?: string; mediaType?: "image" | "video" },
   outro?: { text?: string; mediaUrl?: string; mediaType?: "image" | "video" },
+  plan?: PlanId,
 ): Promise<string> {
   assertApiKey();
 
@@ -118,10 +121,9 @@ export async function createRender(
   if (!appUrl) throw new Error("MISSING_APP_URL");
 
   const hasAnyText = !!(intro?.text || outro?.text);
-  let fontsSrc: string | undefined;
-  if (hasAnyText) {
-    fontsSrc = `${appUrl}/fonts/NotoSansKR-Regular.ttf`;
-  }
+  const fonts: Array<{ src: string }> = [];
+  if (hasAnyText) fonts.push({ src: `${appUrl}/fonts/NotoSansKR-Regular.ttf` });
+  if (plan === "free") fonts.push({ src: `${appUrl}/fonts/CormorantGaramond-Italic.ttf` });
 
   const transitionsIn = pickSequence(TRANSITION_POOL, clips.length);
   const transitionsOut = pickSequence(TRANSITION_POOL, clips.length);
@@ -134,7 +136,7 @@ export async function createRender(
     transition: { in: transitionsIn[i], out: transitionsOut[i] },
   }));
 
-  let tracks;
+  let tracks: Array<{ clips: unknown[] }>;
   if (useDualTrack) {
     // [A] 분기 — 듀얼 track: track[0] introText overlay, track[1] 미디어
     const textClips = [
@@ -162,6 +164,25 @@ export async function createRender(
     tracks = [{ clips: allClips }];
   }
 
+  if (plan === "free") {
+    tracks.push({
+      clips: [
+        {
+          asset: {
+            type: "rich-text",
+            text: "made by Congre",
+            font: { family: "Cormorant Garamond", size: 40, color: "#c8892c" },
+          },
+          start: 0,
+          length: "end",
+          position: "bottomRight",
+          offset: { x: -0.037, y: -0.021 },
+          opacity: 0.40,
+        },
+      ],
+    });
+  }
+
   const timeline = {
     background: "#0c0b09",
     soundtrack: {
@@ -170,7 +191,7 @@ export async function createRender(
       volume: 0.1,
     },
     tracks,
-    ...(fontsSrc ? { fonts: [{ src: fontsSrc }] } : {}),
+    ...(fonts.length > 0 ? { fonts } : {}),
   };
 
   const body = {
