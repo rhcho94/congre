@@ -98,10 +98,9 @@ npx firebase emulators:start --only firestore
 - SNS 공유 버튼 (카카오·링크 복사)
 - Congre 배지 (BrandName 컴포넌트)
 - iOS Safari 호환성 (capture 480p 사고 옵션 B 처리, 2026-05-19 v1)
-- 랜딩 페이지 (Hero with 영상 + How / Why / Use cases / CTA / Footer)
+- 본 앱 루트 `/` → `/host` 서버 리디렉트 (`src/app/page.tsx` `next/navigation` `redirect()`. 2026-05-31. 옛 본 앱 랜딩 + 파티클 컴포넌트 3개 삭제 — 외부 랜딩 `congre.kr`로 일원화)
 - 마감/렌더링/완료 상태에서 QR/링크 박스 자동 숨김
 - 이벤트 페이지 overflow 정리
-- 랜딩 페이지 파티클 효과 (canvas-confetti burst + CSS sparkle)
 - 클립 재생 Pre-signed URL (주최자 대시보드에서 인라인 미리보기, firebase-admin 인증)
 - 알림 시스템 (Resend 이메일 + SOLAPI SMS, 채널 어댑터 패턴, notifications 컬렉션 이력 저장)
   - 트리거 연결 6건: 이벤트 생성, 렌더 시작, 렌더 완료, 렌더 지연(10분 초과), 렌더 실패, **참가자 결과**

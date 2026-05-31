@@ -2,6 +2,10 @@
 
 > 기능 단위 작업 이력. 최신이 위.
 
+## 2026-05-31
+
+- refactor(app): 본 앱 루트 `/` 옛 랜딩 제거, `/host` 서버 리디렉트로 교체 (`next/navigation` `redirect()`). `LandingParticles` / `LandingSparkles` / `LandingHeroVideo` 3개 컴포넌트 삭제. 외부 랜딩 `congre.kr`로 일원화. 전역 `<Link href="/">` 19곳은 그대로 (host 거쳐 정상 동작).
+
 ## 2026-05-29
 
 - 워터마크 정책 결정 (무료 박음/유료 제거) + 무료 플랜 사양 공식화 (클립 길이 10초 / 수 10개) — 코드 변경 없음, docs만. decisions/market-product.md 2026-05-29 (3)
