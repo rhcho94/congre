@@ -123,6 +123,7 @@ npx firebase emulators:start --only firestore
 - **워터마크 사양 확정** (40px / 0.40 / MEDIUM, 무료 플랜만. 본 앱 코드 구현은 별도 트랙. 2026-05-30. decisions/rendering.md 참조)
 - **무료 플랜 워터마크 구현** ("made by Congre" rich-text, 우하단 align right/bottom, Cormorant Garamond italic 40px #c8892c, clip opacity 0.40, length "end" 최상단 트랙. plan==="free" 조건. 텍스트 공백 패딩으로 모서리 여백. 2026-06-01. decisions/rendering.md 2026-06-01 참조)
 - **게스트 업로드 화면 호스트 이름 노출 + 안내 카피 보강** (`/api/events/[eventId]` 게스트용 GET 응답에 `hostName` 1개 필드 추가 — users 컬렉션 `name`만 join, email·phone 등 다른 PII 비노출. uploader 단계 첫 방문 문구에 호스트 이름·행사 이름·요청 영상 길이 노출 + 입력 정보 사용 목적 안내. 2026-06-01. decisions/data-flow.md 2026-06-01 참조)
+- **게스트 업로더 4단계 흐름 안내 스트립** (`src/components/FlowStrip.tsx` — 이름·번호 / 촬영 / 올리기 / 링크 받기. CD app-restyle/Flow Strip.html 자산을 React+Tailwind로 변환. 첫 방문 `!isReturning` 노출. 인라인 SVG, 외부 의존성·전역 CSS 클래스 0. 2026-06-01. decisions/misc.md 2026-06-01 참조)
 - **가격 표시 UI 4장 라이브 반영** (`www.congre.kr/pricing` — 무료·소형·중형·라지. Pricing Section.html로 deploy/pricing.html 교체. 2026-05-30. decisions/landing.md 2026-05-30 (11))
 
 ## 랜딩 페이지 (별도 트랙)

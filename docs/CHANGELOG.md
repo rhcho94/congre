@@ -4,6 +4,7 @@
 
 ## 2026-06-01
 
+- feat(ui): 게스트 업로드 화면 uploader 단계 첫 방문(!isReturning)에 4단계 흐름 안내 스트립 `FlowStrip` 추가 (이름·번호 → 촬영 → 올리기 → 링크 받기). 인라인 SVG 4종 + 화살표, 외부 패키지·전역 CSS 클래스 의존성 0.
 - feat(api): 게스트용 `GET /api/events/[eventId]` 응답에 `hostName` 필드 추가 (users 컬렉션 `name`만 join, 다른 PII 비노출).
 - feat(ui): 게스트 업로드 화면 uploader 단계 첫 방문 문구 교체 — 호스트 이름·행사 이름·요청 영상 길이 노출 + 입력 정보 사용 목적 안내.
 - refactor(ui): 게스트 uploader 첫 방문 문구 압축(호스트 이름 1회·길이 안내 1줄·정보 사용 목적 1줄) + 입력칸 아래 "같은 이름+전화번호로는 한 번만…" 사전 안내 삭제 (검증 에러 메시지로 충분).

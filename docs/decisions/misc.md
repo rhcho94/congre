@@ -2,6 +2,36 @@
 
 > 영역 외 결정 (프로세스 룰·UI 라이브러리 등). 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-06-01 — 게스트 업로더 FlowStrip 통합 (CD 자산 → React 컴포넌트)
+
+### 결정
+
+CD handoff `app-restyle/Flow Strip.html`의 4단계 흐름 안내 스트립을 `src/components/FlowStrip.tsx`로 변환·통합. 게스트 업로드 화면 uploader 단계 첫 방문(`!isReturning`) 사용자에게만 노출.
+
+### 사양
+
+- **4단계 고정**: 이름·번호 / 촬영 / 올리기 / 링크 받기. CD 원본의 3단계 폴백은 폐기(본 흐름에 필요 없음).
+- **노출 조건**: `stage === "uploader" && !isReturning`. 재방문자(`isReturning`)에겐 안 보임 — 학습된 사용자에게 화면 잡음을 추가하지 않음.
+- **인라인 SVG 4종 + 화살표 SVG**: 외부 패키지·`lucide-react` 의존성 0. stroke="currentColor" 패턴으로 부모 color 상속.
+- **레이아웃은 Tailwind 유틸**: 전역 CSS 클래스(`.flow-strip`, `.step`, `.ico`, `.lbl`, `.arrow`) 추가 안 함. `globals.css` 영향 0.
+- **색상**: 본 앱 토큰(`var(--accent)`, `var(--text)`)을 inline style로 직접 참조. CD 원본의 4개 색 변수는 본 앱 토큰과 그대로 일치.
+- **자산 자체 좌우 padding(16px 18px) 제거**: 좌우 여백은 부모 `<main className="... px-6 ...">`에 맡김.
+- **배경 투명**: scrim 박스 없음(주변 카피 박스와 시각 분리).
+
+### Noto Sans KR 별도 로드 안 함
+
+CD 원본은 `<link>`로 Noto Sans KR(400/500/600) Google Fonts를 head에 로드. 본 결정은 **본 앱 화면 폰트로 Noto Sans KR을 추가로 로드하지 않기**로 함. 라벨 한글은 주변 화면 텍스트와 동일하게 기본 fallback(sans-serif)으로 렌더.
+
+이유:
+- 게스트 화면 라벨 4개(이름·번호 / 촬영 / 올리기 / 링크 받기) 한정 폰트 차별성 대비 추가 CDN 라운드트립·FCP 영향 비효율.
+- 본 앱 화면 한글은 이미 system fallback으로 일관 운영 중.
+- 영상 렌더용 `public/fonts/NotoSansKR-Regular.ttf`는 Shotstack timeline에만 주입(별도 영역).
+
+### 변경 영역
+
+- `src/components/FlowStrip.tsx` (신규)
+- `src/app/upload/[eventId]/page.tsx` — import + uploader 분기 첫 자식으로 `{!isReturning && <FlowStrip />}` 삽입
+
 ## 2026-05-14 (2) — Track 4 강화: 1차 변경 폭 부족 → 한 단계 상향
 
 - **결정**: (1) 배경 토큰 추가 명도 상향 (#13110f→#1f1c18 / #1c1916→#2a261f / #26211a→#34302a). (2) Primary 버튼 그라디언트를 더 밝은 팔레트(from-[#f5b04a] to-[#a06f1f])로 교체 + inset highlight·drop shadow·amber glow 복합 shadow 풀세트 적용 + glow-accent 클래스 제거(shadow에 통합). (3) 헤일로 4곳(landing Final CTA·host·upload·events done) opacity-15→opacity-25, ellipse 70% 60%→100% 90%로 강화.

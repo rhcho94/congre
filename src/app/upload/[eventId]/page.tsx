@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, Suspense } from "react";
 import { BrandName } from "@/components/BrandName";
 import { LANDING_URL } from "@/lib/constants";
 import PageBackdrop from "@/components/PageBackdrop";
+import FlowStrip from "@/components/FlowStrip";
 import { useParams, useSearchParams } from "next/navigation";
 import { checkS3, getPresignedUrl, uploadToS3 } from "@/lib/s3";
 import CongreBadge from "@/components/CongreBadge";
@@ -380,6 +381,7 @@ function UploadInner() {
           {/* ── uploader ── */}
           {stage === "uploader" && (
             <>
+              {!isReturning && <FlowStrip />}
               <p className="text-sm text-center text-foreground leading-relaxed" style={scrim}>
                 {isReturning ? (
                   "다시 오셨네요. 이름과 전화번호를 확인해주세요. 같은 이름으로는 한 번만 올릴 수 있어요."
