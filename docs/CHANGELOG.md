@@ -4,6 +4,7 @@
 
 ## 2026-06-01
 
+- feat(seo): 게스트 초대 링크(`/upload/[eventId]`)에 서버사이드 동적 OG 카드 추가 (`layout.tsx` 신규 `generateMetadata`). 카카오·SNS 미리보기 카드에 호스트 이름·행사 이름 노출. events.title + users.name 2회 Admin 조회, hostName 12자·title 20자 초과 시 절단.
 - feat(ui): 게스트 업로드 화면 uploader 단계 첫 방문(!isReturning)에 4단계 흐름 안내 스트립 `FlowStrip` 추가 (이름·번호 → 촬영 → 올리기 → 링크 받기). 인라인 SVG 4종 + 화살표, 외부 패키지·전역 CSS 클래스 의존성 0.
 - feat(api): 게스트용 `GET /api/events/[eventId]` 응답에 `hostName` 필드 추가 (users 컬렉션 `name`만 join, 다른 PII 비노출).
 - feat(ui): 게스트 업로드 화면 uploader 단계 첫 방문 문구 교체 — 호스트 이름·행사 이름·요청 영상 길이 노출 + 입력 정보 사용 목적 안내.

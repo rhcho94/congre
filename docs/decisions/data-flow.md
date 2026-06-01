@@ -2,6 +2,47 @@
 
 > Firestore·S3·Admin SDK·서버 이전 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-06-01 — 게스트 초대 링크 동적 OG 카드 (server-side generateMetadata)
+
+### 결정
+
+게스트 초대 링크(`/upload/[eventId]?token=...`)의 카카오·SNS 미리보기 카드를 이벤트별 동적으로 생성. 같은 폴더에 `layout.tsx`(server component) 신규 + `generateMetadata` export. 기존 `/share/[eventId]/page.tsx`의 OG 패턴을 게스트 초대 흐름에 이식.
+
+### 배경
+
+- 직전 상태: `/upload/[eventId]/page.tsx`가 `"use client"`라 `generateMetadata` 못 박음. 카카오 크롤러는 root layout 기본값만 받아 모든 게스트 초대 링크가 동일 카드("Congre — 이벤트 순간을 하나의 영상으로" + 카카오 자체 fallback 설명)로 표시 → 받는 사람이 누가 보냈는지·무슨 행사인지 알 수 없음.
+- 해결 경로: page.tsx는 client 그대로 두고, 같은 segment에 server `layout.tsx`를 추가해 거기서 `generateMetadata` export. children은 그대로 렌더.
+
+### 사양
+
+- **DB 조회 2회 (Admin SDK)**:
+  1. `events/{eventId}` → `title`, `hostId`
+  2. `users/{hostId}` → `name` (hostId가 있을 때만; 실패는 try/catch로 흡수, hostName=null fallback)
+- **문구 규칙**:
+  - 기본: `${hostName}님이 초대했어요 · ${title}`
+  - hostName 12자 초과 시 12자 + `…`
+  - title 20자 초과 시 20자 + `…`
+  - hostName 부재 시 fallback: `${title} 영상에 초대합니다`
+  - title 부재 시: empty `Metadata` 반환 → root layout 기본값 유지
+- **설명문**: `짧은 축하·소감·챌린지 영상을 올려주세요` (정적, 행사별 동일)
+- **메타 필드 일관성**: `title`, `description`, `openGraph.title/description`, `twitter.card="summary"/title/description` 모두 같은 값. 카드 이미지·URL 미노출(텍스트만).
+- **catch 의무**: 외부 try 실패 시 `console.error("[upload-og] failed:", err)`, users 조회 실패 시 별도 inner catch로 `console.error("[upload-og] host name lookup failed:", err)`.
+
+### 보안
+
+- `?token=...`은 query라 OG 응답 본문에 포함 안 됨(정찰 확인). path 변수만 OG 생성에 사용.
+- images 필드 미박음 — 이벤트 사진 등 PII 노출 경로 차단.
+- hostName 외 users 필드(email, phone 등)는 절대 OG에 안 들어감 — 코드 경로상 `users.name`만 읽음.
+
+### 변경 영역
+
+- `src/app/upload/[eventId]/layout.tsx` (신규) — server component + `generateMetadata` + 빈 `<>{children}</>` layout
+
+### 알려진 한계
+
+- 카카오 URL 크롤러 캐시: 한 번 빈약 카드로 캐싱됐다면 갱신 지연 가능. 필요 시 카카오 디벨로퍼스 "스크랩 정보 갱신" 호출.
+- 카카오 카드 디자인은 KakaoTalk가 제공하는 기본 템플릿 — 우리 측은 텍스트만 통제.
+
 ## 2026-06-01 — 게스트 공개 API에서 호스트 이름 1개 필드만 노출, 다른 PII 비노출 원칙
 
 ### 결정
