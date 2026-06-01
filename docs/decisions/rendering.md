@@ -2,6 +2,40 @@
 
 > 영상 편집·Shotstack·클립·재렌더 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-06-01 — 무료 플랜 워터마크 구현 완료
+
+직전 2026-05-30 "워터마크 정밀 수치 확정" 결정의 다음 본 앱 코드 변경 트랙 4항목(createRender plan 인자 / render/start eventData.plan 전달 / 무료 플랜 워터마크 트랙 / Cormorant Italic ttf + timeline.fonts 등록)이 본 결정으로 모두 구현됨.
+
+### 최종 사양
+
+- 적용 대상: 무료 플랜 (`plan === "free"`) 완성본 only
+- asset: `type: "rich-text"`, `text: "made by Congre   \n "` (텍스트 끝 공백·줄바꿈으로 우하단 모서리 여백 확보)
+- font: `family: "Cormorant Garamond"`, `size: 40`, `color: "#c8892c"`
+- asset.align: `{ horizontal: "right", vertical: "bottom" }`
+- clip: `start: 0`, `length: "end"`, `opacity: 0.40`
+- tracks 배치: `tracks.unshift(...)`로 최상단 레이어 (전체 영상 길이 노출)
+- 폰트: `public/fonts/CormorantGaramond-Italic.ttf`, `timeline.fonts`에 무료 플랜 조건부 주입
+
+### 구현 중 확정된 Shotstack 제약 3가지
+
+- **(a) rich-text asset은 width/height 미지원**: production에서 `code: unknown_property` 400 거부. 공식 문서 예시(/learn 페이지 등)에 width/height가 보여도 production 스키마는 다름. DECISIONS 2026-05-08 동일 사고 재발. → 향후 rich-text 추가 필드 도입 시 width/height 신뢰 금지.
+- **(b) tracks 배열 레이어 순서**: 배열 앞=상단 / 뒤=하단. 워터마크를 push로 끝에 두면 영상 트랙(`fit: "cover"`)에 완전히 가려져 보이지 않음. 최상단 노출은 `tracks.unshift(...)` 필수.
+- **(c) rich-text 여백은 텍스트 패딩으로만**: clip.offset은 전체화면 캔버스에 효과 없음 / asset.width·height는 거부 / clip.position은 전체 화면 asset에 무효. asset.align이 글자를 모서리에 딱 붙이는데, 모서리 여백은 text 문자열 자체에 공백·줄바꿈을 넣어(`"made by Congre   \n "`) 글자를 안쪽으로 밀어내는 방식이 유일.
+
+### 변경 영역
+
+- `src/lib/shotstack.ts` — createRender 시그니처 4번째 인자 `plan?: PlanId` 추가, fonts 배열화, 워터마크 트랙 unshift 블록
+- `src/app/api/render/start/route.ts` — PlanId import, `const plan = (eventData.plan ?? "free") as PlanId` 추출, createRender 호출에 plan 전달
+- `public/fonts/CormorantGaramond-Italic.ttf` — 신규 폰트 파일 (SIL OFL)
+
+### 관련 커밋
+
+- `dc2b898` feat: add watermark track for free plan renders (초기 도입)
+- `98404d5` fix: position watermark to bottom-right with sized text box (width/height 도입 — 다음 커밋에서 제거)
+- `552f373` fix: drop unsupported width/height from watermark rich-text asset (제약 (a) 발견 후)
+- `d652e15` fix: move watermark track to top layer so it stays visible (제약 (b) 발견 후)
+- `5ccd6e8` fix: add whitespace padding to watermark for edge spacing (제약 (c) 적용)
+
 ## 2026-05-30 — 워터마크 정밀 수치 확정
 
 직전 2026-05-29 (2) "정밀 수치 미정" 영역 해소.

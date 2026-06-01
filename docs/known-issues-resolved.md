@@ -3,6 +3,14 @@
 > known-issues.md에서 분리된 해결 완료 이력. 사고 재발 진단 시 grep 대상.
 > 새 RESOLVED 항목 발생 시 known-issues.md에서 이 파일로 이동.
 
+## ✅ 워터마크 시각 사양 정밀 수치 — CD 시안 검토 영역 [RESOLVED 2026-06-01]
+
+- **현황**: 2026-05-29 (3) 결정에서 워터마크 시각 사양 박힘. 위치·텍스트·색·폰트는 확정. font.size "중간" 정밀치 + font.opacity "은은하게" 정밀치 + 우하 offset 정밀치 미정.
+- **해결**:
+  - 2026-05-30 정밀치 확정 (40px / 0.40 MEDIUM, decisions/rendering.md 2026-05-30).
+  - 2026-06-01 본 앱 코드 구현 완료 (commits dc2b898·98404d5·552f373·d652e15·5ccd6e8). 무료 플랜 완성본 우하단 노출 검증 완료. decisions/rendering.md 2026-06-01 항목 참조.
+- **종결 일자**: 2026-06-01 / **종결 사유**: 정밀치 결정 + 코드 구현 + 렌더 검증 모두 완료.
+
 ## ✅ 랜딩 data-screen-label 중복 [RESOLVED 2026-05-27]
 
 - **현황**: 랜딩 `index.html`에서 `data-screen-label` 값이 두 번 겹침. 실제 중복은 05(Moments+Testimonials)·06(Occasions+Trust) 두 쌍. CTA·Footer는 단독.

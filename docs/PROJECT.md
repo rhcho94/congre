@@ -34,6 +34,7 @@ npx firebase emulators:start --only firestore
 - AWS S3 (bucket: congre-mvp-videos)
 - Shotstack (AI 영상 편집) — production 키 적용. rich-text asset으로 한글 인트로/아웃트로 렌더.
 - `public/fonts/NotoSansKR-Regular.ttf` — 한글 렌더링용 커스텀 TTF (SIL OFL). Shotstack `timeline.fonts` 소스.
+- `public/fonts/CormorantGaramond-Italic.ttf` — Shotstack 워터마크용 italic 세리프 TTF (SIL OFL). 무료 플랜 워터마크 `timeline.fonts` 소스.
 - Vercel 배포
 - Tailwind v4 (config 파일 없이 @import 방식)
 
@@ -120,6 +121,7 @@ npx firebase emulators:start --only firestore
 - outroText + outroMedia 동시 입력 사고 해소 ([A] 분기 직렬 배치)
 - **가격 페이지 + 리드 수집 폼** (랜딩 `/pricing` → 본 앱 `/api/lead` → Resend → 운영자 메일. emailChannel reply-to 확장. 2026-05-28)
 - **워터마크 사양 확정** (40px / 0.40 / MEDIUM, 무료 플랜만. 본 앱 코드 구현은 별도 트랙. 2026-05-30. decisions/rendering.md 참조)
+- **무료 플랜 워터마크 구현** ("made by Congre" rich-text, 우하단 align right/bottom, Cormorant Garamond italic 40px #c8892c, clip opacity 0.40, length "end" 최상단 트랙. plan==="free" 조건. 텍스트 공백 패딩으로 모서리 여백. 2026-06-01. decisions/rendering.md 2026-06-01 참조)
 - **가격 표시 UI 4장 라이브 반영** (`www.congre.kr/pricing` — 무료·소형·중형·라지. Pricing Section.html로 deploy/pricing.html 교체. 2026-05-30. decisions/landing.md 2026-05-30 (11))
 
 ## 랜딩 페이지 (별도 트랙)
