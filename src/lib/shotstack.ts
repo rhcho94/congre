@@ -165,7 +165,7 @@ export async function createRender(
   }
 
   if (plan === "free") {
-    tracks.push({
+    tracks.unshift({
       clips: [
         {
           asset: {
