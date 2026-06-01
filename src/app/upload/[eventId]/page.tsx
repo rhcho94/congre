@@ -387,12 +387,10 @@ function UploadInner() {
                   <>
                     🎬 {hostDisplay}님과 함께 만드는 {event?.title ?? "이벤트"} 영상입니다
                     <br />
-                    {hostDisplay}님이 요청하시는 영상 길이는 {maxClipSeconds}초입니다.
+                    {maxClipSeconds}초짜리 영상을 올려주세요.
                     <br />
                     <br />
-                    이름과 전화번호를 입력해주세요.
-                    <br />
-                    입력하신 정보는 올려주신 영상을 구분하고, 완성된 영상을 보내드리는 데에만 사용해요.
+                    이름·전화번호는 영상 구분과 완성본 전달에만 사용해요.
                   </>
                 )}
               </p>
@@ -425,9 +423,6 @@ function UploadInner() {
                 {uploaderError && (
                   <p className="text-xs" style={{ color: "#e05252" }}>{uploaderError}</p>
                 )}
-                <p className="text-xs text-muted leading-relaxed opacity-80" style={scrim}>
-                  같은 이름+전화번호로는 한 번만 올릴 수 있어요. 이름을 달리해서 여러 영상을 올릴 수 있어요.
-                </p>
               </div>
               <button
                 onClick={handleUploaderNext}
