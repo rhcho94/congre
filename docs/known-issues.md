@@ -2,6 +2,17 @@
 
 > 진행 중·보류·메모 항목만 둔다. 해결 완료 항목은 known-issues-resolved.md로 이동.
 
+## Vercel 자동배포 단발 누락 (2026-06-01 발생)
+
+- **현황**: `git push origin main` 정상(remote에 커밋 도달 확인)인데 Vercel Project Deployments 탭에 해당 커밋이 안 뜸. 직전·직후 커밋은 정상 자동배포됨. 단발 누락 패턴.
+- **발현 케이스**: 2026-06-01 커밋 `238c3cd` (feat: add dynamic OG card for guest invite link). 빌드 시간 충분히 지나도 Vercel이 트리거 안 함. 결과적으로 OG generateMetadata가 프로덕션에 안 박혀 카카오 카드 동적 미반영.
+- **확인 방법**: `curl -s https://app.congre.kr/upload/<eventId>?token=...` 응답에서 build ID (`"b":"<해시>"`)가 직전 배포 이후 안 바뀜. 또는 Vercel Deployments 탭 커밋 해시 직접 비교.
+- **처치**: 빈 커밋 + push로 웹훅 재트리거.
+  ```
+  git commit --allow-empty -m "chore: trigger redeploy for <topic> (<해시> missed by Vercel)" && git push
+  ```
+- **격상 트리거**: 반복 발생 시 Vercel ↔ GitHub 웹훅 연결 점검 (Vercel 대시보드 → Project → Settings → Git → Disconnect/Reconnect).
+
 ## Firestore composite index — eventId + uploaderPhone + uploaderName 3조건 쿼리
 
 - **현황**: `/api/clips/check` GET 및 `POST /api/clips` 중복 체크에서 `eventId + uploaderPhone + uploaderName` 3조건 composite where 쿼리 사용. Firestore는 이 복합 인덱스를 자동 생성하지 않음.
