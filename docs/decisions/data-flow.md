@@ -2,6 +2,34 @@
 
 > Firestore·S3·Admin SDK·서버 이전 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-06-01 — 게스트 공개 API에서 호스트 이름 1개 필드만 노출, 다른 PII 비노출 원칙
+
+### 결정
+
+게스트 업로드 화면이 받는 `GET /api/events/[eventId]?token=...` 응답에 호스트 이름(`hostName`) 1개 필드만 추가. users 컬렉션의 다른 필드(`email`, `phone`, `createdAt`, `termsAgreedAt`, `privacyAgreedAt`)는 절대 노출 안 함.
+
+### 배경
+
+- 본 엔드포인트는 sessionToken만 있으면 로그인 없이 열리는 공개 엔드포인트. 게스트(참가자)가 진입하는 첫 화면이 fetch 함.
+- 게스트 화면 uploader 단계 문구에 "{호스트}님과 함께 만드는 {행사명} 영상입니다" 형태로 호스트 이름을 노출하기로 결정 → 응답에 이름 필요.
+- 호스트 displayName은 events 문서에 박혀 있지 않고 `users/{hostId}.name`에만 있음 (auth-model 2026-05-19 v2 가입 흐름).
+
+### 사양
+
+- `events.hostId` → `users/{hostId}` Admin SDK 조회 → `name` 필드만 추출.
+- `name`이 string이고 trim 후 비어 있지 않으면 그대로, 그 외(users 문서 부재 / 옛 계정 / 빈 이름)에는 `null` 반환.
+- users 조회 실패는 `console.error("[events GET] host name lookup failed:", err)` 남기고 `hostName: null`로 정상 응답 진행 (이름 못 가져와도 업로드는 가능해야 함).
+- 클라이언트는 `hostName || "호스트"` fallback으로 두 곳(인사 문장·길이 안내 문장) 동일 변수 사용.
+
+### 원칙 (재발 방지)
+
+본 결정으로 "게스트 공개 API는 호스트 이름 1개 필드만 노출" 명시. 향후 본 엔드포인트 또는 다른 sessionToken 기반 게스트 API에 필드 추가 시 PII 비노출 원칙을 우선 검토. email·phone·생년월일 등은 게스트가 알 필요 없음.
+
+### 변경 영역
+
+- `src/app/api/events/[eventId]/route.ts` — users 조회 try/catch 블록 + `hostName` 응답 필드 추가
+- `src/app/upload/[eventId]/page.tsx` — event 상태 타입에 hostName, hostDisplay fallback, uploader 첫 방문 문구 교체
+
 ## 2026-05-28 — 리드 폼 API = 본 앱 /api/lead 재사용 (옵션 2) + CORS
 
 - **결정**: 가격 페이지 폼 백엔드를 별도 함수 신설 대신 본 앱(`congre-three`)의 신규 API route `POST /api/lead`로 구현(옵션 2). 랜딩(`congre.kr`)에서 cross-origin 호출.

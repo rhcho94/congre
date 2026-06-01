@@ -25,9 +25,26 @@ export async function GET(
     return Response.json({ error: "NOT_FOUND" }, { status: 404 });
   }
 
+  let hostName: string | null = null;
+  const hostId = data.hostId as string | undefined;
+  if (hostId) {
+    try {
+      const hostSnap = await db.collection("users").doc(hostId).get();
+      if (hostSnap.exists) {
+        const raw = hostSnap.data()?.name;
+        if (typeof raw === "string" && raw.trim()) {
+          hostName = raw.trim();
+        }
+      }
+    } catch (err) {
+      console.error("[events GET] host name lookup failed:", err);
+    }
+  }
+
   return Response.json({
     id: snap.id,
     title: data.title as string,
     maxClipSeconds: data.maxClipSeconds as number | undefined,
+    hostName,
   });
 }

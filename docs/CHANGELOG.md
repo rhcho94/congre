@@ -2,6 +2,12 @@
 
 > 기능 단위 작업 이력. 최신이 위.
 
+## 2026-06-01
+
+- feat(api): 게스트용 `GET /api/events/[eventId]` 응답에 `hostName` 필드 추가 (users 컬렉션 `name`만 join, 다른 PII 비노출).
+- feat(ui): 게스트 업로드 화면 uploader 단계 첫 방문 문구 교체 — 호스트 이름·행사 이름·요청 영상 길이 노출 + 입력 정보 사용 목적 안내.
+- feat(render): 무료 플랜 완성본에 "made by Congre" 워터마크 트랙 추가 (rich-text, Cormorant Garamond italic, 우하단, opacity 0.40, 최상단 레이어).
+
 ## 2026-05-31
 
 - feat(app): 앱 내 좌상단 로고 12곳 + "← 홈" 류 홈 버튼 6곳을 외부 랜딩 `congre.kr`로 연결 (`<Link href="/">` → `<a href={LANDING_URL}>`). 회원 탈퇴 직후 이동도 `/` → `/host`로 명시 (마케팅 랜딩 아닌 로그인 화면). 신규: `src/lib/constants.ts` `LANDING_URL`.

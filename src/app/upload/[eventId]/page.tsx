@@ -45,7 +45,7 @@ function UploadInner() {
   const urlToken = searchParams.get("token") ?? "";
 
   const [stage, setStage] = useState<Stage>("verifying");
-  const [event, setEvent] = useState<{ id: string; title: string; maxClipSeconds?: number } | null>(null);
+  const [event, setEvent] = useState<{ id: string; title: string; maxClipSeconds?: number; hostName?: string | null } | null>(null);
   const [progress, setProgress] = useState(0);
   const [retryNum, setRetryNum] = useState(0);
   const [errorMsg, setErrorMsg] = useState("");
@@ -75,7 +75,7 @@ function UploadInner() {
           setStage("invalid");
           return;
         }
-        const evt = await res.json() as { id: string; title: string; maxClipSeconds?: number };
+        const evt = await res.json() as { id: string; title: string; maxClipSeconds?: number; hostName?: string | null };
         setEvent(evt);
         setStage("uploader");
       } catch {
@@ -303,6 +303,7 @@ function UploadInner() {
   }
 
   const maxClipSeconds = event?.maxClipSeconds ?? 15;
+  const hostDisplay = event?.hostName?.trim() || "호스트";
 
   // ── verifying ──
   if (stage === "verifying") {
@@ -380,9 +381,20 @@ function UploadInner() {
           {stage === "uploader" && (
             <>
               <p className="text-sm text-center text-foreground leading-relaxed" style={scrim}>
-                {isReturning
-                  ? "다시 오셨네요. 이름과 전화번호를 확인해주세요. 같은 이름으로는 한 번만 올릴 수 있어요."
-                  : "이름과 전화번호를 입력해주세요. 결과 영상이 준비되면 문자로 알려드려요."}
+                {isReturning ? (
+                  "다시 오셨네요. 이름과 전화번호를 확인해주세요. 같은 이름으로는 한 번만 올릴 수 있어요."
+                ) : (
+                  <>
+                    🎬 {hostDisplay}님과 함께 만드는 {event?.title ?? "이벤트"} 영상입니다
+                    <br />
+                    {hostDisplay}님이 요청하시는 영상 길이는 {maxClipSeconds}초입니다.
+                    <br />
+                    <br />
+                    이름과 전화번호를 입력해주세요.
+                    <br />
+                    입력하신 정보는 올려주신 영상을 구분하고, 완성된 영상을 보내드리는 데에만 사용해요.
+                  </>
+                )}
               </p>
               <div className="w-full flex flex-col gap-3">
                 <div className="relative">
