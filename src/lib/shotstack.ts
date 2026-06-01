@@ -170,7 +170,7 @@ export async function createRender(
         {
           asset: {
             type: "rich-text",
-            text: "made by Congre",
+            text: "made by Congre   \n ",
             font: { family: "Cormorant Garamond", size: 40, color: "#c8892c" },
             align: { horizontal: "right", vertical: "bottom" },
           },
