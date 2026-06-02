@@ -26,11 +26,13 @@ npx firebase emulators:start --only firestore
 - Vercel: https://congre-three.vercel.app
 - GitHub: https://github.com/rhcho94/congre
 - 개발 환경: Windows PC, Claude Code
+- 운영 모니터링·한도/비용 점검: `docs/ops/monitoring.md` (2026-06-02 신규)
+- Vercel 프로젝트명: congre (기본 도메인 congre-three.vercel.app)
 
 ## 기술 스택
 
 - Next.js (TypeScript, App Router)
-- Firebase Auth + Firestore (project: congre-mvp)
+- Firebase Auth + Firestore (project: congre-mvp, Blaze 요금제)
 - AWS S3 (bucket: congre-mvp-videos)
 - Shotstack (AI 영상 편집) — production 키 적용. rich-text asset으로 한글 인트로/아웃트로 렌더.
 - `public/fonts/NotoSansKR-Regular.ttf` — 한글 렌더링용 커스텀 TTF (SIL OFL). Shotstack `timeline.fonts` 소스.

@@ -2,6 +2,10 @@
 
 > 기능 단위 작업 이력. 최신이 위.
 
+## 2026-06-02
+
+- docs: 운영 모니터링·한도/비용 점검 문서(docs/ops/monitoring.md) 추가 + 프로젝트명(congre)·Firebase Blaze·cron(Vercel Cron Pro)·Shotstack CDN 항목 정정 (2026-06-02)
+
 ## 2026-06-01
 
 - feat(seo): 게스트 초대 링크(`/upload/[eventId]`)에 서버사이드 동적 OG 카드 추가 (`layout.tsx` 신규 `generateMetadata`). 카카오·SNS 미리보기 카드에 호스트 이름·행사 이름 노출. events.title + users.name 2회 Admin 조회, hostName 12자·title 20자 초과 시 절단.

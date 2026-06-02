@@ -3,6 +3,13 @@
 > known-issues.md에서 분리된 해결 완료 이력. 사고 재발 진단 시 grep 대상.
 > 새 RESOLVED 항목 발생 시 known-issues.md에서 이 파일로 이동.
 
+## ✅ GitHub Actions cron throttling — `* * * * *` 매분 스케줄 실질적 미동작 [RESOLVED 2026-06-02]
+
+- **현상**: `* * * * *` 스케줄 등록 후 약 4시간에 1회만 자동 실행됨 (2026-05-05 관측).
+- **원인**: GitHub Actions free tier에서 고빈도 cron을 throttling. 공식 보장 없음.
+- **조치**: `*/5 * * * *` (5분 간격)으로 변경 후 재관측 예정. 여전히 부족하면 외부 cron 서비스 또는 Vercel Cron Jobs로 이전 검토.
+- **해결(2026-06-02)**: cron은 Vercel Cron(vercel.json)으로 운영, GitHub Actions 미사용. 본앱 Pro라 */5(5분) 정상, 2026-06-02 Vercel Logs에서 check-rendering·check-render-deadlines 모두 GET 200·에러 0 확인.
+
 ## ✅ 워터마크 시각 사양 정밀 수치 — CD 시안 검토 영역 [RESOLVED 2026-06-01]
 
 - **현황**: 2026-05-29 (3) 결정에서 워터마크 시각 사양 박힘. 위치·텍스트·색·폰트는 확정. font.size "중간" 정밀치 + font.opacity "은은하게" 정밀치 + 우하 offset 정밀치 미정.

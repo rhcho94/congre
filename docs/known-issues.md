@@ -22,14 +22,8 @@
 
 ## 환경변수 미등록 — 운영 작업 [6] 대기 중
 
-- **CRON_SECRET**: `/api/cron/check-render-deadlines` Bearer 인증 토큰. 코드 준비 완료, Vercel + GitHub Secrets 등록 필요.
+- **CRON_SECRET**: 등록 확인됨(2026-06-02). 미설정 시 500/불일치 401인데 Vercel Logs GET 200 = env 등록·일치 확인.
 - **NEXT_PUBLIC_APP_URL**: 크론에서 dashboardUrl 구성 시 사용 (`https://congre-three.vercel.app`). Vercel 등록 필요.
-
-## GitHub Actions cron throttling — `* * * * *` 매분 스케줄 실질적 미동작
-
-- **현상**: `* * * * *` 스케줄 등록 후 약 4시간에 1회만 자동 실행됨 (2026-05-05 관측).
-- **원인**: GitHub Actions free tier에서 고빈도 cron을 throttling. 공식 보장 없음.
-- **조치**: `*/5 * * * *` (5분 간격)으로 변경 후 재관측 예정. 여전히 부족하면 외부 cron 서비스 또는 Vercel Cron Jobs로 이전 검토.
 
 ## 네이버 메일 도달성 — 1차 점검 포인트 (메모)
 
@@ -104,6 +98,12 @@
 - **격상 트리거**: Shotstack fair use 한도 도달 / 100명+ 규모 시장 진입 / 첫 회차 후 사용량 데이터 재평가.
 - **미완 정찰 영역**: R2 한국 PoP 위치, R2 한국 결제·세금 처리, Shotstack 자체 호스팅 옵트아웃 정확한 사양.
 - **관련 정찰**: 2026-05-09 채팅 클로드 세션. ROADMAP 보류 중 항목 참조.
+- **2026-06-02 갱신**:
+  - Shotstack 현 플랜: 구독 200 credits/월($39), PRODUCTION. 보유 385.33, 30일 사용 22.63(렌더 크레딧 여유).
+  - 진짜 병목 = Shotstack 호스팅 전송 500MB/월·저장 500MB(2026-06-02 저장 392MB=78%). 출시 시 시청 트래픽으로 전송 초과 예상.
+  - 해결책 B(권장): 렌더 output에 S3 destination 지정 + Shotstack 호스팅 opt-out(`{"provider":"shotstack","exclude":true}`). 기존 S3(ap-southeast-2) 재사용 → 저장·전송 동시 해결. 임시 URL 24h 주의(반드시 S3 URL 서빙).
+  - 해결책 C: 목적지 Cloudflare R2(egress 무료) — 대규모 시.
+  - 추가 점검(불명): cleanup cron이 Shotstack 호스팅분(cdn.shotstack.io)을 실제 삭제하는지. 저장 78% 누적 원인일 수 있음. B 적용 시 소멸.
 
 ## 호스트 가이드 PDF — iOS 분기 갱신 필요
 

@@ -2,6 +2,12 @@
 
 > Vercel·Firebase·GitHub Actions·도메인·무료 티어 정책 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-06-02 운영 모니터링 방식
+
+- 전용 화면(/admin) 빌드는 호스트 수십 명+ 시점으로 보류(events read 차단 → Admin SDK 서버 라우트 필요).
+- 출시 초기엔 docs/ops/monitoring.md 수동 점검 문서로 운영(Firebase 콘솔 직접 열람 + 서비스 대시보드 + 비용 알림 이메일 AWS $100·Firebase ₩50,000).
+- 운영자 사건 알림(C)은 채널 미정. 후보: 기존 SMS(CONGRE_INTERNAL_PHONE)/텔레그램 봇/카카오 나에게 보내기. SMS는 SOLAPI·이메일은 Resend 한도 공유, 텔레그램·카톡은 한도 무관.
+
 ## 2026-05-14 — SOLAPI 잔액 충전
 
 - **결정**: SOLAPI 잔액 충전 처리. 이전 잔액 47.1원(약 47건) → 충전 완료.
