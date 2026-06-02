@@ -3,6 +3,12 @@
 > known-issues.md에서 분리된 해결 완료 이력. 사고 재발 진단 시 grep 대상.
 > 새 RESOLVED 항목 발생 시 known-issues.md에서 이 파일로 이동.
 
+## ✅ 환경변수 미등록 — CRON_SECRET / NEXT_PUBLIC_APP_URL [RESOLVED 2026-06-02]
+
+- **CRON_SECRET**: 등록 확인됨(2026-06-02). 미설정 시 500/불일치 401인데 Vercel Logs GET 200 = env 등록·일치 확인.
+- **NEXT_PUBLIC_APP_URL**: Vercel 등록 완료(`https://congre-three.vercel.app`). 등록 흔적: handoff/2026-05-05.md L43 / handoff/2026-05-14-user-guide-pdf-and-kakao-share-fix.md L19(잘못된 값 발견 후 재등록) / ROADMAP.md L6 체크 / PROJECT.md L82 표.
+- **종결 일자**: 2026-06-02 / **종결 사유**: 두 변수 모두 Vercel 등록 완료 확인. known-issues.md "환경변수 미등록" 섹션은 CRON_SECRET 갱신(직전 커밋 cb9e5ce)에도 NEXT_PUBLIC_APP_URL 라인이 남아 있었으나, docs 교차 기록상 둘 다 등록 완료이므로 섹션 전체 종결.
+
 ## ✅ GitHub Actions cron throttling — `* * * * *` 매분 스케줄 실질적 미동작 [RESOLVED 2026-06-02]
 
 - **현상**: `* * * * *` 스케줄 등록 후 약 4시간에 1회만 자동 실행됨 (2026-05-05 관측).

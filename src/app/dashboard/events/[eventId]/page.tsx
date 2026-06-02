@@ -369,10 +369,13 @@ export default function EventDetailPage() {
   async function handleLinkCopy() {
     if (!event?.videoUrl) return;
     try {
-      await navigator.clipboard.writeText(event.videoUrl);
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
+      const shareUrl = appUrl ? `${appUrl}/share/${eventId}` : event.videoUrl;
+      await navigator.clipboard.writeText(shareUrl);
       setLinkCopied(true);
       setTimeout(() => setLinkCopied(false), 2000);
-    } catch {
+    } catch (err) {
+      console.error("[copy-link] failed:", err);
       alert("링크 복사에 실패했습니다.");
     }
   }

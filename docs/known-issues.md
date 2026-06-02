@@ -20,11 +20,6 @@
 - **처리**: Vercel 로그 → Functions 탭 → 에러 메시지 내 "Create index" 링크 클릭 → Firebase 콘솔에서 인덱스 자동 생성 (1~2분 소요).
 - **격상 트리거**: 인덱스 생성 링크가 에러에 포함되지 않는 경우 → Firebase 콘솔 → Firestore → 색인 탭에서 수동 생성 (컬렉션: clips, 필드: eventId ASC + uploaderPhone ASC + uploaderName ASC).
 
-## 환경변수 미등록 — 운영 작업 [6] 대기 중
-
-- **CRON_SECRET**: 등록 확인됨(2026-06-02). 미설정 시 500/불일치 401인데 Vercel Logs GET 200 = env 등록·일치 확인.
-- **NEXT_PUBLIC_APP_URL**: 크론에서 dashboardUrl 구성 시 사용 (`https://congre-three.vercel.app`). Vercel 등록 필요.
-
 ## 네이버 메일 도달성 — 1차 점검 포인트 (메모)
 
 - 현황 (2026-05-08 점검): 1통 실측에서 네이버 받은편지함 정상 도달, 경고 배너 없음. 약한 고리 아님으로 판정하고 보류.
