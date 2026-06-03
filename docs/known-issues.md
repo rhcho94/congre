@@ -13,13 +13,6 @@
   ```
 - **격상 트리거**: 반복 발생 시 Vercel ↔ GitHub 웹훅 연결 점검 (Vercel 대시보드 → Project → Settings → Git → Disconnect/Reconnect).
 
-## Firestore composite index — eventId + uploaderPhone + uploaderName 3조건 쿼리
-
-- **현황**: `/api/clips/check` GET 및 `POST /api/clips` 중복 체크에서 `eventId + uploaderPhone + uploaderName` 3조건 composite where 쿼리 사용. Firestore는 이 복합 인덱스를 자동 생성하지 않음.
-- **발현 조건**: PR 1 배포 후 첫 업로드 시도 시. Firestore가 쿼리를 거부하며 Vercel 로그에 인덱스 생성 링크 포함된 에러 출력.
-- **처리**: Vercel 로그 → Functions 탭 → 에러 메시지 내 "Create index" 링크 클릭 → Firebase 콘솔에서 인덱스 자동 생성 (1~2분 소요).
-- **격상 트리거**: 인덱스 생성 링크가 에러에 포함되지 않는 경우 → Firebase 콘솔 → Firestore → 색인 탭에서 수동 생성 (컬렉션: clips, 필드: eventId ASC + uploaderPhone ASC + uploaderName ASC).
-
 ## OG 이미지 도메인 하드코딩 — 환경변수 정리 시 통합 필요
 
 - 현황: /upload/[eventId] OG 이미지 URL이 https://app.congre.kr로 하드코딩.
