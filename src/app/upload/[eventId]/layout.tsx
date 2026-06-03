@@ -43,17 +43,23 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       : `${truncatedTitle} 영상에 초대합니다`;
     const ogDescription = "짧은 축하·소감·챌린지 영상을 올려주세요";
 
+    const ogImageUrl = `https://app.congre.kr/api/og-image/${eventId}`;
+
     return {
       title: ogTitle,
       description: ogDescription,
       openGraph: {
         title: ogTitle,
         description: ogDescription,
+        url: `https://app.congre.kr/upload/${eventId}`,
+        type: "website",
+        images: [{ url: ogImageUrl, width: 1200, height: 630, alt: ogTitle }],
       },
       twitter: {
-        card: "summary",
+        card: "summary_large_image",
         title: ogTitle,
         description: ogDescription,
+        images: [ogImageUrl],
       },
     };
   } catch (err) {

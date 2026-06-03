@@ -20,6 +20,18 @@
 - **처리**: Vercel 로그 → Functions 탭 → 에러 메시지 내 "Create index" 링크 클릭 → Firebase 콘솔에서 인덱스 자동 생성 (1~2분 소요).
 - **격상 트리거**: 인덱스 생성 링크가 에러에 포함되지 않는 경우 → Firebase 콘솔 → Firestore → 색인 탭에서 수동 생성 (컬렉션: clips, 필드: eventId ASC + uploaderPhone ASC + uploaderName ASC).
 
+## OG 이미지 도메인 하드코딩 — 환경변수 정리 시 통합 필요
+
+- 현황: /upload/[eventId] OG 이미지 URL이 https://app.congre.kr로 하드코딩.
+  이유: NEXT_PUBLIC_APP_URL 실제 값이 https://congre-three.vercel.app이라,
+  사용자에게 보이는 OG 이미지 도메인을 정식 도메인으로 고정하기 위해 OG
+  경로만 하드코딩함. 환경변수는 미변경(공유/크론 등 다른 사용처 영향 회피).
+- 위치: src/app/upload/[eventId]/layout.tsx generateMetadata
+- 격상 트리거: NEXT_PUBLIC_APP_URL을 app.congre.kr로 통일하는 도메인 정책
+  정리 작업 시. 그때 이 하드코딩 제거하고 환경변수로 환원.
+- 주의: OG 이미지 URL은 카카오가 영구 캐시하므로, 도메인을 바꾸면 이미
+  뿌려진 초대장 미리보기가 깨질 수 있음. 도메인 확정 후 변경 권장.
+
 ## 네이버 메일 도달성 — 1차 점검 포인트 (메모)
 
 - 현황 (2026-05-08 점검): 1통 실측에서 네이버 받은편지함 정상 도달, 경고 배너 없음. 약한 고리 아님으로 판정하고 보류.

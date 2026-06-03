@@ -2,6 +2,10 @@
 
 > 기능 단위 작업 이력. 최신이 위.
 
+## 2026-06-03
+
+- feat(seo): 초대 페이지 `/upload/[eventId]` OG 이미지 추가 — `/api/og-image/[eventId]` 프록시 라우트가 events.introMediaType==="image"일 때만 S3 객체 바이트 직접 서빙(presigned 없이 비공개 버킷 유지), 그 외(영상·미설정·실패)는 `/logo.png`로 302 fallback. layout.tsx generateMetadata에 openGraph.images/url/type + twitter.card=summary_large_image 추가. OG URL은 app.congre.kr 하드코딩(known-issues 갱신 사유 참조).
+
 ## 2026-06-02
 
 - docs: 운영 모니터링·한도/비용 점검 문서(docs/ops/monitoring.md) 추가 + 프로젝트명(congre)·Firebase Blaze·cron(Vercel Cron Pro)·Shotstack CDN 항목 정정 (2026-06-02)
