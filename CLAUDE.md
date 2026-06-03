@@ -15,7 +15,7 @@
 ## 환경 정보
 
 ### 본 앱 (Next.js)
-- 로컬 경로: `C:\Users\PC\OneDrive\바탕 화면\my-project\congre`
+- 로컬 경로: `C:\projects\congre`
 - GitHub: `rhcho94/congre`
 - 배포: Vercel 프로젝트 `congre` (기본 도메인 `congre-three.vercel.app`), 커스텀 도메인 `https://app.congre.kr`
 - DB: Firebase 프로젝트 `congre-mvp` (Firestore + Auth)

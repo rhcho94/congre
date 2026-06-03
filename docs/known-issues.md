@@ -248,23 +248,6 @@
 - **관련 결정**: decisions/landing.md 2026-05-31 (12).
 - **L 번호 부여 메모**: 사양 원안은 "L7"이었으나 L7(pricing.html Pretendard) 기존 점유 → 전역 일련번호 룰(CLAUDE.md 학습 룰 #2)에 따라 L8 부여.
 
-## 본 앱 환경 (L6)
-
-### L6. 본 앱 로컬 경로 OneDrive 안 — 잠재 격상 트리거 있음
-
-- **현황**: 본 앱 로컬 경로가 `C:\Users\PC\OneDrive\바탕 화면\my-project\congre`. OneDrive 폴더 안에 git 저장소 존재.
-- **잠재 리스크**:
-  - OneDrive가 `.git/` 동기화 시도하면서 `index.lock` 충돌 가능
-  - 한글 폴더명("바탕 화면")이 일부 명령행 도구·환경 변수 호환 이슈
-  - Webpack·Next.js 빌드 도중 OneDrive 파일 잠금으로 빌드 실패 사례 보고됨
-- **현재 상태**: 운영자가 지금까지 정상 운영. 큰 사고 없음
-- **발현 이력**: 2026-05-28 B 트랙 작업 중 `.next` 폴더 OneDrive 잠금으로 빌드 1회 실패 → `rm -rf .next` 후 재빌드로 우회 (세션 중 수 회). 격상 트리거(`npm run build` 간헐 실패) 실제 발현. 반복 빈도 증가 시 OneDrive 외부 이전 검토.
-- **격상 트리거**:
-  - git 명령이 "index.lock" 에러로 실패
-  - `npm run build` 간헐 실패
-  - 파일 저장 후 옛 내용이 다른 도구에서 보임
-- **격상 시 처리**: OneDrive 외부 폴더로 이전 (예: `C:\projects\congre`)
-
 ## 유료 플랜 실수치 (small/medium/large 클립 길이·수 상한) 미정
 
 - **현황**: 2026-05-29 (3) 결정에서 무료 플랜 사양만 공식화 (클립 길이 10초 / 수 10개). 유료 플랜 small/medium/large 실수치는 plans.ts:3~8 초기값(클립 수: small 50, medium 200, large 5000) 그대로 코드에 박혀 있으나 임시값.

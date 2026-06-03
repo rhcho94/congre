@@ -3,6 +3,23 @@
 > known-issues.md에서 분리된 해결 완료 이력. 사고 재발 진단 시 grep 대상.
 > 새 RESOLVED 항목 발생 시 known-issues.md에서 이 파일로 이동.
 
+## ✅ L6. 본 앱 로컬 경로 OneDrive 안 [RESOLVED 2026-06-03]
+
+**해소: 2026-06-03** — 본 앱 로컬 폴더를 C:\projects\congre 로 이전(OneDrive 밖). git clone + npm install + npm run build 통과 확인. 이전 폴더는 백업으로 잔류.
+
+- **현황**: 본 앱 로컬 경로가 `C:\Users\PC\OneDrive\바탕 화면\my-project\congre`. OneDrive 폴더 안에 git 저장소 존재.
+- **잠재 리스크**:
+  - OneDrive가 `.git/` 동기화 시도하면서 `index.lock` 충돌 가능
+  - 한글 폴더명("바탕 화면")이 일부 명령행 도구·환경 변수 호환 이슈
+  - Webpack·Next.js 빌드 도중 OneDrive 파일 잠금으로 빌드 실패 사례 보고됨
+- **현재 상태**: 운영자가 지금까지 정상 운영. 큰 사고 없음
+- **발현 이력**: 2026-05-28 B 트랙 작업 중 `.next` 폴더 OneDrive 잠금으로 빌드 1회 실패 → `rm -rf .next` 후 재빌드로 우회 (세션 중 수 회). 격상 트리거(`npm run build` 간헐 실패) 실제 발현. 반복 빈도 증가 시 OneDrive 외부 이전 검토.
+- **격상 트리거**:
+  - git 명령이 "index.lock" 에러로 실패
+  - `npm run build` 간헐 실패
+  - 파일 저장 후 옛 내용이 다른 도구에서 보임
+- **격상 시 처리**: OneDrive 외부 폴더로 이전 (예: `C:\projects\congre`)
+
 ## ✅ 환경변수 미등록 — CRON_SECRET / NEXT_PUBLIC_APP_URL [RESOLVED 2026-06-02]
 
 - **CRON_SECRET**: 등록 확인됨(2026-06-02). 미설정 시 500/불일치 401인데 Vercel Logs GET 200 = env 등록·일치 확인.
