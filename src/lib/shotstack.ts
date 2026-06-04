@@ -120,6 +120,10 @@ export async function createRender(
   const appUrl = process.env.NEXT_PUBLIC_APP_URL;
   if (!appUrl) throw new Error("MISSING_APP_URL");
 
+  const awsRegion = process.env.AWS_REGION;
+  const awsBucket = process.env.AWS_S3_BUCKET;
+  if (!awsRegion || !awsBucket) throw new Error("MISSING_AWS_REGION_OR_BUCKET");
+
   const hasAnyText = !!(intro?.text || outro?.text);
   const fonts: Array<{ src: string }> = [];
   if (hasAnyText) fonts.push({ src: `${appUrl}/fonts/NotoSansKR-Regular.ttf` });
@@ -200,6 +204,16 @@ export async function createRender(
       fps: 30,
       quality: "high",
       size: { width: 1080, height: 1920 },
+      destinations: [
+        {
+          provider: "s3",
+          options: {
+            region: awsRegion,
+            bucket: awsBucket,
+            acl: "public-read",
+          },
+        },
+      ],
     },
   };
 

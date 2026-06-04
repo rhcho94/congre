@@ -12,6 +12,12 @@ export async function GET(request: NextRequest) {
     return Response.json({ error: "CRON_SECRET not configured" }, { status: 500 });
   }
 
+  const awsRegion = process.env.AWS_REGION;
+  const awsBucket = process.env.AWS_S3_BUCKET;
+  if (!awsRegion || !awsBucket) {
+    return Response.json({ error: "AWS_REGION or AWS_S3_BUCKET not configured" }, { status: 500 });
+  }
+
   const authHeader = request.headers.get("authorization") ?? "";
   const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
   if (token !== cronSecret) {
@@ -44,7 +50,20 @@ export async function GET(request: NextRequest) {
     const { status, url } = renderResult;
 
     if (status === "done" && url) {
-      await db.collection("events").doc(eventId).update({ status: "done", videoUrl: url, renderDoneAt: FieldValue.serverTimestamp() });
+      const s3Url = `https://${awsBucket}.s3.${awsRegion}.amazonaws.com/${data.renderId}.mp4`;
+      let s3Ready = false;
+      try {
+        const head = await fetch(s3Url, { method: "HEAD" });
+        s3Ready = head.ok;
+        if (!s3Ready) {
+          console.log(`[cron/check-rendering] eventId=${eventId} s3 not ready yet (status=${head.status}), retry next tick`);
+        }
+      } catch (err) {
+        console.error("[cron/check-rendering] s3 head failed:", err);
+      }
+      if (!s3Ready) continue;
+
+      await db.collection("events").doc(eventId).update({ status: "done", videoUrl: s3Url, renderDoneAt: FieldValue.serverTimestamp() });
       processedCount++;
 
       if (data.organizerEmail && data.organizerPhone) {
@@ -52,7 +71,7 @@ export async function GET(request: NextRequest) {
         await notifyRenderCompleted({
           eventId,
           title: (data.title as string) ?? eventId,
-          videoUrl: url,
+          videoUrl: s3Url,
           organizerEmail: data.organizerEmail as string,
           organizerPhone: data.organizerPhone as string,
           dashboardUrl,
@@ -83,7 +102,7 @@ export async function GET(request: NextRequest) {
           await notifyParticipantResult({
             eventId,
             title: (data.title as string) ?? eventId,
-            videoUrl: url,
+            videoUrl: s3Url,
             recipientPhone: phone,
           }).catch((err) =>
             console.error(`[cron/check-rendering] notifyParticipantResult failed for eventId=${eventId} phone=${phone}:`, err)
