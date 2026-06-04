@@ -2,6 +2,44 @@
 
 > Firestore·S3·Admin SDK·서버 이전 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-06-04 — ⑦ 완성본 Shotstack→S3 이전 + 서빙 방식 (public)
+
+### 배경
+
+완성본 영상이 현재 events/{eventId}.videoUrl 단일 필드에 Shotstack URL로 저장됨
+(api/cron/check-rendering 47행). Shotstack 약관상 Asset 저장 책임은 우리에게 있고
+(삭제된 Asset 복구 서비스 제외), 장기 호스팅은 Shotstack Storage 할당량·추가요금을 소모.
+종속·비용·보존책임을 우리 S3로 이전한다. /share OG 썸네일(poster)도 우리 S3에 둬야
+카톡 미리보기 개선이 가능.
+
+### 결정 (가) Shotstack→S3 destinations
+
+- render 요청 output에 destinations 추가: provider s3, region ap-southeast-2,
+  bucket(env AWS_S3_BUCKET), 그리고 provider shotstack exclude:true 로 Shotstack 호스팅 옵트아웃.
+- Shotstack 대시보드 PRODUCTION 환경에 전용 IAM 사용자(shotstack-s3, 정책 shotstack-s3-write:
+  s3:PutObject/GetObject/PutObjectAcl, congre-mvp-videos 한정) 등록 완료 (2026-06-04).
+- 완성본 URL 저장 위치는 현행 유지: events/{eventId}.videoUrl 단일 필드.
+  (D2 서브컬렉션 전환은 결제 코드 이후로 미룸. 본 작업은 destinations·OG만 추가하고
+  저장 위치는 D2 때 재작업. destinations·poster 설정은 D2 전환 후에도 재사용됨.)
+
+### 결정 (나) 서빙 방식: 전부 public-read
+
+- 완성본 영상·poster 모두 S3 public-read ACL로 서빙. /share에서 URL 직접 사용.
+- 이유: 카톡 OG 크롤러가 서명 URL을 다루기 까다로워 미리보기 안정성 위해 public 채택.
+  기존 presigned 패턴(클립·초대이미지)과 다른 선택임을 명시.
+
+### ⚠️ 미성년자 리스크 꼬리표 (영업 진입 전 필수 재검토)
+
+- 1순위 시장이 초·중·고 졸업식(미성년자 얼굴 영상). public-read는 URL 유출 시
+  기한·로그인 없이 영구 열람 가능 → 통제력 0. known-issues "미성년자 영상 법적 리스크" 항목과 직결.
+- 현 단계(MVP·필드 테스트 전)에서 단순성 위해 public 채택하되,
+  영업 진입 결정 시점에 presigned 전환 또는 만료/회수 메커니즘 도입을 법무 검토와 함께 재평가.
+
+### 미포함 — 다음 결정 영역
+
+- poster 디자인(완성본 첫 프레임 vs 브랜드 표지) — Part A 진입 시 CD와 결정
+- 기존 events 문서의 cdn.shotstack.io videoUrl 마이그레이션 (있는 데이터 처리)
+
 ## 2026-06-01 — 게스트 초대 링크 동적 OG 카드 (server-side generateMetadata)
 
 ### 결정
