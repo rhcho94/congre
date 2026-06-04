@@ -19,6 +19,7 @@ export interface CongreEvent {
   createdAt: Timestamp;
   renderId?: string;
   videoUrl?: string;
+  videoS3Key?: string;
   renderDoneAt?: Timestamp;
   organizerEmail?: string;
   organizerPhone?: string;

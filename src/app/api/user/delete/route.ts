@@ -60,8 +60,8 @@ export async function POST(request: NextRequest) {
       await db.collection("clips").doc(clipDoc.id).delete();
     }
 
-    // 3b. Shotstack 자산 삭제 (renderId 있고 videoUrl 살아있을 때)
-    if (eventData.renderId && eventData.videoUrl) {
+    // 3b. Shotstack 자산 삭제 (renderId 있고 videoS3Key 살아있을 때)
+    if (eventData.renderId && eventData.videoS3Key) {
       try {
         await deleteShotstackAssetsByRenderId(eventData.renderId as string);
       } catch (e) {

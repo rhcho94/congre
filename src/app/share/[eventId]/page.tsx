@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getAdminDb } from "@/lib/firebase-admin";
+import { getVideoPresignedUrl } from "@/lib/s3-server";
 import { BrandName } from "@/components/BrandName";
 import PageBackdrop from "@/components/PageBackdrop";
 import { ShareActions } from "./ShareActions";
@@ -43,13 +44,14 @@ export default async function SharePage({ params }: Props) {
 
   const data = snap.data()!;
   const title = data.title as string;
-  const videoUrl = (data.videoUrl ?? undefined) as string | undefined;
+  const videoS3Key = (data.videoS3Key ?? undefined) as string | undefined;
   const status = data.status as string;
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
   const shareUrl = `${appUrl}/share/${eventId}`;
   const logoUrl = `${appUrl}/logo.png`;
 
-  const isReady = status === "done" && !!videoUrl;
+  const isReady = status === "done" && !!videoS3Key;
+  const videoUrl = isReady ? await getVideoPresignedUrl(videoS3Key!) : undefined;
 
   return (
     <>

@@ -22,18 +22,25 @@
   (D2 서브컬렉션 전환은 결제 코드 이후로 미룸. 본 작업은 destinations·OG만 추가하고
   저장 위치는 D2 때 재작업. destinations·poster 설정은 D2 전환 후에도 재사용됨.)
 
-### 결정 (나) 서빙 방식: 전부 public-read
+### 결정 (나) 서빙 방식: presigned (1시간 만료)
 
-- 완성본 영상·poster 모두 S3 public-read ACL로 서빙. /share에서 URL 직접 사용.
-- 이유: 카톡 OG 크롤러가 서명 URL을 다루기 까다로워 미리보기 안정성 위해 public 채택.
-  기존 presigned 패턴(클립·초대이미지)과 다른 선택임을 명시.
+- 완성본 영상은 S3 비공개 + presigned GET URL(expiresIn 3600s)로 서빙. /share·대시보드 진입 시 서버에서 발급해 `<video src>`·다운로드 링크에 박음.
+- DB 저장 단위 변경: `events/{eventId}.videoUrl`(전체 URL) → `events/{eventId}.videoS3Key`(객체 키, `{renderId}.mp4`). presigned는 매 요청마다 새로 발급.
+- 알림(이메일·SMS·알림톡)에 박는 링크는 S3 직접 URL이 아닌 `${appUrl}/share/${eventId}` (우리 도메인 공유 페이지). 만료 짧은 presigned가 알림 수신 후 며칠 뒤 열람 시 깨지는 문제 회피 — 페이지 진입 시 그 시점에 presigned 발급.
+- 기존 presigned 패턴(클립 playback `src/app/api/clips/[clipId]/playback/route.ts`, 초대 이미지 `src/app/api/host/events/[eventId]/invite-urls/route.ts`)과 동일 — 일관성 확보. 헬퍼 `getVideoPresignedUrl` 을 `src/lib/s3-server.ts`에 추가.
 
-### ⚠️ 미성년자 리스크 꼬리표 (영업 진입 전 필수 재검토)
+### 이력 (public → presigned 선회)
 
-- 1순위 시장이 초·중·고 졸업식(미성년자 얼굴 영상). public-read는 URL 유출 시
-  기한·로그인 없이 영구 열람 가능 → 통제력 0. known-issues "미성년자 영상 법적 리스크" 항목과 직결.
-- 현 단계(MVP·필드 테스트 전)에서 단순성 위해 public 채택하되,
-  영업 진입 결정 시점에 presigned 전환 또는 만료/회수 메커니즘 도입을 법무 검토와 함께 재평가.
+초기 public-read 채택 후 같은 세션 내 presigned 선회. 트리거 2개:
+- (a) Shotstack S3 destination이 ACL 옵션을 무시하는 동작 — 객체가 비공개로 저장됨 → public URL fetch HEAD 403 실측.
+- (b) 1순위 시장이 미성년자 졸업식 영상 — URL 유출 시 기한·로그인 없이 영구 열람 가능성 재고. known-issues "미성년자 영상 법적 리스크" 항목과 직결.
+
+두 조건 합쳐 presigned가 단순성·통제력 둘 다 우위로 판정. shotstack.ts destinations에서 `acl: "public-read"` 제거(region·bucket만 유지), 1시간 만료 발급으로 통일.
+
+### ⚠️ 미성년자 리스크 — presigned 채택 후 남은 영역
+
+- presigned는 URL 통제력을 회복하지만, 발급된 1시간 동안 그 URL을 가진 누구나 접근 가능. 화면 캡처·동영상 다운로드는 별도 문제 (영상 자체가 사용자에게 노출되는 한 막을 수 없음).
+- 영업 진입 결정 시점에 다음 영역 법무 검토 묶음: 만료 시간 단축(예: 5분)·로그인 게이트·진입 로그·다운로드 차단 옵션.
 
 ### 미포함 — 다음 결정 영역
 

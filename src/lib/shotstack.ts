@@ -210,7 +210,6 @@ export async function createRender(
           options: {
             region: awsRegion,
             bucket: awsBucket,
-            acl: "public-read",
           },
         },
       ],

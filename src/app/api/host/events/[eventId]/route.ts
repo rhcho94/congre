@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server";
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { verifyIdToken } from "@/lib/auth-server";
 import { getAdminDb } from "@/lib/firebase-admin";
+import { getVideoPresignedUrl } from "@/lib/s3-server";
 
 function tsToMs(v: unknown): number | null {
   return v instanceof Timestamp ? v.toMillis() : null;
@@ -31,6 +32,9 @@ export async function GET(
 
     const data = snap.data()!;
 
+    const videoS3Key = data.videoS3Key as string | undefined;
+    const videoUrl = videoS3Key ? await getVideoPresignedUrl(videoS3Key) : undefined;
+
     return Response.json({
       id: snap.id,
       title: data.title as string,
@@ -38,7 +42,7 @@ export async function GET(
       status: data.status as string,
       hostId: data.hostId as string,
       uploadToken: (data.uploadToken ?? undefined) as string | undefined,
-      videoUrl: (data.videoUrl ?? undefined) as string | undefined,
+      videoUrl,
       introText: (data.introText ?? null) as string | null,
       introMediaKey: (data.introMediaKey ?? null) as string | null,
       introMediaType: (data.introMediaType ?? null) as "image" | "video" | null,

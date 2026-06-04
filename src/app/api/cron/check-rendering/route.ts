@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
 import { FieldValue } from "firebase-admin/firestore";
+import { HeadObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getAdminDb } from "@/lib/firebase-admin";
 import { getRenderStatus } from "@/lib/shotstack";
 import { notifyRenderCompleted } from "@/lib/notifications/scenarios/render-completed";
@@ -23,6 +24,14 @@ export async function GET(request: NextRequest) {
   if (token !== cronSecret) {
     return Response.json({ error: "UNAUTHORIZED" }, { status: 401 });
   }
+
+  const s3 = new S3Client({
+    region: awsRegion,
+    credentials: {
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+    },
+  });
 
   const db = getAdminDb();
   const snapshot = await db.collection("events").where("status", "==", "rendering").get();
@@ -50,28 +59,32 @@ export async function GET(request: NextRequest) {
     const { status, url } = renderResult;
 
     if (status === "done" && url) {
-      const s3Url = `https://${awsBucket}.s3.${awsRegion}.amazonaws.com/${data.renderId}.mp4`;
+      const videoS3Key = `${data.renderId}.mp4`;
       let s3Ready = false;
       try {
-        const head = await fetch(s3Url, { method: "HEAD" });
-        s3Ready = head.ok;
-        if (!s3Ready) {
-          console.log(`[cron/check-rendering] eventId=${eventId} s3 not ready yet (status=${head.status}), retry next tick`);
-        }
+        await s3.send(new HeadObjectCommand({ Bucket: awsBucket, Key: videoS3Key }));
+        s3Ready = true;
       } catch (err) {
-        console.error("[cron/check-rendering] s3 head failed:", err);
+        const errObj = err as { name?: string; $metadata?: { httpStatusCode?: number } };
+        if (errObj?.name === "NotFound" || errObj?.$metadata?.httpStatusCode === 404) {
+          console.log(`[cron/check-rendering] eventId=${eventId} s3 not ready yet (404), retry next tick`);
+        } else {
+          console.error("[cron/check-rendering] s3 head failed:", err);
+        }
       }
       if (!s3Ready) continue;
 
-      await db.collection("events").doc(eventId).update({ status: "done", videoUrl: s3Url, renderDoneAt: FieldValue.serverTimestamp() });
+      await db.collection("events").doc(eventId).update({ status: "done", videoS3Key, renderDoneAt: FieldValue.serverTimestamp() });
       processedCount++;
+
+      const shareLink = `${baseUrl}/share/${eventId}`;
 
       if (data.organizerEmail && data.organizerPhone) {
         const dashboardUrl = `${baseUrl}/dashboard/events/${eventId}`;
         await notifyRenderCompleted({
           eventId,
           title: (data.title as string) ?? eventId,
-          videoUrl: s3Url,
+          videoUrl: shareLink,
           organizerEmail: data.organizerEmail as string,
           organizerPhone: data.organizerPhone as string,
           dashboardUrl,
@@ -102,7 +115,7 @@ export async function GET(request: NextRequest) {
           await notifyParticipantResult({
             eventId,
             title: (data.title as string) ?? eventId,
-            videoUrl: s3Url,
+            videoUrl: shareLink,
             recipientPhone: phone,
           }).catch((err) =>
             console.error(`[cron/check-rendering] notifyParticipantResult failed for eventId=${eventId} phone=${phone}:`, err)

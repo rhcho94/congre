@@ -5,6 +5,7 @@ import { renderSms, smsTemplates } from "../sms-templates";
 export interface ParticipantResultCtx {
   eventId: string;
   title: string;
+  // videoUrl: /share/{eventId} page link (not direct S3 URL — presigned 만료 회피)
   videoUrl: string;
   recipientEmail?: string;
   recipientPhone?: string;

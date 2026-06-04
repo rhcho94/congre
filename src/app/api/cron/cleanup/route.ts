@@ -43,12 +43,12 @@ export async function GET(request: NextRequest) {
     // D-2: 완성본 7d 처리
     const renderDoneAt = data.renderDoneAt as Timestamp | undefined;
     if (
-      data.videoUrl &&
+      data.videoS3Key &&
       renderDoneAt != null &&
       renderDoneAt.toMillis() < cutoffVideos.toMillis()
     ) {
       try { await deleteShotstackAssetsByRenderId(data.renderId as string); } catch (e) { console.warn("Shotstack delete failed", { eventId, error: e }); }
-      await db.collection("events").doc(eventId).update({ videoUrl: null, videoDeletedAt: FieldValue.serverTimestamp() });
+      await db.collection("events").doc(eventId).update({ videoS3Key: null, videoDeletedAt: FieldValue.serverTimestamp() });
       videosDeleted++;
     }
   }

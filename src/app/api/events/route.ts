@@ -36,7 +36,6 @@ export async function GET(request: NextRequest) {
           uploadToken: (data.uploadToken ?? undefined) as string | undefined,
           createdAt: tsToMs(data.createdAt),
           renderId: (data.renderId ?? undefined) as string | undefined,
-          videoUrl: (data.videoUrl ?? undefined) as string | undefined,
           organizerEmail: (data.organizerEmail ?? undefined) as string | undefined,
           organizerPhone: (data.organizerPhone ?? undefined) as string | undefined,
           deadlineAt: tsToMs(data.deadlineAt),
