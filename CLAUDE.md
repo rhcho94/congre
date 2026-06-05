@@ -17,7 +17,7 @@
 ### 본 앱 (Next.js)
 - 로컬 경로: `C:\projects\congre`
 - GitHub: `rhcho94/congre`
-- 배포: Vercel 프로젝트 `congre` (기본 도메인 `congre-three.vercel.app`), 커스텀 도메인 `https://app.congre.kr`
+- 배포: Vercel 프로젝트 `congre` (기본 도메인 `app.congre.kr`), 커스텀 도메인 `https://app.congre.kr`
 - DB: Firebase 프로젝트 `congre-mvp` (Firestore + Auth)
 - 스토리지: AWS S3 버킷 `congre-mvp-videos`
 - 영상 편집: Shotstack (production 키)
@@ -145,7 +145,7 @@ CD 자체 학습 자료: https://support.claude.com/en/articles/14604416-get-sta
 ## 절대 규칙
 
 - 브랜드 "Congre" 표기는 반드시 `src/components/BrandName.tsx` 컴포넌트 사용. 인라인 텍스트로 흩어 쓰지 말 것.
-- 변수명·파일명·환경변수·도메인 등 기술 식별자는 소문자 (congre-mvp, congre-three.vercel.app).
+- 변수명·파일명·환경변수·도메인 등 기술 식별자는 소문자 (congre-mvp, app.congre.kr).
 - Tailwind는 v4 사용 중이며 **config 파일 없음**. `@import` 방식. tailwind.config.js 만들지 말 것.
 - 커밋 메시지는 conventional commits (feat:, fix:, chore:, docs:, refactor:).
 - **무료 티어 한계는 유료 플랜으로 해결**: Vercel·GitHub Actions·AWS·SOLAPI·Resend·카카오 등 인프라 무료 티어 제약(쿼터·throttling·기능 제한)에 걸렸을 때, 우회 방법 검토하지 말고 유료 플랜이 표준 답임을 사용자에게 알리고 진행. 어느 플랜·얼마짜리 가입은 사용자 결정 영역.

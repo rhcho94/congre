@@ -23,7 +23,7 @@ npx firebase emulators:start --only firestore
 
 ## 배포 / 저장소
 
-- Vercel: https://congre-three.vercel.app
+- Vercel: https://app.congre.kr
 - GitHub: https://github.com/rhcho94/congre
 - 개발 환경: Windows PC, Claude Code
 - 운영 모니터링·한도/비용 점검: `docs/ops/monitoring.md` (2026-06-02 신규)
@@ -70,7 +70,7 @@ npx firebase emulators:start --only firestore
 
 - 발신 도메인: `congre.kr` (Firebase Console → Authentication → Settings → Email Sender Domain)
 - DNS 레코드 (가비아 등록): TXT SPF, TXT verification, CNAME DKIM ×2
-- Firebase Console Templates Action URL: `https://congre-three.vercel.app/verify-email`
+- Firebase Console Templates Action URL: `https://app.congre.kr/verify-email`
 - 설정 완료: 2026-05-19 v3 (P3d)
 
 ## 환경변수 (Vercel)
@@ -79,7 +79,7 @@ npx firebase emulators:start --only firestore
 |---|---|---|
 | SHOTSTACK_API_KEY | production 키 | stage 키 |
 | SHOTSTACK_ENV | production | stage |
-| NEXT_PUBLIC_APP_URL | https://congre-three.vercel.app | https://congre-three.vercel.app |
+| NEXT_PUBLIC_APP_URL | https://app.congre.kr | 확인 필요 |
 
 (Firebase, AWS 관련 환경변수는 Vercel 대시보드 참조)
 

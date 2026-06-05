@@ -55,7 +55,7 @@ export default function GuideHostPage() {
           <section className="flex flex-col gap-4">
             <span className="text-xs tracking-[0.4em] uppercase text-accent">STEP 01</span>
             <h2 className="text-base font-medium text-foreground tracking-wide">가입하고 로그인하기</h2>
-            <p>Congre는 호스트가 직접 가입합니다. congre-three.vercel.app 우측 상단 "주최자 로그인" 클릭 후 하단 "회원가입" 클릭.</p>
+            <p>Congre는 호스트가 직접 가입합니다. app.congre.kr 우측 상단 "주최자 로그인" 클릭 후 하단 "회원가입" 클릭.</p>
             <div className="flex flex-col gap-2">
               <p className="text-sm font-medium text-foreground">가입 입력</p>
               <ul className="list-disc pl-5 flex flex-col gap-1">

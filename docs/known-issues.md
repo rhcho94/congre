@@ -39,6 +39,7 @@
   3. 둘 중 어느 게 적절한지는 그 시점 Resend 권장 사항 + 발신자 표시 UX 우선순위로 결정
 - 관련 결정: DECISIONS 2026-05-02 (이메일 발송 도메인 congre.kr)
 - 2026-05-20 갱신: Firebase Auth 인증 메일도 noreply@congre.kr 발신으로 통합됨. Gmail 도달 실측 확인. 네이버 메일 실측은 미실시, 트리거 발생 시 점검.
+- 2026-06-05 갱신: Gmail 도달 실측에서 스팸함 분류 확인(네이버는 받은편지함 정상). 점검 트리거 발동. SPF alignment mismatch(루트 noreply@congre.kr vs 서브 send.congre.kr SPF) 후속 작업(a/b) 검토 대상으로 격상. 본 수정은 별도 트랙.
 
 ## 미성년자 영상 법적 리스크 — 시장 진입 전 검토 필요
 
