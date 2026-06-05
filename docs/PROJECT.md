@@ -27,7 +27,7 @@ npx firebase emulators:start --only firestore
 - GitHub: https://github.com/rhcho94/congre
 - 개발 환경: Windows PC, Claude Code
 - 운영 모니터링·한도/비용 점검: `docs/ops/monitoring.md` (2026-06-02 신규)
-- Vercel 프로젝트명: congre (기본 도메인 congre-three.vercel.app)
+- Vercel 프로젝트명: congre
 
 ## 기술 스택
 
@@ -64,7 +64,7 @@ npx firebase emulators:start --only firestore
 - UI에 보이는 모든 "Congre" → 대문자 C + 앰버 색 + serif italic
 - "made by Congre"는 별도 패턴 ("made by"는 muted, "Congre"는 표준 스타일)
 - 공통 컴포넌트 `src/components/BrandName.tsx` 사용
-- 변수명·파일명·환경변수·도메인 등 기술 식별자는 소문자 (congre-mvp, congre-three.vercel.app)
+- 변수명·파일명·환경변수·도메인 등 기술 식별자는 소문자 (congre-mvp, app.congre.kr)
 
 ## Firebase 커스텀 이메일 발신 도메인
 
