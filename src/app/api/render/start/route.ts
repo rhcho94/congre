@@ -88,7 +88,11 @@ export async function POST(request: NextRequest) {
         new GetObjectCommand({ Bucket: process.env.AWS_S3_BUCKET!, Key: data.s3Key as string }),
         { expiresIn: 86400 }
       );
-      return { src, length: Math.min(duration, maxClipSeconds) };
+      return {
+        src,
+        length: Math.min(duration, maxClipSeconds),
+        name: data.uploaderName as string | undefined,
+      };
     })
   );
 
@@ -102,6 +106,7 @@ export async function POST(request: NextRequest) {
   const outroMediaType = eventData.outroMediaType as "image" | "video" | undefined;
   const videoFilter     = eventData.videoFilter     as string | undefined;
   const videoTransition = eventData.videoTransition as string | undefined;
+  const showNames       = eventData.showNames       as boolean | undefined;
   const plan = (eventData.plan as string | undefined ?? "free") as PlanId;
 
   const introMediaUrl = introMediaKey
@@ -131,11 +136,12 @@ export async function POST(request: NextRequest) {
         : undefined,
       plan,
       (() => {
-        const style: { filter?: string; transition?: "soft" | "dynamic" } = {};
+        const style: { filter?: string; transition?: "soft" | "dynamic"; showNames?: boolean } = {};
         if (videoFilter) style.filter = videoFilter;
         if (videoTransition === "soft" || videoTransition === "dynamic") {
           style.transition = videoTransition;
         }
+        if (showNames === true) style.showNames = true;
         return Object.keys(style).length > 0 ? style : undefined;
       })(),
     );

@@ -50,6 +50,7 @@ interface ApiEvent {
   outroMediaType: "image" | "video" | null;
   videoFilter: string | null;
   videoTransition: string | null;
+  showNames: boolean;
 }
 
 interface ApiClip {
@@ -117,6 +118,9 @@ export default function EventDetailPage() {
   const [videoTransition, setVideoTransition] = useState<string>("");
   const [savedVideoTransition, setSavedVideoTransition] = useState<string>("");
   const [savingVideoTransition, setSavingVideoTransition] = useState(false);
+  const [showNames, setShowNames] = useState(false);
+  const [savedShowNames, setSavedShowNames] = useState(false);
+  const [savingShowNames, setSavingShowNames] = useState(false);
 
   useEffect(() => {
     if (!isFirebaseConfigured) return;
@@ -165,6 +169,8 @@ export default function EventDetailPage() {
           setSavedVideoFilter(evt.videoFilter ?? "");
           setVideoTransition(evt.videoTransition ?? "");
           setSavedVideoTransition(evt.videoTransition ?? "");
+          setShowNames(evt.showNames === true);
+          setSavedShowNames(evt.showNames === true);
           if (evt.introMediaKey || evt.outroMediaKey) {
             refreshInviteDisplayUrls(idToken);
           }
@@ -391,6 +397,29 @@ export default function EventDetailPage() {
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [videoTransition, savedVideoTransition, user, event?.status]);
+
+  useEffect(() => {
+    if (showNames === savedShowNames) return;
+    if (!user) return;
+    if (event?.status !== "open") return;
+
+    const timer = setTimeout(async () => {
+      setSavingShowNames(true);
+      try {
+        await patchInvite({ showNames: showNames ? true : null });
+        setSavedShowNames(showNames);
+      } catch {
+        alert("저장에 실패했습니다.");
+      } finally {
+        setSavingShowNames(false);
+      }
+    }, 500);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showNames, savedShowNames, user, event?.status]);
 
   function handleKakaoShare() {
     if (!event?.videoUrl) return;
@@ -970,6 +999,29 @@ export default function EventDetailPage() {
                     {savingVideoTransition
                       ? "저장 중..."
                       : videoTransition !== savedVideoTransition
+                      ? "변경 중..."
+                      : <span style={{ color: "var(--accent)" }}>✓ 저장됨</span>
+                    }
+                  </span>
+                ) : null}
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <span className="text-xs text-muted">참가자 이름 표시</span>
+                <label className="flex items-center gap-2 cursor-pointer" style={{ padding: "8px 0" }}>
+                  <input
+                    type="checkbox"
+                    checked={showNames}
+                    onChange={(e) => setShowNames(e.target.checked)}
+                    disabled={isClosed}
+                  />
+                  <span className="text-xs text-foreground">각 영상 하단에 업로더 이름을 자막으로 표시</span>
+                </label>
+                {(showNames || savedShowNames) && !isClosed ? (
+                  <span className="self-end text-xs text-muted">
+                    {savingShowNames
+                      ? "저장 중..."
+                      : showNames !== savedShowNames
                       ? "변경 중..."
                       : <span style={{ color: "var(--accent)" }}>✓ 저장됨</span>
                     }

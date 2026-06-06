@@ -2,6 +2,53 @@
 
 > 영상 편집·Shotstack·클립·재렌더 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-06-06 (3) — 참가자 이름 자막 옵션 + clip별 name 데이터 + 별도 텍스트 트랙
+
+### 결정
+
+- createRender `clips` 입력 항목에 `name?: string` 추가 — 참가자 영상별 캡션 텍스트 출처.
+- `style` 그릇에 `showNames?: boolean` 추가. true일 때 각 참가자 영상과 정확히 같은 start·length로 rich-text 이름 캡션 clip을 별도 텍스트 트랙에 생성.
+- 캡션 스타일: `type: "rich-text"`, `font: { family: "Noto Sans KR", size: 36, color: "#ffffff" }`, `stroke: { width: 4, color: "#0c0b09", opacity: 1 }` (가독성), `align: { horizontal: "center", vertical: "bottom" }`.
+- 트랙 배치 분기:
+  - [A] 듀얼 트랙(intro/outro 미디어 있음): 가능하면 기존 textClips 트랙에 captionStartOffset ≥ introText 종료(3s)인 경우 직렬 push. 겹칠 위험이 있으면 캡션 전용 새 트랙을 `tracks.unshift`로 추가(워터마크 unshift 패턴 재활용).
+  - [B] 단일 트랙(미디어 없음): 영상 위 동시 표시 불가 → 캡션 전용 새 트랙을 `tracks.unshift`로 추가.
+- 캡션 시작 오프셋(captionStartOffset) 계산:
+  - [A] intro 미디어가 이미지: 5초(makeMediaClip 이미지 length와 일치).
+  - [A] intro 미디어가 비디오: 길이 미상 → 0 가정 (알려진 한계).
+  - [A] intro 미디어 없음(outro 미디어만): 0.
+  - [B] intro 텍스트 있음: 3초(makeTextClip 기본 length).
+  - [B] intro 텍스트 없음: 0.
+- 폰트 등록(현재 hasAnyText 조건)에 `showNames`를 OR로 추가 — 텍스트가 없어도 캡션이 있으면 NotoSansKR 등록.
+
+### 저장 경로
+
+- 호스트가 대시보드 "영상 스타일" 카드의 체크박스로 토글 → `PATCH /api/host/events/[eventId]` → Firestore `events.showNames` (true일 때만 키 존재, false/null/undefined는 `FieldValue.delete()`).
+- render/start: `eventData.showNames === true`일 때만 style.showNames에 true 전달.
+- 참가자 이름은 별도 저장 경로 없음 — render/start가 Firestore `clips.uploaderName`을 createRender clips 항목의 `name`으로 그대로 흘려보냄.
+
+### 디폴트 처리 관행 일관성
+
+- 토글 꺼짐 → Firestore 키 미존재 → render/start `undefined` → createRender style.showNames 미전달 → captionClips 빈 배열 → 트랙 추가 없음 → 현행 동작과 정확히 일치.
+- 이름 데이터 없는 클립(공백 trim 후 빈 문자열): caption clip 생성 건너뜀. cursor는 그래도 length만큼 진행 — 다음 클립 캡션 정렬 보존.
+
+### 알려진 한계
+
+- **intro 비디오 + 캡션 동시 사용 시 미세 어긋남**: Shotstack에서 `length: "auto"`인 intro 비디오 길이를 서버에서 알 방법이 없음(probe 미사용 결정 — 2026-05-12 outroText overlay 폐기 동일 사유). 0으로 가정하므로 캡션이 intro 비디오 길이만큼 일찍 시작. 운영 사양상 intro 미디어는 이미지가 더 흔할 것으로 추정, MVP 한계로 수용.
+- **인접 참가자 클립 사이 transition 겹침은 캡션 정렬에 영향 없음**: Shotstack transition은 clip 타임라인 길이를 변경하지 않고 시각만 페이드/슬라이드 — `start: "auto"` 누적 계산이 그대로 유효.
+
+### 미확정·보류
+
+- 캡션 폰트 크기·색·위치는 현 사양 고정. 호스트 커스터마이징 미도입(YAGNI).
+- intro/outro 미디어 자체에 캡션은 미적용 — 참가자 영상만.
+- 익명 클립(이름 미입력): 현재 업로드 흐름이 이름 필수이므로 발생 빈도 0에 수렴(`api/clips/route.ts` POST에서 uploaderName 1자 이상 검증). 누락 시 그 클립만 캡션 생략, 정렬은 유지.
+
+### 변경 영역
+
+- `src/lib/shotstack.ts` — createRender clips 항목에 `name?: string`, style에 `showNames?: boolean`, captionStartOffset 계산, captionClips 빌더, [A]/[B] 트랙 분기에 캡션 push/unshift, fonts 조건에 showNames OR.
+- `src/app/api/render/start/route.ts` — clipsWithLength에 `name: data.uploaderName` 포함, eventData.showNames 추출, createRender style 인자 빌드에 showNames 결합.
+- `src/app/api/host/events/[eventId]/route.ts` — PATCH body 타입에 `showNames?: boolean | null`, hasShowNames 분기, true만 set / 외 delete. GET 응답에 showNames 포함(기본 false).
+- `src/app/dashboard/events/[eventId]/page.tsx` — ApiEvent에 showNames(boolean), 상태 3개, 초기화, autosave useEffect, 영상 스타일 카드 안 체크박스 UI.
+
 ## 2026-06-06 (2) — 전환(transition) 스타일 옵션 추가 + TRANSITION_POOL 단일 → 3개 풀로 확장
 
 ### 결정

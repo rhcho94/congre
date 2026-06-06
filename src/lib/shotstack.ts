@@ -107,11 +107,11 @@ function pickSequence(pool: readonly string[], count: number): string[] {
 }
 
 export async function createRender(
-  clips: Array<{ src: string; length: number }>,
+  clips: Array<{ src: string; length: number; name?: string }>,
   intro?: { text?: string; mediaUrl?: string; mediaType?: "image" | "video" },
   outro?: { text?: string; mediaUrl?: string; mediaType?: "image" | "video" },
   plan?: PlanId,
-  style?: { filter?: string; transition?: TransitionStyle },
+  style?: { filter?: string; transition?: TransitionStyle; showNames?: boolean },
 ): Promise<string> {
   assertApiKey();
 
@@ -126,9 +126,10 @@ export async function createRender(
   const awsBucket = process.env.AWS_S3_BUCKET;
   if (!awsRegion || !awsBucket) throw new Error("MISSING_AWS_REGION_OR_BUCKET");
 
+  const showNames = !!style?.showNames;
   const hasAnyText = !!(intro?.text || outro?.text);
   const fonts: Array<{ src: string }> = [];
-  if (hasAnyText) fonts.push({ src: `${appUrl}/fonts/NotoSansKR-Regular.ttf` });
+  if (hasAnyText || showNames) fonts.push({ src: `${appUrl}/fonts/NotoSansKR-Regular.ttf` });
   if (plan === "free") fonts.push({ src: `${appUrl}/fonts/CormorantGaramond-Italic.ttf` });
 
   const transitionPool = TRANSITION_POOLS[style?.transition ?? "default"];
@@ -144,11 +145,49 @@ export async function createRender(
     ...(style?.filter ? { filter: style.filter } : {}),
   }));
 
+  // 이름 자막 — 영상과 같은 start·length로 별도 텍스트 트랙 또는 textClips에 push.
+  // intro 비디오는 길이 미상 → 0으로 가정, 미세 어긋남은 알려진 한계.
+  let captionStartOffset = 0;
+  if (useDualTrack) {
+    if (hasIntroMedia && intro!.mediaType === "image") captionStartOffset = 5;
+  } else if (intro?.text) {
+    captionStartOffset = 3;
+  }
+  // textClips 트랙 공유 시 intro text(0-3)와 겹침 방지.
+  const introTextEnd = intro?.text ? 3 : 0;
+  const captionsOnTextTrack = useDualTrack && captionStartOffset >= introTextEnd;
+  if (useDualTrack && !captionsOnTextTrack && intro?.text) {
+    captionStartOffset = Math.max(captionStartOffset, introTextEnd);
+  }
+
+  const captionClips: unknown[] = [];
+  if (showNames) {
+    let cursor = captionStartOffset;
+    for (const clip of clips) {
+      const name = (clip.name ?? "").trim();
+      if (name.length > 0) {
+        captionClips.push({
+          asset: {
+            type: "rich-text",
+            text: name,
+            font: { family: "Noto Sans KR", size: 36, color: "#ffffff" },
+            stroke: { width: 4, color: "#0c0b09", opacity: 1 },
+            align: { horizontal: "center", vertical: "bottom" },
+          },
+          start: cursor,
+          length: clip.length,
+        });
+      }
+      cursor += clip.length;
+    }
+  }
+
   let tracks: Array<{ clips: unknown[] }>;
   if (useDualTrack) {
     // [A] 분기 — 듀얼 track: track[0] introText overlay, track[1] 미디어
     const textClips = [
       ...(intro?.text ? [makeTextClip(intro.text, 0, true, 3)] : []),
+      ...(captionsOnTextTrack ? captionClips : []),
     ];
 
     const mediaClips = [
@@ -162,6 +201,10 @@ export async function createRender(
       ...(textClips.length > 0 ? [{ clips: textClips }] : []),
       { clips: mediaClips },
     ];
+
+    if (!captionsOnTextTrack && captionClips.length > 0) {
+      tracks.unshift({ clips: captionClips });
+    }
   } else {
     // [B] 분기 — 단일 track: 현재 동작 그대로 보존
     const allClips = [
@@ -170,6 +213,10 @@ export async function createRender(
       ...(outro?.text ? [makeTextClip(outro.text, "auto", false, 3)] : []),
     ];
     tracks = [{ clips: allClips }];
+
+    if (captionClips.length > 0) {
+      tracks.unshift({ clips: captionClips });
+    }
   }
 
   if (plan === "free") {
