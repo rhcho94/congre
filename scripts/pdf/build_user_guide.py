@@ -167,7 +167,7 @@ def host_step01():
 
     # 본문
     end = draw_para(c, MARGIN_X, y,
-        "Congre는 호스트가 직접 가입합니다. congre-three.vercel.app 우측 상단 '주최자 로그인' 클릭 후 "
+        "Congre는 호스트가 직접 가입합니다. app.congre.kr 우측 상단 '주최자 로그인' 클릭 후 "
         "하단 '회원가입' 클릭.",
         size=10, max_width=left_w, line_height=16, color=TEXT)
     y = end - 22

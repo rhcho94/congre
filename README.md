@@ -2,7 +2,7 @@
 
 결혼식 등 행사에서 참가자들이 영상을 촬영·업로드하면 AI가 자동으로 편집해서 SNS 공유용 영상을 만들어주는 서비스.
 
-- **배포**: https://congre-three.vercel.app
+- **배포**: https://app.congre.kr
 - **스택**: Next.js (App Router) · TypeScript · Firebase · AWS S3 · Shotstack · Tailwind v4
 
 ## 개발

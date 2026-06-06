@@ -17,7 +17,7 @@
   2. 대시보드 UI: 미인증 시 "새 이벤트" 버튼 비활성 + "이메일 인증 후 이용 가능" 라벨 + `EmailVerificationBanner` (재발송 60s 쿨다운 + 인증 완료 확인 버튼).
   3. `/dashboard/create` 가드: 미인증 접근 시 `/dashboard` 리디렉션.
 - **P3b 추가**: Custom Action URL (`/verify-email`) + `applyActionCode` 처리 페이지. `useRef` 이중 실행 가드 (React Strict Mode 대응).
-- **P3d 추가**: `congre.kr` 이메일 발신 도메인 커스텀 설정. DNS 4개 레코드 (TXT SPF, TXT verification, CNAME DKIM ×2). Firebase Console Templates Action URL: `https://congre-three.vercel.app/verify-email`. DNS 검증 완료: 2026-05-19 v3. Gmail 발신 도달 실측 확인 (2026-05-20).
+- **P3d 추가**: `congre.kr` 이메일 발신 도메인 커스텀 설정. DNS 4개 레코드 (TXT SPF, TXT verification, CNAME DKIM ×2). Firebase Console Templates Action URL: `https://app.congre.kr/verify-email`. DNS 검증 완료: 2026-05-19 v3. Gmail 발신 도달 실측 확인 (2026-05-20).
 - **YAGNI 결정**: `actionCodeSettings` 공용화 안 함 (사용처 2곳 — `auth.ts` + `EmailVerificationBanner.tsx`. 3곳 이상 시 격상).
 - **이유**:
   - Firestore 규칙 단독으론 사용자 피드백 없음 → UI 레이어 병행.

@@ -118,7 +118,7 @@
 
 ## 2026-05-28 — 리드 폼 API = 본 앱 /api/lead 재사용 (옵션 2) + CORS
 
-- **결정**: 가격 페이지 폼 백엔드를 별도 함수 신설 대신 본 앱(`congre-three`)의 신규 API route `POST /api/lead`로 구현(옵션 2). 랜딩(`congre.kr`)에서 cross-origin 호출.
+- **결정**: 가격 페이지 폼 백엔드를 별도 함수 신설 대신 본 앱(`app.congre.kr`)의 신규 API route `POST /api/lead`로 구현(옵션 2). 랜딩(`congre.kr`)에서 cross-origin 호출.
 - **CORS**: 허용 origin `["https://congre.kr", "https://www.congre.kr"]` 요청 origin 반사 + `Vary: Origin`. (apex는 307→www, www가 메인이라 둘 다 허용)
 - **코드 위치**: `src/app/api/lead/route.ts` (신규). `emailChannel.send()` 어댑터 재사용.
 

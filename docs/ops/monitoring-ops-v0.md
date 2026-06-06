@@ -79,7 +79,7 @@ console.firebase.google.com 로그인
 | Firestore (Blaze 시) | (위와 동일) | `____` | 대시보드 5초 폴링×다수 접속 → 읽기 누적, 버그성 루프 시 폭탄 | 비용 | Console 사용량 + 예산 알림 |
 | AWS S3 | `____` | `____` (Budgets 알림 유/무) | 저장·요청·**전송(egress) 비용**, 고아 파일 누적 | 비용 | AWS Billing → Budgets |
 | Shotstack | `____` | `____` | 렌더 분량 한도 + **CDN 전송 비용**(시청자 수 비례, 3GB+300명 ~18만원 **추정**) | 멈춤+비용 | Shotstack 대시보드 usage |
-| Vercel (본앱 congre-three) | `____` (Hobby/Pro) | `____` | Hobby는 상업 사용 약관 위반 + 함수·대역폭 한도 | 멈춤+약관 | Vercel → Usage/Billing |
+| Vercel (본앱 app.congre.kr) | `____` (Hobby/Pro) | `____` | Hobby는 상업 사용 약관 위반 + 함수·대역폭 한도 | 멈춤+약관 | Vercel → Usage/Billing |
 | Vercel (랜딩 congre-landing) | `____` (Hobby/Pro) | `____` | (위와 동일) | 멈춤+약관 | 동일 |
 | Resend (메일) | `____` | `____` | 무료 일/월 발송 한도 닿으면 메일 실패 | 멈춤 | Resend 대시보드 |
 | SOLAPI (SMS) | `____` | 현재 잔액: `____` 원 | **잔액 소진 시 SMS 조용히 실패** | 멈춤 | SOLAPI 대시보드 잔액 |
