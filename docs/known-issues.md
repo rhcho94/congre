@@ -221,6 +221,22 @@
 - **현황**: `src/app/api/lead/route.ts`에 honeypot만 구현(L52~57, 검증 전 평가). rate limit은 미구현 — L78에 TODO 주석(`// TODO: rate limit — 봇 트래픽 발견 시 Upstash 격상`). 사양 §5엔 "같은 IP 1분 3회 초과 429"가 있었으나 이번 배포에서 빠짐.
 - **격상 트리거**: 스팸 폼 트래픽 발생 시 → Upstash 등으로 rate limit 도입(사양 §10).
 
+## 이름 자막 + intro 비디오 동시 사용 시 캡션 미세 어긋남
+
+- **현황**: showNames 캡션이 참가자 영상과 numeric start로 동기되는데, intro 미디어가 비디오면 그 길이가 `length:"auto"`라 서버가 모름 → 0으로 가정 → 캡션이 intro 비디오 길이만큼 일찍 시작.
+- **정확한 경우**: 이미지 intro / intro 미디어 없음 / 단일 트랙 intro text.
+- **위치**: `src/lib/shotstack.ts` captionStartOffset 계산.
+- **격상 트리거**: ⑦ 해소 후 렌더 실측에서 어긋남 체감 보고 시. 또는 intro 비디오 + 캡션 동시 사용 호스트 발생 시.
+- **관련**: decisions/rendering.md 2026-06-06 (3), 2026-05-12 probe 폐기 결정.
+
+## 추첨 1인1표 — dedup 복합키 (uploaderName, uploaderPhone) 미세 구멍
+
+- **현황**: 클립 중복 차단이 (eventId, uploaderName, uploaderPhone) 복합키 → 같은 전화 + 다른 이름은 별개 업로더로 통과 가능. 추첨 풀을 클립=사람으로 쓸 때 한 사람이 이름 바꿔 여러 표.
+- **빈도**: 또래 재미 맥락이라 부정 인센티브 약함. 현 스키마가 만든 것이지 추첨이 만든 것 아님.
+- **처리**: 추첨 기능 실제 구현 시 재검토. 현재 YAGNI로 보류.
+- **위치**: `src/app/api/clips/route.ts` 중복 검사.
+- **관련**: 2026-06-06 추첨 티어 결정 세션.
+
 ## 랜딩 페이지 영역 (L4~L5, L7)
 
 ### L4. 후기 섹션 실사진/아바타 미적용
