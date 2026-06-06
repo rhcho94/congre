@@ -3,6 +3,23 @@
 > known-issues.md에서 분리된 해결 완료 이력. 사고 재발 진단 시 grep 대상.
 > 새 RESOLVED 항목 발생 시 known-issues.md에서 이 파일로 이동.
 
+## ✅ OG 이미지 도메인 하드코딩 [RESOLVED 2026-06-06]
+
+**해소: 2026-06-06** — 환경변수 환원 대신 하드코딩 유지로 종결.
+
+- 현황: /upload/[eventId] OG 이미지 URL이 https://app.congre.kr로 하드코딩.
+  이유: NEXT_PUBLIC_APP_URL 실제 값이 https://congre-three.vercel.app이라,
+  사용자에게 보이는 OG 이미지 도메인을 정식 도메인으로 고정하기 위해 OG
+  경로만 하드코딩함. 환경변수는 미변경(공유/크론 등 다른 사용처 영향 회피).
+- 위치: src/app/upload/[eventId]/layout.tsx generateMetadata
+- 격상 트리거: NEXT_PUBLIC_APP_URL을 app.congre.kr로 통일하는 도메인 정책
+  정리 작업 시. 그때 이 하드코딩 제거하고 환경변수로 환원.
+- 주의: OG 이미지 URL은 카카오가 영구 캐시하므로, 도메인을 바꾸면 이미
+  뿌려진 초대장 미리보기가 깨질 수 있음. 도메인 확정 후 변경 권장.
+
+**종결 일자**: 2026-06-06
+**종결 사유**: 이슈가 가정한 동기("NEXT_PUBLIC_APP_URL 실제 값이 congre-three라서 OG만 정식 도메인으로 하드코딩")가 소멸. 환경변수가 app.congre.kr로 정정됨(커밋 7278923, 2026-06-05 트랙 B). 도메인이 app.congre.kr로 정착했고, OG 관련 URL 4곳(layout.tsx의 openGraph.images·openGraph.url·twitter.images + og-image route의 FALLBACK_URL)이 모두 app.congre.kr로 일관 하드코딩됨을 코드로 확인. 환경변수 환원은 (a) 도메인이 더 바뀔 일이 없어 YAGNI이고 (b) 카카오 OG 영구 캐시 특성상 환원 과정의 값 차이가 기존 초대장 미리보기를 깨뜨릴 위험만 추가하므로, 하드코딩을 의도적으로 유지하고 종결.
+
 ## ✅ L6. 본 앱 로컬 경로 OneDrive 안 [RESOLVED 2026-06-03]
 
 **해소: 2026-06-03** — 본 앱 로컬 폴더를 C:\projects\congre 로 이전(OneDrive 밖). git clone + npm install + npm run build 통과 확인. 이전 폴더는 백업으로 잔류.
