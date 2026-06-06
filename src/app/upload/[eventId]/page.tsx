@@ -27,12 +27,19 @@ async function captureThumbnail(blob: Blob): Promise<Blob | null> {
     video.playsInline = true;
     const url = URL.createObjectURL(blob);
     let done = false;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
     const finish = (result: Blob | null) => {
       if (done) return;
       done = true;
+      if (timeoutId) clearTimeout(timeoutId);
       URL.revokeObjectURL(url);
       resolve(result);
     };
+    timeoutId = setTimeout(() => {
+      if (done) return;
+      console.warn("[upload] thumb capture timed out");
+      finish(null);
+    }, 3000);
     video.onloadeddata = () => {
       const d = video.duration;
       const seekTo = !Number.isFinite(d) || d <= 1 ? (d > 0 ? d / 2 : 0) : 1;
