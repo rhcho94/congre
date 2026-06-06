@@ -100,6 +100,7 @@ export async function POST(request: NextRequest) {
   const introMediaType = eventData.introMediaType as "image" | "video" | undefined;
   const outroMediaKey  = eventData.outroMediaKey  as string | undefined;
   const outroMediaType = eventData.outroMediaType as "image" | "video" | undefined;
+  const videoFilter    = eventData.videoFilter    as string | undefined;
   const plan = (eventData.plan as string | undefined ?? "free") as PlanId;
 
   const introMediaUrl = introMediaKey
@@ -128,6 +129,7 @@ export async function POST(request: NextRequest) {
         ? { text: outroText, mediaUrl: outroMediaUrl, mediaType: outroMediaType }
         : undefined,
       plan,
+      videoFilter ? { filter: videoFilter } : undefined,
     );
   } catch (err) {
     const msg = err instanceof Error ? err.message : "render_failed";

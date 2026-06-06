@@ -129,6 +129,7 @@ npx firebase emulators:start --only firestore
 - **게스트 초대 링크 동적 OG 카드** (`src/app/upload/[eventId]/layout.tsx` server-side `generateMetadata` — events.title + users.name Admin 2회 조회, `${hostName}님이 초대했어요 · ${title}` 형식. hostName 12자/title 20자 초과 시 절단, hostName 없으면 `${title} 영상에 초대합니다` fallback. 카카오·SNS 미리보기 카드 동적화. PII 미노출(텍스트만). 2026-06-01. decisions/data-flow.md 2026-06-01 OG 항목 참조)
 - **초대장 OG 미리보기 이미지** (`/api/og-image/[eventId]` 프록시 라우트 — events.introMediaType==="image"일 때만 S3 객체 바이트 직접 서빙(비공개 버킷 유지), 영상/미설정/실패 시 `/logo.png` 302 fallback. openGraph.images + twitter.summary_large_image. OG URL은 정식 도메인 하드코딩(known-issues 참조). 2026-06-03)
 - **가격 표시 UI 4장 라이브 반영** (`www.congre.kr/pricing` — 무료·소형·중형·라지. Pricing Section.html로 deploy/pricing.html 교체. 2026-05-30. decisions/landing.md 2026-05-30 (11))
+- **이벤트별 영상 색감(필터) 옵션** (대시보드에서 선택: 시네마틱(muted) / 화사하게(boost) / 또렷하게(contrast). 저장 시 events.videoFilter, render/start가 읽어 createRender style 인자로 전달, 참가자 video clip 각각에 Shotstack filter 적용. 미선택 시 미적용(현재와 동일). 2026-06-06. decisions/rendering.md 2026-06-06 참조)
 
 ## 랜딩 페이지 (별도 트랙)
 

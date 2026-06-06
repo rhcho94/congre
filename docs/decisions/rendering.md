@@ -2,6 +2,42 @@
 
 > 영상 편집·Shotstack·클립·재렌더 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-06-06 — 영상 스타일 옵션 그릇 도입 (createRender style 인자) + 1차 색감 필터
+
+### 결정
+
+- createRender 시그니처에 5번째 옵셔널 인자 `style?: { filter?: string }` 추가. 향후 영상 스타일 계열 옵션의 공용 그릇으로 사용.
+- 1차 옵션: 색감 필터 3종 — Shotstack `filter` 속성을 참가자 video clip 각각에 적용.
+  - 시네마틱 = `"muted"` / 화사하게 = `"boost"` / 또렷하게 = `"contrast"`.
+- 적용 위치: `videoClips.map` 내부 clip 레벨(asset 안이 아니라 clip 레벨, `transition` 옆). intro/outro 미디어·텍스트·워터마크 트랙에는 미적용.
+- 저장 경로: 호스트가 이벤트 대시보드에서 select로 선택 → `PATCH /api/host/events/[eventId]` → Firestore `events.videoFilter` (값 있을 때만 키 존재, 없으면 `FieldValue.delete()`). render/start가 이 필드를 읽어 `videoFilter ? { filter: videoFilter } : undefined`로 createRender 전달.
+- UI 배치: 이벤트 대시보드의 intro/outro "영상 시작·끝 꾸미기" 카드 바로 아래에 별도 `card` 추가, eyebrow 헤더 + 안내 + `<select>` 1개. autosave 패턴은 introText의 500ms debounce → PATCH 그대로 재활용.
+- 입력 검증: PATCH 핸들러에서 `body.videoFilter === "muted" | "boost" | "contrast"`만 통과, 그 외(빈 문자열·null·임의 문자열)는 `FieldValue.delete()` 처리.
+
+### 디폴트 처리 관행 일관성
+
+- 폼 미선택 → 본문 자체에 키 없거나 null → Firestore 키 미존재 → render/start `undefined` → createRender에 `style` 미전달 → videoClips에 `filter` 키 미추가 → 현재 동작과 동일. 새 디폴트 분기 만들지 않음.
+- 기존 `introText`/`maxClipSeconds`/`plan` 옵션 필드 관행과 동일(2026-05-16 maxClipSeconds, 2026-05-30 plan 항목 참조).
+
+### 옵션화 사유
+
+- 호스트가 행사 톤에 맞춰 한 줄로 시네마틱·화사·또렷 톤을 선택 가능 → 결과물 품질 시그널 + "정교하게 만든다"는 정성 시그널.
+- Shotstack 기본 제공 기능이라 외부 인프라·크레딧 소모 0. 즉효 가능. `docs/rendering-quality-candidates.md` (2026-06-05 신규) 1번 즉효 3종 중 (3) 필터에 해당.
+- 호스트별 선택지 노출이 "AI가 알아서"보다 통제감 시그널 강함 — 졸업식/결혼식 등 의례성 행사 톤 결정권을 호스트에게 둠.
+
+### 미확정·보류
+
+- 모션 이펙트(effect, zoom/pan 계열)와 Rich Captions는 본 결정의 `style` 그릇으로 후속 확장 가능. 1차에는 색감만.
+- 옵션 추가 시 select → grid 카드 등 UI 형태 재검토(YAGNI, 1개일 때는 select가 단순).
+- 미디어 클립(intro/outro 사진/영상)에는 filter 미적용 — 호스트가 직접 올린 자산은 손대지 않음. 후속 결정 가능.
+
+### 변경 영역
+
+- `src/lib/shotstack.ts` — createRender 시그니처 5번째 인자 `style?: { filter?: string }` 추가, videoClips.map에 `...(style?.filter ? { filter: style.filter } : {})` 조건부 키.
+- `src/app/api/render/start/route.ts` — `eventData.videoFilter` 추출, createRender 5번째 인자로 전달.
+- `src/app/api/host/events/[eventId]/route.ts` — PATCH body 타입에 `videoFilter`, hasVideoFilter 분기, allowed 값만 set / 그 외 delete. GET 응답에 videoFilter 포함.
+- `src/app/dashboard/events/[eventId]/page.tsx` — ApiEvent에 videoFilter 추가, 상태 3개(videoFilter / savedVideoFilter / savingVideoFilter), inviteInitializedRef 블록에서 초기화, autosave useEffect, intro/outro 카드 직후 select UI 카드.
+
 ## 2026-06-01 — 무료 플랜 워터마크 구현 완료
 
 직전 2026-05-30 "워터마크 정밀 수치 확정" 결정의 다음 본 앱 코드 변경 트랙 4항목(createRender plan 인자 / render/start eventData.plan 전달 / 무료 플랜 워터마크 트랙 / Cormorant Italic ttf + timeline.fonts 등록)이 본 결정으로 모두 구현됨.

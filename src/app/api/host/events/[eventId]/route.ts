@@ -49,6 +49,7 @@ export async function GET(
       outroText: (data.outroText ?? null) as string | null,
       outroMediaKey: (data.outroMediaKey ?? null) as string | null,
       outroMediaType: (data.outroMediaType ?? null) as "image" | "video" | null,
+      videoFilter: (data.videoFilter ?? null) as string | null,
     });
   } catch (err) {
     console.error("[api/host/events GET] Firestore error:", err);
@@ -77,6 +78,7 @@ export async function PATCH(
     outroMediaKey?: string | null;
     introMediaType?: "image" | "video" | null;
     outroMediaType?: "image" | "video" | null;
+    videoFilter?: string | null;
   } | null;
 
   if (!body) {
@@ -89,10 +91,12 @@ export async function PATCH(
   const hasOutroMediaKey = "outroMediaKey" in body;
   const hasIntroMediaType = "introMediaType" in body;
   const hasOutroMediaType = "outroMediaType" in body;
+  const hasVideoFilter = "videoFilter" in body;
 
   if (!hasIntroText && !hasOutroText &&
       !hasIntroMediaKey && !hasOutroMediaKey &&
-      !hasIntroMediaType && !hasOutroMediaType) {
+      !hasIntroMediaType && !hasOutroMediaType &&
+      !hasVideoFilter) {
     return Response.json({ error: "NO_FIELDS" }, { status: 400 });
   }
 
@@ -143,6 +147,13 @@ export async function PATCH(
     if (hasOutroMediaKey) {
       updates.outroMediaKey = body.outroMediaKey ?? FieldValue.delete();
       updates.outroMediaType = body.outroMediaType ?? FieldValue.delete();
+    }
+    if (hasVideoFilter) {
+      const allowed =
+        body.videoFilter === "muted" ||
+        body.videoFilter === "boost" ||
+        body.videoFilter === "contrast";
+      updates.videoFilter = allowed ? body.videoFilter : FieldValue.delete();
     }
 
     await db.collection("events").doc(eventId).update(updates);

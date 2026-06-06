@@ -110,6 +110,7 @@ export async function createRender(
   intro?: { text?: string; mediaUrl?: string; mediaType?: "image" | "video" },
   outro?: { text?: string; mediaUrl?: string; mediaType?: "image" | "video" },
   plan?: PlanId,
+  style?: { filter?: string },
 ): Promise<string> {
   assertApiKey();
 
@@ -138,6 +139,7 @@ export async function createRender(
     length: clip.length,
     fit: "cover",
     transition: { in: transitionsIn[i], out: transitionsOut[i] },
+    ...(style?.filter ? { filter: style.filter } : {}),
   }));
 
   let tracks: Array<{ clips: unknown[] }>;

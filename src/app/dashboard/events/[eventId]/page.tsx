@@ -48,6 +48,7 @@ interface ApiEvent {
   outroText: string | null;
   outroMediaKey: string | null;
   outroMediaType: "image" | "video" | null;
+  videoFilter: string | null;
 }
 
 interface ApiClip {
@@ -109,6 +110,9 @@ export default function EventDetailPage() {
   const [outroMediaType, setOutroMediaType] = useState<"image" | "video" | null>(null);
   const [outroDisplayUrl, setOutroDisplayUrl] = useState<string | null>(null);
   const [outroUploading, setOutroUploading] = useState(false);
+  const [videoFilter, setVideoFilter] = useState<string>("");
+  const [savedVideoFilter, setSavedVideoFilter] = useState<string>("");
+  const [savingVideoFilter, setSavingVideoFilter] = useState(false);
 
   useEffect(() => {
     if (!isFirebaseConfigured) return;
@@ -153,6 +157,8 @@ export default function EventDetailPage() {
           setSavedOutroText(evt.outroText ?? "");
           setOutroMediaKey(evt.outroMediaKey ?? null);
           setOutroMediaType(evt.outroMediaType ?? null);
+          setVideoFilter(evt.videoFilter ?? "");
+          setSavedVideoFilter(evt.videoFilter ?? "");
           if (evt.introMediaKey || evt.outroMediaKey) {
             refreshInviteDisplayUrls(idToken);
           }
@@ -333,6 +339,29 @@ export default function EventDetailPage() {
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [outroText, savedOutroText, user, event?.status]);
+
+  useEffect(() => {
+    if (videoFilter === savedVideoFilter) return;
+    if (!user) return;
+    if (event?.status !== "open") return;
+
+    const timer = setTimeout(async () => {
+      setSavingVideoFilter(true);
+      try {
+        await patchInvite({ videoFilter: videoFilter || null });
+        setSavedVideoFilter(videoFilter);
+      } catch {
+        alert("저장에 실패했습니다.");
+      } finally {
+        setSavingVideoFilter(false);
+      }
+    }, 500);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [videoFilter, savedVideoFilter, user, event?.status]);
 
   function handleKakaoShare() {
     if (!event?.videoUrl) return;
@@ -857,6 +886,40 @@ export default function EventDetailPage() {
                   ) : null}
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* 영상 스타일 */}
+          <div className={`card mb-8 ${isClosed ? "opacity-60" : ""}`}>
+            <p className="eyebrow mb-1">선택 옵션 — 영상 스타일</p>
+            <p className="text-xs text-muted mb-5 leading-relaxed" style={{ opacity: 0.7 }}>
+              참가자 영상 전체에 적용될 색감을 선택할 수 있어요. 비워두면 원본 그대로 만들어집니다.
+            </p>
+
+            <div className="flex flex-col gap-1.5">
+              <span className="text-xs text-muted">색감</span>
+              <select
+                value={videoFilter}
+                onChange={(e) => setVideoFilter(e.target.value)}
+                disabled={isClosed}
+                className="input"
+                style={{ height: "auto", padding: "12px 14px", colorScheme: "dark" }}
+              >
+                <option value="">없음</option>
+                <option value="muted">시네마틱</option>
+                <option value="boost">화사하게</option>
+                <option value="contrast">또렷하게</option>
+              </select>
+              {(videoFilter !== "" || savedVideoFilter !== "") && !isClosed ? (
+                <span className="self-end text-xs text-muted">
+                  {savingVideoFilter
+                    ? "저장 중..."
+                    : videoFilter !== savedVideoFilter
+                    ? "변경 중..."
+                    : <span style={{ color: "var(--accent)" }}>✓ 저장됨</span>
+                  }
+                </span>
+              ) : null}
             </div>
           </div>
 
