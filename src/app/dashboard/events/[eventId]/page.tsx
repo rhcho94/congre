@@ -49,6 +49,7 @@ interface ApiEvent {
   outroMediaKey: string | null;
   outroMediaType: "image" | "video" | null;
   videoFilter: string | null;
+  videoTransition: string | null;
 }
 
 interface ApiClip {
@@ -113,6 +114,9 @@ export default function EventDetailPage() {
   const [videoFilter, setVideoFilter] = useState<string>("");
   const [savedVideoFilter, setSavedVideoFilter] = useState<string>("");
   const [savingVideoFilter, setSavingVideoFilter] = useState(false);
+  const [videoTransition, setVideoTransition] = useState<string>("");
+  const [savedVideoTransition, setSavedVideoTransition] = useState<string>("");
+  const [savingVideoTransition, setSavingVideoTransition] = useState(false);
 
   useEffect(() => {
     if (!isFirebaseConfigured) return;
@@ -159,6 +163,8 @@ export default function EventDetailPage() {
           setOutroMediaType(evt.outroMediaType ?? null);
           setVideoFilter(evt.videoFilter ?? "");
           setSavedVideoFilter(evt.videoFilter ?? "");
+          setVideoTransition(evt.videoTransition ?? "");
+          setSavedVideoTransition(evt.videoTransition ?? "");
           if (evt.introMediaKey || evt.outroMediaKey) {
             refreshInviteDisplayUrls(idToken);
           }
@@ -362,6 +368,29 @@ export default function EventDetailPage() {
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [videoFilter, savedVideoFilter, user, event?.status]);
+
+  useEffect(() => {
+    if (videoTransition === savedVideoTransition) return;
+    if (!user) return;
+    if (event?.status !== "open") return;
+
+    const timer = setTimeout(async () => {
+      setSavingVideoTransition(true);
+      try {
+        await patchInvite({ videoTransition: videoTransition || null });
+        setSavedVideoTransition(videoTransition);
+      } catch {
+        alert("저장에 실패했습니다.");
+      } finally {
+        setSavingVideoTransition(false);
+      }
+    }, 500);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [videoTransition, savedVideoTransition, user, event?.status]);
 
   function handleKakaoShare() {
     if (!event?.videoUrl) return;
@@ -893,33 +922,60 @@ export default function EventDetailPage() {
           <div className={`card mb-8 ${isClosed ? "opacity-60" : ""}`}>
             <p className="eyebrow mb-1">선택 옵션 — 영상 스타일</p>
             <p className="text-xs text-muted mb-5 leading-relaxed" style={{ opacity: 0.7 }}>
-              참가자 영상 전체에 적용될 색감을 선택할 수 있어요. 비워두면 원본 그대로 만들어집니다.
+              참가자 영상 전체에 적용될 색감과 전환 방식을 선택할 수 있어요. 비워두면 기본 스타일로 만들어집니다.
             </p>
 
-            <div className="flex flex-col gap-1.5">
-              <span className="text-xs text-muted">색감</span>
-              <select
-                value={videoFilter}
-                onChange={(e) => setVideoFilter(e.target.value)}
-                disabled={isClosed}
-                className="input"
-                style={{ height: "auto", padding: "12px 14px", colorScheme: "dark" }}
-              >
-                <option value="">없음</option>
-                <option value="muted">시네마틱</option>
-                <option value="boost">화사하게</option>
-                <option value="contrast">또렷하게</option>
-              </select>
-              {(videoFilter !== "" || savedVideoFilter !== "") && !isClosed ? (
-                <span className="self-end text-xs text-muted">
-                  {savingVideoFilter
-                    ? "저장 중..."
-                    : videoFilter !== savedVideoFilter
-                    ? "변경 중..."
-                    : <span style={{ color: "var(--accent)" }}>✓ 저장됨</span>
-                  }
-                </span>
-              ) : null}
+            <div className="flex flex-col gap-6">
+              <div className="flex flex-col gap-1.5">
+                <span className="text-xs text-muted">색감</span>
+                <select
+                  value={videoFilter}
+                  onChange={(e) => setVideoFilter(e.target.value)}
+                  disabled={isClosed}
+                  className="input"
+                  style={{ height: "auto", padding: "12px 14px", colorScheme: "dark" }}
+                >
+                  <option value="">없음</option>
+                  <option value="muted">시네마틱</option>
+                  <option value="boost">화사하게</option>
+                  <option value="contrast">또렷하게</option>
+                </select>
+                {(videoFilter !== "" || savedVideoFilter !== "") && !isClosed ? (
+                  <span className="self-end text-xs text-muted">
+                    {savingVideoFilter
+                      ? "저장 중..."
+                      : videoFilter !== savedVideoFilter
+                      ? "변경 중..."
+                      : <span style={{ color: "var(--accent)" }}>✓ 저장됨</span>
+                    }
+                  </span>
+                ) : null}
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <span className="text-xs text-muted">전환</span>
+                <select
+                  value={videoTransition}
+                  onChange={(e) => setVideoTransition(e.target.value)}
+                  disabled={isClosed}
+                  className="input"
+                  style={{ height: "auto", padding: "12px 14px", colorScheme: "dark" }}
+                >
+                  <option value="">기본</option>
+                  <option value="soft">부드럽게</option>
+                  <option value="dynamic">역동적으로</option>
+                </select>
+                {(videoTransition !== "" || savedVideoTransition !== "") && !isClosed ? (
+                  <span className="self-end text-xs text-muted">
+                    {savingVideoTransition
+                      ? "저장 중..."
+                      : videoTransition !== savedVideoTransition
+                      ? "변경 중..."
+                      : <span style={{ color: "var(--accent)" }}>✓ 저장됨</span>
+                    }
+                  </span>
+                ) : null}
+              </div>
             </div>
           </div>
 

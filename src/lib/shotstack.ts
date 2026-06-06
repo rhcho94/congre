@@ -86,12 +86,13 @@ function makeMediaClip(
   };
 }
 
-const TRANSITION_POOL = [
-  "fadeFast",
-  "slideLeftFast",
-  "slideRightFast",
-  "zoom",
-] as const;
+const TRANSITION_POOLS = {
+  default: ["fadeFast", "slideLeftFast", "slideRightFast", "zoom"],
+  soft: ["fade", "fadeSlow"],
+  dynamic: ["slideLeftFast", "slideRightFast", "zoom"],
+} as const;
+
+type TransitionStyle = keyof typeof TRANSITION_POOLS;
 
 function pickSequence(pool: readonly string[], count: number): string[] {
   const result: string[] = [];
@@ -110,7 +111,7 @@ export async function createRender(
   intro?: { text?: string; mediaUrl?: string; mediaType?: "image" | "video" },
   outro?: { text?: string; mediaUrl?: string; mediaType?: "image" | "video" },
   plan?: PlanId,
-  style?: { filter?: string },
+  style?: { filter?: string; transition?: TransitionStyle },
 ): Promise<string> {
   assertApiKey();
 
@@ -130,8 +131,9 @@ export async function createRender(
   if (hasAnyText) fonts.push({ src: `${appUrl}/fonts/NotoSansKR-Regular.ttf` });
   if (plan === "free") fonts.push({ src: `${appUrl}/fonts/CormorantGaramond-Italic.ttf` });
 
-  const transitionsIn = pickSequence(TRANSITION_POOL, clips.length);
-  const transitionsOut = pickSequence(TRANSITION_POOL, clips.length);
+  const transitionPool = TRANSITION_POOLS[style?.transition ?? "default"];
+  const transitionsIn = pickSequence(transitionPool, clips.length);
+  const transitionsOut = pickSequence(transitionPool, clips.length);
 
   const videoClips = clips.map((clip, i) => ({
     asset: { type: "video", src: clip.src, volumeEffect: "fadeInFadeOut" },

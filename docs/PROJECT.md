@@ -130,6 +130,7 @@ npx firebase emulators:start --only firestore
 - **초대장 OG 미리보기 이미지** (`/api/og-image/[eventId]` 프록시 라우트 — events.introMediaType==="image"일 때만 S3 객체 바이트 직접 서빙(비공개 버킷 유지), 영상/미설정/실패 시 `/logo.png` 302 fallback. openGraph.images + twitter.summary_large_image. OG URL은 정식 도메인 하드코딩(known-issues 참조). 2026-06-03)
 - **가격 표시 UI 4장 라이브 반영** (`www.congre.kr/pricing` — 무료·소형·중형·라지. Pricing Section.html로 deploy/pricing.html 교체. 2026-05-30. decisions/landing.md 2026-05-30 (11))
 - **이벤트별 영상 색감(필터) 옵션** (대시보드에서 선택: 시네마틱(muted) / 화사하게(boost) / 또렷하게(contrast). 저장 시 events.videoFilter, render/start가 읽어 createRender style 인자로 전달, 참가자 video clip 각각에 Shotstack filter 적용. 미선택 시 미적용(현재와 동일). 2026-06-06. decisions/rendering.md 2026-06-06 참조)
+- **이벤트별 전환(transition) 스타일 옵션** (대시보드 "영상 스타일" 카드 select 2번째: 기본(현행 4종 혼합) / 부드럽게(soft=fade·fadeSlow) / 역동적으로(dynamic=slideLeft·slideRight·zoom). 저장 시 events.videoTransition, render/start가 createRender style.transition으로 전달, pickSequence 풀이 바뀜. 미선택 시 default 풀(현행). 2026-06-06. decisions/rendering.md 2026-06-06 (2) 참조)
 
 ## 랜딩 페이지 (별도 트랙)
 

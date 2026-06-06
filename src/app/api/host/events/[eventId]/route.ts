@@ -50,6 +50,7 @@ export async function GET(
       outroMediaKey: (data.outroMediaKey ?? null) as string | null,
       outroMediaType: (data.outroMediaType ?? null) as "image" | "video" | null,
       videoFilter: (data.videoFilter ?? null) as string | null,
+      videoTransition: (data.videoTransition ?? null) as string | null,
     });
   } catch (err) {
     console.error("[api/host/events GET] Firestore error:", err);
@@ -79,6 +80,7 @@ export async function PATCH(
     introMediaType?: "image" | "video" | null;
     outroMediaType?: "image" | "video" | null;
     videoFilter?: string | null;
+    videoTransition?: string | null;
   } | null;
 
   if (!body) {
@@ -92,11 +94,12 @@ export async function PATCH(
   const hasIntroMediaType = "introMediaType" in body;
   const hasOutroMediaType = "outroMediaType" in body;
   const hasVideoFilter = "videoFilter" in body;
+  const hasVideoTransition = "videoTransition" in body;
 
   if (!hasIntroText && !hasOutroText &&
       !hasIntroMediaKey && !hasOutroMediaKey &&
       !hasIntroMediaType && !hasOutroMediaType &&
-      !hasVideoFilter) {
+      !hasVideoFilter && !hasVideoTransition) {
     return Response.json({ error: "NO_FIELDS" }, { status: 400 });
   }
 
@@ -154,6 +157,12 @@ export async function PATCH(
         body.videoFilter === "boost" ||
         body.videoFilter === "contrast";
       updates.videoFilter = allowed ? body.videoFilter : FieldValue.delete();
+    }
+    if (hasVideoTransition) {
+      const allowed =
+        body.videoTransition === "soft" ||
+        body.videoTransition === "dynamic";
+      updates.videoTransition = allowed ? body.videoTransition : FieldValue.delete();
     }
 
     await db.collection("events").doc(eventId).update(updates);

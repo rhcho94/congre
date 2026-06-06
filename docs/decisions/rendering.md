@@ -2,6 +2,45 @@
 
 > 영상 편집·Shotstack·클립·재렌더 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-06-06 (2) — 전환(transition) 스타일 옵션 추가 + TRANSITION_POOL 단일 → 3개 풀로 확장
+
+### 결정
+
+- 직전 2026-06-06 결정의 `style` 그릇에 2번째 옵션 `transition?: "soft" | "dynamic"` 추가.
+- 기존 단일 `TRANSITION_POOL` 상수를 3개 풀의 `TRANSITION_POOLS` 객체로 확장. 키프레임/별도 트랙 불필요, Shotstack 유효 transition 값만 사용.
+  - `default` = `["fadeFast", "slideLeftFast", "slideRightFast", "zoom"]` — 현행 풀 그대로(기존 호환).
+  - `soft` = `["fade", "fadeSlow"]` — 풀 크기 2, "직전값 연속 회피"로 두 값이 교대 노출됨.
+  - `dynamic` = `["slideLeftFast", "slideRightFast", "zoom"]` — fade 계열 제외.
+- `pickSequence` 호출부에서 `TRANSITION_POOLS[style?.transition ?? "default"]`로 풀 선택. 기존 in/out 분리(2026-05-23) + "직전값 연속 회피"(`pickSequence`) 로직은 그대로 재사용.
+- 저장 경로: 호스트가 대시보드 "영상 스타일" 카드의 2번째 select로 선택 → `PATCH /api/host/events/[eventId]` → Firestore `events.videoTransition`. render/start가 읽어 `videoTransition === "soft" | "dynamic"`일 때만 `style.transition`에 담아 createRender 전달.
+- UI 배치: 색감 select와 같은 카드 안 직렬 — `flex-col gap-6`. autosave 패턴(setTimeout 안에서 set-state, 500ms debounce)도 색감과 동일.
+- 입력 검증: PATCH에서 `body.videoTransition === "soft" | "dynamic"`만 통과, 그 외(빈 문자열·null·임의 문자열)는 `FieldValue.delete()`.
+
+### 디폴트 처리 관행 일관성
+
+- 폼 "기본" 선택 = `""` → null로 PATCH → Firestore 키 미존재 → render/start `undefined` → createRender style.transition 미전달 → `TRANSITION_POOLS["default"]` 사용 → 현행 동작과 정확히 일치.
+- 색감 필터(2026-06-06 (1))와 동일 관행.
+
+### 풀 설계 사유
+
+- `soft` 풀이 2종인 이유: fadeSlow는 길게 페이드되어 결혼식·졸업식 의례 톤과 정합. fade와 fadeSlow를 교대 배치하면 단조롭지 않으면서도 슬라이드/줌 같은 강한 움직임 제거.
+- `dynamic` 풀에서 fade 계열 제외: "역동" 톤 시그널 강화. 학생 또래 콘텐츠·챌린지 행사 톤.
+- 풀 크기 ≥ 2 보장 → `pickSequence`의 "직전값 회피" do-while 무한 루프 방지(2026-05-13 트랙 2-A 항목 4 원칙).
+- 풀 종류 = 3개에서 멈춤(YAGNI). 추후 사용 데이터 보고 추가.
+
+### 미확정·보류
+
+- 한 클립 in/out을 풀 내 같은 값으로 통일할지 여부는 현재처럼 독립 픽 유지(2026-05-23 결정 그대로) — 풀이 좁아지면 어차피 같아질 가능성 높음.
+- 키프레임 기반 커스텀 전환은 Shotstack 미지원(2026-06-05 정찰 메모) — 본 결정 범위 외.
+- intro/outro 미디어 사이 전환에는 미적용 — 참가자 영상 사이만.
+
+### 변경 영역
+
+- `src/lib/shotstack.ts` — `TRANSITION_POOL` 상수를 `TRANSITION_POOLS` 객체로 교체, `TransitionStyle` 타입 추가, style 타입에 `transition?: TransitionStyle` 확장, pickSequence 호출부 풀 선택 1줄 추가.
+- `src/app/api/render/start/route.ts` — videoTransition 추출, createRender style 인자 빌드를 IIFE로 변경(필터+전환 둘 다 옵셔널 결합).
+- `src/app/api/host/events/[eventId]/route.ts` — PATCH body 타입에 `videoTransition`, hasVideoTransition 분기, allowed("soft"|"dynamic")만 set / 외 delete. GET 응답에 videoTransition 포함.
+- `src/app/dashboard/events/[eventId]/page.tsx` — ApiEvent에 videoTransition, 상태 3개, 초기화, autosave useEffect, 색감 카드 내부에 전환 select 직렬 추가.
+
 ## 2026-06-06 — 영상 스타일 옵션 그릇 도입 (createRender style 인자) + 1차 색감 필터
 
 ### 결정
