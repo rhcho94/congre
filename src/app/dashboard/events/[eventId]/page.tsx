@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { QRCodeSVG, QRCodeCanvas } from "qrcode.react";
 import { Play, X, Loader2, Eye, EyeOff } from "lucide-react";
+import confetti from "canvas-confetti";
 import { subscribeToAuthChanges, type User } from "@/lib/auth";
 import { isFirebaseConfigured, getFirebaseAuth } from "@/lib/firebase";
 import { getClipPlaybackUrl, toggleClipExclusion } from "@/lib/clip-playback";
@@ -59,6 +60,7 @@ interface ApiClip {
   s3Key: string;
   uploaderName?: string;
   uploaderPhone?: string;
+  thumbKey?: string;
   uploadedAt: number | null;
   excludedAt?: number | null;
 }
@@ -88,6 +90,13 @@ export default function EventDetailPage() {
   const [clips, setClips] = useState<ApiClip[]>([]);
   const [showCloseModal, setShowCloseModal] = useState(false);
   const [closing, setClosing] = useState(false);
+  const [lotteryOpen, setLotteryOpen] = useState(false);
+  const [lotteryTargetCount, setLotteryTargetCount] = useState(1);
+  const [lotteryWinners, setLotteryWinners] = useState<ApiClip[]>([]);
+  const [lotteryCurrentRound, setLotteryCurrentRound] = useState(1);
+  const [lotteryPhase, setLotteryPhase] = useState<"setup" | "spinning" | "revealed" | "done">("setup");
+  const [lotterySpinningName, setLotterySpinningName] = useState("");
+  const [lotteryCurrentWinner, setLotteryCurrentWinner] = useState<ApiClip | null>(null);
   const [copied, setCopied] = useState(false);
   const [shareUrl, setShareUrl] = useState("");
   const [activeClipId, setActiveClipId] = useState<string | null>(null);
@@ -421,6 +430,82 @@ export default function EventDetailPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showNames, savedShowNames, user, event?.status]);
 
+  useEffect(() => {
+    if (!lotteryOpen) return;
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [lotteryOpen]);
+
+  function openLottery() {
+    setLotteryOpen(true);
+    setLotteryTargetCount(1);
+    setLotteryWinners([]);
+    setLotteryCurrentRound(1);
+    setLotteryPhase("setup");
+    setLotterySpinningName("");
+    setLotteryCurrentWinner(null);
+  }
+
+  function closeLottery() {
+    setLotteryOpen(false);
+    setLotteryTargetCount(1);
+    setLotteryWinners([]);
+    setLotteryCurrentRound(1);
+    setLotteryPhase("setup");
+    setLotterySpinningName("");
+    setLotteryCurrentWinner(null);
+  }
+
+  function startLotterySpin(currentWinners: ApiClip[] = lotteryWinners) {
+    const pool = clips.filter((c) => !currentWinners.some((w) => w.id === c.id));
+    if (pool.length === 0) return;
+    setLotteryPhase("spinning");
+    setLotteryCurrentWinner(null);
+
+    const finalWinner = pool[Math.floor(Math.random() * pool.length)];
+    const totalDuration = 2500;
+    let elapsed = 0;
+    let interval = 80;
+
+    const tick = () => {
+      if (elapsed >= totalDuration) {
+        setLotterySpinningName(finalWinner.uploaderName ?? "(이름 없음)");
+        setLotteryCurrentWinner(finalWinner);
+        setLotteryPhase("revealed");
+        try {
+          confetti({ particleCount: 120, spread: 70, origin: { y: 0.5 } });
+        } catch (err) {
+          console.warn("[lottery] confetti failed:", err);
+        }
+        return;
+      }
+      const pick = pool[Math.floor(Math.random() * pool.length)];
+      setLotterySpinningName(pick.uploaderName ?? "(이름 없음)");
+      elapsed += interval;
+      interval = Math.min(400, interval + 18);
+      setTimeout(tick, interval);
+    };
+    tick();
+  }
+
+  function advanceLottery() {
+    if (!lotteryCurrentWinner) return;
+    const nextWinners = [...lotteryWinners, lotteryCurrentWinner];
+    setLotteryWinners(nextWinners);
+    if (nextWinners.length >= lotteryTargetCount) {
+      setLotteryPhase("done");
+      setLotteryCurrentWinner(null);
+    } else {
+      setLotteryCurrentRound(lotteryCurrentRound + 1);
+      setLotteryCurrentWinner(null);
+      startLotterySpin(nextWinners);
+    }
+  }
+
   function handleKakaoShare() {
     if (!event?.videoUrl) return;
     const K = (window as Window & { Kakao?: KakaoInstance }).Kakao;
@@ -702,6 +787,137 @@ export default function EventDetailPage() {
           </div>
         )}
 
+        {/* Lottery modal */}
+        {lotteryOpen && (
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-6">
+            <div className="card max-w-md w-full" style={{ maxHeight: "90vh", overflowY: "auto" }}>
+              {lotteryPhase === "setup" && (
+                <>
+                  <p className="display text-xl mb-2">추첨 시작</p>
+                  <p className="text-sm text-muted mb-6 leading-relaxed">
+                    몇 명을 뽑을까요? (최대 {clips.length}명)
+                  </p>
+                  <div className="flex flex-col gap-1.5 mb-6">
+                    <span className="text-xs text-muted">인원 수</span>
+                    <input
+                      type="number"
+                      min={1}
+                      max={clips.length}
+                      value={lotteryTargetCount}
+                      onChange={(e) => {
+                        const n = parseInt(e.target.value, 10);
+                        if (Number.isFinite(n)) {
+                          setLotteryTargetCount(Math.min(Math.max(1, n), clips.length));
+                        }
+                      }}
+                      className="input"
+                      style={{ height: "auto", padding: "12px 14px" }}
+                    />
+                  </div>
+                  <div className="flex gap-3">
+                    <button onClick={closeLottery} className="btn btn-secondary flex-1">
+                      닫기
+                    </button>
+                    <button onClick={() => startLotterySpin([])} className="btn btn-primary flex-1">
+                      시작
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {lotteryPhase === "spinning" && (
+                <div className="flex flex-col items-center gap-6 py-8">
+                  <p className="eyebrow">
+                    {lotteryCurrentRound} / {lotteryTargetCount}
+                  </p>
+                  <p
+                    className="display text-center"
+                    style={{ fontSize: "2.5rem", lineHeight: 1.2, minHeight: "3rem" }}
+                  >
+                    {lotterySpinningName || "..."}
+                  </p>
+                  <p className="text-xs text-muted">추첨 중...</p>
+                </div>
+              )}
+
+              {lotteryPhase === "revealed" && lotteryCurrentWinner && (
+                <div className="flex flex-col items-center gap-5 py-6">
+                  <p className="eyebrow">
+                    {lotteryCurrentRound} / {lotteryTargetCount}
+                  </p>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={`/api/clips/${lotteryCurrentWinner.id}/thumb`}
+                    alt={lotteryCurrentWinner.uploaderName ?? "winner"}
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).src = "/logo.png";
+                    }}
+                    style={{
+                      width: 200,
+                      height: 200,
+                      objectFit: "cover",
+                      borderRadius: "var(--r-md)",
+                      border: "2px solid var(--accent)",
+                    }}
+                  />
+                  <p className="display text-3xl text-center">
+                    {lotteryCurrentWinner.uploaderName ?? "(이름 없음)"}
+                  </p>
+                  <p className="eyebrow" style={{ color: "var(--accent)" }}>당첨</p>
+                  <div className="flex gap-3 w-full">
+                    <button onClick={closeLottery} className="btn btn-secondary flex-1">
+                      중단
+                    </button>
+                    <button onClick={advanceLottery} className="btn btn-primary flex-1">
+                      {lotteryCurrentRound < lotteryTargetCount ? "다음" : "결과 보기"}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {lotteryPhase === "done" && (
+                <>
+                  <p className="display text-xl mb-1">당첨자 {lotteryWinners.length}명</p>
+                  <p className="text-xs text-muted mb-5">결과는 저장되지 않습니다.</p>
+                  <div className="flex flex-col gap-2 mb-6">
+                    {lotteryWinners.map((w, i) => (
+                      <div
+                        key={w.id}
+                        className="row flex items-center gap-3"
+                        style={{ padding: "8px 12px" }}
+                      >
+                        <span className="text-xs text-muted tabular-nums shrink-0">
+                          #{i + 1}
+                        </span>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={`/api/clips/${w.id}/thumb`}
+                          alt={w.uploaderName ?? "winner"}
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).src = "/logo.png";
+                          }}
+                          style={{
+                            width: 48,
+                            height: 48,
+                            objectFit: "cover",
+                            borderRadius: "var(--r-sm)",
+                          }}
+                        />
+                        <span className="text-sm text-foreground flex-1 truncate">
+                          {w.uploaderName ?? "(이름 없음)"}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <button onClick={closeLottery} className="btn btn-primary w-full">
+                    닫기
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
         <nav className="flex items-center justify-between px-8 py-6">
           <a href={LANDING_URL} className="text-xl tracking-wider hover:opacity-75 transition-opacity duration-200">
             <BrandName />
@@ -751,6 +967,15 @@ export default function EventDetailPage() {
                   style={{ height: 40, padding: "0 16px", fontSize: 13 }}
                 >
                   {closing ? "처리 중..." : "영상 생성 다시 시작"}
+                </button>
+              )}
+              {clips.length > 0 && (
+                <button
+                  onClick={openLottery}
+                  className="btn btn-secondary"
+                  style={{ height: 40, padding: "0 16px", fontSize: 13 }}
+                >
+                  추첨
                 </button>
               )}
             </div>
