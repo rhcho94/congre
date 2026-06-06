@@ -18,6 +18,8 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "BAD_REQUEST" }, { status: 400 });
   }
 
+  const thumbKey = typeof body.thumbKey === "string" ? body.thumbKey : undefined;
+
   if (!Number.isFinite(body.duration) || body.duration <= 0 || body.duration > 120) {
     return Response.json({ error: "INVALID_DURATION" }, { status: 400 });
   }
@@ -77,6 +79,7 @@ export async function POST(request: NextRequest) {
     uploaderPhone: phoneClean,
     duration: body.duration,
     uploadedAt: FieldValue.serverTimestamp(),
+    ...(thumbKey ? { thumbKey } : {}),
   });
 
   return Response.json({ id: clipRef.id });

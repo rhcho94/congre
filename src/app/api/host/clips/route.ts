@@ -40,6 +40,7 @@ export async function GET(request: NextRequest) {
           s3Key: data.s3Key as string,
           uploaderName: data.uploaderName as string | undefined,
           uploaderPhone: data.uploaderPhone as string | undefined,
+          thumbKey: data.thumbKey as string | undefined,
           uploadedAt: tsToMs(data.uploadedAt),
           excludedAt: tsToMs(data.excludedAt),
         };

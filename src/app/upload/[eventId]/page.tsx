@@ -19,6 +19,54 @@ const scrim: React.CSSProperties = {
   padding: "16px 18px",
 };
 
+async function captureThumbnail(blob: Blob): Promise<Blob | null> {
+  return new Promise((resolve) => {
+    const video = document.createElement("video");
+    video.preload = "metadata";
+    video.muted = true;
+    video.playsInline = true;
+    const url = URL.createObjectURL(blob);
+    let done = false;
+    const finish = (result: Blob | null) => {
+      if (done) return;
+      done = true;
+      URL.revokeObjectURL(url);
+      resolve(result);
+    };
+    video.onloadeddata = () => {
+      const d = video.duration;
+      const seekTo = !Number.isFinite(d) || d <= 1 ? (d > 0 ? d / 2 : 0) : 1;
+      try {
+        video.currentTime = seekTo;
+      } catch {
+        finish(null);
+      }
+    };
+    video.onseeked = () => {
+      try {
+        const vw = video.videoWidth;
+        const vh = video.videoHeight;
+        if (!vw || !vh) { finish(null); return; }
+        const maxW = 640;
+        const scale = vw > maxW ? maxW / vw : 1;
+        const cw = Math.round(vw * scale);
+        const ch = Math.round(vh * scale);
+        const canvas = document.createElement("canvas");
+        canvas.width = cw;
+        canvas.height = ch;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) { finish(null); return; }
+        ctx.drawImage(video, 0, 0, cw, ch);
+        canvas.toBlob((b) => finish(b), "image/jpeg", 0.8);
+      } catch {
+        finish(null);
+      }
+    };
+    video.onerror = () => finish(null);
+    video.src = url;
+  });
+}
+
 async function measureDuration(file: File): Promise<number> {
   return new Promise((resolve, reject) => {
     const video = document.createElement("video");
@@ -229,6 +277,28 @@ function UploadInner() {
     await uploadToS3(url, blob, mimeType, setProgress);
     console.log(`[upload] S3 PUT success`);
 
+    let thumbKey: string | undefined;
+    try {
+      const thumbBlob = await captureThumbnail(blob);
+      if (thumbBlob) {
+        const thumbFileName = `thumb-${Date.now()}.jpg`;
+        const presignRes = await fetch("/api/upload/presign", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ eventId, fileName: thumbFileName, fileType: "image/jpeg", kind: "thumb" }),
+        });
+        if (!presignRes.ok) throw new Error(`thumb_presign:${presignRes.status}`);
+        const { url: thumbUrl, key: tKey } = await presignRes.json() as { url: string; key: string };
+        await uploadToS3(thumbUrl, thumbBlob, "image/jpeg", () => {});
+        thumbKey = tKey;
+        console.log(`[upload] thumb PUT success → key=${tKey}`);
+      } else {
+        console.warn("[upload] thumb capture returned null, skipping");
+      }
+    } catch (err) {
+      console.warn("[upload] thumb skipped:", err instanceof Error ? err.message : String(err));
+    }
+
     const clipSave = fetch("/api/clips", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -239,6 +309,7 @@ function UploadInner() {
         uploaderName: name,
         uploaderPhone: phone.replace(/\D/g, ""),
         duration: durationRef.current,
+        ...(thumbKey ? { thumbKey } : {}),
       }),
     });
     const clipTimeout = new Promise<never>((_, reject) =>
