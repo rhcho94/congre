@@ -1,4 +1,4 @@
-import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { GetObjectCommand, ListObjectsV2Command, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { createRender } from "@/lib/shotstack";
@@ -107,7 +107,37 @@ export async function POST(request: NextRequest) {
   const videoFilter     = eventData.videoFilter     as string | undefined;
   const videoTransition = eventData.videoTransition as string | undefined;
   const showNames       = eventData.showNames       as boolean | undefined;
+  const bgmMoodRaw      = eventData.bgmMood         as string | undefined;
+  const bgmMood = (bgmMoodRaw === "calm" || bgmMoodRaw === "lively" || bgmMoodRaw === "epic") ? bgmMoodRaw : "lively";
   const plan = (eventData.plan as string | undefined ?? "free") as PlanId;
+
+  async function listMp3Keys(mood: string): Promise<string[]> {
+    const res = await s3.send(new ListObjectsV2Command({
+      Bucket: process.env.AWS_S3_BUCKET!,
+      Prefix: `audio/${mood}/`,
+    }));
+    return (res.Contents ?? [])
+      .map((o) => o.Key)
+      .filter((k): k is string => !!k && k.toLowerCase().endsWith(".mp3"));
+  }
+
+  let bgmSrc: string | undefined;
+  try {
+    let keys = await listMp3Keys(bgmMood);
+    if (keys.length === 0 && bgmMood !== "lively") {
+      keys = await listMp3Keys("lively");
+    }
+    if (keys.length > 0) {
+      const pickedKey = keys[Math.floor(Math.random() * keys.length)];
+      bgmSrc = await getSignedUrl(
+        s3,
+        new GetObjectCommand({ Bucket: process.env.AWS_S3_BUCKET!, Key: pickedKey }),
+        { expiresIn: 86400 }
+      );
+    }
+  } catch (err) {
+    console.error("[render/start] bgm pick failed:", err);
+  }
 
   const introMediaUrl = introMediaKey
     ? await getSignedUrl(
@@ -136,12 +166,13 @@ export async function POST(request: NextRequest) {
         : undefined,
       plan,
       (() => {
-        const style: { filter?: string; transition?: "soft" | "dynamic"; showNames?: boolean } = {};
+        const style: { filter?: string; transition?: "soft" | "dynamic"; showNames?: boolean; bgmSrc?: string } = {};
         if (videoFilter) style.filter = videoFilter;
         if (videoTransition === "soft" || videoTransition === "dynamic") {
           style.transition = videoTransition;
         }
         if (showNames === true) style.showNames = true;
+        if (bgmSrc) style.bgmSrc = bgmSrc;
         return Object.keys(style).length > 0 ? style : undefined;
       })(),
     );

@@ -52,6 +52,7 @@ interface ApiEvent {
   videoFilter: string | null;
   videoTransition: string | null;
   showNames: boolean;
+  bgmMood: string | null;
 }
 
 interface ApiClip {
@@ -130,6 +131,9 @@ export default function EventDetailPage() {
   const [showNames, setShowNames] = useState(false);
   const [savedShowNames, setSavedShowNames] = useState(false);
   const [savingShowNames, setSavingShowNames] = useState(false);
+  const [bgmMood, setBgmMood] = useState<string>("");
+  const [savedBgmMood, setSavedBgmMood] = useState<string>("");
+  const [savingBgmMood, setSavingBgmMood] = useState(false);
 
   useEffect(() => {
     if (!isFirebaseConfigured) return;
@@ -180,6 +184,8 @@ export default function EventDetailPage() {
           setSavedVideoTransition(evt.videoTransition ?? "");
           setShowNames(evt.showNames === true);
           setSavedShowNames(evt.showNames === true);
+          setBgmMood(evt.bgmMood ?? "");
+          setSavedBgmMood(evt.bgmMood ?? "");
           if (evt.introMediaKey || evt.outroMediaKey) {
             refreshInviteDisplayUrls(idToken);
           }
@@ -429,6 +435,29 @@ export default function EventDetailPage() {
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showNames, savedShowNames, user, event?.status]);
+
+  useEffect(() => {
+    if (bgmMood === savedBgmMood) return;
+    if (!user) return;
+    if (event?.status !== "open") return;
+
+    const timer = setTimeout(async () => {
+      setSavingBgmMood(true);
+      try {
+        await patchInvite({ bgmMood: bgmMood || null });
+        setSavedBgmMood(bgmMood);
+      } catch {
+        alert("저장에 실패했습니다.");
+      } finally {
+        setSavingBgmMood(false);
+      }
+    }, 500);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bgmMood, savedBgmMood, user, event?.status]);
 
   useEffect(() => {
     if (!lotteryOpen) return;
@@ -1199,6 +1228,31 @@ export default function EventDetailPage() {
                     {savingVideoFilter
                       ? "저장 중..."
                       : videoFilter !== savedVideoFilter
+                      ? "변경 중..."
+                      : <span style={{ color: "var(--accent)" }}>✓ 저장됨</span>
+                    }
+                  </span>
+                ) : null}
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <span className="text-xs text-muted">음악 분위기</span>
+                <select
+                  value={bgmMood}
+                  onChange={(e) => setBgmMood(e.target.value)}
+                  disabled={isClosed}
+                  className="input"
+                  style={{ height: "auto", padding: "12px 14px", colorScheme: "dark" }}
+                >
+                  <option value="">경쾌하게 (기본)</option>
+                  <option value="calm">잔잔하게</option>
+                  <option value="epic">벅차게</option>
+                </select>
+                {(bgmMood !== "" || savedBgmMood !== "") && !isClosed ? (
+                  <span className="self-end text-xs text-muted">
+                    {savingBgmMood
+                      ? "저장 중..."
+                      : bgmMood !== savedBgmMood
                       ? "변경 중..."
                       : <span style={{ color: "var(--accent)" }}>✓ 저장됨</span>
                     }

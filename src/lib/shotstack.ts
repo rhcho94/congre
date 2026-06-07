@@ -111,7 +111,7 @@ export async function createRender(
   intro?: { text?: string; mediaUrl?: string; mediaType?: "image" | "video" },
   outro?: { text?: string; mediaUrl?: string; mediaType?: "image" | "video" },
   plan?: PlanId,
-  style?: { filter?: string; transition?: TransitionStyle; showNames?: boolean },
+  style?: { filter?: string; transition?: TransitionStyle; showNames?: boolean; bgmSrc?: string },
 ): Promise<string> {
   assertApiKey();
 
@@ -240,7 +240,7 @@ export async function createRender(
   const timeline = {
     background: "#0c0b09",
     soundtrack: {
-      src: `${appUrl}/audio/bgm.mp3`,
+      src: style?.bgmSrc ?? `${appUrl}/audio/bgm.mp3`,
       effect: "fadeInFadeOut",
       volume: 0.1,
     },

@@ -52,6 +52,7 @@ export async function GET(
       videoFilter: (data.videoFilter ?? null) as string | null,
       videoTransition: (data.videoTransition ?? null) as string | null,
       showNames: (data.showNames ?? false) as boolean,
+      bgmMood: (data.bgmMood ?? null) as string | null,
     });
   } catch (err) {
     console.error("[api/host/events GET] Firestore error:", err);
@@ -83,6 +84,7 @@ export async function PATCH(
     videoFilter?: string | null;
     videoTransition?: string | null;
     showNames?: boolean | null;
+    bgmMood?: string | null;
   } | null;
 
   if (!body) {
@@ -98,11 +100,12 @@ export async function PATCH(
   const hasVideoFilter = "videoFilter" in body;
   const hasVideoTransition = "videoTransition" in body;
   const hasShowNames = "showNames" in body;
+  const hasBgmMood = "bgmMood" in body;
 
   if (!hasIntroText && !hasOutroText &&
       !hasIntroMediaKey && !hasOutroMediaKey &&
       !hasIntroMediaType && !hasOutroMediaType &&
-      !hasVideoFilter && !hasVideoTransition && !hasShowNames) {
+      !hasVideoFilter && !hasVideoTransition && !hasShowNames && !hasBgmMood) {
     return Response.json({ error: "NO_FIELDS" }, { status: 400 });
   }
 
@@ -169,6 +172,13 @@ export async function PATCH(
     }
     if (hasShowNames) {
       updates.showNames = body.showNames === true ? true : FieldValue.delete();
+    }
+    if (hasBgmMood) {
+      const allowed =
+        body.bgmMood === "calm" ||
+        body.bgmMood === "lively" ||
+        body.bgmMood === "epic";
+      updates.bgmMood = allowed ? body.bgmMood : FieldValue.delete();
     }
 
     await db.collection("events").doc(eventId).update(updates);
