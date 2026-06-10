@@ -166,19 +166,19 @@ export default function CreateEventPage() {
     <>
       <PageBackdrop pattern="a" />
       <div className="min-h-screen">
-        <nav className="flex items-center justify-between px-8 py-6">
+        <nav className="flex items-center justify-between flex-wrap gap-y-3 px-5 sm:px-8 py-6">
           <a href={LANDING_URL} className="text-xl tracking-wider hover:opacity-75 transition-opacity duration-200">
             <BrandName />
           </a>
           {view === "form" && (
-            <div className="flex items-center gap-4">
-              <Link href="/guide/host" className="btn-quiet text-xs tracking-widest uppercase">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <Link href="/guide/host" className="btn-quiet text-xs tracking-widest uppercase whitespace-nowrap">
                 사용 가이드
               </Link>
-              <Link href="/mypage" className="btn-quiet text-xs tracking-widest uppercase">
+              <Link href="/mypage" className="btn-quiet text-xs tracking-widest uppercase whitespace-nowrap">
                 마이페이지
               </Link>
-              <Link href="/dashboard" className="btn-quiet text-xs tracking-widest uppercase">
+              <Link href="/dashboard" className="btn-quiet text-xs tracking-widest uppercase whitespace-nowrap">
                 ← 대시보드
               </Link>
             </div>

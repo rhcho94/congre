@@ -251,16 +251,16 @@ export default function MyPage() {
     <>
       <PageBackdrop pattern="b" />
       <div className="min-h-screen">
-        <nav className="flex items-center justify-between px-8 py-6">
+        <nav className="flex items-center justify-between flex-wrap gap-y-3 px-5 sm:px-8 py-6">
           <a href={LANDING_URL} className="text-xl tracking-wider hover:opacity-75 transition-opacity duration-200">
             <BrandName />
           </a>
-          <div className="flex items-center gap-6">
-            <span className="text-xs text-muted truncate max-w-[180px]">{user?.email}</span>
-            <Link href="/guide/host" className="btn-quiet text-xs tracking-widest uppercase">
+          <div className="flex items-center gap-3 sm:gap-6">
+            <span className="hidden sm:inline text-xs text-muted truncate max-w-[180px]">{user?.email}</span>
+            <Link href="/guide/host" className="btn-quiet text-xs tracking-widest uppercase whitespace-nowrap">
               사용 가이드
             </Link>
-            <button onClick={() => logout()} className="btn-quiet text-xs tracking-widest uppercase">
+            <button onClick={() => logout()} className="btn-quiet text-xs tracking-widest uppercase whitespace-nowrap">
               로그아웃
             </button>
           </div>
