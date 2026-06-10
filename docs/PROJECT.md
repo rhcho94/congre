@@ -55,7 +55,7 @@ npx firebase emulators:start --only firestore
 | `--text` | #ede8df | 본문 텍스트 |
 | `--muted` | #79716a | 보조 텍스트 |
 | `--font-display` | Cormorant Garamond italic | 디스플레이 |
-| `--font-body` | DM Sans | 본문 |
+| `--font-body` | Pretendard Variable, Pretendard, system-ui, sans-serif | 본문 (라틴·한글 모두 커버, 랜딩과 통일. 2026-06-10) |
 
 글로벌 유틸리티: `.rule` (장식 수평선), `.glow-accent`, body::after film grain.
 

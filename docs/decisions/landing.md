@@ -2,6 +2,20 @@
 
 > 랜딩 페이지(congre.kr / www.congre.kr, 정적 HTML `deploy/` 폴더) 디자인·자산·배포 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-06-10 (13) 공통 토큰 폰트 = display:Cormorant / body:Pretendard (두 트랙 통일)
+
+랜딩(2026-05-27 (5))과 본 앱의 UI 본문 폰트를 Pretendard로 통일. 본 앱에서 DM Sans 완전 제거.
+
+- 본 앱 `--font-display` = Cormorant Garamond italic (브랜드/디스플레이, 유지)
+- 본 앱 `--font-body` = `"Pretendard Variable", Pretendard, system-ui, sans-serif` (랜딩 체인과 동일)
+- next/font `DM_Sans` 인스턴스·import 제거 (`src/app/layout.tsx`). Cormorant만 next/font 유지.
+- `globals.css` `--font-body`를 :root에서 직접 정의 (next/font 변수 주입에 의존하지 않음). `--sans` 토큰도 Pretendard 체인으로 재정의 — `.eyebrow`·`.badge`가 system-ui로 떨어지지 않도록.
+- body `font-family`를 평탄한 단일 체인 `var(--font-body)`로 정리. 기존 `var(--font-body, 'DM Sans'), var(--pretendard)` 중첩 폴백 제거.
+
+**이유**: 2026-05-27 (5) 항목에서 본 앱 측 폰트는 "별도 결정 영역"으로 보류. 한글 본문이 명시적 폰트 없이 시스템 폴백으로 떨어지는 현황 + 랜딩과 본 앱 톤 불일치 해소를 위해 통일. Pretendard Variable이 라틴·한글 모두 커버하므로 본문 폰트 일원화 가능.
+
+**확인 못 함**: `--pretendard` 토큰(33행)은 그대로 둠. `--font-body`와 사실상 동일 체인이라 중복 — 정리는 별도 커밋.
+
 ## 2026-05-31 (12) 랜딩 푸터 약관·개인정보 링크 → 본 앱 절대경로
 
 랜딩 푸터의 "이용약관" / "개인정보처리방침" 링크 4건(footer 본문 2 + foot-bottom 2)을 자기 도메인 상대경로(`/terms`, `/privacy`)에서 본 앱 절대경로(`https://app.congre.kr/terms`, `https://app.congre.kr/privacy`)로 변경.
