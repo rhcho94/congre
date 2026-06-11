@@ -3,6 +3,17 @@
 > known-issues.md에서 분리된 해결 완료 이력. 사고 재발 진단 시 grep 대상.
 > 새 RESOLVED 항목 발생 시 known-issues.md에서 이 파일로 이동.
 
+## 완성본 done 상태 재생 무한 재버퍼링 — 해결 (2026-06-11)
+- 증상: 호스트 대시보드 완성본 재생이 2~3초만 나오고 까만 화면, BGM 도입부
+  반복. 다운로드는 정상. duration은 정상 표시.
+- 원인: done 이벤트의 5초 폴링이 GET /api/host/events/[eventId]를 반복 호출,
+  매 응답마다 새 presigned videoUrl 발급(getVideoPresignedUrl, expiresIn
+  3600). <video src={event.videoUrl}>가 5초마다 새 URL로 교체되어 받던
+  영상 버리고 0부터 재시작.
+- 해결: 69bff94 — fetchEvent 폴링이 status === "done"이면 다음 tick 예약
+  안 함(폴링 자연 종료). videoUrl 발급 로직은 미변경.
+- 관련: docs/handoff/2026-06-11-done-polling-playback-fix.md
+
 ## ✅ Track ⑦ — Shotstack→S3 복사 실패 (0바이트/AccessDenied) [RESOLVED 2026-06-11]
 
 **해소: 2026-06-11** — IAM 정책 shotstack-s3-write에 소스 버킷 GetObject 권한 추가로 해결.

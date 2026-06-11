@@ -2,6 +2,15 @@
 
 > Firestore·S3·Admin SDK·서버 이전 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-06-11 done 상태 폴링 중단 (presigned URL 재발급 방지)
+- 결정: 호스트 대시보드 이벤트 폴링(fetchEvent, 5s)을 status === "done"에서
+  중단. done은 완성본·길이·videoUrl이 고정값이라 갱신할 게 없음.
+- 이유: done에서도 폴링이 돌면 매 tick 새 presigned URL이 발급되어 <video>
+  src가 교체되고 재생이 0부터 무한 재시작됨(69bff94 수정). 부수적으로 done
+  이벤트 열어둘 때 5초마다 돌던 불필요한 S3 sign + Firestore read도 멈춤.
+- 대안·격상: done 후 실시간 갱신(예: 클립 토글)이 필요해지면 영상 src를
+  폴링 state에서 분리(B안)로 격상. 현재 그 흐름 없음(YAGNI).
+
 ## 2026-06-04 — ⑦ 완성본 Shotstack→S3 이전 + 서빙 방식 (public)
 
 ### 배경
