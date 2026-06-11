@@ -287,6 +287,16 @@
 - **리스크**: 실고객 이벤트가 rendering 고착 시 운영자 복구 불가 + 24h 후 클립/결과물 소실 → 고객 지원 마비.
 - **격상 트리거**: 졸업식 시즌 진입 / 실고객 멀티호스트 운영 시작. admin 복구 기능 또는 운영자 비상 복구 스크립트 필요.
 
+## 남의 호스트 갇힌 이벤트 복구 경로 부재 — 대상 미확인 + 스크립트 골격 정찰 완료
+
+- **현황**: 운영자 보고로 약 5일 전 별도 계정이 호스트로 이벤트 생성·업로드 후 rendering 고착 추정. 계정 ID 미확보. 현 rendering 갇힌 6건은 전부 hostId=rhcho(bPG65…)라 이 6건에 그 "남의 이벤트"는 없음 — 다른 status거나 24h cleanup으로 소멸했을 수 있음.
+- **선행 확인**: 계정 확보 후 hostId≠rhcho 전수(status 무관) 정찰로 존재·현 status·클립 생존 확정.
+- **복구 경로**: 버튼 불가(대시보드 where hostId==uid + render/start hostId!==uid→403). Admin SDK 스크립트만 길(hostId 무관).
+- **스크립트 골격(정찰 확정, 미실행)**: 렌더 생성은 src/lib/shotstack.ts createRender(clips,intro,outro,plan,style) 공유 함수 직접 호출(인증 가드와 분리). 성공 후 events 문서 필드셋은 render/start/route.ts:187-203 미러. videoS3Key+done은 이후 check-rendering cron 세팅.
+- **미결정**: route 핵심을 공유 함수로 추출 vs 스크립트 복제(후자 drift 위험).
+- **격상 트리거**: 졸업식 시즌 진입 / 실고객 멀티호스트 운영 시작.
+- **출처**: 2026-06-11 prod 100클립 용량 검증 세션.
+
 ---
 
 ## 1a784d0 회귀 의심 → 미재현 확인 (2026-05-11)
