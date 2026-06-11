@@ -151,6 +151,7 @@ export default function EventDetailPage() {
 
     async function fetchEvent() {
       if (cancelled || document.hidden) return;
+      let receivedStatus: string | undefined;
       try {
         const idToken = await getFirebaseAuth().currentUser?.getIdToken();
         if (!idToken || cancelled) return;
@@ -168,6 +169,7 @@ export default function EventDetailPage() {
         if (cancelled) return;
         setEvent(evt);
         setEventLoading(false);
+        receivedStatus = evt.status;
         if (!inviteInitializedRef.current) {
           inviteInitializedRef.current = true;
           setIntroText(evt.introText ?? "");
@@ -196,7 +198,7 @@ export default function EventDetailPage() {
       } catch (err) {
         console.error("[event-detail] fetchEvent error:", err);
       } finally {
-        if (!cancelled) {
+        if (!cancelled && receivedStatus !== "done") {
           timerId = setTimeout(fetchEvent, 5000);
         }
       }
