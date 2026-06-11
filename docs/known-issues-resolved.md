@@ -3,6 +3,18 @@
 > known-issues.md에서 분리된 해결 완료 이력. 사고 재발 진단 시 grep 대상.
 > 새 RESOLVED 항목 발생 시 known-issues.md에서 이 파일로 이동.
 
+## ✅ Track ⑦ — Shotstack→S3 복사 실패 (0바이트/AccessDenied) [RESOLVED 2026-06-11]
+
+**해소: 2026-06-11** — IAM 정책 shotstack-s3-write에 소스 버킷 GetObject 권한 추가로 해결.
+
+- 진짜 원인: shotstack-s3-write 정책에 arn:aws:s3:::shotstack-api-v1-output/* 대상 s3:GetObject 누락. 워커(user/shotstack-s3, prod 키)가 Shotstack 출력 버킷에서 결과물을 HeadObject로 읽으려다 AccessDenied. 우리 정책은 우리 버킷 권한만 보유.
+- 해결: ShotstackSourceRead 블록(s3:GetObject on shotstack-api-v1-output/*) 추가. render ecc75d01에서 S3 도착·done 전환 정상 확인.
+- 발견: CloudTrail Trail + Logs Insights로 워커 실호출 직접 판정. errorCode 필터로 단일 HeadObject AccessDenied 포착.
+- 폐기 가설(사실 취급 금지): sandbox 키설(실제 prod 키), PutObject 403(실제 HeadObject), cross-account 불가설(우리 IAM 한 줄로 해결).
+
+**종결 일자**: 2026-06-11
+**종결 사유**: 근본 원인 확정 + 영구 권한 추가 + 재렌더 정상 흐름 검증 완료.
+
 ## ✅ OG 이미지 도메인 하드코딩 [RESOLVED 2026-06-06]
 
 **해소: 2026-06-06** — 환경변수 환원 대신 하드코딩 유지로 종결.

@@ -2,6 +2,24 @@
 
 > 영상 편집·Shotstack·클립·재렌더 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-06-11 (1) — Shotstack S3 destination IAM 권한: 소스 버킷 GetObject 필수
+
+### 결정
+
+Shotstack S3 destination 사용 시, 우리 IAM 사용자(shotstack-s3)에 우리 버킷 쓰기 권한뿐 아니라 Shotstack 소스 버킷(shotstack-api-v1-output)에 대한 s3:GetObject 권한이 필수다. 워커가 우리 자격증명으로 소스 버킷에서 결과물을 읽어(HeadObject) 복사하기 때문. Shotstack 공식 문서 IAM 예시에는 이 권한이 누락돼 있어, 문서대로 따르면 동일하게 고장난다.
+
+### 저장 경로
+
+정책 shotstack-s3-write에 ShotstackSourceRead 블록(GetObject on shotstack-api-v1-output/*) 영구 보존.
+
+### 알려진 한계
+
+소스 버킷명(shotstack-api-v1-output)이 Shotstack 측 변경 시 권한도 갱신 필요.
+
+### 변경 영역
+
+AWS IAM (콘솔 직접). 코드 변경 없음.
+
 ## 2026-06-06 (3) — 참가자 이름 자막 옵션 + clip별 name 데이터 + 별도 텍스트 트랙
 
 ### 결정
