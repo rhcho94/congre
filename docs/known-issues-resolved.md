@@ -3,6 +3,16 @@
 > known-issues.md에서 분리된 해결 완료 이력. 사고 재발 진단 시 grep 대상.
 > 새 RESOLVED 항목 발생 시 known-issues.md에서 이 파일로 이동.
 
+## 완성본 세로 찌그러짐 (fit cover=stretch) — 해결 (2026-06-12 / 5780a2d)
+- 증상: 가로 클립이 세로 완성본(1080×1920)에서 비율 깨지며 세로로 늘어남.
+- 원인: src/lib/shotstack.ts의 fit 값이 "cover"였고, Shotstack에서 cover는
+  stretch(비율 깨고 늘림) 의미. CSS object-fit의 cover(비율 유지)와 정반대.
+- 해결: 5780a2d — 참가자 클립 + intro/outro 미디어 모두 "crop"으로 교체.
+  상세는 docs/decisions/rendering.md 2026-06-12 (1) 참조.
+- 메모: 발견 당시 launch blocker. 출시 검증에서 done 도달 여부만 확인하고
+  출력 품질(비율)을 보지 못한 사각지대였음. 이름값(cover) 추론으로 코드
+  글자의 실제 의미를 의심하지 않았던 사고.
+
 ## 완성본 done 상태 재생 무한 재버퍼링 — 해결 (2026-06-11)
 - 증상: 호스트 대시보드 완성본 재생이 2~3초만 나오고 까만 화면, BGM 도입부
   반복. 다운로드는 정상. duration은 정상 표시.

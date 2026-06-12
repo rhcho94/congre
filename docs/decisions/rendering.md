@@ -2,6 +2,57 @@
 
 > 영상 편집·Shotstack·클립·재렌더 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-06-12 (2) — stage 키 ≠ 환경 격리 (destinations prod 하드코딩)
+
+### 결정
+
+`createRender`의 `destinations`가 prod S3 버킷(`congre-mvp-videos`)으로 하드코딩됨. stage 키로 렌더해도 결과물은 prod 버킷에 저장됨. 즉, Shotstack API 키만 stage로 바꿔도 출력 저장소가 분리되지 않아 stage/prod 환경 격리가 성립하지 않음.
+
+### 영향
+
+stage 키로 렌더 테스트 시 prod 버킷이 stage 결과물로 오염될 수 있음. 클립명·경로 충돌 시 prod 데이터 손상 위험. 현재까지는 stage 렌더 후 수동 정리로 우회.
+
+### 미결
+
+환경별(`SHOTSTACK_ENV`) `destinations` 분기 — `stage`일 때 별도 stage 버킷 또는 prod 버킷 내 stage prefix로 분리. 미래 작업으로 보류(YAGNI: 현 단계 stage 렌더 빈도 낮음).
+
+### 변경 영역
+
+`src/lib/shotstack.ts` createRender의 destinations 블록. 미구현(메모).
+
+### 발견
+
+2026-06-12 세션.
+
+## 2026-06-12 (1) — Shotstack fit 속성 — cover=stretch 함정, crop으로 통일
+
+### 결정
+
+참가자 클립 + intro/outro 미디어 클립 모두 Shotstack `fit: "crop"`으로 통일. 이전 `fit: "cover"` 하드코딩을 교체 (커밋 5780a2d).
+
+### Shotstack fit 값 의미 (CSS object-fit과 정반대 함정)
+
+- `cover` = 비율 깨고 늘림 (stretch)
+- `crop` = 비율 유지하며 채우고 넘치면 잘라냄 (Shotstack 기본값)
+- `contain` = 비율 유지 + 레터박스(여백)
+
+일반 CSS `object-fit: cover`는 "비율 유지하며 채움"이라 정반대 의미. 이름값만 보고 추론하면 무조건 틀림. 출처: shotstack.io/learn/image-video-fit-property (SDK 문서 일치 확인).
+
+### 증상
+
+코드에 `fit: "cover"` 하드코딩 → 가로 소스(1920×1080)가 세로 출력 틀(1080×1920)에서 세로로 늘어남(비율 깨짐). 발견 당시 launch blocker.
+
+### 보류 (YAGNI)
+
+- 클립별 방향(가로/세로) 판별 후 다른 fit 적용
+- blur 배경 + 비율 유지로 가로/세로 혼합 처리하는 "본격 버전"
+
+현 단계는 `crop` + 촬영 안내(세로 권장)로 충분 판단. 클립 절대 다수가 세로일 것이라는 도메인 가정.
+
+### 변경 영역
+
+`src/lib/shotstack.ts` L79·L85·L143 (커밋 5780a2d).
+
 ## 2026-06-11 (1) — Shotstack S3 destination IAM 권한: 소스 버킷 GetObject 필수
 
 ### 결정
