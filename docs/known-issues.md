@@ -225,6 +225,15 @@
 - **위치**: `src/app/api/clips/route.ts` 중복 검사.
 - **관련**: 2026-06-06 추첨 티어 결정 세션.
 
+## 클립 길이 미강제 — maxClipSeconds 초과분 S3 원본 누적 가능
+
+- **현황**: 게스트가 이벤트의 maxClipSeconds를 초과해 촬영해도 클라이언트·서버 모두 막지 않음. 120초 초과만 차단(measureDuration `src/app/upload/[eventId]/page.tsx:225-230`, POST /api/clips `src/app/api/clips/route.ts:23-24`). maxClipSeconds 자체 비교 없음.
+- **동작**: S3에는 원본 전체가 업로드됨. 최종 렌더에서만 처음 maxClipSeconds초로 trim (`length: Math.min(duration, maxClipSeconds)`, `src/app/api/render/start/route.ts:93` → `src/lib/shotstack.ts:142`). 비디오 데이터 손실은 없고, 렌더에서 미사용일 뿐.
+- **잠재 리스크**: (1) S3에 불필요하게 긴 원본 누적 → 저장 비용·정리 부담. (2) 게스트가 "내가 찍은 뒷부분이 완성본에 안 나온다"고 혼란 가능성.
+- **격상 트리거**: S3 용량/비용 부담 관측 시 / 게스트 혼란 신고 발생 시.
+- **처리 후보**: 클라이언트 measureDuration에서 maxClipSeconds 초과 시 경고·재촬영 유도, 또는 업로드 전 클라이언트 trim. 현 단계 안내 문구(촬영 전 "최대 N초")로 충분 판단, YAGNI 보류.
+- **발견 경위**: 2026-06-12 게스트/호스트 촬영 안내 정찰 (다) 항목.
+
 ## 랜딩 페이지 영역 (L4~L5, L7)
 
 ### L4. 후기 섹션 실사진/아바타 미적용
