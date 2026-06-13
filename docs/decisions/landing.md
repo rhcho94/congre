@@ -2,6 +2,14 @@
 
 > 랜딩 페이지(congre.kr / www.congre.kr, 정적 HTML `deploy/` 폴더) 디자인·자산·배포 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-06-13 — 랜딩 편집 시간 표기 8분 통일
+
+- 기존: 히어로 "5분", 후기 통계 "12분", WHY NOW 카피 "Congre는 5분" 혼재(충돌).
+- 결정: 전부 8분 통일. 근거 — 5분은 평균값으로 빡빡, 12분은 "빠르다" 메시지 약화. 8분이 절충.
+- 적용 위치(deploy/index.html): 히어로 L2383, 후기 L3578, WHY NOW 헤드 L3182, SVG 텍스트 L3356, SVG 주석 L3299·3334·3355, 데모 카드 L2584("7분 32초", 평균보다 짧은 단일 사례).
+- 배포: 2026-06-13 `npx vercel --prod`, `www.congre.kr` alias READY.
+- 비고: 랜딩은 git 외부라 CHANGELOG 미반영. 본 결정이 유일한 기록. clip-time "N분 전" 가짜 피드는 편집시간 무관이라 미변경.
+
 ## 2026-06-10 (13) 공통 토큰 폰트 = display:Cormorant / body:Pretendard (두 트랙 통일)
 
 랜딩(2026-05-27 (5))과 본 앱의 UI 본문 폰트를 Pretendard로 통일. 본 앱에서 DM Sans 완전 제거.
