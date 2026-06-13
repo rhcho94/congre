@@ -1042,9 +1042,9 @@ export default function EventDetailPage() {
           )}
 
           {/* 영상 시작·끝 꾸미기 */}
-          <div className={`card mb-8 ${isClosed ? "opacity-60" : ""}`}>
+          <div className={`panel mb-8 ${isClosed ? "opacity-60" : ""}`}>
             <p className="eyebrow mb-1">선택 옵션 — 영상 시작·끝 꾸미기</p>
-            <p className="text-xs text-muted mb-5 leading-relaxed" style={{ opacity: 0.7 }}>
+            <p className="text-xs text-muted mb-5 leading-relaxed">
               이벤트 영상 시작과 끝에 짧은 동영상, 텍스트, 사진을 추가할 수 있어요. 비워두면 참가자 영상만으로 만들어집니다.
               <br />
               📱 세로 영상(9:16)을 권장해요.
@@ -1202,9 +1202,9 @@ export default function EventDetailPage() {
           </div>
 
           {/* 영상 스타일 */}
-          <div className={`card mb-8 ${isClosed ? "opacity-60" : ""}`}>
+          <div className={`panel mb-8 ${isClosed ? "opacity-60" : ""}`}>
             <p className="eyebrow mb-1">선택 옵션 — 영상 스타일</p>
-            <p className="text-xs text-muted mb-5 leading-relaxed" style={{ opacity: 0.7 }}>
+            <p className="text-xs text-muted mb-5 leading-relaxed">
               참가자 영상 전체에 적용될 색감과 전환 방식을 선택할 수 있어요. 비워두면 기본 스타일로 만들어집니다.
             </p>
 

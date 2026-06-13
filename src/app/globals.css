@@ -241,6 +241,14 @@ body::after {
   padding: 20px;
 }
 
+/* 옵션 섹션용 면 박스 (배경 장식 가리는 용도) */
+.panel {
+  background: var(--surface-1);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-md);
+  padding: 24px;
+}
+
 /* 배지 / 상태 */
 .badge {
   display: inline-flex;
