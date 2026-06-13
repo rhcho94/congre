@@ -4,6 +4,7 @@
 
 ## 2026-06-13
 
+- feat(plans): 무료 플랜 클립 수 10→5 (`PLAN_CLIP_LIMITS.free`). create 폼 desc·guide/host 플랜 문구 동기화. guide의 폐기된 소/중/대 플랜 줄은 계산식 안내로 교체. 가격 모델 전환은 market-product.md 2026-06-13 (7).
 - fix(ui): 이벤트 상세 옵션 카드 2개 `.panel` 면 복원 — 0fd28eb 투명화로 배경 장식 비쳐 흐려진 것 정정 + 안내문 inline `opacity: 0.7` 제거. `.panel` 신설(surface-1 + 약한 보더 + padding 24px). QR·완성영상 카드는 b안 투명화 유지.
 - refactor(ui): 박스 리디자인 — `.card`/`.row` 투명화(여백만), `.notice` 강조 박스 신설. 경고/안내 11곳 + 모달 2곳 = 13건을 `.notice`로 교체. 가이드 본문·옵션 섹션·결과물 카드 등 15건은 `.card`로 유지(정의 투명화로 자동 반영). 모달은 `.notice`로 박스 보존. 근거·범위: decisions/misc.md 2026-06-13.
 - fix(ui): 게스트 촬영 안내 + 호스트 인트로/아웃트로 안내에서 "가로로 찍으면 양옆이 잘려요" 문구 제거. contain 전환으로 잘림 사라져 사실 불일치였음. "세로 권장" 헤더만 유지.

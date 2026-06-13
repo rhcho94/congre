@@ -86,7 +86,7 @@ export default function GuideHostPage() {
               <ul className="list-disc pl-5 flex flex-col gap-1">
                 <li>이벤트 이름 — 행사명 (예: "졸업식 2026")</li>
                 <li>이벤트 날짜 — 행사 당일</li>
-                <li>플랜 — 무료 10클립 / 소형 50 / 중형 200 / 대형 무제한</li>
+                <li>플랜 — 무료 5클립까지 / 그 이상은 사용한 만큼(클립 수·길이) 비용 발생</li>
                 <li>클립 길이 — 참가자가 올릴 수 있는 영상 최대 길이</li>
               </ul>
             </div>

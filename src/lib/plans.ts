@@ -1,7 +1,7 @@
 export type PlanId = "free" | "small" | "medium" | "large";
 
 export const PLAN_CLIP_LIMITS: Record<PlanId, number> = {
-  free: 10,
+  free: 5,
   small: 50,
   medium: 200,
   large: 5000,
