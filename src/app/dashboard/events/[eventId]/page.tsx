@@ -798,7 +798,7 @@ export default function EventDetailPage() {
         {/* Close confirmation modal */}
         {showCloseModal && (
           <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-6">
-            <div className="card max-w-sm w-full">
+            <div className="notice max-w-sm w-full">
               <p className="display text-lg mb-3">정말 마감하시겠습니까?</p>
               <p className="text-sm text-muted mb-6 leading-relaxed">
                 마감하면 참가자들이 더 이상 영상을 업로드할 수 없습니다.
@@ -820,7 +820,7 @@ export default function EventDetailPage() {
         {/* Lottery modal */}
         {lotteryOpen && (
           <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-6">
-            <div className="card max-w-md w-full" style={{ maxHeight: "90vh", overflowY: "auto" }}>
+            <div className="notice max-w-md w-full" style={{ maxHeight: "90vh", overflowY: "auto" }}>
               {lotteryPhase === "setup" && (
                 <>
                   <p className="display text-xl mb-2">추첨 시작</p>
@@ -1312,7 +1312,7 @@ export default function EventDetailPage() {
 
           {/* 렌더링 / 완성 상태 */}
           {event.status === "rendering" ? (
-            <div className="card mb-8">
+            <div className="notice mb-8">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-2 h-2 rounded-full bg-[#7b8ce0] animate-pulse" />
                 <p className="text-sm text-muted">AI가 영상을 편집하고 있습니다...</p>
@@ -1383,7 +1383,7 @@ export default function EventDetailPage() {
                   </div>
                 </div>
               ) : (
-                <div className="card flex items-center gap-3">
+                <div className="notice flex items-center gap-3">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5ba06e" strokeWidth="1.5">
                     <polyline points="20 6 9 17 4 12" />
                   </svg>

@@ -223,25 +223,22 @@ body::after {
 }
 .input:disabled { opacity: .5; cursor: not-allowed; }
 
-/* 카드 */
+/* 카드 — 장식·구획용 투명 컨테이너 (여백만) */
 .card {
-  background: var(--surface-1);
-  border: 1px solid var(--hairline);
-  border-radius: var(--r-md);
   padding: 24px;
 }
 
-/* 리스트 행 */
+/* 리스트 행 — 투명 컨테이너 (부모 gap으로 항목 사이 구분) */
 .row {
-  background: var(--surface-1);
-  border: 1px solid var(--hairline);
-  border-radius: var(--r-md);
   padding: 22px 24px;
-  transition: border-color .15s, background .15s;
 }
-.row:hover {
-  border-color: var(--hairline-strong);
-  background: var(--surface-2);
+
+/* 경고·안내·모달용 강조 박스 */
+.notice {
+  background: var(--surface-1);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--r-md);
+  padding: 20px;
 }
 
 /* 배지 / 상태 */

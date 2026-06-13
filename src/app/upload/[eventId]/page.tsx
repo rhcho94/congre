@@ -444,7 +444,7 @@ function UploadInner() {
 
         {/* S3 미연결 배너 */}
         {s3Ready === false && (
-          <div className="mx-6 mt-2 card">
+          <div className="mx-6 mt-2 notice">
             <p className="text-xs text-accent font-medium tracking-wide mb-0.5">S3 미연결</p>
             <p className="text-xs text-muted leading-relaxed">
               .env.local에 AWS 설정값을 추가하면 실제 업로드가 가능합니다.
@@ -521,7 +521,7 @@ function UploadInner() {
                 소중한 순간을 영상으로 남겨주세요
               </p>
 
-              <div className="card" style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginBottom: "1rem" }}>
+              <div className="notice" style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginBottom: "1rem" }}>
                 <p style={{ fontWeight: 600 }}>📱 휴대폰을 세로로 들고 찍어주세요</p>
                 <p className="text-sm text-muted">· 최대 {maxClipSeconds}초까지 영상에 담겨요</p>
               </div>
@@ -529,7 +529,7 @@ function UploadInner() {
               {iosDevice ? (
                 <>
                   {/* iOS 안내 박스 */}
-                  <div className="w-full card flex flex-col gap-2">
+                  <div className="w-full notice flex flex-col gap-2">
                     <p className="text-xs text-accent font-medium tracking-wide">iPhone 사용 중이시군요</p>
                     <p className="text-xs text-muted leading-relaxed">
                       iOS 정책상 iPhone 즉석 촬영은 화질이 낮습니다.<br />

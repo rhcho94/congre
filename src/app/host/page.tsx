@@ -194,7 +194,7 @@ export default function HostPage() {
                 <h1 className="display text-3xl text-center mb-10">주최자 로그인</h1>
 
                 {!isFirebaseConfigured && (
-                  <div className="mb-6 card">
+                  <div className="mb-6 notice">
                     <p className="text-xs text-accent mb-1 font-medium tracking-wide">Firebase 미연결</p>
                     <p className="text-xs text-muted leading-relaxed">
                       .env.local에 Firebase 설정값을 추가하면 실제 로그인이 가능합니다.

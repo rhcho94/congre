@@ -2,6 +2,34 @@
 
 > 영역 외 결정 (프로세스 룰·UI 라이브러리 등). 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-06-13 — 박스(.card/.row) 투명화 + .notice 강조 박스 분리
+
+### 결정
+
+`globals.css`의 박스 공용 클래스를 두 갈래로 분리:
+
+- **`.card`** — 장식·구획용 **투명 컨테이너**(padding만, background/border/border-radius 없음). 가이드 본문 래퍼·옵션 섹션·마이페이지 섹션·결과물 메인 영역 등.
+- **`.row`** — 리스트 행 **투명 컨테이너**(padding만). hover 효과(surface-2 + hairline-strong) 제거. 행 사이 구분은 부모의 `flex flex-col gap-N`에 위임.
+- **`.notice`** — 신설. 경고·안내·모달 본체용 **강조 박스**. `background: var(--surface-1)` + `border: 1px solid var(--hairline-strong)`(card 옛 정의보다 살짝 진함) + `border-radius: var(--r-md)` + `padding: 20px`.
+
+### 적용 범위
+
+- `.card` 사용처 28건 중 [경고/안내] 11건 + 모달 2건 = **13건의 className "card" → "notice"** 교체. 나머지 15건은 `.card`로 두되 정의가 투명해 자동 반영.
+- [애매] 3건(`dashboard/create:342` 이벤트 생성 후 QR 카드, `[eventId]:1017` open 상태 QR/공유 카드, `[eventId]:1327` done 상태 결과 영상 카드)은 **운영자 결정 = 투명화(b안)**. `.card` 정의 투명화로 자동 반영, 별도 교체 없음.
+
+### 근거
+
+네모 테두리·면이 화면당 다수 누적되어 "옛날 앱" 느낌. 최신 앱 표준은 여백(gap/padding)으로 영역 구분, 박스는 강조가 필요한 곳에만. 한 곳(`.card` 정의)을 고치면 28건이 일괄 전환되는 기존 구조를 활용해 비용 최소화.
+
+### 모달 처리
+
+`.card` 투명화로 모달 본체(L801 마감 확인, L823 추첨)도 투명해지면 모달이 깨짐. 두 곳은 `.notice`로 교체하여 배경+테두리 보존.
+
+### 비고
+
+- 인라인 박스(`glassPanel` 11건, `EmailVerificationBanner`의 `bg-surface border-l-2`)는 별도 트랙. 본 결정 범위 외.
+- `.row` hover 시각 피드백 제거 영향: dashboard 이벤트 리스트 행(`<Link>` L182)이 호버 색 변화 잃음. 클릭 가능성 표시는 padding과 텍스트 위계로 충분 판단. 필드 테스트에서 클릭 인지 사고 발생 시 보정.
+
 ## 2026-06-01 — 게스트 업로더 FlowStrip 통합 (CD 자산 → React 컴포넌트)
 
 ### 결정

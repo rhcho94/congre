@@ -96,7 +96,7 @@ export default function DashboardPage() {
       <>
         <PageBackdrop pattern="b" />
         <div className="min-h-screen flex items-center justify-center px-6">
-          <div className="max-w-sm w-full card text-center">
+          <div className="max-w-sm w-full notice text-center">
             <p className="text-xs text-accent font-medium tracking-wide mb-2">Firebase 미연결</p>
             <p className="text-xs text-muted leading-relaxed mb-4">
               .env.local에 Firebase 설정값을 추가하면 대시보드를 사용할 수 있습니다.
@@ -167,7 +167,7 @@ export default function DashboardPage() {
           {eventsLoading ? (
             <p className="text-center text-muted text-sm py-16 animate-pulse">불러오는 중...</p>
           ) : events.length === 0 ? (
-            <div className="card text-center py-16">
+            <div className="notice text-center py-16">
               <p className="text-muted text-sm mb-4">아직 이벤트가 없습니다.</p>
               <Link href="/dashboard/create" className="text-xs tracking-widest uppercase text-accent hover:brightness-110 transition-all">
                 첫 이벤트 만들기 →
