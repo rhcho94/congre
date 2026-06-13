@@ -290,6 +290,17 @@
 - **증상 상세**: 미기록(2026-06-11 시점). 다음 세션에서 운영자 화면 확인 후 切り分け 예정 — 클립 합성/순서/인트로·아웃트로/자막/BGM 중 어느 층인지.
 - **처리 시점**: 다음 세션 1순위.
 
+## BGM이 영상보다 짧으면 중간에 끊김 — soundtrack loop 미지원
+
+- **현황**: 완성 영상이 BGM 길이보다 길면 음악이 끝까지 가서 멈추고 뒷부분 무음. 현재 BGM은 timeline.soundtrack 단일 슬롯(shotstack.ts L242, src/effect/volume만).
+- **원인 확정**: Shotstack soundtrack 속성은 loop 미지원 (공식 확인 — community.shotstack.io/t/video-audio-with-a-soundtrack-and-soundtrack-loop/234 Shotstack 직원 답변 + /t/loop-repeat-a-sound-track/109). loop 하려면 BGM을 timeline.soundtrack에서 빼고 tracks[].clips[] 안 audio asset으로 옮겨야 함.
+- **실측**: BGM 자산 약 3분짜리인데도 100클립 테스트에서 중간에 끊김 → "긴 파일 쓰기"(임시방편 A)로는 큰 이벤트 못 덮음.
+- **해법 B (정석, 권장)**: probe 엔드포인트로 전체 영상 길이 측정 → loop 횟수 = floor(videoDuration / audioDuration) 계산 → 같은 mp3를 audio clip으로 N개 직렬 배치(start 누적, length=audioDuration), 마지막 조각은 나머지 길이. 공식 코드 패턴 있음(/t/loop-repeat-a-sound-track/109 dazzatron 답변).
+- **선결 정찰 (다음 세션 먼저)**: probe 도입은 2026-05-12 폐기 이력 있음 ("WebM duration 미반환 + 비용 미확증", decisions/rendering.md). 현재 클립은 native capture mp4라 WebM 아님 → probe가 mp4에 duration 주는지 재확인 필요. intro/outro 비디오(length:"auto")도 probe로 길이 잡히는지 확인.
+- **회귀 주의**: 렌더 파이프라인(⑦로 5일 고생한 민감 영역) 구조 변경. soundtrack 제거 + probe 호출 추가 → Shotstack API 호출·비용·시간 약간 증가. 신중히.
+- **임시방편 A (코드 무변경)**: BGM mp3를 미리 15분+로 이어붙여 준비. 자산 관리 부담 + 초대형 영상은 여전히 위험. 운영자 자산 작업 영역.
+- **출처**: 2026-06-13 BGM loop 정찰 세션 (채팅 클로드 웹 + CC 코드 정찰).
+
 ## 🟡 남의 호스트 이벤트 복구 경로 부재 — 멀티호스트 운영 갭
 
 - **현황**: Shotstack 대시보드는 계정 전체 가시성이나, 앱은 hostId 격리(render/start hostId!==uid→403, 대시보드 where hostId==uid). 운영자가 다른 호스트의 rendering 갇힌 이벤트를 복구할 경로가 코드에 없음.
