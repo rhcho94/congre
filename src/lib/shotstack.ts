@@ -76,13 +76,13 @@ function makeMediaClip(
   asset: { type: "image" | "video"; src: string };
   start: number | "auto";
   length: number | "auto";
-  fit: "crop";
+  fit: "contain";
 } {
   return {
     asset: { type: mediaType, src },
     start,
     length: mediaType === "image" ? 5 : "auto",
-    fit: "crop",
+    fit: "contain",
   };
 }
 
@@ -140,7 +140,7 @@ export async function createRender(
     asset: { type: "video", src: clip.src, volumeEffect: "fadeInFadeOut" },
     start: "auto",
     length: clip.length,
-    fit: "crop",
+    fit: "contain",
     transition: { in: transitionsIn[i], out: transitionsOut[i] },
     ...(style?.filter ? { filter: style.filter } : {}),
   }));
