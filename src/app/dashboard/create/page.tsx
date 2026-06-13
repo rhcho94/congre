@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { BrandName } from "@/components/BrandName";
-import { LANDING_URL } from "@/lib/constants";
+import AppHeader from "@/components/AppHeader";
 import PageBackdrop from "@/components/PageBackdrop";
 import { useRouter } from "next/navigation";
 import { QRCodeSVG, QRCodeCanvas } from "qrcode.react";
@@ -166,10 +165,7 @@ export default function CreateEventPage() {
     <>
       <PageBackdrop pattern="a" />
       <div className="min-h-screen">
-        <nav className="flex items-center justify-between flex-wrap gap-y-3 px-5 sm:px-8 py-6">
-          <a href={LANDING_URL} className="text-xl tracking-wider hover:opacity-75 transition-opacity duration-200">
-            <BrandName />
-          </a>
+        <AppHeader>
           {view === "form" && (
             <div className="flex items-center gap-3 sm:gap-4">
               <Link href="/guide/host" className="btn-quiet text-xs tracking-widest uppercase whitespace-nowrap">
@@ -183,7 +179,7 @@ export default function CreateEventPage() {
               </Link>
             </div>
           )}
-        </nav>
+        </AppHeader>
 
         <main className="mx-auto max-w-lg px-6 py-16">
           {view === "form" ? (

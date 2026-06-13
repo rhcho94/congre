@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { BrandName } from "@/components/BrandName";
-import { LANDING_URL } from "@/lib/constants";
+import AppHeader from "@/components/AppHeader";
 import PageBackdrop from "@/components/PageBackdrop";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
@@ -251,10 +250,7 @@ export default function MyPage() {
     <>
       <PageBackdrop pattern="b" />
       <div className="min-h-screen">
-        <nav className="flex items-center justify-between flex-wrap gap-y-3 px-5 sm:px-8 py-6">
-          <a href={LANDING_URL} className="text-xl tracking-wider hover:opacity-75 transition-opacity duration-200">
-            <BrandName />
-          </a>
+        <AppHeader>
           <div className="flex items-center gap-3 sm:gap-6">
             <span className="hidden sm:inline text-xs text-muted truncate max-w-[180px]">{user?.email}</span>
             <Link href="/guide/host" className="btn-quiet text-xs tracking-widest uppercase whitespace-nowrap">
@@ -264,7 +260,7 @@ export default function MyPage() {
               로그아웃
             </button>
           </div>
-        </nav>
+        </AppHeader>
 
         <main className="mx-auto max-w-3xl px-6 py-16">
           <div className="mb-10">
