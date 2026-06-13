@@ -2,6 +2,10 @@
 
 > 기능 단위 작업 이력. 최신이 위.
 
+## 2026-06-13
+
+- refactor(ui): AppHeader 공용 컴포넌트 추출 — 대시보드 nav 4곳(dashboard, create, events/[eventId], mypage) 로고+컨테이너 중복 제거. 우측 메뉴는 children 유지. 그룹 B/C 미접촉. (32e1b7a)
+
 ## 2026-06-11
 
 - fix(infra): IAM 정책 shotstack-s3-write에 shotstack-api-v1-output GetObject 추가 — Track ⑦(Shotstack→S3 복사 AccessDenied) 해결
