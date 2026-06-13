@@ -2,6 +2,16 @@
 
 > 랜딩 페이지(congre.kr / www.congre.kr, 정적 HTML `deploy/` 폴더) 디자인·자산·배포 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-06-13 (18) — 랜딩 pricing 무료 클립 수 10→5 표기 통일
+
+- 가격 모델 전환(market-product.md 2026-06-13 (7))에 따라 무료 플랜 클립 수 5개로 변경.
+- 변경 파일 (git 외부 랜딩 트랙):
+  - deploy/pricing.html L283 — "클립 10개까지" → "클립 5개까지"
+  - deploy/Pricing Card.html L162 — 동일
+- 배포: dpl_A8FiJUH9MfnHHnKGAuC4pYXaQCUi (production, READY)
+- 푸터 약관·개인정보 절대경로 4건(app.congre.kr) 보존 확인 (known-issue L8).
+- 미반영(CD 트랙 이월): 4카드 구조 자체는 폐기된 소·중·대 플랜 기준이라, 계산식 단가 모델로의 pricing 재설계는 CD 시안 작업으로 분리(다음 랜딩 사이클).
+
 ## 2026-06-13 — 랜딩 편집 시간 표기 8분 통일
 
 - 기존: 히어로 "5분", 후기 통계 "12분", WHY NOW 카피 "Congre는 5분" 혼재(충돌).
