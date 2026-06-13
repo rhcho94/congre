@@ -4,6 +4,7 @@
 
 ## 2026-06-13
 
+- fix(ui): 게스트 촬영 안내 + 호스트 인트로/아웃트로 안내에서 "가로로 찍으면 양옆이 잘려요" 문구 제거. contain 전환으로 잘림 사라져 사실 불일치였음. "세로 권장" 헤더만 유지.
 - fix(render): 클립 fit `"crop"` → `"contain"` 전환 — 참가자 영상 + 인트로/아웃트로 미디어 모두. 가로 클립이 세로 캔버스에서 양끝 잘리지 않고 비율 유지된 채 전체 노출(위아래 레터박스, 배경 `#0c0b09`). 06-12 cover→crop 전환의 후속.
 - refactor(ui): AppHeader 공용 컴포넌트 추출 — 대시보드 nav 4곳(dashboard, create, events/[eventId], mypage) 로고+컨테이너 중복 제거. 우측 메뉴는 children 유지. 그룹 B/C 미접촉. (32e1b7a)
 

@@ -1047,7 +1047,7 @@ export default function EventDetailPage() {
             <p className="text-xs text-muted mb-5 leading-relaxed" style={{ opacity: 0.7 }}>
               이벤트 영상 시작과 끝에 짧은 동영상, 텍스트, 사진을 추가할 수 있어요. 비워두면 참가자 영상만으로 만들어집니다.
               <br />
-              📱 세로 영상(9:16)을 권장해요. 가로 영상을 올리면 완성본에서 양옆이 잘려요.
+              📱 세로 영상(9:16)을 권장해요.
             </p>
 
             <div className="flex flex-col gap-6">
