@@ -3,6 +3,34 @@
 > known-issues.md에서 분리된 해결 완료 이력. 사고 재발 진단 시 grep 대상.
 > 새 RESOLVED 항목 발생 시 known-issues.md에서 이 파일로 이동.
 
+## ✅ BGM이 영상보다 짧으면 중간에 끊김 — soundtrack loop 미지원 [RESOLVED 2026-06-14]
+
+**해소: 2026-06-14** — timeline.soundtrack(loop 미지원)을 audio clip 0.5s 겹침 직렬 트랙으로 대체. 커밋 0003a1d + 71f1a18.
+
+- 원인: Shotstack soundtrack 속성은 loop 미지원(공식 확인). BGM이 영상보다 짧으면 끝까지 가서 멈추고 뒷부분 무음.
+- 해결: probe로 BGM 길이(D) 측정 → 같은 src를 audio clip으로 start=i*(D-0.5) 직렬 배치, 마지막 조각 length=min(D, totalDuration-start)로 영상 끝에 정확히 맞춤(overflow 없음). soundtrack 키 제거.
+- 이음새: stage 3버전 실측(무fade/transition fade/0.5s 겹침)에서 0.5s 겹침이 가장 깔끔 — 운영자 청취 판정.
+- 회귀 안전: probe 실패 시 기존 soundtrack 방식으로 폴백(끊겨도 무음보단 나음).
+- 검증: stage 실측(8클립 92s + lively BGM 70.5s) done 도달, 70s 지점 loop 이음새 + 92s 끝 정합 + 이름 자막 모두 운영자 청취 통과(2026-06-14). 출력 길이 92.010s(예상 91.976s, delta +0.034s = 1프레임 GOP 정렬, BGM 꼬리 아님).
+- 버그 1건: 최초 구현(0003a1d)에서 audio clip volume을 clip 레벨에 둬 Shotstack 400 거부. asset 레벨로 이동해 해결(71f1a18). stage 분기 테스트로 asset.volume만 수락됨 확인.
+- 관련 결정: decisions/rendering.md 2026-06-14.
+
+**종결 일자**: 2026-06-14
+**종결 사유**: audio clip loop 전환 + stage 실측(loop 이음새·끝 정합·자막) 운영자 청취 통과.
+
+## ✅ 이름 자막 + intro 비디오 동시 사용 시 캡션 미세 어긋남 [RESOLVED 2026-06-14]
+
+**해소: 2026-06-14** — BGM loop 작업에서 도입한 probe로 비디오 intro 길이를 측정해 captionStartOffset에 반영. 커밋 0003a1d.
+
+- 원인: showNames 캡션이 numeric start로 동기되는데, intro 미디어가 비디오면 length:"auto"라 서버가 길이를 몰라 0으로 가정 → 캡션이 intro 비디오 길이만큼 일찍 시작.
+- 해결: render/start에서 비디오 intro/outro presigned URL을 probe로 측정 → createRender intro.mediaDurationSec로 전달 → captionStartOffset 분기에 video 케이스 추가(L180), 측정 길이를 그대로 offset으로 사용.
+- 회귀 안전: probe 실패 시 종전대로 0(과거 동작) 유지.
+- 메모: 이미지 intro(5)·텍스트 intro(3)·intro 없음 케이스는 종전부터 정확했음. 비디오 intro 케이스만 어긋났고 이번에 해소.
+- 관련 결정: decisions/rendering.md 2026-06-14 (라).
+
+**종결 일자**: 2026-06-14
+**종결 사유**: probe 도입으로 비디오 intro 길이 측정 가능해져 캡션 offset 정확화.
+
 ## ✅ 재렌더 완성품 품질 결함 — done 도달하나 결과 영상 비정상 [RESOLVED 2026-06-13]
 
 **해소: 2026-06-13** — 결함 증상이 가로 클립의 비율 찌그러짐/양끝 잘림이었고, fit 값 정정 작업으로 자연 해소(별도 조치 없음).

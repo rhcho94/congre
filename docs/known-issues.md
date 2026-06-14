@@ -209,14 +209,6 @@
 - **현황**: `src/app/api/lead/route.ts`에 honeypot만 구현(L52~57, 검증 전 평가). rate limit은 미구현 — L78에 TODO 주석(`// TODO: rate limit — 봇 트래픽 발견 시 Upstash 격상`). 사양 §5엔 "같은 IP 1분 3회 초과 429"가 있었으나 이번 배포에서 빠짐.
 - **격상 트리거**: 스팸 폼 트래픽 발생 시 → Upstash 등으로 rate limit 도입(사양 §10).
 
-## 이름 자막 + intro 비디오 동시 사용 시 캡션 미세 어긋남
-
-- **현황**: showNames 캡션이 참가자 영상과 numeric start로 동기되는데, intro 미디어가 비디오면 그 길이가 `length:"auto"`라 서버가 모름 → 0으로 가정 → 캡션이 intro 비디오 길이만큼 일찍 시작.
-- **정확한 경우**: 이미지 intro / intro 미디어 없음 / 단일 트랙 intro text.
-- **위치**: `src/lib/shotstack.ts` captionStartOffset 계산.
-- **격상 트리거**: ⑦ 해소 후 렌더 실측에서 어긋남 체감 보고 시. 또는 intro 비디오 + 캡션 동시 사용 호스트 발생 시.
-- **관련**: decisions/rendering.md 2026-06-06 (3), 2026-05-12 probe 폐기 결정.
-
 ## 추첨 1인1표 — dedup 복합키 (uploaderName, uploaderPhone) 미세 구멍
 
 - **현황**: 클립 중복 차단이 (eventId, uploaderName, uploaderPhone) 복합키 → 같은 전화 + 다른 이름은 별개 업로더로 통과 가능. 추첨 풀을 클립=사람으로 쓸 때 한 사람이 이름 바꿔 여러 표.
@@ -283,17 +275,6 @@
 - **현황**: 본 세션 일괄 배포 단계에서 zip 안 파일 구조(Landing v6.html, Pricing Section.html 등 신규 파일명) 점검을 진입 전 안내 못 함. 운영자 dir 점검 박은 후 발견.
 - **패턴**: CD zip은 deploy 폴더 파일을 직접 갈음 X. 별도 파일명으로 저장됨. 이미 학습 룰 #1 박힌 영역이나 본 세션 또 발현.
 - **처리**: 본 세션 핸드오프에 학습 룰 후보로 박음. 다음 세션 본인이 격상 검토.
-
-## BGM이 영상보다 짧으면 중간에 끊김 — soundtrack loop 미지원
-
-- **현황**: 완성 영상이 BGM 길이보다 길면 음악이 끝까지 가서 멈추고 뒷부분 무음. 현재 BGM은 timeline.soundtrack 단일 슬롯(shotstack.ts L242, src/effect/volume만).
-- **원인 확정**: Shotstack soundtrack 속성은 loop 미지원 (공식 확인 — community.shotstack.io/t/video-audio-with-a-soundtrack-and-soundtrack-loop/234 Shotstack 직원 답변 + /t/loop-repeat-a-sound-track/109). loop 하려면 BGM을 timeline.soundtrack에서 빼고 tracks[].clips[] 안 audio asset으로 옮겨야 함.
-- **실측**: BGM 자산 약 3분짜리인데도 100클립 테스트에서 중간에 끊김 → "긴 파일 쓰기"(임시방편 A)로는 큰 이벤트 못 덮음.
-- **해법 B (정석, 권장)**: probe 엔드포인트로 전체 영상 길이 측정 → loop 횟수 = floor(videoDuration / audioDuration) 계산 → 같은 mp3를 audio clip으로 N개 직렬 배치(start 누적, length=audioDuration), 마지막 조각은 나머지 길이. 공식 코드 패턴 있음(/t/loop-repeat-a-sound-track/109 dazzatron 답변).
-- **선결 정찰 (다음 세션 먼저)**: probe 도입은 2026-05-12 폐기 이력 있음 ("WebM duration 미반환 + 비용 미확증", decisions/rendering.md). 현재 클립은 native capture mp4라 WebM 아님 → probe가 mp4에 duration 주는지 재확인 필요. intro/outro 비디오(length:"auto")도 probe로 길이 잡히는지 확인.
-- **회귀 주의**: 렌더 파이프라인(⑦로 5일 고생한 민감 영역) 구조 변경. soundtrack 제거 + probe 호출 추가 → Shotstack API 호출·비용·시간 약간 증가. 신중히.
-- **임시방편 A (코드 무변경)**: BGM mp3를 미리 15분+로 이어붙여 준비. 자산 관리 부담 + 초대형 영상은 여전히 위험. 운영자 자산 작업 영역.
-- **출처**: 2026-06-13 BGM loop 정찰 세션 (채팅 클로드 웹 + CC 코드 정찰).
 
 ## 🟡 남의 호스트 이벤트 복구 경로 부재 — 멀티호스트 운영 갭
 
