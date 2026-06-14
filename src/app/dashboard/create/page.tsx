@@ -9,8 +9,71 @@ import { QRCodeSVG, QRCodeCanvas } from "qrcode.react";
 import { subscribeToAuthChanges, type User } from "@/lib/auth";
 import { type EventPlan } from "@/lib/events";
 import { isFirebaseConfigured, getFirebaseAuth } from "@/lib/firebase";
-import { getPlanMaxClipSeconds } from "@/lib/plans";
-import { Lock } from "lucide-react";
+import { calcPrice } from "@/lib/plans";
+import { ChevronUp, ChevronDown } from "lucide-react";
+
+function Stepper({
+  value, min, max, step, onChange, suffix, disabled,
+}: {
+  value: number;
+  min: number;
+  max: number;
+  step: number;
+  onChange: (v: number) => void;
+  suffix: string;
+  disabled?: boolean;
+}) {
+  const clamp = (v: number) => Math.min(max, Math.max(min, v));
+  const atMax = value >= max;
+  const atMin = value <= min;
+  return (
+    <div
+      className="flex items-center justify-between p-4"
+      style={{
+        background: "var(--surface-2)",
+        border: "1px solid var(--hairline)",
+        borderRadius: "var(--r-sm)",
+      }}
+    >
+      <span className="text-base text-foreground font-medium">
+        {value}
+        <span className="text-sm text-muted ml-1">{suffix}</span>
+      </span>
+      <div className="flex flex-col gap-1">
+        <button
+          type="button"
+          onClick={() => onChange(clamp(value + step))}
+          disabled={disabled || atMax}
+          aria-label="증가"
+          className="flex items-center justify-center transition-opacity disabled:opacity-30"
+          style={{
+            width: 28, height: 22,
+            background: "var(--surface-3)",
+            border: "1px solid var(--hairline)",
+            borderRadius: 4,
+          }}
+        >
+          <ChevronUp size={14} />
+        </button>
+        <button
+          type="button"
+          onClick={() => onChange(clamp(value - step))}
+          disabled={disabled || atMin}
+          aria-label="감소"
+          className="flex items-center justify-center transition-opacity disabled:opacity-30"
+          style={{
+            width: 28, height: 22,
+            background: "var(--surface-3)",
+            border: "1px solid var(--hairline)",
+            borderRadius: 4,
+          }}
+        >
+          <ChevronDown size={14} />
+        </button>
+      </div>
+    </div>
+  );
+}
 
 const planOptions: { value: EventPlan; label: string; desc: string }[] = [
   { value: "free", label: "무료", desc: "최대 5클립 · 10초 · 워터마크" },
@@ -36,7 +99,8 @@ export default function CreateEventPage() {
     title: "",
     date: "",
     plan: "free" as EventPlan,
-    maxClipSeconds: 10,
+    maxClipSeconds: 15,    // 유료 스텝퍼 기본값(첫 paid 선택 시 표시). 무료는 POST에 10 고정 전송.
+    maxClips: 30,          // 유료 스텝퍼 기본값(첫 paid 선택 시 표시).
     organizerEmail: "",
     organizerPhone: "",
   });
@@ -80,9 +144,10 @@ export default function CreateEventPage() {
           title: form.title,
           date: form.date,
           plan: form.plan,
-          maxClipSeconds: form.maxClipSeconds,
+          maxClipSeconds: form.plan === "free" ? 10 : form.maxClipSeconds,
           organizerEmail: form.organizerEmail,
           organizerPhone: form.organizerPhone,
+          ...(form.plan === "paid" ? { maxClips: form.maxClips } : {}),
         }),
       });
 
@@ -230,15 +295,7 @@ export default function CreateEventPage() {
                           name="plan"
                           value={opt.value}
                           checked={form.plan === opt.value}
-                          onChange={() => {
-                            const newPlan = opt.value;
-                            const maxAllowed = getPlanMaxClipSeconds(newPlan);
-                            setForm({
-                              ...form,
-                              plan: newPlan,
-                              maxClipSeconds: form.maxClipSeconds > maxAllowed ? maxAllowed : form.maxClipSeconds,
-                            });
-                          }}
+                          onChange={() => setForm({ ...form, plan: opt.value })}
                           disabled={submitting}
                           className="sr-only"
                         />
@@ -249,41 +306,74 @@ export default function CreateEventPage() {
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-1.5">
-                  <span className="eyebrow">영상 최대 길이</span>
-                  <div className="grid grid-cols-3 gap-2">
-                    {([5, 10, 15, 20, 25, 30] as const).map((sec) => {
-                      const isLocked = sec > getPlanMaxClipSeconds(form.plan);
-                      return (
-                        <label
-                          key={sec}
-                          className={`relative flex items-center justify-center p-4 transition-all duration-150 ${
-                            isLocked ? "opacity-40 cursor-not-allowed" : "cursor-pointer"
-                          }`}
-                          style={{
-                            background: form.maxClipSeconds === sec && !isLocked ? "var(--surface-3)" : "var(--surface-2)",
-                            border: `1px solid ${form.maxClipSeconds === sec && !isLocked ? "var(--accent)" : "var(--hairline)"}`,
-                            borderRadius: "var(--r-sm)",
-                          }}
-                        >
-                          <input
-                            type="radio"
-                            name="maxClipSeconds"
-                            value={sec}
-                            checked={form.maxClipSeconds === sec}
-                            onChange={() => setForm({ ...form, maxClipSeconds: sec })}
-                            disabled={submitting || isLocked}
-                            className="sr-only"
-                          />
-                          <span className="text-sm text-foreground font-medium">{sec}초</span>
-                          {isLocked && (
-                            <Lock size={12} className="absolute top-1.5 right-1.5 text-muted" />
-                          )}
-                        </label>
-                      );
-                    })}
+                {form.plan === "free" ? (
+                  <div className="flex flex-col gap-1.5">
+                    <span className="eyebrow">갯수와 길이</span>
+                    <div
+                      className="p-4 flex flex-col gap-1.5"
+                      style={{
+                        background: "var(--surface-2)",
+                        border: "1px solid var(--hairline)",
+                        borderRadius: "var(--r-sm)",
+                      }}
+                    >
+                      <p className="text-sm text-foreground">
+                        <strong>5개</strong> × <strong>10초</strong> 고정
+                      </p>
+                      <p className="text-xs text-muted leading-relaxed">
+                        무료 플랜은 클립 5개, 각 10초까지 받을 수 있어요. 완성본 우하단에 워터마크가 들어가요.
+                      </p>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <>
+                    <div className="flex flex-col gap-1.5">
+                      <span className="eyebrow">영상 갯수 (정원)</span>
+                      <Stepper
+                        value={form.maxClips}
+                        min={10}
+                        max={200}
+                        step={1}
+                        onChange={(v) => setForm({ ...form, maxClips: v })}
+                        suffix="개"
+                        disabled={submitting}
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <span className="eyebrow">영상 길이</span>
+                      <Stepper
+                        value={form.maxClipSeconds}
+                        min={10}
+                        max={100}
+                        step={5}
+                        onChange={(v) => setForm({ ...form, maxClipSeconds: v })}
+                        suffix="초"
+                        disabled={submitting}
+                      />
+                    </div>
+
+                    <div
+                      className="p-4 flex flex-col gap-1.5"
+                      style={{
+                        background: "var(--surface-2)",
+                        border: "1px solid var(--hairline)",
+                        borderRadius: "var(--r-sm)",
+                      }}
+                    >
+                      <p className="text-sm text-foreground leading-relaxed">
+                        정원이 다 차면 최대{" "}
+                        <strong style={{ color: "var(--accent)" }}>
+                          {calcPrice(form.maxClipSeconds, form.maxClips).toLocaleString("ko-KR")}원
+                        </strong>
+                        , 실제 결제는 마감 시 올라온 영상 수로 계산돼요 (최소 10,000원).
+                      </p>
+                      <p className="text-xs text-muted">
+                        결제는 이벤트를 마감할 때 진행돼요. 지금은 결제하지 않습니다.
+                      </p>
+                    </div>
+                  </>
+                )}
 
                 <div className="pt-2" style={{ borderTop: "1px solid var(--hairline)" }}>
                   <p className="eyebrow mb-4 mt-4">알림 수신 정보</p>

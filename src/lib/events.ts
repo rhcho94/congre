@@ -30,6 +30,7 @@ export interface CongreEvent {
   outroText?: string;
   outroMediaKey?: string;
   outroMediaType?: "image" | "video";
+  maxClips?: number;             // 유료 정원 — 호스트 설정, 클립 업로드 차단 기준
 }
 
 export interface Clip {

@@ -69,8 +69,9 @@ export async function POST(request: NextRequest) {
     introText?: string;
     outroText?: string;
     maxClipSeconds?: number;
+    maxClips?: number;
   };
-  const { title, date, plan, organizerEmail, organizerPhone, maxClipSeconds } = body;
+  const { title, date, plan, organizerEmail, organizerPhone, maxClipSeconds, maxClips } = body;
 
   if (!title || !date || !plan || !organizerEmail || !organizerPhone) {
     return Response.json({ error: "MISSING_FIELDS" }, { status: 400 });
@@ -80,10 +81,27 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "INVALID_PLAN" }, { status: 400 });
   }
 
+  if (plan === "paid") {
+    if (
+      typeof maxClips !== "number" ||
+      !Number.isInteger(maxClips) ||
+      maxClips < 10 ||
+      maxClips > 200
+    ) {
+      return Response.json({ error: "INVALID_MAX_CLIPS" }, { status: 400 });
+    }
+  }
+
   const maxAllowed = getPlanMaxClipSeconds(plan as PlanId);
   if (
     maxClipSeconds !== undefined &&
-    (typeof maxClipSeconds !== "number" || !Number.isInteger(maxClipSeconds) || maxClipSeconds < 5 || maxClipSeconds > maxAllowed)
+    (
+      typeof maxClipSeconds !== "number" ||
+      !Number.isInteger(maxClipSeconds) ||
+      maxClipSeconds < 10 ||
+      maxClipSeconds > maxAllowed ||
+      maxClipSeconds % 5 !== 0
+    )
   ) {
     return Response.json({ code: "INVALID_CLIP_SECONDS", plan, maxAllowed }, { status: 400 });
   }
@@ -109,6 +127,7 @@ export async function POST(request: NextRequest) {
     ...(body.introText !== undefined ? { introText: body.introText } : {}),
     ...(body.outroText !== undefined ? { outroText: body.outroText } : {}),
     ...(maxClipSeconds !== undefined ? { maxClipSeconds } : {}),
+    ...(plan === "paid" ? { maxClips } : {}),
   });
 
   const eventId = ref.id;
@@ -119,5 +138,9 @@ export async function POST(request: NextRequest) {
     console.error("[api/events] notifyEventCreated error:", err)
   );
 
-  return Response.json({ eventId, sessionToken });
+  return Response.json({
+    eventId,
+    sessionToken,
+    ...(plan === "paid" ? { maxClips } : {}),
+  });
 }
