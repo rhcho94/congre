@@ -309,10 +309,9 @@ export async function createRender(
       const remaining = totalDuration - s;
       if (remaining <= 0) break;
       bgmClips.push({
-        asset: { type: "audio", src: bgmSrc },
+        asset: { type: "audio", src: bgmSrc, volume: 0.1 },
         start: +s.toFixed(3),
         length: +Math.min(D, remaining).toFixed(3),
-        volume: 0.1,
       });
       s += step;
     }
