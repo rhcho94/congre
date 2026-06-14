@@ -2,6 +2,10 @@
 
 > 기능 단위 작업 이력. 최신이 위.
 
+## 2026-06-14
+
+- feat(render): BGM 끊김(soundtrack loop 미지원) 해결 + 캡션 어긋남 동시 수정. timeline.soundtrack 단일 슬롯을 audio clip 0.5s 겹침 직렬 트랙으로 대체. probe(`/{stage|v1}/probe`)로 BGM·비디오 intro/outro 길이 측정 후 totalDuration = clipsTotal+introLen+outroLen 산출, 그 끝까지 N개 조각 직렬 배치. 비디오 intro 길이를 알게 되어 `captionStartOffset` 분기에 video 케이스 추가(이름 자막 어긋남 해소). probe 실패 시 기존 soundtrack 동작으로 폴백(회귀 안전). 변경: `src/lib/shotstack.ts`(probeDurationSec export 추가, createRender 시그니처에 mediaDurationSec/bgmDurationSec 옵션 추가, soundtrack 블록 교체, captionStartOffset 분기 확장), `src/app/api/render/start/route.ts`(probe 3개 병렬 호출 + createRender 인자 전달). 결정: decisions/rendering.md 2026-06-14.
+
 ## 2026-06-13
 
 - feat(plans): 무료 플랜 클립 수 10→5 (`PLAN_CLIP_LIMITS.free`). create 폼 desc·guide/host 플랜 문구 동기화. guide의 폐기된 소/중/대 플랜 줄은 계산식 안내로 교체. 가격 모델 전환은 market-product.md 2026-06-13 (7).

@@ -2,6 +2,57 @@
 
 > 영상 편집·Shotstack·클립·재렌더 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-06-14 — BGM loop 트랙 전환(soundtrack 폐기) + probe 도입 + 캡션 어긋남 동시 수정
+
+### 결정
+
+(가) BGM을 `timeline.soundtrack`(loop 미지원)에서 **audio clip 직렬 트랙**으로 옮긴다. 같은 src를 0.5s씩 겹쳐 배치(stage 3버전 실측에서 0.5s 겹침이 이음새 가장 깔끔). 마지막 조각 length는 `min(D, totalDuration - start)`로 잘라 영상 끝에 정확히 맞춘다(overflow 금지).
+
+(나) **probe 도입** (`/{stage|v1}/probe/{URL인코딩}`, 비용 항목 없음). 호출 대상:
+- BGM presigned URL — 항상.
+- 비디오 intro/outro presigned URL — 미디어가 비디오일 때만.
+- 이미지·텍스트·참가자 클립은 길이를 이미 알고 있으므로 probe 안 함.
+
+(다) 전체 영상 길이 계산: `totalDuration = clipsTotal + introLen + outroLen`
+- introLen: image=5, video=mediaDurationSec, text 단독=3, 없음=0
+- outroLen: 동일 규칙 + (dual track에서 outro.text 있으면 +3 더함)
+- 이 공식이 mediaClips 트랙의 start="auto" 누적 끝과 일치(검산 완료).
+
+(라) **캡션 어긋남 동시 수정**: `captionStartOffset` 분기에 video intro 케이스 추가 — `intro.mediaDurationSec`를 그대로 캡션 시작 offset으로 사용. known-issues "이름 자막 + intro 비디오 캡션 어긋남" 사항 자연 해소.
+
+(마) **회귀 안전 폴백**: 다음 중 하나라도 충족 안 되면 loop 배치 폐기, 기존 `timeline.soundtrack` 방식 유지:
+- BGM probe 실패(bgmDurationSec ≤ OVERLAP 또는 누락)
+- 비디오 intro/outro 미디어가 있는데 그 probe 실패(mediaDurationSec 누락)
+
+→ "끊겨도 무음보단 나음" + 미확실 길이로 loop 잘못 끊는 위험 회피.
+
+### 변경 파일
+
+- `src/lib/shotstack.ts`
+  - probeBaseUrl 상수 + `probeDurationSec(url): Promise<number|null>` export
+  - createRender 시그니처 — intro/outro `mediaDurationSec?: number`, style `bgmDurationSec?: number` 추가
+  - captionStartOffset 분기 — video intro 케이스 추가
+  - timeline 구성 — soundtrack 단일 슬롯 → 조건부(canLoopBgm)로 audio 트랙 push vs soundtrack 폴백
+- `src/app/api/render/start/route.ts`
+  - `probeDurationSec` import
+  - presigned 3개 직후 Promise.all로 probe 3개 병렬 호출
+  - createRender 호출에 mediaDurationSec / bgmDurationSec 인자 전달
+
+### 검증 근거
+
+- stage 실측 4건 (2026-06-13~14 정찰 세션):
+  - 첫 테스트(5s 칼질 4+overflow): 같은 src 직렬 placement 동작 + 마지막 조각 overflow는 영상도 함께 연장됨을 확인 → 마지막 조각 length 잘림 의무화.
+  - V1 자연배치 무fade / V2 clip-level `transition:fade` / V3 0.5s 겹침: 셋 다 done. probe duration 모두 34.538s (영상 안 늘어남 확인). 운영자 청취 판정에서 V3(0.5s 겹침)이 이음새 가장 깔끔.
+  - presigned S3 URL을 그대로 probe에 넘겨 200 + duration 정상 수신 확인 (audio/lively/lively_02.mp3 = 70.530625s).
+- build 통과, lint errors 11 (baseline 11, delta 0).
+
+### 관련 known-issues
+
+- "BGM이 영상보다 짧으면 중간에 끊김 — soundtrack loop 미지원" → 해소 후보(실측 통과 시 RESOLVED 이동 예정).
+- "이름 자막 + intro 비디오 동시 사용 시 캡션 미세 어긋남" → 해소 후보(probe 성공 케이스).
+
+---
+
 ## 2026-06-13 — 클립 fit "crop" → "contain" 전환 (가로/세로 혼재 클립 전체 노출)
 
 ### 결정

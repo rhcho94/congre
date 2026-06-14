@@ -1,7 +1,7 @@
 import { GetObjectCommand, ListObjectsV2Command, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
-import { createRender } from "@/lib/shotstack";
+import { createRender, probeDurationSec } from "@/lib/shotstack";
 import { getAdminDb } from "@/lib/firebase-admin";
 import { verifyIdToken } from "@/lib/auth-server";
 import { notifyRenderStarted } from "@/lib/notifications/scenarios/render-started";
@@ -154,25 +154,32 @@ export async function POST(request: NextRequest) {
       )
     : undefined;
 
+  const [bgmDurationSec, introMediaDurationSec, outroMediaDurationSec] = await Promise.all([
+    bgmSrc ? probeDurationSec(bgmSrc) : Promise.resolve(null),
+    introMediaUrl && introMediaType === "video" ? probeDurationSec(introMediaUrl) : Promise.resolve(null),
+    outroMediaUrl && outroMediaType === "video" ? probeDurationSec(outroMediaUrl) : Promise.resolve(null),
+  ]);
+
   let renderId: string;
   try {
     renderId = await createRender(
       clipsWithLength,
       (introText || introMediaUrl)
-        ? { text: introText, mediaUrl: introMediaUrl, mediaType: introMediaType }
+        ? { text: introText, mediaUrl: introMediaUrl, mediaType: introMediaType, mediaDurationSec: introMediaDurationSec ?? undefined }
         : undefined,
       (outroText || outroMediaUrl)
-        ? { text: outroText, mediaUrl: outroMediaUrl, mediaType: outroMediaType }
+        ? { text: outroText, mediaUrl: outroMediaUrl, mediaType: outroMediaType, mediaDurationSec: outroMediaDurationSec ?? undefined }
         : undefined,
       plan,
       (() => {
-        const style: { filter?: string; transition?: "soft" | "dynamic"; showNames?: boolean; bgmSrc?: string } = {};
+        const style: { filter?: string; transition?: "soft" | "dynamic"; showNames?: boolean; bgmSrc?: string; bgmDurationSec?: number } = {};
         if (videoFilter) style.filter = videoFilter;
         if (videoTransition === "soft" || videoTransition === "dynamic") {
           style.transition = videoTransition;
         }
         if (showNames === true) style.showNames = true;
         if (bgmSrc) style.bgmSrc = bgmSrc;
+        if (bgmDurationSec) style.bgmDurationSec = bgmDurationSec;
         return Object.keys(style).length > 0 ? style : undefined;
       })(),
     );

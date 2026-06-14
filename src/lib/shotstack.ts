@@ -20,6 +20,11 @@ const baseUrl =
     ? "https://api.shotstack.io/edit/v1"
     : "https://api.shotstack.io/edit/stage";
 
+const probeBaseUrl =
+  shotstackEnv === "production"
+    ? "https://api.shotstack.io/v1"
+    : "https://api.shotstack.io/stage";
+
 const SHOTSTACK_API_KEY = process.env.SHOTSTACK_API_KEY ?? "";
 
 console.log(`[Shotstack] env=${shotstackEnv}`);
@@ -29,6 +34,28 @@ function assertApiKey(): void {
     throw new Error(
       `SHOTSTACK_API_KEY is not set. Check your .env.local or Vercel environment variables. (current SHOTSTACK_ENV: ${shotstackEnv})`
     );
+  }
+}
+
+export async function probeDurationSec(url: string): Promise<number | null> {
+  assertApiKey();
+  try {
+    const res = await fetch(`${probeBaseUrl}/probe/${encodeURIComponent(url)}`, {
+      headers: { "x-api-key": SHOTSTACK_API_KEY },
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      console.error("[shotstack] probe non-OK:", res.status, text.slice(0, 200));
+      return null;
+    }
+    const json = await res.json() as { success?: boolean; response?: { metadata?: { format?: { duration?: string | number } } } };
+    if (!json.success) return null;
+    const dur = json.response?.metadata?.format?.duration;
+    const n = typeof dur === "number" ? dur : (typeof dur === "string" ? Number(dur) : NaN);
+    return Number.isFinite(n) && n > 0 ? n : null;
+  } catch (err) {
+    console.error("[shotstack] probe failed:", url.slice(0, 100), err);
+    return null;
   }
 }
 
@@ -108,10 +135,10 @@ function pickSequence(pool: readonly string[], count: number): string[] {
 
 export async function createRender(
   clips: Array<{ src: string; length: number; name?: string }>,
-  intro?: { text?: string; mediaUrl?: string; mediaType?: "image" | "video" },
-  outro?: { text?: string; mediaUrl?: string; mediaType?: "image" | "video" },
+  intro?: { text?: string; mediaUrl?: string; mediaType?: "image" | "video"; mediaDurationSec?: number },
+  outro?: { text?: string; mediaUrl?: string; mediaType?: "image" | "video"; mediaDurationSec?: number },
   plan?: PlanId,
-  style?: { filter?: string; transition?: TransitionStyle; showNames?: boolean; bgmSrc?: string },
+  style?: { filter?: string; transition?: TransitionStyle; showNames?: boolean; bgmSrc?: string; bgmDurationSec?: number },
 ): Promise<string> {
   assertApiKey();
 
@@ -146,10 +173,11 @@ export async function createRender(
   }));
 
   // 이름 자막 — 영상과 같은 start·length로 별도 텍스트 트랙 또는 textClips에 push.
-  // intro 비디오는 길이 미상 → 0으로 가정, 미세 어긋남은 알려진 한계.
+  // intro 비디오 길이는 probe로 측정해 mediaDurationSec로 받음. probe 실패 시 0(과거 동작).
   let captionStartOffset = 0;
   if (useDualTrack) {
     if (hasIntroMedia && intro!.mediaType === "image") captionStartOffset = 5;
+    else if (hasIntroMedia && intro!.mediaType === "video" && intro!.mediaDurationSec) captionStartOffset = intro!.mediaDurationSec;
   } else if (intro?.text) {
     captionStartOffset = 3;
   }
@@ -237,16 +265,65 @@ export async function createRender(
     });
   }
 
-  const timeline = {
+  const clipsTotal = clips.reduce((s, c) => s + c.length, 0);
+  let introLen = 0;
+  let outroLen = 0;
+  if (useDualTrack) {
+    if (hasIntroMedia) {
+      introLen = intro!.mediaType === "image" ? 5 : (intro!.mediaDurationSec ?? 0);
+    }
+    if (hasOutroMedia) {
+      outroLen = outro!.mediaType === "image" ? 5 : (outro!.mediaDurationSec ?? 0);
+    }
+    if (outro?.text) outroLen += 3;
+  } else {
+    if (intro?.text) introLen = 3;
+    if (outro?.text) outroLen = 3;
+  }
+  const totalDuration = clipsTotal + introLen + outroLen;
+
+  const OVERLAP = 0.5;
+  const bgmSrc = style?.bgmSrc;
+  const bgmDur = style?.bgmDurationSec;
+  const introVideoOk = !hasIntroMedia || intro!.mediaType !== "video" || (intro!.mediaDurationSec ?? 0) > 0;
+  const outroVideoOk = !hasOutroMedia || outro!.mediaType !== "video" || (outro!.mediaDurationSec ?? 0) > 0;
+  const canLoopBgm = !!bgmSrc && !!bgmDur && bgmDur > OVERLAP && introVideoOk && outroVideoOk;
+
+  const timeline: {
+    background: string;
+    tracks: Array<{ clips: unknown[] }>;
+    fonts?: Array<{ src: string }>;
+    soundtrack?: { src: string; effect: string; volume: number };
+  } = {
     background: "#0c0b09",
-    soundtrack: {
-      src: style?.bgmSrc ?? `${appUrl}/audio/bgm.mp3`,
-      effect: "fadeInFadeOut",
-      volume: 0.1,
-    },
     tracks,
     ...(fonts.length > 0 ? { fonts } : {}),
   };
+
+  if (canLoopBgm) {
+    const D = bgmDur!;
+    const step = D - OVERLAP;
+    const bgmClips: unknown[] = [];
+    let s = 0;
+    while (s < totalDuration) {
+      const remaining = totalDuration - s;
+      if (remaining <= 0) break;
+      bgmClips.push({
+        asset: { type: "audio", src: bgmSrc },
+        start: +s.toFixed(3),
+        length: +Math.min(D, remaining).toFixed(3),
+        volume: 0.1,
+      });
+      s += step;
+    }
+    timeline.tracks.push({ clips: bgmClips });
+  } else {
+    timeline.soundtrack = {
+      src: bgmSrc ?? `${appUrl}/audio/bgm.mp3`,
+      effect: "fadeInFadeOut",
+      volume: 0.1,
+    };
+  }
 
   const body = {
     timeline,
