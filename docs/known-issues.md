@@ -226,6 +226,14 @@
 - **처리 후보**: 클라이언트 measureDuration에서 maxClipSeconds 초과 시 경고·재촬영 유도, 또는 업로드 전 클라이언트 trim. 현 단계 안내 문구(촬영 전 "최대 N초")로 충분 판단, YAGNI 보류.
 - **발견 경위**: 2026-06-12 게스트/호스트 촬영 안내 정찰 (다) 항목.
 
+## 유료 이벤트 maxClips 빈 값 → cap=0 전체 업로드 차단
+
+- **현황**: `src/app/api/clips/route.ts` cap 로직에서 유료(paid) 이벤트인데 maxClips 필드가 비어 있으면 cap=0으로 계산돼 업로드가 전부 차단됨.
+- **현재 무해 이유**: 2026-06-14 신규 생성 API가 paid에 maxClips를 필수로 받아 빈 값이 사실상 안 생김 + 옛 데이터(plan=small/medium/large)는 운영자가 삭제 예정.
+- **격상 트리거**: "유료인데 아무도 클립을 못 올린다" 증상 발생 시 → maxClips 필드가 빈 것이 1순위 의심.
+- **위치**: `src/app/api/clips/route.ts` cap 로직.
+- **출처**: 2026-06-14 결제 트랙 단계 1·2 세션.
+
 ## 랜딩 페이지 영역 (L4~L5, L7)
 
 ### L4. 후기 섹션 실사진/아바타 미적용
@@ -254,6 +262,15 @@
 - **근본 해소 후보**: (a) CD 소스(랜딩 원본)에 이 절대경로를 반영해 zip부터 올바르게, (b) 랜딩 `deploy/`에 `terms.html`·`privacy.html` 추가해 자기 도메인 유지. 미정.
 - **관련 결정**: decisions/landing.md 2026-05-31 (12).
 - **L 번호 부여 메모**: 사양 원안은 "L7"이었으나 L7(pricing.html Pretendard) 기존 점유 → 전역 일련번호 룰(CLAUDE.md 학습 룰 #2)에 따라 L8 부여.
+
+### L9. 랜딩 pricing.html 계산기 섹션 = git 외부 직접 수정분 (CD zip 덮어쓰기 주의)
+
+- **현황**: 2026-06-14 결제 트랙 단계 1·2 세션에서 deploy/pricing.html을 옛 4단 고정가 → 계산기 디자인으로 교체·배포(dpl_AgrWnc7K4kS5ebB2Ygx1fff8g2sX, www.congre.kr 별칭). 랜딩은 git 외부 트랙이라 이 변경은 git에 없고 Vercel 배포본에만 존재.
+- **위험**: 다음에 CD에서 랜딩 zip을 새로 뽑아 풀어덮으면 계산기 섹션째 사라짐. CD zip에는 이 수정이 없음 (L8 푸터 건과 동일 트랙).
+- **다음 CD 랜딩 작업 시 의무**: zip 적용 후 pricing.html 계산기 섹션 보존 여부 확인. 사라졌으면 백업에서 재적용.
+- **백업**: pricing_pre_calc_backup.html(4단 시절), pricing_pre_mobile_backup.html(모바일 수정 직전).
+- **관련**: known-issues L8, 핸드오프 2026-06-14-payment-track-and-pricing-redesign.md.
+- **L 번호 부여 메모**: L8 다음 전역 일련번호(CLAUDE.md 학습 룰 #2)에 따라 L9 부여.
 
 ## 유료 플랜 실수치 (small/medium/large 클립 길이·수 상한) 미정
 
