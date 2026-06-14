@@ -1,10 +1,8 @@
-export type PlanId = "free" | "small" | "medium" | "large";
+export type PlanId = "free" | "paid";
 
 export const PLAN_CLIP_LIMITS: Record<PlanId, number> = {
   free: 5,
-  small: 50,
-  medium: 200,
-  large: 5000,
+  paid: 200,
 };
 
 export function getPlanClipLimit(plan: PlanId): number {
@@ -13,11 +11,13 @@ export function getPlanClipLimit(plan: PlanId): number {
 
 export const PLAN_MAX_CLIP_SECONDS: Record<PlanId, number> = {
   free: 10,
-  small: 30,
-  medium: 30,
-  large: 30,
+  paid: 100,
 };
 
 export function getPlanMaxClipSeconds(plan: PlanId): number {
   return PLAN_MAX_CLIP_SECONDS[plan];
+}
+
+export function calcPrice(maxClipSeconds: number, clipCount: number): number {
+  return Math.max(maxClipSeconds * clipCount * 100, 10000);
 }

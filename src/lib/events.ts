@@ -4,7 +4,7 @@ import {
 } from "firebase/firestore";
 import { getFirebaseFirestore, isFirebaseConfigured } from "./firebase";
 
-export type EventPlan = "free" | "small" | "medium" | "large";
+export type EventPlan = "free" | "paid";
 export type EventStatus = "open" | "closed" | "rendering" | "done";
 
 export interface CongreEvent {

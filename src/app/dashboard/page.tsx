@@ -19,7 +19,7 @@ interface ApiEvent {
 }
 
 const planLabels: Record<EventPlan, string> = {
-  free: "무료", small: "소형", medium: "중형", large: "대형",
+  free: "무료", paid: "유료",
 };
 
 const statusLabels: Record<EventStatus, string> = {

@@ -13,10 +13,8 @@ import { getPlanMaxClipSeconds } from "@/lib/plans";
 import { Lock } from "lucide-react";
 
 const planOptions: { value: EventPlan; label: string; desc: string }[] = [
-  { value: "free",   label: "무료", desc: "최대 5클립 · 10초" },
-  { value: "small",  label: "소형", desc: "최대 50클립 · 30초" },
-  { value: "medium", label: "중형", desc: "최대 200클립 · 30초" },
-  { value: "large",  label: "대형", desc: "무제한 · 30초" },
+  { value: "free", label: "무료", desc: "최대 5클립 · 10초 · 워터마크" },
+  { value: "paid", label: "유료", desc: "마감 시 사용량만큼 결제" },
 ];
 
 type View = "form" | "created";
