@@ -32,7 +32,7 @@ export default function GuidePage() {
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {/* 카드 A — 호스트 */}
-            <div className="card flex flex-col gap-5">
+            <div className="glass-panel flex flex-col gap-5">
               <span className="eyebrow">HOST · 6 STEPS</span>
               <h2 className="display text-xl">행사 주최자라면</h2>
               <p className="text-sm leading-relaxed text-muted">
@@ -44,7 +44,7 @@ export default function GuidePage() {
             </div>
 
             {/* 카드 B — 참가자 */}
-            <div className="card flex flex-col gap-5">
+            <div className="glass-panel flex flex-col gap-5">
               <span className="eyebrow">GUEST · 4 STEPS</span>
               <h2 className="display text-xl">행사 참가자라면</h2>
               <p className="text-sm leading-relaxed text-muted">

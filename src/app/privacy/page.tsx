@@ -25,7 +25,7 @@ export default function PrivacyPage() {
 
           <div className="hr mb-10" />
 
-          <div className="card flex flex-col gap-12 text-sm leading-relaxed text-muted">
+          <div className="glass-panel flex flex-col gap-12 text-sm leading-relaxed text-muted">
           <section className="flex flex-col gap-2">
             <p>
               Congre(이하 "회사"라 함)는 「개인정보 보호법」 제30조에 따라 정보주체의 개인정보를 보호하고 이와 관련한 고충을 신속하고 원활하게 처리할 수 있도록 다음과 같이 개인정보 처리방침을 수립·공개합니다.

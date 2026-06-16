@@ -26,7 +26,7 @@ export default function GuideHostPage() {
 
           <div className="hr mb-10" />
 
-          <div className="card flex flex-col gap-14 text-sm leading-relaxed text-muted">
+          <div className="glass-panel flex flex-col gap-14 text-sm leading-relaxed text-muted">
 
           {/* 시작하기 전에 */}
           <section className="flex flex-col gap-4">

@@ -26,7 +26,7 @@ export default function TermsPage() {
 
           <div className="hr mb-10" />
 
-          <div className="card flex flex-col gap-12 text-sm leading-relaxed text-muted">
+          <div className="glass-panel flex flex-col gap-12 text-sm leading-relaxed text-muted">
           {/* 제1장 총칙 */}
           <section className="flex flex-col gap-4">
             <h2 className="text-base font-medium text-foreground tracking-wide">제1장 총칙</h2>
