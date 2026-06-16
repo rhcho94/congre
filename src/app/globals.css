@@ -290,7 +290,7 @@ body::after {
 
 /* 글래스 패널 — 흐르는 배경 위 가독성 확보용 공용 카드. create 등의 인라인 glassPanel과 동일 사양을 클래스화. */
 .glass-panel {
-  background: color-mix(in srgb, var(--surface-1) 88%, transparent);
+  background: color-mix(in srgb, var(--surface-1) 78%, transparent);
   backdrop-filter: blur(22px) saturate(140%);
   -webkit-backdrop-filter: blur(22px) saturate(140%);
   border: 1px solid var(--hairline-strong);
