@@ -179,7 +179,7 @@ export default function DashboardPage() {
                 <Link
                   key={event.id}
                   href={`/dashboard/events/${event.id}`}
-                  className="row flex items-center justify-between"
+                  className="glass-panel flex items-center justify-between"
                 >
                   <div className="flex flex-col gap-1 min-w-0 flex-1">
                     <span className="text-sm text-foreground font-medium truncate">
