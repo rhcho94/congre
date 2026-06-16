@@ -284,7 +284,7 @@ export default function MyPage() {
               )}
             </div>
           ) : (
-            <div className="card flex items-center justify-between mb-8">
+            <div className="glass-panel flex items-center justify-between mb-8">
               <div className="flex flex-col gap-1">
                 <span className="text-sm text-foreground">진행 중 {inProgress}개</span>
                 <span className="text-sm text-muted">완료된 {doneCount}개</span>
@@ -295,7 +295,7 @@ export default function MyPage() {
             </div>
           )}
 
-          <div className="card mb-10">
+          <div className="glass-panel mb-10">
             <p className="eyebrow mb-6">비밀번호</p>
             {pwMode ? (
               <div className="flex flex-col gap-6">
@@ -353,7 +353,7 @@ export default function MyPage() {
             )}
           </div>
 
-          <div className="card mb-10">
+          <div className="glass-panel mb-10">
             <p className="eyebrow mb-6">회원 탈퇴</p>
             {inProgress > 0 ? (
               <p className="text-sm text-muted leading-relaxed">
@@ -417,7 +417,7 @@ export default function MyPage() {
             )}
           </div>
 
-          <div className="card">
+          <div className="glass-panel">
             <p className="eyebrow mb-6">프로필</p>
             {userDocLoading ? (
               <p className="text-muted text-sm animate-pulse">불러오는 중...</p>
