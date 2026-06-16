@@ -97,14 +97,34 @@
 }
 
 body {
-  background: var(--bg);
+  background: transparent;
   color: var(--text);
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
 }
 
-/* Film grain overlay — appears on every page */
+/* 전역 그라데이션 배경 (라이트 화면 베이스). 다크 화면은 내부 PageBackdrop 사진(z:-10)이 이 레이어(z:-11)를 덮음. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -11;
+  background: linear-gradient(-45deg, #b9a8e6, #98c6ea, #f0a8d0, #a0ddc8, #e6d68f, #b9a8e6);
+  background-size: 400% 400%;
+  animation: bgflow 14s ease infinite;
+}
+@keyframes bgflow {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body::before { animation: none; }
+}
+
+/* Film grain overlay — 라이트 베이스에서 거슬려 전 화면 OFF. 다크 화면 grain 유지 여부는 실측 영역. */
 body::after {
+  display: none;
   content: '';
   position: fixed;
   inset: -50%;

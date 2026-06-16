@@ -15,6 +15,8 @@ const FIRST_IMPRESSION: Record<Pattern, boolean> = {
 };
 
 export default function PageBackdrop({ pattern }: { pattern: Pattern }) {
+  if (pattern !== "e") return null;
+
   const firstImpression = FIRST_IMPRESSION[pattern];
 
   return (
