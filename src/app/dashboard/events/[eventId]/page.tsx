@@ -913,7 +913,7 @@ export default function EventDetailPage() {
                     {lotteryWinners.map((w, i) => (
                       <div
                         key={w.id}
-                        className="row flex items-center gap-3"
+                        className="glass-panel flex items-center gap-3"
                         style={{ padding: "8px 12px" }}
                       >
                         <span className="text-xs text-muted tabular-nums shrink-0">
@@ -1014,7 +1014,7 @@ export default function EventDetailPage() {
           {event.status === "open" && shareUrl && (
             <div className="mb-8">
               <p className="eyebrow mb-4">참가자 초대</p>
-              <div className="card flex flex-col sm:flex-row gap-6">
+              <div className="glass-panel flex flex-col sm:flex-row gap-6">
                 <div className="shrink-0 flex flex-col items-center gap-2">
                   <QRCodeSVG value={shareUrl} size={140} bgColor="#151310" fgColor="#ede8df" level="M" />
                   <button onClick={handleQRDownload} className="btn btn-secondary" style={{ height: 32, padding: "0 12px", fontSize: 11 }}>
@@ -1324,7 +1324,7 @@ export default function EventDetailPage() {
           ) : event.status === "done" ? (
             <div className="mb-8">
               {event.videoUrl ? (
-                <div className="card flex flex-col gap-4">
+                <div className="glass-panel flex flex-col gap-4">
                   <div className="flex items-center gap-2">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5ba06e" strokeWidth="1.5">
                       <polyline points="20 6 9 17 4 12" />
@@ -1403,7 +1403,7 @@ export default function EventDetailPage() {
                 {clips.map((clip, i) => {
                   const isActive = activeClipId === clip.id;
                   return (
-                    <div key={clip.id} className="row flex flex-col" style={clip.excludedAt ? { opacity: 0.45 } : {}}>
+                    <div key={clip.id} className="glass-panel flex flex-col" style={clip.excludedAt ? { opacity: 0.45 } : {}}>
                       <div className="flex items-center justify-between gap-2">
                         <span className="text-xs text-muted tabular-nums shrink-0">
                           #{clips.length - i}
