@@ -1,27 +1,27 @@
 @import "tailwindcss";
 
 :root {
-  /* ───────── 베이스 & 표면 (V6 랜딩 팔레트) ───────── */
-  --bg: #0c0b09;
-  --surface-1: #151310;
-  --surface-2: #1e1a13;
-  --surface-3: #28221a;
+  /* ───────── 베이스 & 표면 (라이트, 2026-06-16 전환) ───────── */
+  --bg: #f4f1ea;
+  --surface-1: #ffffff;
+  --surface-2: #f0ece2;
+  --surface-3: #e8e2d5;
 
-  /* ───────── 브랜드 (골드) ───────── */
-  --accent: #c8892c;
-  --accent-hi: #d99a3a;
-  --accent-soft: #c8892c1f;
+  /* ───────── 브랜드 (주황, 랜딩 통일) ───────── */
+  --accent: #E8794A;
+  --accent-hi: #ef8a5d;
+  --accent-soft: #E8794A1f;
   --warm: oklch(0.68 0.16 35);
   --warm-soft: oklch(0.68 0.16 35 / 0.18);
 
   /* ───────── 텍스트 ───────── */
-  --text: #ede8df;
-  --text-dim: #c8c2b6;
-  --muted: #79716a;
+  --text: #1a1612;
+  --text-dim: #3d362e;
+  --muted: #6b635a;
 
   /* ───────── 헤어라인 (솔리드 보더 대신) ───────── */
-  --hairline: rgba(237, 232, 223, 0.07);
-  --hairline-strong: rgba(237, 232, 223, 0.14);
+  --hairline: rgba(26, 22, 18, 0.08);
+  --hairline-strong: rgba(26, 22, 18, 0.14);
 
   /* ───────── 카카오 ───────── */
   --kakao: #fee500;
@@ -47,6 +47,25 @@
   --surface: var(--surface-1);
   --border: var(--hairline-strong);
   --accent-bright: var(--accent-hi);
+}
+
+/* ───────── 다크 스코프 (upload/share 2화면 한정) ───────── */
+[data-theme="dark"] {
+  --bg: #0c0b09;
+  --surface-1: #151310;
+  --surface-2: #1e1a13;
+  --surface-3: #28221a;
+
+  --accent: #c8892c;
+  --accent-hi: #d99a3a;
+  --accent-soft: #c8892c1f;
+
+  --text: #ede8df;
+  --text-dim: #c8c2b6;
+  --muted: #79716a;
+
+  --hairline: rgba(237, 232, 223, 0.07);
+  --hairline-strong: rgba(237, 232, 223, 0.14);
 }
 
 @theme inline {

@@ -165,7 +165,7 @@ export default function SignupPage() {
                     checked={termsAgreed}
                     onChange={(e) => setTermsAgreed(e.target.checked)}
                     disabled={loading}
-                    className="mt-0.5 accent-[#c8892c]"
+                    className="mt-0.5 accent-[var(--accent)]"
                   />
                   <span className="text-xs text-muted leading-relaxed">
                     <Link href="/terms" target="_blank" className="text-accent hover:underline">
@@ -180,7 +180,7 @@ export default function SignupPage() {
                     checked={privacyAgreed}
                     onChange={(e) => setPrivacyAgreed(e.target.checked)}
                     disabled={loading}
-                    className="mt-0.5 accent-[#c8892c]"
+                    className="mt-0.5 accent-[var(--accent)]"
                   />
                   <span className="text-xs text-muted leading-relaxed">
                     <Link href="/privacy" target="_blank" className="text-accent hover:underline">

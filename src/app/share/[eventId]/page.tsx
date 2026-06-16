@@ -54,7 +54,7 @@ export default async function SharePage({ params }: Props) {
   const videoUrl = isReady ? await getVideoPresignedUrl(videoS3Key!) : undefined;
 
   return (
-    <>
+    <div data-theme="dark">
       <PageBackdrop pattern="e" />
       <div className="min-h-screen flex flex-col">
         <main className="flex-1 flex flex-col items-center w-full max-w-sm mx-auto px-4 py-10 gap-6">
@@ -87,6 +87,6 @@ export default async function SharePage({ params }: Props) {
           <BrandName withMadeBy className="text-sm" />
         </footer>
       </div>
-    </>
+    </div>
   );
 }
