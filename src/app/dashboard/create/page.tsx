@@ -82,14 +82,6 @@ const planOptions: { value: EventPlan; label: string; desc: string }[] = [
 
 type View = "form" | "created";
 
-const glassPanel: React.CSSProperties = {
-  background: "color-mix(in srgb, var(--surface-1) 78%, transparent)",
-  backdropFilter: "blur(22px) saturate(140%)",
-  WebkitBackdropFilter: "blur(22px) saturate(140%)",
-  border: "1px solid var(--hairline-strong)",
-  borderRadius: "var(--r-lg)",
-};
-
 export default function CreateEventPage() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
@@ -199,7 +191,7 @@ export default function CreateEventPage() {
       <>
         <PageBackdrop pattern="a" />
         <div className="min-h-screen flex items-center justify-center px-6">
-          <div className="max-w-sm w-full p-8 text-center" style={glassPanel}>
+          <div className="glass-panel max-w-sm w-full p-8 text-center">
             <p className="text-xs text-accent font-medium tracking-wide mb-2">Firebase 미연결</p>
             <p className="text-xs text-muted leading-relaxed mb-4">
               .env.local에 Firebase 설정값을 추가하면 이벤트를 생성할 수 있습니다.
@@ -246,7 +238,7 @@ export default function CreateEventPage() {
 
         <main className="mx-auto max-w-lg px-6 py-16">
           {view === "form" ? (
-            <div className="p-10" style={glassPanel}>
+            <div className="glass-panel p-10">
               <p className="eyebrow mb-4">New Event</p>
               <h1 className="display text-3xl mb-10">새 이벤트 만들기</h1>
 
@@ -411,7 +403,7 @@ export default function CreateEventPage() {
               </form>
             </div>
           ) : (
-            <div className="p-10" style={glassPanel}>
+            <div className="glass-panel p-10">
               <div className="flex items-center gap-3 mb-10">
                 <div
                   className="w-8 h-8 flex items-center justify-center shrink-0"

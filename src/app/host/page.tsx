@@ -52,14 +52,6 @@ function getAuthErrorMessage(code: string): string {
   }
 }
 
-const glassPanel: React.CSSProperties = {
-  background: "color-mix(in srgb, var(--surface-1) 78%, transparent)",
-  backdropFilter: "blur(22px) saturate(140%)",
-  WebkitBackdropFilter: "blur(22px) saturate(140%)",
-  border: "1px solid var(--hairline-strong)",
-  borderRadius: "var(--r-lg)",
-};
-
 export default function HostPage() {
   const router = useRouter();
   const [view, setView] = useState<View>("login");
@@ -189,7 +181,7 @@ export default function HostPage() {
         <main className="mx-auto max-w-2xl px-6 py-16">
           {view === "login" && (
             <>
-              <div className="w-full max-w-md mx-auto p-10" style={glassPanel}>
+              <div className="glass-panel w-full max-w-md mx-auto p-10">
                 <p className="eyebrow mb-4 text-center">Host</p>
                 <h1 className="display text-3xl text-center mb-10">주최자 로그인</h1>
 
@@ -256,8 +248,7 @@ export default function HostPage() {
                   onClick={() => setResetOpen(false)}
                 >
                   <div
-                    className="w-full max-w-sm p-8 flex flex-col gap-5"
-                    style={glassPanel}
+                    className="glass-panel w-full max-w-sm p-8 flex flex-col gap-5"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <div className="flex items-center justify-between">

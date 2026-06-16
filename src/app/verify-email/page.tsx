@@ -6,14 +6,6 @@ import { applyActionCode } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebase";
 import PageBackdrop from "@/components/PageBackdrop";
 
-const glassPanel: React.CSSProperties = {
-  background: "color-mix(in srgb, var(--surface-1) 78%, transparent)",
-  backdropFilter: "blur(22px) saturate(140%)",
-  WebkitBackdropFilter: "blur(22px) saturate(140%)",
-  border: "1px solid var(--hairline-strong)",
-  borderRadius: "var(--r-lg)",
-};
-
 function VerifyEmailContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -57,7 +49,7 @@ function VerifyEmailContent() {
     <>
       <PageBackdrop pattern="a" />
       <div className="min-h-screen flex items-center justify-center px-6">
-        <div className="w-full max-w-sm p-8 text-center" style={glassPanel}>
+        <div className="glass-panel w-full max-w-sm p-8 text-center">
           {status === "verifying" && (
             <p className="eyebrow animate-pulse">인증 중...</p>
           )}

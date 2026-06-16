@@ -24,14 +24,6 @@ function getSignupErrorMessage(code: string): string {
   }
 }
 
-const glassPanel: React.CSSProperties = {
-  background: "color-mix(in srgb, var(--surface-1) 78%, transparent)",
-  backdropFilter: "blur(22px) saturate(140%)",
-  WebkitBackdropFilter: "blur(22px) saturate(140%)",
-  border: "1px solid var(--hairline-strong)",
-  borderRadius: "var(--r-lg)",
-};
-
 export default function SignupPage() {
   const router = useRouter();
 
@@ -83,7 +75,7 @@ export default function SignupPage() {
         </nav>
 
         <main className="mx-auto max-w-md px-6 py-16">
-          <div className="w-full p-10" style={glassPanel}>
+          <div className="glass-panel w-full p-10">
             <p className="eyebrow mb-4 text-center">Host</p>
             <h1 className="display text-3xl text-center mb-10">호스트 가입</h1>
 
