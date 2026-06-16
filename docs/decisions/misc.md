@@ -2,6 +2,53 @@
 
 > 영역 외 결정 (프로세스 룰·UI 라이브러리 등). 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-06-16 — 본 앱 라이트 톤 전환 (15화면 중 1차: 색 토큰 분기 + 그라데이션 배경 + .glass-panel)
+
+### 결정
+
+본 앱 색 시스템을 라이트 기본 + 다크 스코프로 분기, 랜딩식 움직이는 그라데이션 배경
+도입, 흐름 배경 위 가독성 확보용 공용 카드 `.glass-panel` 신설.
+
+- **색 토큰 분기 방식 = data-theme 스코프**:
+  - `globals.css :root` = 라이트 기본값(`--bg #f4f1ea` / `--surface-1~3` 베이지·아이보리 / `--accent #E8794A` 주황 / `--text #1a1612` 먹색 / hairline은 먹색 알파).
+  - `[data-theme="dark"]` = 다크 스코프 정의(기존 다크 12개 값 보존).
+  - 다크 화면은 **share/upload 2화면 한정**. 각 page 최상위 div(또는 layout)에 `data-theme="dark"` 부착. 나머지 13화면은 표식 없이 자동 라이트.
+  - 라이트/다크 공통 변수(`--warm`/`--kakao`/폰트/radius/legacy 별칭)는 :root에만 정의 — var() 참조로 자동 따라옴, 분기 불필요.
+- **골드(#c8892c) 폐기 → 랜딩 주황(#E8794A) 통일**: 본 앱·랜딩 액센트 색 일원화. signup의 인라인 `accent-[#c8892c]` 2건도 `accent-[var(--accent)]`로 정리.
+- **전역 그라데이션 배경**: `body { background: transparent }` + `body::before` 고정 레이어(z-index: -11)에 랜딩 5색 `linear-gradient(-45deg, #b9a8e6, #98c6ea, #f0a8d0, #a0ddc8, #e6d68f, #b9a8e6)` + `background-size: 400% 400%` + `bgflow` 14s. `prefers-reduced-motion` 정지. `body::after` grain 전 화면 OFF.
+- **PageBackdrop 스코프 축소**: `pattern !== "e"`면 null 반환. a~d 화면(form/list/work/static)에서 사진 배경 제거, e만(게스트·결과물) 사진 유지. `public/images/bg-stage-{a..d}.png` 4개 참조만 끊김 — 파일 삭제 안 함(보존).
+- **`.glass-panel` 공용 카드 신설**: `background: color-mix(in srgb, var(--surface-1) 78%, transparent)` + `backdrop-filter: blur(22px) saturate(140%)` + `border: 1px solid var(--hairline-strong)` + `border-radius: var(--r-md)` + `padding: 24px`. create/verify-email/signup/host의 인라인 `glassPanel` 상수와 동일 사양(향후 통합 후보).
+
+### 이유
+
+- 랜딩이 2026-06-15에 라이트 톤(Partiful 방향, 비비드 파스텔 animated gradient)으로
+  전환됨. 본 앱도 같은 톤으로 통일해야 사용자 경험 단절 없음.
+- 단일 :root에 라이트값을 박으면 share/upload(영상 다크가 자연) 화면이 어색해지므로
+  `data-theme="dark"` 스코프로 격리. 13:2 비율이라 라이트를 기본, 다크를 스코프로
+  잡는 게 옳음(반대로 잡으면 13군데에 표식 부착해야 함).
+- 흐르는 그라데이션 배경 위에서는 기존 다크 시절 만든 "배경 없는 컨테이너"
+  (.card/.row, padding only)가 글씨 흐림 유발(부모 단색 다크 전제). 토큰 분기만으로
+  안 되고 카드 시스템 재정의 필요 — 그래서 `.glass-panel` 신설.
+- 기존 `.card`/`.row` 정의는 미변경(다른 화면 의존). 신규 클래스로 격리해서 점진적
+  교체.
+
+### 적용
+
+- 변경 6커밋(`758b88e`, `940b293`, `3c44fa4`, `b9c6643`, `1760b36`, `6138bd3`).
+- 적용 완료 화면 (7): create / verify-email / signup / host (원래 인라인 glassPanel) + events 상세 / dashboard / mypage (.glass-panel 교체).
+- 다크 유지 화면 (2): upload / share (`data-theme="dark"` 표식, PageBackdrop 사진).
+- 미착수 (5): terms / privacy / guide / guide/guest / guide/host (pattern "d"였음, 현재 사진 빠진 라이트 상태, 실측 필요).
+- 빌드/린트 게이트 통과: 6커밋 전 구간 `npm run build` 통과, `npm run lint` 11 errors / 3 warnings baseline 유지(delta 0).
+
+### 비고
+
+- 인라인 glassPanel 4벌(create:L85 / verify-email:L9 / signup:L27 / host:L55)을
+  `.glass-panel` 공용 클래스로 통합하는 작업은 4차 미착수. 현재 사양 동일이라
+  className 교체만으로 됨.
+- `.glass-panel`에 미세 그레인 + 상단 하이라이트 장식 추가(4차 미착수)로 평이한
+  unfrosted 글래스에 깊이 부여 예정.
+- 다크 2화면 grain 부활 필요 여부는 실측 영역(현재 전체 OFF).
+
 ## 2026-06-13 — 박스(.card/.row) 투명화 + .notice 강조 박스 분리
 
 ### 결정

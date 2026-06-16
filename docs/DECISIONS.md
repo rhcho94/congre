@@ -12,7 +12,7 @@
 - [infra](decisions/infra.md) — Vercel·Firebase·도메인·무료 티어 정책 (6개)
 - [data-flow](decisions/data-flow.md) — Firestore·S3·Admin SDK·서버 이전 (17개)
 - [landing](decisions/landing.md) — 랜딩 페이지 디자인·자산·배포 (19개)
-- [misc](decisions/misc.md) — 영역 외 결정 (5개)
+- [misc](decisions/misc.md) — 영역 외 결정 (6개)
 
 ## 메타
 
