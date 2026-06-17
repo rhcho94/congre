@@ -34,7 +34,7 @@
 
 랜딩: 단일 `index.html` + 인라인 CSS/JS + `image-slot.js` (이미지 슬롯 컴포넌트). 정적 호스팅.
 
-폰트: 본문 DM Sans, 디스플레이 Cormorant Garamond italic, 한글 NotoSansKR (영상은 `public/fonts/NotoSansKR-Regular.ttf`).
+폰트: 본문 Pretendard, 디스플레이 Cormorant Garamond italic, 한글 NotoSansKR (영상은 `public/fonts/NotoSansKR-Regular.ttf`).
 
 주요 의존성·환경변수는 `docs/PROJECT.md` 참조.
 
@@ -155,14 +155,21 @@ CD 자체 학습 자료: https://support.claude.com/en/articles/14604416-get-sta
 
 ## 디자인 토큰 (CSS 변수)
 
-- 배경: `var(--bg)` (#0c0b09)
-- Surface: `var(--surface)` (#151310), `var(--surface-2)` (#1e1a13)
-- 액센트: `var(--accent)` (#c8892c, 앰버/골드)
-- 텍스트: `var(--text)` (#ede8df), `var(--muted)` (#79716a)
-- 폰트: `var(--font-display)` (Cormorant Garamond italic), `var(--font-body)` (DM Sans)
-- 글로벌 유틸: `.rule`, `.glow-accent`, body::after film grain
+라이트 테마가 기본(`:root`). 다크는 `[data-theme="dark"]` 스코프로 업로드·공유 화면에만 적용. 정의 위치: `src/app/globals.css` (값은 2026-06-17 실값 기준).
 
-랜딩 트랙은 이 토큰을 인라인으로 사용 (CSS 변수 없는 경우 hex 직접). 본 앱 토큰과 동기 유지.
+**라이트 기본(:root)**
+- 배경: `var(--bg)` (#f4f1ea) + 전역 `body::before` bgflow 14s 파스텔 그라데이션(#b9a8e6·#98c6ea·#f0a8d0·#a0ddc8·#e6d68f)
+- Surface: `var(--surface-1)` (#ffffff), `var(--surface-2)` (#f0ece2), `var(--surface-3)` (#e8e2d5)
+- 액센트: `var(--accent)` (#E8794A, 주황), `var(--accent-hi)` (#ef8a5d) — 골드 #c8892c는 폐기(다크 스코프에만 잔존)
+- 텍스트: `var(--text)` (#1a1612), `var(--text-dim)` (#3d362e), `var(--muted)` (#6b635a)
+- 헤어라인: `var(--hairline)`, `var(--hairline-strong)`
+- 폰트: `var(--font-body)`=Pretendard(본문), `var(--font-display)`=Cormorant Garamond(next/font 주입), 영상 한글 NotoSansKR
+- Legacy 별칭: `--surface`=`var(--surface-1)`, `--border`=`var(--hairline-strong)`, `--accent-bright`=`var(--accent-hi)`
+- 글로벌 유틸: `.glass-panel`(frosted glass + inset sheen + fractalNoise grain), `.glow-accent`, `.rule`
+
+**다크 오버라이드(`[data-theme="dark"]`)**: --bg #0c0b09 / --surface-1 #151310 / --accent #c8892c(골드) 등 12개 변수 재정의.
+
+랜딩 트랙은 이 토큰을 인라인으로 사용 (CSS 변수 없으면 hex 직접). 본 앱 토큰과 동기 유지.
 
 ## 채팅 인계 (HANDOVER) 규약
 
