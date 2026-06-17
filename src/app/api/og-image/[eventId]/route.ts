@@ -2,7 +2,7 @@ import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import type { NextRequest } from "next/server";
 import { getAdminDb } from "@/lib/firebase-admin";
 
-const FALLBACK_URL = "https://app.congre.kr/logo.png";
+const FALLBACK_URL = "https://app.congre.kr/og-image.png";
 
 function fallbackRedirect(): Response {
   return Response.redirect(FALLBACK_URL, 302);
