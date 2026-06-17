@@ -717,6 +717,8 @@ export default function EventDetailPage() {
         message = "업로드된 클립이 없어요.";
       } else if (code === "NOT_CONFIGURED") {
         message = "서버 설정 오류로 영상 생성을 시작하지 못했어요. 운영자에게 문의해주세요.";
+      } else if (code === "PAID_NOT_AVAILABLE") {
+        message = "유료 플랜은 현재 준비 중입니다.";
       } else {
         message = `영상 생성 시작에 실패했습니다 (${code ?? renderRes.status}). 운영자에게 문의해주세요.`;
       }

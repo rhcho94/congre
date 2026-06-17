@@ -47,6 +47,12 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "FORBIDDEN" }, { status: 403 });
   }
 
+  const plan = (eventData.plan as string | undefined ?? "free") as PlanId;
+  if (plan === "paid") {
+    console.error("[render/start] blocked: paid plan not available yet", { eventId });
+    return Response.json({ error: "PAID_NOT_AVAILABLE" }, { status: 403 });
+  }
+
   const clipsSnap = await db.collection("clips").where("eventId", "==", eventId).get();
 
   if (clipsSnap.empty) {
@@ -109,7 +115,6 @@ export async function POST(request: NextRequest) {
   const showNames       = eventData.showNames       as boolean | undefined;
   const bgmMoodRaw      = eventData.bgmMood         as string | undefined;
   const bgmMood = (bgmMoodRaw === "calm" || bgmMoodRaw === "lively" || bgmMoodRaw === "epic") ? bgmMoodRaw : "lively";
-  const plan = (eventData.plan as string | undefined ?? "free") as PlanId;
 
   async function listMp3Keys(mood: string): Promise<string[]> {
     const res = await s3.send(new ListObjectsV2Command({

@@ -33,10 +33,11 @@ export default function SignupPage() {
   const [phone, setPhone] = useState("");
   const [termsAgreed, setTermsAgreed] = useState(false);
   const [privacyAgreed, setPrivacyAgreed] = useState(false);
+  const [ageAgreed, setAgeAgreed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const canSubmit = termsAgreed && privacyAgreed && !loading;
+  const canSubmit = termsAgreed && privacyAgreed && ageAgreed && !loading;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -179,6 +180,18 @@ export default function SignupPage() {
                       개인정보처리방침
                     </Link>
                     에 동의합니다 (필수)
+                  </span>
+                </label>
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={ageAgreed}
+                    onChange={(e) => setAgeAgreed(e.target.checked)}
+                    disabled={loading}
+                    className="mt-0.5 accent-[var(--accent)]"
+                  />
+                  <span className="text-xs text-muted leading-relaxed">
+                    만 19세 이상입니다. (필수)
                   </span>
                 </label>
               </div>

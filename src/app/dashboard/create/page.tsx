@@ -75,9 +75,9 @@ function Stepper({
   );
 }
 
-const planOptions: { value: EventPlan; label: string; desc: string }[] = [
+const planOptions: { value: EventPlan; label: string; desc: string; comingSoon?: boolean }[] = [
   { value: "free", label: "무료", desc: "최대 5클립 · 10초 · 워터마크" },
-  { value: "paid", label: "유료", desc: "마감 시 사용량만큼 결제" },
+  { value: "paid", label: "유료", desc: "마감 시 사용량만큼 결제", comingSoon: true },
 ];
 
 type View = "form" | "created";
@@ -275,11 +275,13 @@ export default function CreateEventPage() {
                     {planOptions.map((opt) => (
                       <label
                         key={opt.value}
-                        className="flex flex-col gap-0.5 p-4 cursor-pointer transition-all duration-150"
+                        className="flex flex-col gap-0.5 p-4 transition-all duration-150"
                         style={{
                           background: form.plan === opt.value ? "var(--surface-3)" : "var(--surface-2)",
                           border: `1px solid ${form.plan === opt.value ? "var(--accent)" : "var(--hairline)"}`,
                           borderRadius: "var(--r-sm)",
+                          cursor: opt.comingSoon ? "not-allowed" : "pointer",
+                          opacity: opt.comingSoon ? 0.55 : 1,
                         }}
                       >
                         <input
@@ -288,10 +290,13 @@ export default function CreateEventPage() {
                           value={opt.value}
                           checked={form.plan === opt.value}
                           onChange={() => setForm({ ...form, plan: opt.value })}
-                          disabled={submitting}
+                          disabled={submitting || opt.comingSoon}
                           className="sr-only"
                         />
-                        <span className="text-sm text-foreground font-medium">{opt.label}</span>
+                        <span className="text-sm text-foreground font-medium">
+                          {opt.label}
+                          {opt.comingSoon && <span className="text-xs text-muted ml-1.5">· 준비 중</span>}
+                        </span>
                         <span className="text-xs text-muted">{opt.desc}</span>
                       </label>
                     ))}
