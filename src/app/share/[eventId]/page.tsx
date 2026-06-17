@@ -15,13 +15,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const snap = await db.collection("events").doc(eventId).get();
     if (!snap.exists) return { title: "Congre" };
     const title = snap.data()!.title as string;
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
     return {
       title: `${title} — Congre`,
       openGraph: {
         title,
         description: "Congre로 만든 영상입니다 🎬",
-        images: [`${appUrl}/logo.png`],
+        images: [`https://app.congre.kr/api/og-image/${eventId}`],
       },
     };
   } catch {

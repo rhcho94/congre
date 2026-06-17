@@ -4,6 +4,7 @@
 
 ## 2026-06-17
 
+- feat(seo): /share 완성본 공유 링크 OG 이미지를 /upload와 동일한 /api/og-image 프록시로 전환 — 인트로 이미지 있으면 노출, 없으면 og-image.png 브랜드 카드 폴백. 기존 logo.png 직접 참조 교체 + appUrl 상대경로 위험 제거.
 - feat(seo): 초대 링크 OG fallback 이미지를 로고→브랜드 카드(og-image.png)로 교체. 인트로 이미지 없는 초대 링크의 카톡 미리보기 개선. public/og-image.png 신규(랜딩 deploy/images에서 복사), api/og-image/[eventId] FALLBACK_URL 변경.
 - feat(fgt): FGT용 무료 전환 — 유료 라디오 비활성화 + "준비 중" 표시(`dashboard/create`) / `render/start` paid 가드(`PAID_NOT_AVAILABLE` 403, console.error 로깅) + 호스트 안내 분기(`events/[eventId]`: "유료 플랜은 현재 준비 중입니다.") / `signup` 19세 자가신고 체크박스(`ageAgreed`, canSubmit 필수).
 
