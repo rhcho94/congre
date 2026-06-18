@@ -2,6 +2,10 @@
 
 > 기능 단위 작업 이력. 최신이 위.
 
+## 2026-06-18
+
+- feat(security): presign·clips/check 라우트에 sessionToken·호스트 ID 토큰 검증 추가. `/api/upload/presign` POST가 (a) 이벤트 존재 확인 + fileName 화이트리스트(`/^[A-Za-z0-9._-]+$/`, path traversal 차단) + kind별 확장자 화이트리스트(clip=mp4/mov/webm, thumb=jpg, intro/outro=제한 없음) 공통 가드 통과 후 (b) clip/thumb는 body `token` === `events.sessionToken` + `status==="open"`을 검증, (c) intro/outro는 `verifyIdToken` + `events.hostId === uid` 검증. `/api/clips/check` GET은 `?token=` 필수, sessionToken 일치 + 이벤트 존재 확인. `src/lib/s3.ts` getPresignedUrl 시그니처에 `auth?: { sessionToken?; idToken? }` 인자 추가 + 비ASCII 파일명 클라이언트 sanitize(`_`치환). 호출부 4곳 정합: upload 페이지 clip(L281)·thumb inline(L292)·clips/check(L204)는 urlToken 동봉, dashboard 페이지 intro(L622)·outro(L660)는 `getIdToken()` 동봉. 모든 catch 블록 `console.error` 부착.
+
 ## 2026-06-17
 
 - docs(design): CLAUDE.md·PROJECT.md 디자인 토큰을 라이트 테마 globals.css 실값으로 동기화 — 배경 #f4f1ea, 액센트 주황 #E8794A(골드 폐기), 본문 폰트 Pretendard, bgflow 그라데이션·.glass-panel·[data-theme=dark] 스코프 반영.

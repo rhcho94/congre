@@ -201,7 +201,7 @@ function UploadInner() {
 
     try {
       const res = await fetch(
-        `/api/clips/check?eventId=${encodeURIComponent(eventId)}&phone=${encodeURIComponent(phoneClean)}&name=${encodeURIComponent(trimmedName)}`
+        `/api/clips/check?eventId=${encodeURIComponent(eventId)}&phone=${encodeURIComponent(phoneClean)}&name=${encodeURIComponent(trimmedName)}&token=${encodeURIComponent(urlToken)}`
       );
       const data = await res.json() as { exists: boolean };
       if (data.exists) {
@@ -278,7 +278,7 @@ function UploadInner() {
 
     console.log(`[upload] attempt=${attempt} blobType="${blob.type}" mimeType="${mimeType}" size=${blob.size} ext=${ext} duration=${durationRef.current}`);
 
-    const { url, key } = await getPresignedUrl(eventId, fileName, mimeType, "clip");
+    const { url, key } = await getPresignedUrl(eventId, fileName, mimeType, "clip", { sessionToken: urlToken });
     console.log(`[upload] presign ok → key=${key}`);
 
     await uploadToS3(url, blob, mimeType, setProgress);
@@ -292,7 +292,7 @@ function UploadInner() {
         const presignRes = await fetch("/api/upload/presign", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ eventId, fileName: thumbFileName, fileType: "image/jpeg", kind: "thumb" }),
+          body: JSON.stringify({ eventId, fileName: thumbFileName, fileType: "image/jpeg", kind: "thumb", token: urlToken }),
         });
         if (!presignRes.ok) throw new Error(`thumb_presign:${presignRes.status}`);
         const { url: thumbUrl, key: tKey } = await presignRes.json() as { url: string; key: string };

@@ -619,7 +619,9 @@ export default function EventDetailPage() {
     setIntroUploading(true);
     try {
       const mediaType = file.type.startsWith("video/") ? "video" : "image";
-      const { url, key } = await getPresignedUrl(eventId, file.name, file.type, "intro");
+      const idTokenForPresign = await getFirebaseAuth().currentUser?.getIdToken();
+      if (!idTokenForPresign) throw new Error("인증 토큰 발급 실패");
+      const { url, key } = await getPresignedUrl(eventId, file.name, file.type, "intro", { idToken: idTokenForPresign });
       await uploadToS3(url, file, file.type, () => {});
       const idToken = await patchInvite({ introMediaKey: key, introMediaType: mediaType });
       setIntroMediaKey(key);
@@ -657,7 +659,9 @@ export default function EventDetailPage() {
     setOutroUploading(true);
     try {
       const mediaType = file.type.startsWith("video/") ? "video" : "image";
-      const { url, key } = await getPresignedUrl(eventId, file.name, file.type, "outro");
+      const idTokenForPresign = await getFirebaseAuth().currentUser?.getIdToken();
+      if (!idTokenForPresign) throw new Error("인증 토큰 발급 실패");
+      const { url, key } = await getPresignedUrl(eventId, file.name, file.type, "outro", { idToken: idTokenForPresign });
       await uploadToS3(url, file, file.type, () => {});
       const idToken = await patchInvite({ outroMediaKey: key, outroMediaType: mediaType });
       setOutroMediaKey(key);

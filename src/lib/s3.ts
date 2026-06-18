@@ -8,16 +8,31 @@ export async function checkS3(): Promise<boolean> {
   }
 }
 
+// 서버 fileName 화이트리스트(영숫자·.·-·_)에 맞춰 비허용 문자를 _로 치환.
+// 호스트 intro/outro 파일 picker는 한글/공백 파일명을 흔히 던지므로 클라이언트가 먼저 정규화.
+function sanitizeFileName(name: string): string {
+  return name.replace(/[^A-Za-z0-9._-]/g, "_");
+}
+
 export async function getPresignedUrl(
   eventId: string,
   fileName: string,
   fileType: string,
-  kind: "clip" | "invite" | "intro" | "outro"
+  kind: "clip" | "invite" | "intro" | "outro" | "thumb",
+  auth: { sessionToken?: string; idToken?: string } = {}
 ): Promise<{ url: string; key: string }> {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (auth.idToken) headers["Authorization"] = `Bearer ${auth.idToken}`;
   const res = await fetch("/api/upload/presign", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ eventId, fileName, fileType, kind }),
+    headers,
+    body: JSON.stringify({
+      eventId,
+      fileName: sanitizeFileName(fileName),
+      fileType,
+      kind,
+      ...(auth.sessionToken ? { token: auth.sessionToken } : {}),
+    }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
