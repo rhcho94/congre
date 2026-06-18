@@ -4,6 +4,7 @@
 
 ## 2026-06-18
 
+- feat(security): `firestore.rules` clips 완전 차단 + events create hostId 강제·update 잠금. `clips` 블록을 `read, create, update, delete: if false`로 일원화(모든 clip mutation은 Admin SDK 경유라 클라이언트 직접 update/delete 잠가도 정상 기능 영향 0). `events.create` 조건에 `request.resource.data.hostId == request.auth.uid` AND 추가(인증 사용자가 타인 uid를 hostId로 박는 경로 차단). `events.update`는 `if false`로 잠금(events 갱신은 전부 `/api/host/events/[eventId]` PATCH Admin SDK 경유 확인). notifications·users 블록 미접촉. ★ 콘솔 게시(Firebase Console Rules 탭)는 운영자 수동 단계 필요.
 - feat(security): presign·clips/check 라우트에 sessionToken·호스트 ID 토큰 검증 추가. `/api/upload/presign` POST가 (a) 이벤트 존재 확인 + fileName 화이트리스트(`/^[A-Za-z0-9._-]+$/`, path traversal 차단) + kind별 확장자 화이트리스트(clip=mp4/mov/webm, thumb=jpg, intro/outro=제한 없음) 공통 가드 통과 후 (b) clip/thumb는 body `token` === `events.sessionToken` + `status==="open"`을 검증, (c) intro/outro는 `verifyIdToken` + `events.hostId === uid` 검증. `/api/clips/check` GET은 `?token=` 필수, sessionToken 일치 + 이벤트 존재 확인. `src/lib/s3.ts` getPresignedUrl 시그니처에 `auth?: { sessionToken?; idToken? }` 인자 추가 + 비ASCII 파일명 클라이언트 sanitize(`_`치환). 호출부 4곳 정합: upload 페이지 clip(L281)·thumb inline(L292)·clips/check(L204)는 urlToken 동봉, dashboard 페이지 intro(L622)·outro(L660)는 `getIdToken()` 동봉. 모든 catch 블록 `console.error` 부착.
 
 ## 2026-06-17
