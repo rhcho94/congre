@@ -153,11 +153,6 @@ body::after {
   background: linear-gradient(90deg, transparent, var(--border) 20%, var(--border) 80%, transparent);
 }
 
-/* Amber glow utility */
-.glow-accent {
-  box-shadow: 0 0 40px 0 rgba(200, 137, 44, 0.18);
-}
-
 /* ─────────────────────────────────────────────────────────────
    공통 컴포넌트 클래스 (CD 명세 — 14개 화면 공유 영역)
    정의만. 화면 파일 적용은 다음 커밋(2/2).

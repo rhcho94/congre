@@ -69,11 +69,11 @@ Legacy 별칭: `--surface`=`var(--surface-1)`, `--border`=`var(--hairline-strong
 
 다크 오버라이드(`[data-theme="dark"]` 12개 변수): --bg #0c0b09 / --surface-1 #151310 / --surface-2 #1e1a13 / --surface-3 #28221a / --accent #c8892c(골드) / --accent-hi #d99a3a / --accent-soft #c8892c1f / --text #ede8df / --text-dim #c8c2b6 / --muted #79716a / --hairline rgba(237, 232, 223, 0.07) / --hairline-strong rgba(237, 232, 223, 0.14).
 
-글로벌 유틸리티: `.glass-panel` (frosted glass + inset sheen + fractalNoise grain), `.glow-accent`, `.rule` (장식 수평선).
+글로벌 유틸리티: `.glass-panel` (frosted glass + inset sheen + fractalNoise grain), `.rule` (장식 수평선).
 
 ## 브랜드 표기 규칙
 
-- UI에 보이는 모든 "Congre" → 대문자 C + 앰버 색 + serif italic
+- UI에 보이는 모든 "Congre" → 대문자 C + 주황(#E8794A) + serif italic
 - "made by Congre"는 별도 패턴 ("made by"는 muted, "Congre"는 표준 스타일)
 - 공통 컴포넌트 `src/components/BrandName.tsx` 사용
 - 변수명·파일명·환경변수·도메인 등 기술 식별자는 소문자 (congre-mvp, app.congre.kr)
