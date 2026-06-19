@@ -55,7 +55,10 @@ export async function GET(
     const bytes = await obj.Body.transformToByteArray();
     const contentType = obj.ContentType ?? "application/octet-stream";
     return new Response(Buffer.from(bytes), {
-      headers: { "Content-Type": contentType },
+      headers: {
+        "Content-Type": contentType,
+        "Cache-Control": "public, max-age=86400, s-maxage=86400",
+      },
     });
   } catch (err) {
     console.error("[og-image] s3 fetch failed:", err);
