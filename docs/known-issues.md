@@ -317,20 +317,16 @@
 - **우회**: 개별 영상 H.264 변환 후 재업로드. 2026-06-13 케이스 변환본 제공, 재렌더 검증은 운영자 진행 중.
 - **격상 트리거**: 비표준 코덱 업로드 반복 / 영업 진입 전. 처리 후보 (a) 업로드 시 코덱 검증 + 경고 UI, (b) 서버 또는 Shotstack ingest 자동 트랜스코딩. 현재 YAGNI 보류.
 
-## L10 OG 이미지 프록시 — 라나 시운전 발견 3건 (미검증, 정찰관 실측 대기)
+## L10 OG 이미지 프록시 — scout 실측 확정 3건 + fallback 문서 드리프트
 
-- 출처: lana 서브에이전트 첫 시운전(2026-06-19, 커밋 4467e4a 직후).
-  바깥 표준 기준 지적이며 우리 코드 실측은 아님 — "배선≠동작" 룰대로
-  정찰관이 코드/실제 동작 실측 후 확정한다.
-- 대상 파일: src/app/api/og-image/[eventId]/route.ts
-1. (잠재 高) 전체 버퍼링: obj.Body.transformToByteArray()로 응답을
-   통째 버퍼링(라나가 L55로 지목). Vercel 4.5MB 응답 한도 초과 시 413
-   가능성. → OG 이미지가 실제 4.5MB를 넘을 일이 있는지 실측 필요.
-2. (中) Cache-Control 헤더 누락 추정 → Vercel CDN 엣지 캐싱 미작동,
-   크롤러 재방문마다 S3+Firestore 호출. public, max-age=86400 권장.
-3. (中) fallback 302 리다이렉트: Slack은 og:image 리다이렉트를 안 따라간다는
-   지적. 단 최근 커밋 9ebf887로 fallback을 브랜드 카드로 교체했으니,
-   라나가 본 게 최신 코드인지 현 코드와 대조 필요.
+- 대상 파일: src/app/api/og-image/[eventId]/route.ts (총 65줄)
+- 출처: lana(2026-06-19) 지적 → scout(2026-06-19) 코드 실측 확정. 라나 발견 3건 전부 코드와 일치.
+1. (잠재 高) 전체 버퍼링: 55번 줄 `const bytes = await obj.Body.transformToByteArray();` → 57번 줄에서 `Buffer.from(bytes)`로 통째 응답. 스트리밍 없음. [코드 확정] Vercel 4.5MB 응답 한도 초과 시 413 가능성은 동작 추론(OG 이미지가 실제 4.5MB 넘을 일 있는지는 미측정).
+2. (中) Cache-Control 헤더 없음: S3 정상 응답(55~59번)은 Content-Type만 설정. fallback 분기(28·34·53·61번)는 fallbackRedirect() 호출이라 헤더 객체 자체 없음. [코드 확정] → CDN 엣지 캐싱 미작동, 크롤러 재방문마다 S3+Firestore 호출. `public, max-age=86400` 권장(미적용).
+3. (中) fallback = 302 리다이렉트: 25번 줄 `if (mediaType !== "image" || !key) return fallbackRedirect();`, fallbackRedirect()는 https://app.congre.kr/og-image.png 로 302. [코드 확정] 브랜드 카드를 직접 생성·응답하는 코드 없음.
+   - 문서/코드 드리프트: 핸드오프 메모(커밋 9ebf887, "fallback을 브랜드 카드로 변경")가 현 코드에 반영 안 됨. 현 코드 = 302 = 1차 사실로 확정.
+   - 미확정: 9ebf887이 (a) 이 라우트를 브랜드 카드로 바꿨다 되돌렸는지, (b) 다른 파일(예: share 라우트)을 건드린 걸 핸드오프가 이 라우트로 잘못 적었는지는 git 이력 확인 필요(scout 권한 밖). 별도 정찰 후보.
+- 처리: 발견만 확정. 수정(②Cache-Control 추가 등)은 실행관 트랙. 급한 장애 아님(YAGNI), Ray 결정 영역.
 
 ---
 
