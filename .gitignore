@@ -51,3 +51,9 @@ desktop.ini
 
 # 운영자 분석·참고 문서 (보관용, 추적 안 함)
 *.docx
+
+# .claude/agents (공유 서브에이전트 정의)만 추적, 나머지 .claude는 무시
+!.claude/
+.claude/*
+!.claude/agents/
+!.claude/agents/**
