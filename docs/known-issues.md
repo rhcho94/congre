@@ -322,10 +322,10 @@
 - 대상 파일: src/app/api/og-image/[eventId]/route.ts (총 65줄)
 - 출처: lana(2026-06-19) 지적 → scout(2026-06-19) 코드 실측 확정. 라나 발견 3건 전부 코드와 일치.
 1. (잠재 高) 전체 버퍼링: 55번 줄 `const bytes = await obj.Body.transformToByteArray();` → 57번 줄에서 `Buffer.from(bytes)`로 통째 응답. 스트리밍 없음. [코드 확정] Vercel 4.5MB 응답 한도 초과 시 413 가능성은 동작 추론(OG 이미지가 실제 4.5MB 넘을 일 있는지는 미측정).
-2. (中) Cache-Control 헤더 없음: S3 정상 응답(55~59번)은 Content-Type만 설정. fallback 분기(28·34·53·61번)는 fallbackRedirect() 호출이라 헤더 객체 자체 없음. [코드 확정] → CDN 엣지 캐싱 미작동, 크롤러 재방문마다 S3+Firestore 호출. `public, max-age=86400` 권장(미적용).
+2. (中) Cache-Control 헤더 없음: S3 정상 응답(55~59번)은 Content-Type만 설정. fallback 분기(28·34·53·61번)는 fallbackRedirect() 호출이라 헤더 객체 자체 없음. [코드 확정] → CDN 엣지 캐싱 미작동, 크롤러 재방문마다 S3+Firestore 호출. → 2026-06-19 도끼+눈깔로 수정 완료(커밋 418761f). `Cache-Control: public, max-age=86400, s-maxage=86400` 적용.
 3. (中) fallback = 302 리다이렉트: 25번 줄 `if (mediaType !== "image" || !key) return fallbackRedirect();`, fallbackRedirect()는 https://app.congre.kr/og-image.png 로 302. [코드 확정] 브랜드 카드를 직접 생성·응답하는 코드 없음.
-   - 문서/코드 드리프트: 핸드오프 메모(커밋 9ebf887, "fallback을 브랜드 카드로 변경")가 현 코드에 반영 안 됨. 현 코드 = 302 = 1차 사실로 확정.
-   - 미확정: 9ebf887이 (a) 이 라우트를 브랜드 카드로 바꿨다 되돌렸는지, (b) 다른 파일(예: share 라우트)을 건드린 걸 핸드오프가 이 라우트로 잘못 적었는지는 git 이력 확인 필요(scout 권한 밖). 별도 정찰 후보.
+   - 드리프트 아님(표현 해석 차이로 확정, 2026-06-19 git 이력 정찰): 9ebf887은 fallback 구조를 바꾸지 않았다. FALLBACK_URL 상수 한 줄 교체(logo.png → og-image.png)뿐 + 브랜드 카드 PNG(public/og-image.png, 525KB) 신규 추가. "브랜드 카드로 교체"는 302의 목적지 이미지를 브랜드 카드로 바꿨다는 뜻이지 응답 방식(302→200 본문) 변경이 아니다. 현 코드 = 302 = 1차 사실로 확정.
+   - 확정(2026-06-19 git 이력 정찰): (a)되돌림도 (b)오기도 아님. 9ebf887은 og-image route.ts를 건드린 게 맞고(git show 9ebf887 --stat 확인), 단 FALLBACK_URL 상수 한 줄만 교체했다. 이 파일을 건드린 커밋은 65c4d17·9ebf887·418761f 셋뿐이며 fallback을 302 외 방식으로 바꾼 커밋은 없다 = 처음부터 지금까지 302. 라나 ③ 지적("302는 Slack 등 일부 크롤러가 og:image redirect 미추종")은 유효하나 저빈도(intro 이미지 미설정 시에만 fallback) + 미실측이라 보류 유지.
 - 처리: 발견만 확정. 수정(②Cache-Control 추가 등)은 실행관 트랙. 급한 장애 아님(YAGNI), Ray 결정 영역.
 
 ---
