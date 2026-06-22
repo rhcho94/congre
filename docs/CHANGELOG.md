@@ -2,6 +2,10 @@
 
 > 기능 단위 작업 이력. 최신이 위.
 
+## 2026-06-22
+
+- chore(agents): 4개 에이전트 description에 트리거 케이스 명시 + 능동 위임 신호 부여(axe만 제외, 승인 게이트 강조). CLAUDE.md 학습 룰에 "에이전트 라우팅 빠른 참조" 표 추가. description 자동위임 매칭 시운전 4/4 의도대로 통과. 커밋 2484105(description) + 본 커밋(문서).
+
 ## 2026-06-18
 
 - feat(security): `firestore.rules` clips 완전 차단 + events create hostId 강제·update 잠금. `clips` 블록을 `read, create, update, delete: if false`로 일원화(모든 clip mutation은 Admin SDK 경유라 클라이언트 직접 update/delete 잠가도 정상 기능 영향 0). `events.create` 조건에 `request.resource.data.hostId == request.auth.uid` AND 추가(인증 사용자가 타인 uid를 hostId로 박는 경로 차단). `events.update`는 `if false`로 잠금(events 갱신은 전부 `/api/host/events/[eventId]` PATCH Admin SDK 경유 확인). notifications·users 블록 미접촉. ★ 콘솔 게시(Firebase Console Rules 탭)는 운영자 수동 단계 필요.
