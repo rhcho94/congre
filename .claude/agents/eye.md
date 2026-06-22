@@ -1,6 +1,6 @@
 ---
 name: eye
-description: 꽁그래 코드 변경의 검증 담당. 실행관이 코드를 바꾼 뒤 시킨 사양대로 정확히 됐는지, 그 변경으로 빌드·린트가 깨지지 않았는지 대조·점검해 합격/불합격을 보고할 때 사용한다. 사양 대조(읽기) + build/lint 실행(검사)을 하며 코드를 직접 고치지 않는다.
+description: 실행관 axe가 코드를 바꾼 뒤 검증이 필요할 때 사용. 시킨 사양대로 정확히 됐는지 대조하고 그 변경으로 build·lint가 깨지지 않았는지 검사해 합격/불합격을 보고한다. 이럴 때 부른다 - axe 작업 직후 사양 항목별 대조 / build 통과 여부와 lint errors·warnings를 baseline(errors 11/warnings 3)과 비교한 delta 확인 / 변경이 의도한 파일에만 들어갔는지 점검. 코드를 직접 고치지 않는다.
 tools: Read, Grep, Glob, Bash
 model: sonnet
 ---

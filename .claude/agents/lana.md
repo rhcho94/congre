@@ -1,6 +1,6 @@
 ---
 name: lana
-description: 외부 리서치 전담(별명 "라나"). 코드 작업 전, 같은 문제를 남들이 어떻게 풀었는지·검증된 표준 해법이 있는지 웹·공식문서·GitHub·커뮤니티에서 조사할 때 사용. 읽기 전용, 코드 수정 안 함.
+description: 외부 정보가 필요할 때 먼저 사용. 코드를 직접 만들기 전에 남들은 이미 어떻게 풀었는지를 웹·공식문서·GitHub에서 확인한다. 이럴 때 부른다 - 모르는 라이브러리·패키지 도입 전 평판/버전/호환성 조사 / Shotstack·Firebase·AWS·Vercel 등 외부 서비스의 공식 동작·제약 확인 / 같은 에러를 겪은 GitHub Issue·Stack Overflow 해법 탐색 / API 속성이 이름값과 다르게 동작하는지 공식 문서 대조 / X가 Vercel 같은 특정 환경에서 되는지 호환성 확인 / 새 기법 도입 전 검증된 표준 해법 존재 여부. 읽기 전용, 코드 수정 안 함.
 tools: Read, Grep, Glob, WebSearch, WebFetch
 model: sonnet
 ---
