@@ -2,6 +2,10 @@
 
 > 기능 단위 작업 이력. 최신이 위.
 
+## 2026-06-27
+
+- feat(landing): 히어로 재구성 — 카피 전면 교체("LIVE·AI 영상 메이커" 폐기 → "이 순간을 영원히, 영상 방명록" + "QR 스캔→촬영→행사 영상 완성" 배지), 상단 시작하기·1분 데모 버튼 삭제(CTA 1개로), 완성본 demo.mp4를 가로 16:9 폰 목업(.hero-demo-phone)으로 히어로 인라인 + 음소거 토글(.hero-mute-toggle) 추가, LIVE·EDITING 과정 영상(vid-main)을 How it works로 이동, .howto 높이 잠금 해제. www.congre.kr 배포(랜딩 git 외부 트랙). 핸드오프 docs/handoff/2026-06-27-landing-hero-redesign.md.
+
 ## 2026-06-22
 
 - chore(agents): 4개 에이전트 description에 트리거 케이스 명시 + 능동 위임 신호 부여(axe만 제외, 승인 게이트 강조). CLAUDE.md 학습 룰에 "에이전트 라우팅 빠른 참조" 표 추가. description 자동위임 매칭 시운전 4/4 의도대로 통과. 커밋 2484105(description) + 본 커밋(문서).

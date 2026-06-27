@@ -159,10 +159,11 @@ Legacy 별칭: `--surface`=`var(--surface-1)`, `--border`=`var(--hairline-strong
 ### 자산 인벤토리
 
 영상 (`deploy/videos/`):
-- wedding_1.mp4 — Hero 영상, 결혼식 레퍼런스
+- demo.mp4 — Hero 완성본 샘플 (2026-06-27 가로 16:9 폰 목업 인라인 + 음소거 토글). 4:3(1440×1080) 파일에 16:9 콘텐츠+상하 띠 → known-issues L11
+- wedding_1.mp4 — Showcase 마퀴 결혼식 (결혼식 레퍼런스. 옛 "Hero 영상" 라벨은 2026-06-27 히어로 재구성으로 무효)
 - wedding_2.mp4 — Bento 결혼식 타일, 다국어 셀카
 - wedding_intro.mp4 — 결혼식 인트로
-- graduation.mp4 — Bento 졸업식 타일, 중학교 졸업
+- graduation.mp4 — Bento 졸업식 타일, 중학교 졸업 + How it works LIVE·EDITING 과정 영상(2026-06-27 히어로→How 이동)
 - challenge.mp4 — Bento 챌린지·모임 타일, K-pop 챌린지
 
 이미지: `.image-slots.state.json` (base64 인코딩, 41장)
@@ -175,6 +176,14 @@ Hero / Showcase / How it works / Why now / Moments / Occasions / Testimonials / 
 (2026-05-30 V5 R10 swap — Showcase가 Hero 직후로 이동. 결과물 hook 먼저 → 동작 → 비교 흐름. decisions/landing.md 2026-05-30 (10))
 
 (data-screen-label 라벨 중복 이슈는 known-issues 랜딩 영역 L1, 2026-05-27 해소)
+
+### 히어로 재구성 (2026-06-27)
+
+- 헤드라인 "이 순간을 영원히, **영상 방명록**" (옛 "행사가 끝나기 전에, 영상이 나옵니다" 폐기). 배지 "QR 스캔 → 촬영 → 행사 영상 완성" (옛 "LIVE·AI 영상 메이커" 폐기).
+- CTA 1개로 축소 — 상단바 "시작하기" + 히어로 "1분 데모 보기" 삭제, "무료로 시작하기"만 유지.
+- 완성본 샘플 `demo.mp4`를 히어로에 인라인: 가로 16:9 폰 목업 `.hero-demo-phone`(showcase-phone 패턴 변형) + 음소거 토글 `.hero-mute-toggle`. demo.mp4 띠 처리는 known-issues L11.
+- 옛 히어로의 **LIVE·EDITING 과정 영상은 더 이상 히어로에 없음** — `vid-main`(graduation.mp4 배경 + AI 진행률 오버레이)을 How it works 섹션으로 이동. `.howto` 100vh 높이 잠금(max-height/overflow) 해제.
+- 배포: www.congre.kr (랜딩 git 외부 트랙). 핸드오프 docs/handoff/2026-06-27-landing-hero-redesign.md.
 
 ### 추가 페이지
 
