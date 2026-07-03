@@ -2,6 +2,10 @@
 
 > 기능 단위 작업 이력. 최신이 위.
 
+## 2026-07-03
+
+- feat(signup): 가입 폼 완주율 카피 — 필드 안내(이메일·이름·전화) + 만19세 맥락 + 제목 정리(Host eyebrow 제거·무료 테스트 부제) + 버튼 "무료로 시작하기".
+
 ## 2026-06-27
 
 - feat(landing): 히어로 재구성 — 카피 전면 교체("LIVE·AI 영상 메이커" 폐기 → "이 순간을 영원히, 영상 방명록" + "QR 스캔→촬영→행사 영상 완성" 배지), 상단 시작하기·1분 데모 버튼 삭제(CTA 1개로), 완성본 demo.mp4를 가로 16:9 폰 목업(.hero-demo-phone)으로 히어로 인라인 + 음소거 토글(.hero-mute-toggle) 추가, LIVE·EDITING 과정 영상(vid-main)을 How it works로 이동, .howto 높이 잠금 해제. www.congre.kr 배포(랜딩 git 외부 트랙). 핸드오프 docs/handoff/2026-06-27-landing-hero-redesign.md.
