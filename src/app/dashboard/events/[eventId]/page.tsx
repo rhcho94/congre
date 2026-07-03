@@ -1016,36 +1016,88 @@ export default function EventDetailPage() {
 
           <div className="hr mb-8" />
 
-          {/* QR & 공유 — open일 때만 */}
-          {event.status === "open" && shareUrl && (
+          {/* 렌더링 / 완성 상태 */}
+          {event.status === "rendering" ? (
+            <div className="notice mb-8">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-2 h-2 rounded-full bg-[#7b8ce0] animate-pulse" />
+                <p className="text-sm text-muted">AI가 영상을 편집하고 있습니다...</p>
+              </div>
+              <p className="text-xs text-muted opacity-60 pl-5">
+                3~5분 소요 · 완료되면 자동으로 업데이트됩니다
+              </p>
+            </div>
+          ) : event.status === "done" ? (
             <div className="mb-8">
-              <p className="eyebrow mb-4">참가자 초대</p>
-              <div className="glass-panel flex flex-col sm:flex-row gap-6">
-                <div className="shrink-0 flex flex-col items-center gap-2">
-                  <QRCodeSVG value={shareUrl} size={140} bgColor="#151310" fgColor="#ede8df" level="M" />
-                  <button onClick={handleQRDownload} className="btn btn-secondary" style={{ height: 32, padding: "0 12px", fontSize: 11 }}>
-                    QR 이미지 저장
-                  </button>
-                </div>
-                <div className="flex-1 min-w-0 flex flex-col justify-center gap-3">
-                  <p className="text-xs text-muted leading-relaxed">
-                    아래 QR이나 링크를 참가자에게 공유해 영상을 모으세요
-                  </p>
+              {event.videoUrl ? (
+                <div className="glass-panel flex flex-col gap-4">
                   <div className="flex items-center gap-2">
-                    <span
-                      className="flex-1 min-w-0 text-xs text-foreground px-3 py-2 truncate font-mono"
-                      style={{ background: "var(--surface-2)", border: "1px solid var(--hairline)", borderRadius: "var(--r-sm)" }}
-                    >
-                      {shareUrl}
-                    </span>
-                    <button onClick={handleCopy} className="btn btn-secondary shrink-0" style={{ height: 36, padding: "0 14px", fontSize: 12 }}>
-                      {copied ? "복사됨" : "복사"}
-                    </button>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5ba06e" strokeWidth="1.5">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    <p className="eyebrow" style={{ color: "#5ba06e" }}>편집 완료</p>
+                  </div>
+
+                  {/* 배지 미리보기 */}
+                  <div className="flex flex-col items-center gap-2 py-1">
+                    <CongreBadge />
+                    <p className="text-[10px] tracking-widest uppercase text-muted opacity-60">
+                      공유 시 이 배지가 함께 표시됩니다
+                    </p>
+                  </div>
+
+                  <video
+                    src={event.videoUrl}
+                    controls
+                    playsInline
+                    className="w-full max-w-xs mx-auto"
+                    style={{ aspectRatio: "9/16", background: "#0c0b09", borderRadius: "var(--r-sm)" }}
+                  />
+
+                  {/* 영상 다운로드 — 주인공 (전체폭 primary) */}
+                  <a
+                    href={event.videoUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-primary w-full"
+                  >
+                    영상 다운로드 →
+                  </a>
+
+                  {/* SNS 공유 — 보조 행, 작게 */}
+                  <div className="pt-3" style={{ borderTop: "1px solid var(--hairline)" }}>
+                    <p className="eyebrow mb-3">공유하기</p>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleKakaoShare}
+                        disabled={Boolean(process.env.NEXT_PUBLIC_KAKAO_APP_KEY) && !kakaoReady}
+                        className="btn btn-kakao"
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="#3C1E1E">
+                          <path d="M12 3C6.48 3 2 6.69 2 11.25c0 2.87 1.7 5.39 4.31 6.95L5.25 21l3.96-2.12A12.2 12.2 0 0 0 12 19.5c5.52 0 10-3.69 10-8.25S17.52 3 12 3z" />
+                        </svg>
+                        카카오톡
+                      </button>
+                      <button onClick={handleLinkCopy} className="btn btn-secondary" style={{ height: 46, padding: "0 18px", fontSize: 14 }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                        </svg>
+                        {linkCopied ? "복사됨!" : "링크 복사"}
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
+              ) : (
+                <div className="notice flex items-center gap-3">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5ba06e" strokeWidth="1.5">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  <p className="text-sm" style={{ color: "#5ba06e" }}>편집이 완료되었습니다</p>
+                </div>
+              )}
             </div>
-          )}
+          ) : null}
 
           {/* 영상 시작·끝 꾸미기 */}
           <div className={`panel mb-8 ${isClosed ? "opacity-60" : ""}`}>
@@ -1317,89 +1369,6 @@ export default function EventDetailPage() {
             </div>
           </div>
 
-          {/* 렌더링 / 완성 상태 */}
-          {event.status === "rendering" ? (
-            <div className="notice mb-8">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-2 h-2 rounded-full bg-[#7b8ce0] animate-pulse" />
-                <p className="text-sm text-muted">AI가 영상을 편집하고 있습니다...</p>
-              </div>
-              <p className="text-xs text-muted opacity-60 pl-5">
-                3~5분 소요 · 완료되면 자동으로 업데이트됩니다
-              </p>
-            </div>
-          ) : event.status === "done" ? (
-            <div className="mb-8">
-              {event.videoUrl ? (
-                <div className="glass-panel flex flex-col gap-4">
-                  <div className="flex items-center gap-2">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5ba06e" strokeWidth="1.5">
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                    <p className="eyebrow" style={{ color: "#5ba06e" }}>편집 완료</p>
-                  </div>
-
-                  {/* 배지 미리보기 */}
-                  <div className="flex flex-col items-center gap-2 py-1">
-                    <CongreBadge />
-                    <p className="text-[10px] tracking-widest uppercase text-muted opacity-60">
-                      공유 시 이 배지가 함께 표시됩니다
-                    </p>
-                  </div>
-
-                  <video
-                    src={event.videoUrl}
-                    controls
-                    playsInline
-                    className="w-full max-w-xs mx-auto"
-                    style={{ aspectRatio: "9/16", background: "#0c0b09", borderRadius: "var(--r-sm)" }}
-                  />
-
-                  {/* 영상 다운로드 — 주인공 (전체폭 primary) */}
-                  <a
-                    href={event.videoUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn btn-primary w-full"
-                  >
-                    영상 다운로드 →
-                  </a>
-
-                  {/* SNS 공유 — 보조 행, 작게 */}
-                  <div className="pt-3" style={{ borderTop: "1px solid var(--hairline)" }}>
-                    <p className="eyebrow mb-3">공유하기</p>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={handleKakaoShare}
-                        disabled={Boolean(process.env.NEXT_PUBLIC_KAKAO_APP_KEY) && !kakaoReady}
-                        className="btn btn-kakao"
-                      >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="#3C1E1E">
-                          <path d="M12 3C6.48 3 2 6.69 2 11.25c0 2.87 1.7 5.39 4.31 6.95L5.25 21l3.96-2.12A12.2 12.2 0 0 0 12 19.5c5.52 0 10-3.69 10-8.25S17.52 3 12 3z" />
-                        </svg>
-                        카카오톡
-                      </button>
-                      <button onClick={handleLinkCopy} className="btn btn-secondary" style={{ height: 46, padding: "0 18px", fontSize: 14 }}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-                          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-                        </svg>
-                        {linkCopied ? "복사됨!" : "링크 복사"}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="notice flex items-center gap-3">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5ba06e" strokeWidth="1.5">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                  <p className="text-sm" style={{ color: "#5ba06e" }}>편집이 완료되었습니다</p>
-                </div>
-              )}
-            </div>
-          ) : null}
-
           {/* Clips list */}
           <div>
             <p className="eyebrow mb-4">업로드된 클립 ({clips.length}개)</p>
@@ -1492,6 +1461,37 @@ export default function EventDetailPage() {
               </div>
             )}
           </div>
+
+          {/* QR & 공유 — open일 때만 */}
+          {event.status === "open" && shareUrl && (
+            <div className="mb-8">
+              <p className="eyebrow mb-4">참가자 초대</p>
+              <div className="glass-panel flex flex-col sm:flex-row gap-6">
+                <div className="shrink-0 flex flex-col items-center gap-2">
+                  <QRCodeSVG value={shareUrl} size={140} bgColor="#151310" fgColor="#ede8df" level="M" />
+                  <button onClick={handleQRDownload} className="btn btn-secondary" style={{ height: 32, padding: "0 12px", fontSize: 11 }}>
+                    QR 이미지 저장
+                  </button>
+                </div>
+                <div className="flex-1 min-w-0 flex flex-col justify-center gap-3">
+                  <p className="text-xs text-muted leading-relaxed">
+                    아래 QR이나 링크를 참가자에게 공유해 영상을 모으세요
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="flex-1 min-w-0 text-xs text-foreground px-3 py-2 truncate font-mono"
+                      style={{ background: "var(--surface-2)", border: "1px solid var(--hairline)", borderRadius: "var(--r-sm)" }}
+                    >
+                      {shareUrl}
+                    </span>
+                    <button onClick={handleCopy} className="btn btn-secondary shrink-0" style={{ height: 36, padding: "0 14px", fontSize: 12 }}>
+                      {copied ? "복사됨" : "복사"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </main>
 
         {/* 고해상도 QR 다운로드용 히든 캔버스 */}
