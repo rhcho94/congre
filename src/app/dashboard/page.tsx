@@ -167,33 +167,52 @@ export default function DashboardPage() {
           {eventsLoading ? (
             <p className="text-center text-muted text-sm py-16 animate-pulse">불러오는 중...</p>
           ) : events.length === 0 ? (
-            <div className="notice text-center py-16">
-              <p className="text-muted text-sm mb-6">5분이면 완성본까지 직접 볼 수 있어요</p>
-              <div className="flex flex-wrap items-start justify-center gap-x-3 gap-y-3 mb-6">
-                <div className="flex flex-col items-center gap-2 w-16">
-                  <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[var(--surface-2)] text-xs text-[var(--accent)]">1</span>
-                  <span className="text-xs text-muted text-center">이벤트 만들기</span>
+            <div className="notice text-center py-16 relative overflow-hidden">
+              {/* 배경 이미지 레이어 (blur) */}
+              <div
+                className="absolute inset-0"
+                style={{
+                  backgroundImage: "url('/images/empty-state-wedding.png')",
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  filter: "blur(3px)",
+                  transform: "scale(1.05)",
+                }}
+              />
+              {/* 흰색 반투명 오버레이 */}
+              <div
+                className="absolute inset-0"
+                style={{ backgroundColor: "rgba(255, 255, 255, 0.80)" }}
+              />
+              {/* 콘텐츠 */}
+              <div className="relative z-10">
+                <p className="text-muted text-sm mb-6">5분이면 완성본까지 직접 볼 수 있어요</p>
+                <div className="flex flex-wrap items-start justify-center gap-x-3 gap-y-3 mb-6">
+                  <div className="flex flex-col items-center gap-2">
+                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[var(--surface-2)] text-xs text-[var(--accent)]">1</span>
+                    <span className="text-xs text-muted text-center break-keep">이벤트 만들기</span>
+                  </div>
+                  <span className="flex items-center shrink-0 self-start mt-2" style={{ color: "var(--accent)", opacity: 0.55 }} aria-hidden><svg viewBox="0 0 40 9" width="24" height="9" className="block"><line x1="1" y1="4.5" x2="34" y2="4.5" stroke="currentColor" strokeWidth={1.3} /><path d="M30 1.5 34.5 4.5 30 7.5" fill="none" stroke="currentColor" strokeWidth={1.3} /></svg></span>
+                  <div className="flex flex-col items-center gap-2">
+                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[var(--surface-2)] text-xs text-[var(--accent)]">2</span>
+                    <span className="text-xs text-muted text-center break-keep">QR을 내 폰으로 스캔</span>
+                  </div>
+                  <span className="flex items-center shrink-0 self-start mt-2" style={{ color: "var(--accent)", opacity: 0.55 }} aria-hidden><svg viewBox="0 0 40 9" width="24" height="9" className="block"><line x1="1" y1="4.5" x2="34" y2="4.5" stroke="currentColor" strokeWidth={1.3} /><path d="M30 1.5 34.5 4.5 30 7.5" fill="none" stroke="currentColor" strokeWidth={1.3} /></svg></span>
+                  <div className="flex flex-col items-center gap-2">
+                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[var(--surface-2)] text-xs text-[var(--accent)]">3</span>
+                    <span className="text-xs text-muted text-center break-keep">하객인 척 짧게 촬영</span>
+                  </div>
+                  <span className="flex items-center shrink-0 self-start mt-2" style={{ color: "var(--accent)", opacity: 0.55 }} aria-hidden><svg viewBox="0 0 40 9" width="24" height="9" className="block"><line x1="1" y1="4.5" x2="34" y2="4.5" stroke="currentColor" strokeWidth={1.3} /><path d="M30 1.5 34.5 4.5 30 7.5" fill="none" stroke="currentColor" strokeWidth={1.3} /></svg></span>
+                  <div className="flex flex-col items-center gap-2">
+                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[var(--surface-2)] text-xs text-[var(--accent)]">4</span>
+                    <span className="text-xs text-muted text-center break-keep">완성본 영상 확인</span>
+                  </div>
                 </div>
-                <span className="flex items-center shrink-0 self-start mt-2" style={{ color: "var(--accent)", opacity: 0.55 }} aria-hidden><svg viewBox="0 0 40 9" width="24" height="9" className="block"><line x1="1" y1="4.5" x2="34" y2="4.5" stroke="currentColor" strokeWidth={1.3} /><path d="M30 1.5 34.5 4.5 30 7.5" fill="none" stroke="currentColor" strokeWidth={1.3} /></svg></span>
-                <div className="flex flex-col items-center gap-2 w-16">
-                  <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[var(--surface-2)] text-xs text-[var(--accent)]">2</span>
-                  <span className="text-xs text-muted text-center">QR을 내 폰으로 스캔</span>
-                </div>
-                <span className="flex items-center shrink-0 self-start mt-2" style={{ color: "var(--accent)", opacity: 0.55 }} aria-hidden><svg viewBox="0 0 40 9" width="24" height="9" className="block"><line x1="1" y1="4.5" x2="34" y2="4.5" stroke="currentColor" strokeWidth={1.3} /><path d="M30 1.5 34.5 4.5 30 7.5" fill="none" stroke="currentColor" strokeWidth={1.3} /></svg></span>
-                <div className="flex flex-col items-center gap-2 w-16">
-                  <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[var(--surface-2)] text-xs text-[var(--accent)]">3</span>
-                  <span className="text-xs text-muted text-center">하객인 척 짧게 촬영</span>
-                </div>
-                <span className="flex items-center shrink-0 self-start mt-2" style={{ color: "var(--accent)", opacity: 0.55 }} aria-hidden><svg viewBox="0 0 40 9" width="24" height="9" className="block"><line x1="1" y1="4.5" x2="34" y2="4.5" stroke="currentColor" strokeWidth={1.3} /><path d="M30 1.5 34.5 4.5 30 7.5" fill="none" stroke="currentColor" strokeWidth={1.3} /></svg></span>
-                <div className="flex flex-col items-center gap-2 w-16">
-                  <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[var(--surface-2)] text-xs text-[var(--accent)]">4</span>
-                  <span className="text-xs text-muted text-center">완성본 영상 확인</span>
-                </div>
+                <p className="text-xs text-muted mb-6">하객이 없어도 혼자 한 바퀴 돌려볼 수 있어요</p>
+                <Link href="/dashboard/create" className="text-xs tracking-widest uppercase text-accent hover:brightness-110 transition-all">
+                  첫 이벤트 만들기 →
+                </Link>
               </div>
-              <p className="text-xs text-muted mb-6">하객이 없어도 혼자 한 바퀴 돌려볼 수 있어요</p>
-              <Link href="/dashboard/create" className="text-xs tracking-widest uppercase text-accent hover:brightness-110 transition-all">
-                첫 이벤트 만들기 →
-              </Link>
             </div>
           ) : (
             <div className="flex flex-col gap-3">
