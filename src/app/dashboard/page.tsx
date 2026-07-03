@@ -168,7 +168,26 @@ export default function DashboardPage() {
             <p className="text-center text-muted text-sm py-16 animate-pulse">불러오는 중...</p>
           ) : events.length === 0 ? (
             <div className="notice text-center py-16">
-              <p className="text-muted text-sm mb-4">아직 이벤트가 없습니다.</p>
+              <p className="text-muted text-sm mb-6">5분이면 완성본까지 직접 볼 수 있어요</p>
+              <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 mb-6">
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[var(--surface-2)] text-xs text-[var(--accent)]">1</span>
+                  <span className="text-xs text-muted">이벤트 만들기</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[var(--surface-2)] text-xs text-[var(--accent)]">2</span>
+                  <span className="text-xs text-muted">QR을 내 폰으로 스캔</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[var(--surface-2)] text-xs text-[var(--accent)]">3</span>
+                  <span className="text-xs text-muted">하객인 척 짧게 촬영</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[var(--surface-2)] text-xs text-[var(--accent)]">4</span>
+                  <span className="text-xs text-muted">완성본 영상 확인</span>
+                </div>
+              </div>
+              <p className="text-xs text-muted mb-6">하객이 없어도 혼자 한 바퀴 돌려볼 수 있어요</p>
               <Link href="/dashboard/create" className="text-xs tracking-widest uppercase text-accent hover:brightness-110 transition-all">
                 첫 이벤트 만들기 →
               </Link>
