@@ -403,7 +403,7 @@ export default function CreateEventPage() {
                 </div>
 
                 <button type="submit" disabled={submitting} className="btn btn-primary mt-2">
-                  {submitting ? "생성 중..." : "이벤트 만들기"}
+                  {submitting ? "생성 중..." : "이벤트 시작하기"}
                 </button>
               </form>
             </div>
@@ -420,7 +420,7 @@ export default function CreateEventPage() {
                 </div>
                 <div>
                   <p className="eyebrow">이벤트 생성 완료</p>
-                  <p className="text-xs text-muted mt-0.5">QR코드로 참가자를 초대하세요</p>
+                  <p className="text-xs text-muted mt-0.5">아래 QR이나 링크를 참가자에게 공유해 영상을 모으세요</p>
                 </div>
               </div>
 
