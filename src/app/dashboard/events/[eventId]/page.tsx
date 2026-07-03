@@ -65,15 +65,6 @@ interface ApiClip {
   excludedAt?: number | null;
 }
 
-function formatUploadTime(ts: number | null | undefined): string {
-  if (!ts) return "";
-  return new Date(ts).toLocaleString("ko-KR", {
-    month: "numeric",
-    day: "numeric",
-    hour: "numeric",
-    minute: "numeric",
-  });
-}
 
 const dangerBtnStyle: React.CSSProperties = {
   background: "#b91c1c",
@@ -1101,7 +1092,7 @@ export default function EventDetailPage() {
 
           {/* 영상 시작·끝 꾸미기 */}
           <div className={`panel mb-8 ${isClosed ? "opacity-60" : ""}`}>
-            <p className="eyebrow mb-1">선택 옵션 — 영상 시작·끝 꾸미기</p>
+            <p className="eyebrow mb-1" style={{ color: "var(--accent)" }}>선택 옵션 — 영상 시작·끝 꾸미기</p>
             <p className="text-xs text-muted mb-1 leading-relaxed">참가자 영상을 기다리는 동안, 인트로·아웃트로·음악·색감을 골라 완성본을 더 멋지게 꾸며보세요</p>
             <p className="text-xs text-muted mb-5 leading-relaxed">
               이벤트 영상 시작과 끝에 짧은 동영상, 텍스트, 사진을 추가할 수 있어요. 비워두면 참가자 영상만으로 만들어집니다.
@@ -1262,7 +1253,7 @@ export default function EventDetailPage() {
 
           {/* 영상 스타일 */}
           <div className={`panel mb-8 ${isClosed ? "opacity-60" : ""}`}>
-            <p className="eyebrow mb-1">선택 옵션 — 영상 스타일</p>
+            <p className="eyebrow mb-1" style={{ color: "var(--accent)" }}>선택 옵션 — 영상 스타일</p>
             <p className="text-xs text-muted mb-5 leading-relaxed">
               참가자 영상 전체에 적용될 색감과 전환 방식을 선택할 수 있어요. 비워두면 기본 스타일로 만들어집니다.
             </p>
@@ -1371,15 +1362,15 @@ export default function EventDetailPage() {
 
           {/* Clips list */}
           <div>
-            <p className="eyebrow mb-4">업로드된 클립 ({clips.length}개)</p>
+            <p className="eyebrow mb-4" style={{ color: "var(--accent)" }}>업로드된 클립 ({clips.length}개)</p>
             {clips.length === 0 ? (
               <p className="text-muted text-sm py-8 text-center">아직 업로드된 클립이 없습니다.</p>
             ) : (
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-0">
                 {clips.map((clip, i) => {
                   const isActive = activeClipId === clip.id;
                   return (
-                    <div key={clip.id} className="glass-panel flex flex-col" style={clip.excludedAt ? { opacity: 0.45 } : {}}>
+                    <div key={clip.id} className="flex flex-col py-2 border-b border-[var(--hairline)]" style={clip.excludedAt ? { opacity: 0.45 } : {}}>
                       <div className="flex items-center justify-between gap-2">
                         <span className="text-xs text-muted tabular-nums shrink-0">
                           #{clips.length - i}
@@ -1388,13 +1379,7 @@ export default function EventDetailPage() {
                           <span className="text-xs text-foreground truncate">
                             {clip.uploaderName ?? <span className="text-muted">(이름 없음)</span>}
                           </span>
-                          <span className="text-xs text-muted">
-                            {clip.uploaderPhone ?? "(전번 없음)"}
-                          </span>
                         </div>
-                        <span className="text-xs text-muted shrink-0 mr-3">
-                          {formatUploadTime(clip.uploadedAt)}
-                        </span>
                         <button
                           onClick={() => handleToggleExclusion(clip)}
                           className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 text-xs tracking-widest uppercase transition-all duration-200 mr-2"
@@ -1465,7 +1450,7 @@ export default function EventDetailPage() {
           {/* QR & 공유 — open일 때만 */}
           {event.status === "open" && shareUrl && (
             <div className="mb-8">
-              <p className="eyebrow mb-4">참가자 초대</p>
+              <p className="eyebrow mb-4" style={{ color: "var(--accent)" }}>참가자 초대</p>
               <div className="glass-panel flex flex-col sm:flex-row gap-6">
                 <div className="shrink-0 flex flex-col items-center gap-2">
                   <QRCodeSVG value={shareUrl} size={140} bgColor="#151310" fgColor="#ede8df" level="M" />
