@@ -10,6 +10,7 @@
 - feat(event-dashboard): 카피 — QR 안내 문구 통일(공유해 영상을 모으세요) + 선택옵션 섹션에 대기중 유도 문구(참가자 영상을 기다리는 동안 인트로·아웃트로·음악·색감).
 - fix(dashboard): 빈상태 여정 스트립 시각 보강 — 단계 세로 정렬(뱃지 위·라벨 아래) + 단계 사이 화살표(인라인 SVG, FlowStrip 비결합) 추가로 흐름 가독성 개선.
 - feat(dashboard): 빈상태 시각 완성 — 반투명 결혼식 사진 배경(empty-state-wedding.png, blur 3px) + 흰색 오버레이 80% + 라벨 줄바뀜 수정(고정폭 w-16 제거·break-keep).
+- fix(dashboard): 빈상태 사진 배경 blur 제거 — 인물 형체 노출(흰색 오버레이 80% 유지). blur(3px)·scale(1.05) 속성 삭제 + stale 주석 정리.
 
 ## 2026-06-27
 

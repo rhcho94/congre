@@ -168,15 +168,13 @@ export default function DashboardPage() {
             <p className="text-center text-muted text-sm py-16 animate-pulse">불러오는 중...</p>
           ) : events.length === 0 ? (
             <div className="notice text-center py-16 relative overflow-hidden">
-              {/* 배경 이미지 레이어 (blur) */}
+              {/* 배경 이미지 레이어 */}
               <div
                 className="absolute inset-0"
                 style={{
                   backgroundImage: "url('/images/empty-state-wedding.png')",
                   backgroundSize: "cover",
                   backgroundPosition: "center",
-                  filter: "blur(3px)",
-                  transform: "scale(1.05)",
                 }}
               />
               {/* 흰색 반투명 오버레이 */}
