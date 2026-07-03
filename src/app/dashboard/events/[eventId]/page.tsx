@@ -1029,7 +1029,7 @@ export default function EventDetailPage() {
                 </div>
                 <div className="flex-1 min-w-0 flex flex-col justify-center gap-3">
                   <p className="text-xs text-muted leading-relaxed">
-                    QR코드를 스캔하거나 링크를 공유하세요.
+                    아래 QR이나 링크를 참가자에게 공유해 영상을 모으세요
                   </p>
                   <div className="flex items-center gap-2">
                     <span
@@ -1050,6 +1050,7 @@ export default function EventDetailPage() {
           {/* 영상 시작·끝 꾸미기 */}
           <div className={`panel mb-8 ${isClosed ? "opacity-60" : ""}`}>
             <p className="eyebrow mb-1">선택 옵션 — 영상 시작·끝 꾸미기</p>
+            <p className="text-xs text-muted mb-1 leading-relaxed">참가자 영상을 기다리는 동안, 인트로·아웃트로·음악·색감을 골라 완성본을 더 멋지게 꾸며보세요</p>
             <p className="text-xs text-muted mb-5 leading-relaxed">
               이벤트 영상 시작과 끝에 짧은 동영상, 텍스트, 사진을 추가할 수 있어요. 비워두면 참가자 영상만으로 만들어집니다.
               <br />
