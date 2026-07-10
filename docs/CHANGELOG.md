@@ -2,6 +2,10 @@
 
 > 기능 단위 작업 이력. 최신이 위.
 
+## 2026-07-10
+
+- feat(rerender): done 상태 재렌더 버튼 + 재렌더 확인 모달 추가 — 완성(done) 상태에서도 "영상 다시 만들기" 노출(기존엔 closed에서만), done·closed 공용 확인 모달을 거치도록 통일. 모달에 "전체 N개 중 M개 포함" 요약 + 인라인 클립 재선택·인트로/아웃트로 변경 안내 문구. includedCount===0이면 [다시 만들기] 비활성(서버 NO_CLIPS_AFTER_EXCLUSION 도달 전 차단). 결제 게이트(B5 재렌더 유료)는 결제 트랙(Toss v2)에 남김 — 이번 스코프 제외. handleRestartRender/callRenderStart 본문·FGT 유료 가드·클립 토글 API 무변경. 대상 파일 1개: src/app/dashboard/events/[eventId]/page.tsx.
+
 ## 2026-07-03
 
 - feat(signup): 가입 폼 완주율 카피 — 필드 안내(이메일·이름·전화) + 만19세 맥락 + 제목 정리(Host eyebrow 제거·무료 테스트 부제) + 버튼 "무료로 시작하기".

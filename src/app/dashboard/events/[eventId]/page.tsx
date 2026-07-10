@@ -80,6 +80,7 @@ export default function EventDetailPage() {
   const [eventLoading, setEventLoading] = useState(true);
   const [clips, setClips] = useState<ApiClip[]>([]);
   const [showCloseModal, setShowCloseModal] = useState(false);
+  const [showRerenderModal, setShowRerenderModal] = useState(false);
   const [closing, setClosing] = useState(false);
   const [lotteryOpen, setLotteryOpen] = useState(false);
   const [lotteryTargetCount, setLotteryTargetCount] = useState(1);
@@ -787,6 +788,7 @@ export default function EventDetailPage() {
   }
 
   const isClosed = event.status !== "open";
+  const includedCount = clips.filter((c) => !c.excludedAt).length;
 
   return (
     <>
@@ -808,6 +810,38 @@ export default function EventDetailPage() {
                 </button>
                 <button onClick={handleClose} disabled={closing} className="btn flex-1" style={dangerBtnStyle}>
                   {closing ? "처리 중..." : "마감 확인"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Rerender confirmation modal */}
+        {showRerenderModal && (
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-6">
+            <div className="notice max-w-sm w-full">
+              <p className="display text-lg mb-3">완성본을 다시 만들까요?</p>
+              <p className="text-sm text-muted mb-4 leading-relaxed">
+                다시 만들기 전에 아래 목록에서 참가자 영상을 다시 고르거나, 대시보드에서 인트로·아웃트로를 바꿀 수 있어요.
+              </p>
+              <p className="text-sm text-muted mb-6">
+                현재 전체 {clips.length}개 중 {includedCount}개 포함
+              </p>
+              {includedCount === 0 && (
+                <p className="text-sm mb-4" style={{ color: "#e05252" }}>
+                  포함된 클립이 없어요. 제외를 해제해주세요.
+                </p>
+              )}
+              <div className="flex gap-3">
+                <button onClick={() => setShowRerenderModal(false)} disabled={closing} className="btn btn-secondary flex-1">
+                  취소
+                </button>
+                <button
+                  onClick={() => { setShowRerenderModal(false); handleRestartRender(); }}
+                  disabled={includedCount === 0 || closing}
+                  className="btn btn-primary flex-1"
+                >
+                  {closing ? "처리 중..." : "다시 만들기"}
                 </button>
               </div>
             </div>
@@ -985,7 +1019,7 @@ export default function EventDetailPage() {
               )}
               {event.status === "closed" && clips.length > 0 && (
                 <button
-                  onClick={handleRestartRender}
+                  onClick={() => setShowRerenderModal(true)}
                   disabled={closing}
                   className="btn btn-primary"
                   style={{ height: 40, padding: "0 16px", fontSize: 13 }}
@@ -1078,6 +1112,15 @@ export default function EventDetailPage() {
                       </button>
                     </div>
                   </div>
+
+                  <button
+                    onClick={() => setShowRerenderModal(true)}
+                    disabled={closing}
+                    className="btn btn-secondary w-full"
+                    style={{ marginTop: 4 }}
+                  >
+                    영상 다시 만들기
+                  </button>
                 </div>
               ) : (
                 <div className="notice flex items-center gap-3">
