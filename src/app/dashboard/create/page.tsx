@@ -9,6 +9,7 @@ import { QRCodeSVG, QRCodeCanvas } from "qrcode.react";
 import { subscribeToAuthChanges, type User } from "@/lib/auth";
 import { type EventPlan } from "@/lib/events";
 import { isFirebaseConfigured, getFirebaseAuth } from "@/lib/firebase";
+import { getUserDoc } from "@/lib/users";
 import { calcPrice } from "@/lib/plans";
 import { ChevronUp, ChevronDown } from "lucide-react";
 
@@ -104,18 +105,42 @@ export default function CreateEventPage() {
 
   useEffect(() => {
     if (!isFirebaseConfigured) return;
-    return subscribeToAuthChanges((firebaseUser) => {
+    return subscribeToAuthChanges(async (firebaseUser) => {
       setUser(firebaseUser);
       setAuthChecking(false);
       if (!firebaseUser) {
         router.push("/host");
       } else if (!firebaseUser.emailVerified) {
         router.push("/dashboard");
-      } else if (firebaseUser.email && !form.organizerEmail) {
-        setForm((f) => ({ ...f, organizerEmail: firebaseUser.email! }));
+      } else if (firebaseUser.email) {
+        const todayKST = new Date(
+          new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" })
+        );
+        const yyyy = todayKST.getFullYear();
+        const mm = String(todayKST.getMonth() + 1).padStart(2, "0");
+        const dd = String(todayKST.getDate()).padStart(2, "0");
+        const todayStr = `${yyyy}-${mm}-${dd}`;
+
+        setForm((f) => ({
+          ...f,
+          organizerEmail: firebaseUser.email!,
+          date: todayStr,
+        }));
+
+        try {
+          const userDoc = await getUserDoc(firebaseUser.uid);
+          if (userDoc) {
+            setForm((f) => ({
+              ...f,
+              ...(userDoc.name ? { title: `${userDoc.name}씨의 축하영상입니다` } : {}),
+              ...(userDoc.phone ? { organizerPhone: userDoc.phone } : {}),
+            }));
+          }
+        } catch (err) {
+          console.error("[create] user profile prefetch failed:", err);
+        }
       }
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
   async function handleSubmit(e: React.FormEvent) {
