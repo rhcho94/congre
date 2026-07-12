@@ -60,12 +60,33 @@ export async function POST(request: NextRequest) {
       await db.collection("clips").doc(clipDoc.id).delete();
     }
 
-    // 3b. Shotstack 자산 삭제 (renderId 있고 videoS3Key 살아있을 때)
-    if (eventData.renderId && eventData.videoS3Key) {
+    // 3b. Shotstack 자산 + S3 완성본 삭제
+    // videos[] 있는 신규 문서: 배열 전원소 삭제 (탈퇴 = 전량, 만료 여부 무관)
+    const videosArr = eventData.videos as Array<{ renderId: string; s3Key: string }> | undefined;
+    if (videosArr && videosArr.length > 0) {
+      for (const entry of videosArr) {
+        try {
+          await deleteShotstackAssetsByRenderId(entry.renderId);
+        } catch (e) {
+          console.error("[user/delete] Shotstack delete failed:", { eventId, renderId: entry.renderId, error: e });
+        }
+        try {
+          await deleteS3Object(entry.s3Key);
+        } catch (e) {
+          console.error("[user/delete] S3 video delete failed:", { eventId, s3Key: entry.s3Key, error: e });
+        }
+      }
+    } else if (eventData.renderId && eventData.videoS3Key) {
+      // videos[] 없는 옛 문서: 기존 단건 로직 (하위호환)
       try {
         await deleteShotstackAssetsByRenderId(eventData.renderId as string);
       } catch (e) {
-        console.warn("[user/delete] Shotstack delete failed:", { eventId, error: e });
+        console.error("[user/delete] Shotstack delete failed:", { eventId, error: e });
+      }
+      try {
+        await deleteS3Object(eventData.videoS3Key as string);
+      } catch (e) {
+        console.error("[user/delete] S3 video delete failed:", { eventId, error: e });
       }
     }
 

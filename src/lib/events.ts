@@ -21,6 +21,7 @@ export interface CongreEvent {
   videoUrl?: string;
   videoS3Key?: string;
   renderDoneAt?: Timestamp;
+  videos?: Array<{ renderId: string; s3Key: string; doneAt: Timestamp }>;
   organizerEmail?: string;
   organizerPhone?: string;
   deadlineAt?: Timestamp;        // 마감 시각 — render/start에서 저장, 완료 시간 계산용

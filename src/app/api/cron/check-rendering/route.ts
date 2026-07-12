@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server";
-import { FieldValue } from "firebase-admin/firestore";
+import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { HeadObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getAdminDb } from "@/lib/firebase-admin";
 import { getRenderStatus } from "@/lib/shotstack";
@@ -74,7 +74,38 @@ export async function GET(request: NextRequest) {
       }
       if (!s3Ready) continue;
 
-      await db.collection("events").doc(eventId).update({ status: "done", videoS3Key, renderDoneAt: FieldValue.serverTimestamp() });
+      const newEntry = {
+        renderId: data.renderId as string,
+        s3Key: videoS3Key,
+        doneAt: Timestamp.now(),
+      };
+
+      const existingS3Key = data.videoS3Key as string | undefined | null;
+      const existingVideos = (data.videos ?? []) as Array<{ s3Key: string }>;
+      const needsBackfill =
+        existingS3Key != null &&
+        existingS3Key !== videoS3Key &&
+        !existingVideos.some((v) => v.s3Key === existingS3Key);
+
+      const backfillEntry = needsBackfill
+        ? {
+            renderId: existingS3Key.replace(/\.mp4$/, ""),
+            s3Key: existingS3Key,
+            doneAt:
+              data.renderDoneAt instanceof Timestamp
+                ? data.renderDoneAt
+                : Timestamp.now(),
+          }
+        : null;
+
+      await db.collection("events").doc(eventId).update({
+        status: "done",
+        videoS3Key,
+        renderDoneAt: FieldValue.serverTimestamp(),
+        videos: backfillEntry
+          ? FieldValue.arrayUnion(backfillEntry, newEntry)
+          : FieldValue.arrayUnion(newEntry),
+      });
       processedCount++;
 
       const shareLink = `${baseUrl}/share/${eventId}`;
