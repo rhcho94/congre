@@ -48,8 +48,12 @@ export async function GET(request: NextRequest) {
       renderDoneAt.toMillis() < cutoffVideos.toMillis()
     ) {
       try { await deleteShotstackAssetsByRenderId(data.renderId as string); } catch (e) { console.warn("Shotstack delete failed", { eventId, error: e }); }
-      await db.collection("events").doc(eventId).update({ videoS3Key: null, videoDeletedAt: FieldValue.serverTimestamp() });
-      videosDeleted++;
+      let s3Deleted = false;
+      try { await deleteS3Object(data.videoS3Key as string); s3Deleted = true; } catch (err) { console.error("[cleanup] video s3 delete failed:", err); }
+      if (s3Deleted) {
+        await db.collection("events").doc(eventId).update({ videoS3Key: null, videoDeletedAt: FieldValue.serverTimestamp() });
+        videosDeleted++;
+      }
     }
   }
 
