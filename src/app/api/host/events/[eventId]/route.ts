@@ -35,6 +35,24 @@ export async function GET(
     const videoS3Key = data.videoS3Key as string | undefined;
     const videoUrl = videoS3Key ? await getVideoPresignedUrl(videoS3Key) : undefined;
 
+    const rawVideos = Array.isArray(data.videos) ? data.videos as Array<{ renderId: string; s3Key: string; doneAt: unknown }> : [];
+    const prevRaw = rawVideos.filter((v) => v.s3Key !== videoS3Key);
+    const previousVideos = (
+      await Promise.all(
+        prevRaw.map(async (v) => {
+          try {
+            const url = await getVideoPresignedUrl(v.s3Key);
+            return { s3Key: v.s3Key, url, doneAt: v.doneAt instanceof Timestamp ? v.doneAt.toMillis() : 0 };
+          } catch (err) {
+            console.error("[host/events] previous video presign failed:", err);
+            return null;
+          }
+        })
+      )
+    )
+      .filter((v): v is { s3Key: string; url: string; doneAt: number } => v !== null)
+      .sort((a, b) => b.doneAt - a.doneAt);
+
     return Response.json({
       id: snap.id,
       title: data.title as string,
@@ -53,6 +71,7 @@ export async function GET(
       videoTransition: (data.videoTransition ?? null) as string | null,
       showNames: (data.showNames ?? false) as boolean,
       bgmMood: (data.bgmMood ?? null) as string | null,
+      previousVideos,
     });
   } catch (err) {
     console.error("[api/host/events GET] Firestore error:", err);

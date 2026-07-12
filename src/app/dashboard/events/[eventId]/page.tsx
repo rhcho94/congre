@@ -34,6 +34,12 @@ interface KakaoInstance {
   Share: { sendDefault: (opts: Record<string, unknown>) => void };
 }
 
+interface PreviousVideo {
+  s3Key: string;
+  url: string;
+  doneAt: number;
+}
+
 interface ApiEvent {
   id: string;
   title: string;
@@ -52,6 +58,7 @@ interface ApiEvent {
   videoTransition: string | null;
   showNames: boolean;
   bgmMood: string | null;
+  previousVideos?: PreviousVideo[];
 }
 
 interface ApiClip {
@@ -1131,7 +1138,38 @@ export default function EventDetailPage() {
                 </div>
               )}
             </div>
+
           ) : null}
+
+          {/* 이전 완성본 */}
+          {event.status === "done" && (event.previousVideos?.length ?? 0) > 0 && (
+            <div className="mb-8">
+              <p className="eyebrow mb-3" style={{ color: "var(--accent)" }}>이전 완성본</p>
+              <div className="flex flex-col gap-0">
+                {(event.previousVideos ?? []).map((pv) => (
+                  <div
+                    key={pv.s3Key}
+                    className="flex items-center justify-between py-3 border-b border-[var(--hairline)]"
+                  >
+                    <span className="text-xs text-foreground">
+                      {new Date(pv.doneAt).toLocaleString("ko-KR", { timeZone: "Asia/Seoul" })}
+                    </span>
+                    <a
+                      href={pv.url}
+                      download
+                      className="btn btn-secondary"
+                      style={{ height: 32, padding: "0 12px", fontSize: 12 }}
+                    >
+                      다운로드
+                    </a>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs mt-3" style={{ color: "var(--muted)" }}>
+                이전 완성본은 만들어진 날로부터 7일 후 자동 삭제됩니다.
+              </p>
+            </div>
+          )}
 
           {/* 영상 시작·끝 꾸미기 */}
           <div className={`panel mb-8 ${isClosed ? "opacity-60" : ""}`}>
