@@ -127,7 +127,7 @@ Legacy 별칭: `--surface`=`var(--surface-1)`, `--border`=`var(--hairline-strong
   - `notifications`: read·write 차단 (Admin SDK 전용)
   - `users`: read·create는 본인 doc만 (`request.auth.uid == userId`), update·delete 차단
 - 한글 인트로/아웃트로 (이벤트 생성 폼 입력 → Firestore 저장 → Shotstack rich-text 클립 삽입, NotoSansKR TTF 호스팅)
-- 자동 삭제 cron (`/api/cron/cleanup`, KST 03:00 daily) — 클립 24h, 완성본 7d. 멱등성 마커: clipsDeletedAt, videoDeletedAt
+- 자동 삭제 cron (`/api/cron/cleanup`, KST 03:00 daily) — 클립 24h, 완성본 7d. 멱등성 마커: clipsDeletedAt, videoDeletedAt. 완성본 S3 객체 실제 삭제는 2026-07-12(33430b6)에 복구됨 — Track ⑦ 저장 위치 이전 시 누락됐던 드리프트.
 - 이용약관 / 개인정보처리방침 페이지 (`/terms`, `/privacy`) — v0.1 시행. 푸터 링크. 변경 이력은 `docs/legal/CHANGELOG.md`.
 - **마이페이지 P1·P2·P3·P4** (`/mypage` — 이벤트 요약 + 프로필 표시 + name·phone 수정 + 비밀번호 변경 + 회원 탈퇴. dashboard nav 링크. 2026-05-20)
 - 참가자 영상 클립 음량 페이드 (volumeEffect: fadeInFadeOut, BGM mixing 영역)
@@ -144,6 +144,7 @@ Legacy 별칭: `--surface`=`var(--surface-1)`, `--border`=`var(--hairline-strong
 - **이벤트별 영상 색감(필터) 옵션** (대시보드에서 선택: 시네마틱(muted) / 화사하게(boost) / 또렷하게(contrast). 저장 시 events.videoFilter, render/start가 읽어 createRender style 인자로 전달, 참가자 video clip 각각에 Shotstack filter 적용. 미선택 시 미적용(현재와 동일). 2026-06-06. decisions/rendering.md 2026-06-06 참조)
 - **이벤트별 전환(transition) 스타일 옵션** (대시보드 "영상 스타일" 카드 select 2번째: 기본(현행 4종 혼합) / 부드럽게(soft=fade·fadeSlow) / 역동적으로(dynamic=slideLeft·slideRight·zoom). 저장 시 events.videoTransition, render/start가 createRender style.transition으로 전달, pickSequence 풀이 바뀜. 미선택 시 default 풀(현행). 2026-06-06. decisions/rendering.md 2026-06-06 (2) 참조)
 - **이벤트별 참가자 이름 자막** (대시보드 "영상 스타일" 카드 체크박스. 켜면 각 참가자 영상 하단에 uploaderName이 rich-text(NotoSansKR 36px white + stroke)로 표시. 캡션 clip은 별도 텍스트 트랙(또는 [A]에서 textClips 트랙 공유, 겹침 시 새 트랙)에 numeric start/length로 push해 영상과 동기. createRender clips 항목에 name 추가, style.showNames=true 전달. 디폴트 꺼짐. 알려진 한계: intro 미디어가 비디오일 때 길이 미상으로 캡션 미세 어긋남. 2026-06-06. decisions/rendering.md 2026-06-06 (3) 참조)
+- **완성본 이력 보존 + 이전 완성본 노출** (`events.videos[]` 배열에 완성본 이력 누적. 재렌더해도 이전 완성본이 소실되지 않고 done 화면 "이전 완성본" 섹션에서 다운로드 가능. 원소별 `doneAt` 기준 7일 자동 만료. 저장 구조는 배열 필드 채택 — 서브컬렉션 대비 Firestore 규칙 콘솔 게시 단계 제거. 2026-07-12. decisions/data-flow.md 2026-07-12 참조)
 
 ## 랜딩 페이지 (별도 트랙)
 

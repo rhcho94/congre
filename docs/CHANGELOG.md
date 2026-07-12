@@ -2,6 +2,13 @@
 
 > 기능 단위 작업 이력. 최신이 위.
 
+## 2026-07-12
+
+- feat(ui): done 화면 "이전 완성본" 섹션 — `videos[]` 이력을 presigned 목록으로 노출(날짜 + 다운로드). 현재 완성본(`videoS3Key`)은 제외, `doneAt` 내림차순. `host/events` GET에 `previousVideos` 응답 필드 추가(개별 presign 실패는 해당 원소만 제외하고 진행). 재생 버튼·인라인 플레이어 없음(이전 버전 수요의 본질은 "확보"라 판단, YAGNI). `previousVideos`는 optional + 옵셔널 체이닝(5초 폴링 중 필드 부재 시 `undefined.length` 크래시 방지). (3060532)
+- feat(video-history): 완성본 이력 배열 `events.videos[]` 도입 (D2) — 재렌더 시 `videoS3Key` 단일 필드가 덮어써져 이전 완성본이 소실되던 구조 정정. `check-rendering` done 전환 시 `arrayUnion`으로 이력 누적 + `videos[]` 도입 이전 done 이벤트 백필(기존 `videoS3Key`가 배열에 없으면 함께 적재 → 고아 방지). `cleanup`은 원소별 `doneAt` 기준 7일 개별 만료. `user/delete`는 탈퇴 시 전 원소 삭제. `videoS3Key`/`renderDoneAt`는 "현재 완성본" 포인터로 유지(읽는 곳 5군데 무변경), `videos[]` 없는 옛 문서는 단건 로직 폴백. Firestore 제약: `arrayUnion` 원소에 `serverTimestamp()` 사용 불가 → `Timestamp.now()`. 결정: decisions/data-flow.md 2026-07-12. (a315b05)
+- fix(cleanup): 완성본 7일 만료 시 S3 객체 실제 삭제 — Track ⑦(2026-06-11) 완성본 출력지 이전(Shotstack CDN → 자체 S3) 시 cleanup의 삭제 대상이 옛 위치에 남아, S3 완성본이 한 번도 만료되지 않고 누적되던 드리프트 정정. 개인정보처리방침 제3조 "완성본 7일 후 삭제" 선언-동작 불일치 해소. S3 삭제 성공 시에만 `videoS3Key`를 null 처리(실패 시 포인터를 보존해 다음 cron이 자동 재시도 → 고아 방지). (33430b6)
+- chore(s3): D2 이전 구조가 만든 고아 완성본 11개(0.322GB) 일회성 삭제. 참조 집합(`videoS3Key` + `videos[].s3Key`) 재계산 후 S3 루트 `*.mp4`만 대상, prefix 하위(`audio/`·`events/`) 원천 제외. 성공 11 / 실패 0, 보존 1건(참조 중). 코드 커밋 아님(운영 작업).
+
 ## 2026-07-10
 
 - feat(rerender): done 상태 재렌더 버튼 + 재렌더 확인 모달 추가 — 완성(done) 상태에서도 "영상 다시 만들기" 노출(기존엔 closed에서만), done·closed 공용 확인 모달을 거치도록 통일. 모달에 "전체 N개 중 M개 포함" 요약 + 인라인 클립 재선택·인트로/아웃트로 변경 안내 문구. includedCount===0이면 [다시 만들기] 비활성(서버 NO_CLIPS_AFTER_EXCLUSION 도달 전 차단). 결제 게이트(B5 재렌더 유료)는 결제 트랙(Toss v2)에 남김 — 이번 스코프 제외. handleRestartRender/callRenderStart 본문·FGT 유료 가드·클립 토글 API 무변경. 대상 파일 1개: src/app/dashboard/events/[eventId]/page.tsx.

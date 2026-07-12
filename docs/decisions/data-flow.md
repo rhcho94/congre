@@ -2,6 +2,33 @@
 
 > Firestore·S3·Admin SDK·서버 이전 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-07-12 — D2 완성본 보존: 서브컬렉션 → 배열 필드로 결정 변경
+
+**결정**: 완성본 이력을 `events/{eventId}/videos` 서브컬렉션이 아니라 `events/{eventId}.videos[]` 배열 필드로 저장한다. 2026-05-21 D2 결정(서브컬렉션 전환)을 폐기·대체한다.
+
+**변경 사유**:
+- 서브컬렉션은 Firestore 보안 규칙 신규 match 블록 + **콘솔 수동 게시**가 필수다(CLAUDE.md 절대 규칙). 이 단계는 2026-05-19 v2 사고 #4의 원인이었고, 1인 비개발자 운영 환경에서 누락 위험이 상시 존재한다.
+- 배열 필드는 `events` 문서에 얹히므로 기존 규칙(read/update `if false`, Admin SDK 전용)이 그대로 적용된다. 신규 규칙·콘솔 게시 불필요.
+- 서브컬렉션의 유일한 실질 이점은 "무제한 개수"인데, 이벤트당 재렌더는 현실적으로 한 자릿수다. 문서 1MB 한도 대비 원소당 ~100바이트로 여유가 크다. YAGNI.
+
+**스키마**:
+```
+events/{eventId}
+  videoS3Key   : string | null    // "현재(최신) 완성본" 포인터 — 유지
+  renderDoneAt : Timestamp        // 유지
+  videos?      : Array<{ renderId: string; s3Key: string; doneAt: Timestamp }>  // 오래된 것부터
+```
+
+**설계 원칙**: `videoS3Key`를 제거하지 않는다. 읽는 곳이 5군데(호스트 대시보드 GET·공유 페이지·탈퇴·cleanup·타입)라 전면 교체는 회귀 위험이 크다. `videos[]`는 **덧붙이는 이력**이고, 현재 완성본 경로는 기존 그대로 둔다. `videos[]` 없는 옛 문서는 단건 로직으로 폴백한다.
+
+**Firestore 제약 (실무 함정)**: `FieldValue.arrayUnion()` 인자 객체 안에 `FieldValue.serverTimestamp()`를 넣을 수 없다(Firestore가 거부). 배열 원소의 시각 필드는 `Timestamp.now()`를 쓴다.
+
+**백필**: `videos[]` 도입 이전에 이미 done이던 이벤트는 배열이 없다. 이 이벤트를 재렌더하면 새 완성본만 배열에 들어가고 기존 `videoS3Key`가 가리키던 파일은 포인터를 잃어 고아가 된다. 이를 막기 위해 `check-rendering`의 done 전환 시 (a) 기존 `videoS3Key` 존재 (b) 새 키와 다름 (c) `videos[]`에 미존재 — 3조건 충족 시 기존 완성본을 배열에 함께 적재한다.
+
+**만료**: 배열 원소마다 자기 `doneAt` 기준 7일. S3 삭제에 성공한 원소만 배열에서 제거하고, 실패분은 남겨 다음 cron이 자동 재시도한다.
+
+**관련**: 2026-06-04 항목의 "D2 서브컬렉션 전환" 언급은 본 결정으로 무효. cleanup S3 삭제 복구(Track ⑦ 드리프트)는 known-issues-resolved.md 2026-07-12 참조.
+
 ## 2026-06-11 done 상태 폴링 중단 (presigned URL 재발급 방지)
 - 결정: 호스트 대시보드 이벤트 폴링(fetchEvent, 5s)을 status === "done"에서
   중단. done은 완성본·길이·videoUrl이 고정값이라 갱신할 게 없음.
