@@ -13,24 +13,6 @@
   ```
 - **격상 트리거**: 반복 발생 시 Vercel ↔ GitHub 웹훅 연결 점검 (Vercel 대시보드 → Project → Settings → Git → Disconnect/Reconnect).
 
-## 네이버 메일 도달성 — 1차 점검 포인트 (메모)
-
-- 현황 (2026-05-08 점검): 1통 실측에서 네이버 받은편지함 정상 도달, 경고 배너 없음. 약한 고리 아님으로 판정하고 보류.
-- 인증 측 정합성 모두 통과: SPF (send.congre.kr 등록), DKIM (resend._domainkey 등록, 외부 검증 일치), DMARC (p=none, 발행됨), Resend verified.
-- 잠재 리스크: 메일 From 주소가 noreply@congre.kr (루트)인데 SPF는 send.congre.kr (서브)에 등록됨. SPF alignment 측면에서 mismatch이지만 DKIM alignment로 DMARC 통과 중인 것으로 추정. 신규 도메인 평판이 쌓이지 않은 상태에서 발송량이 늘면 도달성이 떨어질 가능성 잠재.
-- 점검 트리거: 사용자(특히 네이버 메일 사용 학부모·교사)로부터 "메일이 안 옴" 또는 "스팸함에서 발견" 신고 발생 시.
-- 점검 순서:
-  1. 본인 네이버 계정으로 트랜잭션 메일 1통 발송 → 받은편지함/스팸함/미도착 확인
-  2. 스팸함 / 미도착 → 다음 작업 후보 2가지:
-     a. 루트 congre.kr에 SPF 추가 등록 (Resend 콘솔 가이드 따름)
-     b. 코드 From 주소를 noreply@send.congre.kr로 변경
-  3. 둘 중 어느 게 적절한지는 그 시점 Resend 권장 사항 + 발신자 표시 UX 우선순위로 결정
-- 관련 결정: DECISIONS 2026-05-02 (이메일 발송 도메인 congre.kr)
-- 2026-05-20 갱신: Firebase Auth 인증 메일도 noreply@congre.kr 발신으로 통합됨. Gmail 도달 실측 확인. 네이버 메일 실측은 미실시, 트리거 발생 시 점검.
-- 2026-06-05 갱신: Gmail 도달 실측에서 스팸함 분류 확인(네이버는 받은편지함 정상). 점검 트리거 발동. SPF alignment mismatch(루트 noreply@congre.kr vs 서브 send.congre.kr SPF) 후속 작업(a/b) 검토 대상으로 격상. 본 수정은 별도 트랙.
-- 2026-06-20 갱신(FGT 점검): Ray 증언 — 네이버도 처음엔 스팸함行이었으나 모종의 작업으로 정상화됨(작업 내용 불명). 위 "줄곧 정상" 기술은 그 변화를 누락한 stale. Gmail은 여전히 스팸 잔존(2026-06-20 확인). FGT는 지인에게 "Gmail이면 스팸함 확인" 안내로 우회. 네이버 작업 내용 규명 + Gmail SPF alignment 근본 해소는 2단계(침투 마케팅) 전 별도 트랙. 다음 세션 후보 3.
-- 2026-07-03 갱신: 이메일 인증 발송 실패의 진짜 원인은 도달성이 아니라 Firebase 승인된 도메인에 app.congre.kr 누락(auth/unauthorized-continue-uri 400)이었음. 도메인 추가로 해결(핸드오프 2026-07-03). 발송이 뚫린 뒤 Gmail 받은편지함/스팸 분류 재확인은 다음 세션 후보 3으로 승계.
-
 ## 미인증 계정 전수 확인 필요 (도메인 누락 기간 잔재)
 
 - 현황: app.congre.kr이 Firebase 승인된 도메인에 누락된 기간 동안 이 도메인으로 가입·인증 시도한 계정은 인증메일 발송이 400으로 거부돼 emailVerified=false로 갇혔을 수 있음. 누락 시작 시점 미확인(도메인 전환 2026-05-31 즈음 추정, 미확정).
