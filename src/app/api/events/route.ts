@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
       maxClipSeconds % 5 !== 0
     )
   ) {
-    return Response.json({ code: "INVALID_CLIP_SECONDS", plan, maxAllowed }, { status: 400 });
+    return Response.json({ error: "INVALID_CLIP_SECONDS", plan, maxAllowed }, { status: 400 });
   }
 
   if (!/^010\d{8}$/.test(organizerPhone)) {

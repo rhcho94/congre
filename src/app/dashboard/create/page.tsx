@@ -171,9 +171,17 @@ export default function CreateEventPage() {
       });
 
       if (!res.ok) {
-        const errBody = await res.json().catch(() => ({})) as { code?: string };
-        if (errBody.code === "INVALID_CLIP_SECONDS") {
+        const errBody = await res.json().catch(() => ({})) as { error?: string };
+        if (errBody.error === "INVALID_CLIP_SECONDS") {
           alert("무료 플랜은 최대 10초까지 가능해요. 더 긴 영상이 필요하면 유료 플랜을 선택해주세요.");
+          return;
+        }
+        if (errBody.error === "INVALID_COUPON") {
+          alert("등록되지 않은 번호예요. 번호를 확인해주세요.");
+          return;
+        }
+        if (errBody.error === "COUPON_ALREADY_USED") {
+          alert("이미 사용된 번호예요. 이벤트는 번호당 한 번만 만들 수 있어요.");
           return;
         }
         throw new Error(`HTTP ${res.status}`);
@@ -186,7 +194,8 @@ export default function CreateEventPage() {
       setCreatedEventId(eventId);
       setShareUrl(url);
       setView("created");
-    } catch {
+    } catch (err) {
+      console.error("[create] event creation failed:", err);
       alert("이벤트 생성 중 오류가 발생했습니다. 다시 시도해주세요.");
     } finally {
       setSubmitting(false);
@@ -354,7 +363,7 @@ export default function CreateEventPage() {
 
                 {couponEntered ? (
                   <div className="flex flex-col gap-1.5">
-                    <span className="eyebrow">갯수와 길이</span>
+                    <span className="eyebrow" style={{ letterSpacing: "normal" }}>개수와 길이</span>
                     <div
                       className="p-4 flex flex-col gap-1.5"
                       style={{
@@ -373,7 +382,7 @@ export default function CreateEventPage() {
                   </div>
                 ) : form.plan === "free" ? (
                   <div className="flex flex-col gap-1.5">
-                    <span className="eyebrow">갯수와 길이</span>
+                    <span className="eyebrow" style={{ letterSpacing: "normal" }}>개수와 길이</span>
                     <div
                       className="p-4 flex flex-col gap-1.5"
                       style={{
@@ -393,7 +402,7 @@ export default function CreateEventPage() {
                 ) : (
                   <>
                     <div className="flex flex-col gap-1.5">
-                      <span className="eyebrow">영상 갯수 (정원)</span>
+                      <span className="eyebrow" style={{ letterSpacing: "normal" }}>영상 개수 (정원)</span>
                       <Stepper
                         value={form.maxClips}
                         min={10}
@@ -406,7 +415,7 @@ export default function CreateEventPage() {
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                      <span className="eyebrow">영상 길이</span>
+                      <span className="eyebrow" style={{ letterSpacing: "normal" }}>영상 길이</span>
                       <Stepper
                         value={form.maxClipSeconds}
                         min={10}
