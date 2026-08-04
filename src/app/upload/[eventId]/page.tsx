@@ -435,9 +435,6 @@ function UploadInner() {
         {/* Event info — 사진 위 텍스트, 국소 스크림 */}
         <div className="px-6 pt-4 pb-4">
           <div style={scrim}>
-            <p className="eyebrow mb-2">
-              Event · <span className="accent">#{eventId}</span>
-            </p>
             <h1 className="display text-2xl">{event?.title ?? "이벤트"}</h1>
           </div>
         </div>
@@ -465,12 +462,14 @@ function UploadInner() {
                   "다시 오셨네요. 이름과 전화번호를 확인해주세요. 같은 이름으로는 한 번만 올릴 수 있어요."
                 ) : (
                   <>
-                    🎬 {hostDisplay}님과 함께 만드는 {event?.title ?? "이벤트"} 영상입니다
+                    🎬 {hostDisplay}님과 함께 만드는 영상이에요
                     <br />
                     {maxClipSeconds}초짜리 영상을 올려주세요.
                     <br />
                     <br />
                     이름·전화번호는 영상 구분과 완성본 전달에 사용해요.
+                    <br />
+                    이름은 닉네임이어도 괜찮아요.
                   </>
                 )}
               </p>
