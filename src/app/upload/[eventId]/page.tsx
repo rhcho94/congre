@@ -14,7 +14,7 @@ type Stage = "verifying" | "invalid" | "uploader" | "idle" | "preview" | "upload
 
 // 게스트 화면 텍스트는 솔리드 카드 없이 사진 위에 직접 — 가독성 위해 국소 스크림 적용
 const scrim: React.CSSProperties = {
-  background: "linear-gradient(180deg, rgba(12,11,9,0.55), rgba(12,11,9,0.75))",
+  background: "linear-gradient(180deg, rgba(12,11,9,0.78), rgba(12,11,9,0.90))",
   borderRadius: "var(--r-md)",
   padding: "16px 18px",
 };
@@ -457,7 +457,7 @@ function UploadInner() {
           {stage === "uploader" && (
             <>
               {!isReturning && <FlowStrip />}
-              <p className="text-sm text-center text-foreground leading-relaxed" style={scrim}>
+              <p className="text-sm text-center text-foreground leading-relaxed break-keep" style={scrim}>
                 {isReturning ? (
                   "다시 오셨네요. 이름과 전화번호를 확인해주세요. 같은 이름으로는 한 번만 올릴 수 있어요."
                 ) : (

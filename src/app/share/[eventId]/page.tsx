@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 const scrim: React.CSSProperties = {
-  background: "linear-gradient(180deg, rgba(12,11,9,0.55), rgba(12,11,9,0.75))",
+  background: "linear-gradient(180deg, rgba(12,11,9,0.78), rgba(12,11,9,0.90))",
   borderRadius: "var(--r-md)",
   padding: "16px 18px",
 };
