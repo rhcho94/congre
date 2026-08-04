@@ -32,6 +32,8 @@ export interface CongreEvent {
   outroMediaKey?: string;
   outroMediaType?: "image" | "video";
   maxClips?: number;             // 유료 정원 — 호스트 설정, 클립 업로드 차단 기준
+  unlocked?: boolean;            // 결제/쿠폰으로 paid 플랜 렌더 게이트 해제 여부
+  unlockedBy?: string;           // 해제 근거 (베타 쿠폰 정규화 전화번호 등)
 }
 
 export interface Clip {

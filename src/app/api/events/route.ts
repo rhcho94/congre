@@ -70,8 +70,9 @@ export async function POST(request: NextRequest) {
     outroText?: string;
     maxClipSeconds?: number;
     maxClips?: number;
+    couponPhone?: string;
   };
-  const { title, date, plan, organizerEmail, organizerPhone, maxClipSeconds, maxClips } = body;
+  const { title, date, plan, organizerEmail, organizerPhone, maxClipSeconds, maxClips, couponPhone } = body;
 
   if (!title || !date || !plan || !organizerEmail || !organizerPhone) {
     return Response.json({ error: "MISSING_FIELDS" }, { status: 400 });
@@ -111,12 +112,25 @@ export async function POST(request: NextRequest) {
   }
 
   const db = getAdminDb();
+
+  // 베타 쿠폰 검증 — couponPhone이 있을 때만 진입, 없으면 기존 free/paid 생성 경로 그대로
+  const normalizedCouponPhone = couponPhone ? couponPhone.replace(/\D/g, "") : "";
+  if (normalizedCouponPhone) {
+    const couponSnap = await db.collection("betaCoupons").doc(normalizedCouponPhone).get();
+    if (!couponSnap.exists) {
+      return Response.json({ error: "INVALID_COUPON" }, { status: 400 });
+    }
+    if (couponSnap.data()?.used === true) {
+      return Response.json({ error: "COUPON_ALREADY_USED" }, { status: 400 });
+    }
+  }
+
   const sessionToken = crypto.randomUUID();
 
   const ref = await db.collection("events").add({
     title,
     date: Timestamp.fromDate(new Date(date + "T00:00:00")),
-    plan,
+    plan: normalizedCouponPhone ? "paid" : plan,
     hostId: uid,
     status: "open",
     sessionToken,
@@ -126,11 +140,24 @@ export async function POST(request: NextRequest) {
     organizerPhone,
     ...(body.introText !== undefined ? { introText: body.introText } : {}),
     ...(body.outroText !== undefined ? { outroText: body.outroText } : {}),
-    ...(maxClipSeconds !== undefined ? { maxClipSeconds } : {}),
-    ...(plan === "paid" ? { maxClips } : {}),
+    ...(normalizedCouponPhone
+      ? { maxClipSeconds: 30 }
+      : maxClipSeconds !== undefined ? { maxClipSeconds } : {}),
+    ...(normalizedCouponPhone
+      ? { maxClips: 20 }
+      : plan === "paid" ? { maxClips } : {}),
+    ...(normalizedCouponPhone ? { unlocked: true, unlockedBy: normalizedCouponPhone } : {}),
   });
 
   const eventId = ref.id;
+
+  if (normalizedCouponPhone) {
+    await db.collection("betaCoupons").doc(normalizedCouponPhone).set(
+      { used: true, eventId },
+      { merge: true }
+    ).catch((err) => console.error("[api/events] betaCoupons mark-used error:", err));
+  }
+
   const origin = request.headers.get("origin") ?? "";
   const dashboardUrl = `${origin}/dashboard/events/${eventId}`;
 
@@ -141,6 +168,8 @@ export async function POST(request: NextRequest) {
   return Response.json({
     eventId,
     sessionToken,
-    ...(plan === "paid" ? { maxClips } : {}),
+    ...(normalizedCouponPhone
+      ? { maxClips: 20 }
+      : plan === "paid" ? { maxClips } : {}),
   });
 }

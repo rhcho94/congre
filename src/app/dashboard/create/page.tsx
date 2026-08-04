@@ -96,6 +96,7 @@ export default function CreateEventPage() {
     maxClips: 30,          // 유료 스텝퍼 기본값(첫 paid 선택 시 표시).
     organizerEmail: "",
     organizerPhone: "",
+    couponPhone: "",
   });
   const [submitting, setSubmitting] = useState(false);
   const [createdEventId, setCreatedEventId] = useState("");
@@ -165,6 +166,7 @@ export default function CreateEventPage() {
           organizerEmail: form.organizerEmail,
           organizerPhone: form.organizerPhone,
           ...(form.plan === "paid" ? { maxClips: form.maxClips } : {}),
+          ...(form.couponPhone.trim() ? { couponPhone: form.couponPhone.trim() } : {}),
         }),
       });
 
@@ -210,6 +212,8 @@ export default function CreateEventPage() {
       alert("링크 복사에 실패했습니다.");
     }
   }
+
+  const couponEntered = form.couponPhone.trim().length > 0;
 
   if (!isFirebaseConfigured) {
     return (
@@ -294,41 +298,80 @@ export default function CreateEventPage() {
                   />
                 </label>
 
-                <div className="flex flex-col gap-1.5">
-                  <span className="eyebrow">플랜 선택</span>
-                  <div className="grid grid-cols-2 gap-2">
-                    {planOptions.map((opt) => (
-                      <label
-                        key={opt.value}
-                        className="flex flex-col gap-0.5 p-4 transition-all duration-150"
-                        style={{
-                          background: form.plan === opt.value ? "var(--surface-3)" : "var(--surface-2)",
-                          border: `1px solid ${form.plan === opt.value ? "var(--accent)" : "var(--hairline)"}`,
-                          borderRadius: "var(--r-sm)",
-                          cursor: opt.comingSoon ? "not-allowed" : "pointer",
-                          opacity: opt.comingSoon ? 0.55 : 1,
-                        }}
-                      >
-                        <input
-                          type="radio"
-                          name="plan"
-                          value={opt.value}
-                          checked={form.plan === opt.value}
-                          onChange={() => setForm({ ...form, plan: opt.value })}
-                          disabled={submitting || opt.comingSoon}
-                          className="sr-only"
-                        />
-                        <span className="text-sm text-foreground font-medium">
-                          {opt.label}
-                          {opt.comingSoon && <span className="text-xs text-muted ml-1.5">· 준비 중</span>}
-                        </span>
-                        <span className="text-xs text-muted">{opt.desc}</span>
-                      </label>
-                    ))}
+                {!couponEntered && (
+                  <div className="flex flex-col gap-1.5">
+                    <span className="eyebrow">플랜 선택</span>
+                    <div className="grid grid-cols-2 gap-2">
+                      {planOptions.map((opt) => {
+                        const locked = opt.comingSoon;
+                        return (
+                          <label
+                            key={opt.value}
+                            className="flex flex-col gap-0.5 p-4 transition-all duration-150"
+                            style={{
+                              background: form.plan === opt.value ? "var(--surface-3)" : "var(--surface-2)",
+                              border: `1px solid ${form.plan === opt.value ? "var(--accent)" : "var(--hairline)"}`,
+                              borderRadius: "var(--r-sm)",
+                              cursor: locked ? "not-allowed" : "pointer",
+                              opacity: locked ? 0.55 : 1,
+                            }}
+                          >
+                            <input
+                              type="radio"
+                              name="plan"
+                              value={opt.value}
+                              checked={form.plan === opt.value}
+                              onChange={() => setForm({ ...form, plan: opt.value })}
+                              disabled={submitting || locked}
+                              className="sr-only"
+                            />
+                            <span className="text-sm text-foreground font-medium">
+                              {opt.label}
+                              {locked && <span className="text-xs text-muted ml-1.5">· 준비 중</span>}
+                            </span>
+                            <span className="text-xs text-muted">{opt.desc}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
+                )}
 
-                {form.plan === "free" ? (
+                <label className="flex flex-col gap-1.5">
+                  <span className="eyebrow">베타 쿠폰 (전화번호)</span>
+                  <input
+                    type="tel"
+                    placeholder="쿠폰 발급받은 전화번호"
+                    value={form.couponPhone}
+                    onChange={(e) => setForm({ ...form, couponPhone: e.target.value })}
+                    disabled={submitting}
+                    className="input"
+                  />
+                  {couponEntered && (
+                    <span className="text-xs text-muted">베타: 클립 20개 × 30초 상한이 적용돼요.</span>
+                  )}
+                </label>
+
+                {couponEntered ? (
+                  <div className="flex flex-col gap-1.5">
+                    <span className="eyebrow">갯수와 길이</span>
+                    <div
+                      className="p-4 flex flex-col gap-1.5"
+                      style={{
+                        background: "var(--surface-2)",
+                        border: "1px solid var(--hairline)",
+                        borderRadius: "var(--r-sm)",
+                      }}
+                    >
+                      <p className="text-sm text-foreground">
+                        <strong>20개</strong> × <strong>30초</strong> 고정
+                      </p>
+                      <p className="text-xs text-muted leading-relaxed">
+                        베타 쿠폰은 클립 20개, 각 30초까지 받을 수 있어요.
+                      </p>
+                    </div>
+                  </div>
+                ) : form.plan === "free" ? (
                   <div className="flex flex-col gap-1.5">
                     <span className="eyebrow">갯수와 길이</span>
                     <div

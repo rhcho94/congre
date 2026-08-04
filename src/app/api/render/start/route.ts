@@ -48,8 +48,9 @@ export async function POST(request: NextRequest) {
   }
 
   const plan = (eventData.plan as string | undefined ?? "free") as PlanId;
-  if (plan === "paid") {
-    console.error("[render/start] blocked: paid plan not available yet", { eventId });
+  const unlocked = eventData.unlocked === true;
+  if (plan === "paid" && !unlocked) {
+    console.error("[render/start] blocked: paid plan not unlocked", { eventId });
     return Response.json({ error: "PAID_NOT_AVAILABLE" }, { status: 403 });
   }
 
