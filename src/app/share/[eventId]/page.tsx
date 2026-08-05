@@ -57,7 +57,7 @@ export default async function SharePage({ params }: Props) {
       <PageBackdrop pattern="e" />
       <div className="min-h-screen flex flex-col">
         <main className="flex-1 flex flex-col items-center w-full max-w-sm mx-auto px-4 py-10 gap-6">
-          <h1 className="display text-xl text-center w-full" style={scrim}>
+          <h1 className="display text-xl text-center w-full" style={{ ...scrim, color: "#ede8df" }}>
             {title}
           </h1>
 

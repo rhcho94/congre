@@ -435,7 +435,7 @@ function UploadInner() {
         {/* Event info — 사진 위 텍스트, 국소 스크림 */}
         <div className="px-6 pt-4 pb-4">
           <div style={scrim}>
-            <h1 className="display text-2xl">{event?.title ?? "이벤트"}</h1>
+            <h1 className="display text-2xl" style={{ color: "#ede8df" }}>{event?.title ?? "이벤트"}</h1>
           </div>
         </div>
 
