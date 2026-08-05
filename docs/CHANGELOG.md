@@ -4,10 +4,12 @@
 
 ## 2026-08-04
 
+- feat(beta): 베타 쿠폰 해제 — Toss PG 심사 대기 중 결제 없이 실베타를 돌리기 위한 임시 경로. Firestore `betaCoupons` 화이트리스트(문서 ID = 정규화 전화번호) 조회 후 유효 시 서버가 클라 body의 plan/maxClips/maxClipSeconds를 무시하고 `plan:"paid"·unlocked:true·unlockedBy:번호·maxClips:20·maxClipSeconds:30` 고정 저장. 생성 성공 후 쿠폰에 `used:true`+`eventId` 기록(단일 사용). 렌더 게이트를 `plan==="paid"` 무조건 차단에서 `plan==="paid" && !unlocked`로 교체(결제 성공 시 같은 unlocked 필드를 켜는 방식으로 승계). 파일 4개: api/events/route.ts, api/render/start/route.ts, dashboard/create/page.tsx, lib/events.ts. (b0e7988)
 - fix(upload): 게스트 초대 화면 문구 정리 — 이벤트 문서 ID 노출 제거, 안내 문구의 제목 접미사("영상입니다") 중복 해소(제목은 h1 단독 노출), 이름 입력 안내에 닉네임 허용 문구 추가.
 - fix(create): 이벤트 생성 에러 처리 정합화 — 서버 에러 응답 키를 error로 통일(L107만 code였음), 프론트가 읽는 키를 맞추고 INVALID_COUPON·COUPON_ALREADY_USED 사용자 메시지 매핑 추가, catch에 console.error 보강. 라벨 "갯수"→"개수" 표기 정정 + 한글 라벨 자간 국소 해제.
 - fix(guest): 게스트 화면 가독성 보정 — 업로드·공유 화면 스크림 농도 0.55~0.75 → 0.78~0.90 상향(밝은 배경 사진 구간에서 제목이 배경에 묻히던 현상 대응), 업로드 안내 문구에 break-keep 적용으로 한글 낱글자 줄바꿈 해소.
 - fix(guest): 게스트 화면 제목 색 직접 지정 — layout.tsx의 data-theme="dark"가 h1.display에 적용되지 않아(DevTools 계산값 rgb(26,22,18) 확인) 어두운 스크림 위에 검은 제목이 표시되던 문제 처치. 같은 화면 본문은 정상(흰색)이라 제목 2곳만 인라인 color 지정. 근본 원인(변수 상속 체인 단절)은 미확정, known-issues 등재 예정.
+- docs: DECISIONS 인덱스 market-product 항목 수 정정(14 → 16) — 기존 1건 드리프트 동시 해소. 세는 규칙은 "## 헤더 개수"로 확정.
 
 ## 2026-07-12
 
