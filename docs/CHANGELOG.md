@@ -2,6 +2,10 @@
 
 > 기능 단위 작업 이력. 최신이 위.
 
+## 2026-08-05
+
+- docs: API 에러 응답 키 관례 예외 2곳 등재 + 서버 단독 변경 금지 규약 추가 — 전수 정찰로 `dashboard/create/page.tsx` 외 서버↔프론트 에러 키 불일치 0건 확정(프론트 `err.code` 매치 5건은 전부 Firebase SDK 예외 객체의 `auth/...` 코드로, 우리 API 응답 본문과 무관). 관례 예외 2곳(`api/clips/route.ts:61` = `code`, `api/user/delete/route.ts` = `code`+`message`)은 짝 프론트가 맞춰져 있어 동작 정상 → 코드 미수정, known-issues 등재 + CLAUDE.md 절대 규칙으로 재발 예방.
+
 ## 2026-08-04
 
 - feat(beta): 베타 쿠폰 해제 — Toss PG 심사 대기 중 결제 없이 실베타를 돌리기 위한 임시 경로. Firestore `betaCoupons` 화이트리스트(문서 ID = 정규화 전화번호) 조회 후 유효 시 서버가 클라 body의 plan/maxClips/maxClipSeconds를 무시하고 `plan:"paid"·unlocked:true·unlockedBy:번호·maxClips:20·maxClipSeconds:30` 고정 저장. 생성 성공 후 쿠폰에 `used:true`+`eventId` 기록(단일 사용). 렌더 게이트를 `plan==="paid"` 무조건 차단에서 `plan==="paid" && !unlocked`로 교체(결제 성공 시 같은 unlocked 필드를 켜는 방식으로 승계). 파일 4개: api/events/route.ts, api/render/start/route.ts, dashboard/create/page.tsx, lib/events.ts. (b0e7988)

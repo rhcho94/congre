@@ -2,6 +2,18 @@
 
 > 진행 중·보류·메모 항목만 둔다. 해결 완료 항목은 known-issues-resolved.md로 이동.
 
+## API 에러 응답 키 관례 예외 2곳 (에러 통일 시 함정)
+
+- **현황**: 서버 에러 응답 본문의 키는 `error`가 사실상 표준(2026-08-05 전수 정찰 기준 에러 응답 지점 98개 중 대다수). 예외 2곳이 다른 키를 쓴다.
+  - `src/app/api/clips/route.ts:61` — 409 `PLAN_LIMIT_REACHED`가 `code` 키(+`limit`, `current`). 같은 파일의 다른 에러 응답은 `error`.
+  - `src/app/api/user/delete/route.ts` L11·20·33-39·105-108 — 라우트 전체가 `code` + `message` 조합. 값: UNAUTHORIZED / INVALID_TOKEN / INCOMPLETE_EVENTS / AUTH_DELETE_FAILED.
+- **현재 동작**: 정상. 짝이 되는 프론트가 그 키에 맞춰 작성돼 있음 — `src/app/upload/[eventId]/page.tsx:328-332`는 `error`·`code`를 둘 다 읽고, `src/lib/auth.ts:96-98`은 `code`+`message`를 읽는다.
+- **함정**: "규약이 `error`니까 통일하자"며 서버 키만 바꾸면 프론트가 못 읽어 범용 문구("이벤트 생성 중 오류가 발생했습니다" 류)로 조용히 떨어진다. 2026-08-04 `b950821`로 고친 버그와 정확히 같은 모양.
+- **처리**: 지금 고치지 않음(YAGNI). 게스트 업로드·회원 탈퇴는 실서비스 핵심 경로이며, 얻는 것(키 일관성)보다 잘 도는 경로를 건드리는 위험이 크다. 재발 예방은 코드 통일이 아니라 CLAUDE.md 절대 규칙 1줄로 대체.
+- **격상 트리거**: 에러 처리 리팩터 사이클 착수 시 / 위 두 라우트를 다른 이유로 수정하게 될 때 함께 정리.
+- **미검증**: 위 내용은 코드 정적 대조 결과. 두 예외 경로가 실제 트리거됐을 때의 런타임 동작은 미확인.
+- **출처**: 2026-08-05 scout 전수 정찰(src/app/api 전 route.ts 에러 응답 + src/app·src/components 프론트 에러 읽기 지점 전수).
+
 ## 게스트 화면 data-theme="dark" 미적용 — 색 상속 체인 단절 (가설)
 
 - 현황: upload/[eventId] layout.tsx L72에 `<div data-theme="dark">`가 있으나, h1.display의 DevTools 계산값이 rgb(26,22,18)(라이트 --text)로 나옴. 같은 화면 본문은 정상 흰색. 2026-08-04 커밋 a2344b9에서 두 h1에 인라인 color를 박아 증상만 우회한 상태.
