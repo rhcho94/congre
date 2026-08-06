@@ -20,6 +20,12 @@ const EXT_WHITELIST: Record<string, string[] | null> = {
   outro: null,
 };
 
+// kind별 Content-Type 화이트리스트.
+// - clip, thumb: 목록 대조
+// - intro, outro: image/ 또는 video/ 접두만 허용. image/svg+xml은 스크립트 실행 문서로 취급될 수 있어 명시 거부.
+const CLIP_MIME_WHITELIST = ["video/mp4", "video/quicktime", "video/webm"];
+const THUMB_MIME_WHITELIST = ["image/jpeg"];
+
 export async function GET() {
   return Response.json({ configured: isS3Configured });
 }
@@ -59,6 +65,28 @@ export async function POST(request: NextRequest) {
     if (!allowedExts.includes(ext)) {
       return Response.json({ error: "INVALID_EXTENSION" }, { status: 400 });
     }
+  }
+
+  // codec 파라미터 제거 — presign 서명 값과 PUT Content-Type 헤더가 정확히 일치해야 함
+  const rawContentType = fileType.split(";")[0];
+  const contentType = rawContentType || "video/webm";
+  if (!rawContentType) {
+    console.error("[presign] empty fileType, defaulted:", { kind, fileName });
+  }
+
+  // MIME 타입은 대소문자 구분 없음 + 앞뒤 공백 변형 우회 방지용 정규화 (검증 전용, 서명값은 원본 contentType 유지)
+  const normalizedContentType = contentType.trim().toLowerCase();
+
+  // kind별 Content-Type 화이트리스트 검증
+  const isValidContentType =
+    kind === "clip"
+      ? CLIP_MIME_WHITELIST.includes(normalizedContentType)
+      : kind === "thumb"
+        ? THUMB_MIME_WHITELIST.includes(normalizedContentType)
+        : normalizedContentType !== "image/svg+xml" &&
+          (normalizedContentType.startsWith("image/") || normalizedContentType.startsWith("video/"));
+  if (!isValidContentType) {
+    return Response.json({ error: "INVALID_CONTENT_TYPE" }, { status: 400 });
   }
 
   // 이벤트 존재 확인 + kind별 인증 분기
@@ -101,8 +129,6 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  // codec 파라미터 제거 — presign 서명 값과 PUT Content-Type 헤더가 정확히 일치해야 함
-  const contentType = fileType.split(";")[0] || "video/webm";
   const key = `events/${eventId}/${kind}/${Date.now()}-${fileName}`;
 
   const s3 = new S3Client({

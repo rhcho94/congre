@@ -52,12 +52,19 @@ export async function GET(
       console.error("[og-image] s3 empty body for key:", introMediaKey);
       return fallbackRedirect();
     }
-    const bytes = await obj.Body.transformToByteArray();
     const contentType = obj.ContentType ?? "application/octet-stream";
+    // MIME 타입은 대소문자 구분 없음 + 앞뒤 공백 변형 우회 방지용 정규화
+    const normalizedContentType = contentType.trim().toLowerCase();
+    if (!normalizedContentType.startsWith("image/") || normalizedContentType === "image/svg+xml") {
+      console.error("[og-image] invalid contentType for key:", introMediaKey, contentType);
+      return fallbackRedirect();
+    }
+    const bytes = await obj.Body.transformToByteArray();
     return new Response(Buffer.from(bytes), {
       headers: {
-        "Content-Type": contentType,
+        "Content-Type": normalizedContentType,
         "Cache-Control": "public, max-age=86400, s-maxage=86400",
+        "X-Content-Type-Options": "nosniff",
       },
     });
   } catch (err) {

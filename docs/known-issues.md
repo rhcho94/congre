@@ -2,25 +2,6 @@
 
 > 진행 중·보류·메모 항목만 둔다. 해결 완료 항목은 known-issues-resolved.md로 이동.
 
-## 🔴 저장형 XSS — presign Content-Type 무통제 + og-image 재전송 (미처리)
-
-- **심각도**: HIGH. 2026-08-06 보안 감사 H-1. **이번 사이클 미처리, 다음 사이클 1순위.**
-- **경로(3단 연쇄)**: `api/upload/presign/route.ts:16-21`(intro/outro kind는 확장자
-  화이트리스트 null) → `:105`(클라이언트 `fileType`을 검증 없이 ContentType으로 서명)
-  → `api/host/events/[eventId]/route.ts:172`(introMediaKey 무검증 저장)
-  → `api/og-image/[eventId]/route.ts:56-61`(미인증으로 S3 바이트를 객체 자신의
-  ContentType 그대로 반환 + `Cache-Control: public, max-age=86400`).
-- **완화 장치 부재**: `next.config.ts` 빈 설정. `X-Content-Type-Options`·`Content-Security-Policy`·
-  `Content-Disposition` 저장소 전체 0건. `middleware.ts` 없음.
-- **공격 시나리오**: 이메일 인증만 마친 무료 계정 1개로 presign(kind:"intro",
-  fileType:"text/html") → HTML PUT → 자기 eventId에 introMediaKey 저장 →
-  `app.congre.kr/api/og-image/{자기eventId}`가 공격자 HTML을 text/html로 인증 없이
-  24시간 CDN 캐시 서빙. 같은 오리진 IndexedDB의 Firebase ID 토큰 탈취로 연결.
-- **처방 방향**: presign ContentType 화이트리스트 + og-image 응답 Content-Type
-  고정(image/* 만) + next.config.ts에 nosniff 등 보안 헤더 신설. 파일 3개.
-- **미확인**: S3 버킷 정책·퍼블릭 액세스 차단 설정. text/html 객체가 S3 직접 URL로도
-  노출되는지 확인 필요.
-
 ## introMediaKey·s3Key 무검증 — 버킷 내 임의 키 열람 프리미티브
 
 - **심각도**: MEDIUM. 2026-08-06 보안 감사 M-1·M-2.
@@ -33,8 +14,23 @@
 - **전제 조건**: 대상 키를 미리 알아야 성립. 클립 키는 `events/{20자 ID}/clip/{서버ms}-clip-{클라ms}.{ext}`로
   ms 타임스탬프 2개가 곱해져 무작위 대입 비현실적. 단 로그 유출과 체인을 이루면
   한 번 샌 키가 상시 열람 창구가 됨(M-4는 `01b80f3`으로 처리 완료).
+- **관련(2026-08-06)**: `api/upload/presign/route.ts`의 발급 성공 로그가 S3 키를 평문
+  기록한다. M-1·M-2의 성립 전제("대상 키를 미리 알아야 함")를 이 로그가 채워준다.
+  M-4(서명 URL 로그 유출, `01b80f3` 처리)와 같은 계열. H-1 커밋 범위 밖이라 미처리.
 - **처방 방향**: 저장·사용 시점에 프리픽스 소속 검증 추가.
 - **처리**: 이번 사이클 보류. H-1 처리 후 재평가.
+
+## CSP(Content-Security-Policy) 미도입 — 별도 사이클로 연기
+
+- **현황**: 2026-08-06 H-1 처리에서 `next.config.ts` `headers()`를 신설했으나 부착
+  헤더는 `X-Content-Type-Options: nosniff` 하나뿐. CSP는 넣지 않았다.
+- **연기 근거**: CSP는 허용 외부 도메인 전수 열거 + 전 화면 회귀 테스트가 따르는 독립
+  사이클. 하나라도 빠뜨리면 해당 기능이 조용히 정지한다. 결제 트랙(Toss PG)이 승인
+  대기라 외부 도메인 목록이 확정되지 않았고, 지금 넣으면 승인 직후 재작업이 된다.
+- **H-1 방어에는 불필요**: presign 화이트리스트 + og-image 응답 타입 고정 2중으로
+  차단되며 nosniff가 안전망. CSP는 추가 층이지 필수 층이 아니다.
+- **선행 작업**: 허용 도메인 전수 조사(Firebase·S3·Shotstack·Toss·폰트 CDN·SOLAPI 등).
+- **격상 트리거**: Toss PG 연동 완료 시 / 외부 스크립트·위젯을 새로 붙이게 될 때.
 
 ## 베타 쿠폰 3종 취약 — 10장 규모에서 수용 (Toss PG 전환 시 소멸 예정)
 

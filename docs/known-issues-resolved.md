@@ -3,6 +3,34 @@
 > known-issues.md에서 분리된 해결 완료 이력. 사고 재발 진단 시 grep 대상.
 > 새 RESOLVED 항목 발생 시 known-issues.md에서 이 파일로 이동.
 
+## ✅ 저장형 XSS — presign Content-Type 무통제 + og-image 재전송 (2026-08-06 해소)
+
+- **심각도**: HIGH. 2026-08-06 보안 감사 H-1.
+- **원 경로(3단 연쇄)**: presign이 클라이언트 `fileType`을 무검증으로 ContentType 서명 →
+  og-image가 미인증으로 S3 바이트를 객체 자신의 ContentType 그대로 재전송 →
+  브라우저가 `app.congre.kr` 오리진에서 공격자 HTML 실행 → 같은 오리진 Firebase ID
+  토큰 탈취. 응답에 24시간 CDN 캐시가 붙어 원본 삭제 후에도 하루 배포됨.
+- **처방(3중 방어)**:
+  1. `api/upload/presign/route.ts` — kind별 MIME 화이트리스트. clip·thumb는 목록 대조,
+     intro/outro는 `image/`·`video/` 접두 허용 + `image/svg+xml` 명시 거부.
+     불일치 시 400 `INVALID_CONTENT_TYPE`. 이벤트 조회보다 앞에 배치(DB 왕복 전 차단).
+  2. `api/og-image/[eventId]/route.ts` — 응답 직전 S3 객체 ContentType 재검증.
+     `image/` 접두 + svg 거부 통과분만 서빙, 나머지는 기존 fallbackRedirect().
+     검사를 `transformToByteArray()` 앞에 배치해 거부 대상은 다운로드조차 하지 않음.
+     응답 헤더에 `X-Content-Type-Options: nosniff` 추가.
+  3. `next.config.ts` — `headers()` 신설, `source: "/:path*"` 전 경로에 nosniff.
+- **MIME 정규화**: 비교는 `.trim().toLowerCase()`한 사본으로. `image/SVG+xml`·끝 공백
+  변형 우회를 막는다. **서명값·PutObjectCommand·presign 로그는 정규화 전 원본 유지** —
+  presign 서명 Content-Type과 브라우저 PUT 헤더가 글자 단위로 일치해야 업로드가 성립.
+- **S3 버킷 공개 여부**: 감사 당시 "미확인"으로 등재됐으나 docs 대조로 확정됨 —
+  버킷 비공개. 근거 3건: 2026-05-11 공개 URL 403 실측(CHANGELOG), og-image 프록시가
+  존재하는 이유 자체가 비공개 버킷 유지, 2026-06-04 public-read 폐기·presigned 채택
+  결정(decisions/data-flow.md). → S3 직접 URL 노출 경로 없음. 공격 경로는 og-image
+  하나였고 처방으로 완결.
+- **미검증 2건**: (a) 기존 S3 객체들의 실제 ContentType 값을 직접 조회하지 않음 —
+  통과 못 하면 브랜드 카드 fallback으로 빠지므로 화면 파손은 없음. (b) 응답
+  Content-Type 소문자화가 브라우저 렌더에 무영향이라는 판정은 RFC 9110 기반 추론.
+
 ## 2026-07-12 해소 — 이메일 도달성 (Gmail 스팸 / SPF alignment)
 
 - **해소: 2026-07-12** — mail-tester 점검으로 도달성 확인, Gmail 정상 수신 확인. 원인·조치 상세 미기록.

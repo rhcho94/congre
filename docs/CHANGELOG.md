@@ -4,6 +4,13 @@
 
 ## 2026-08-06
 
+- fix(security): 저장형 XSS 3중 차단 — presign kind별 MIME 화이트리스트(intro/outro는
+  `image/`·`video/` 접두 + `image/svg+xml` 거부, 불일치 400 `INVALID_CONTENT_TYPE`,
+  DB 왕복 전 검사) / og-image 응답 직전 S3 ContentType 재검증(`image/` 접두 + svg 거부,
+  미통과 시 기존 fallbackRedirect, `transformToByteArray()` 앞 배치로 거부분 미다운로드)
+  + `X-Content-Type-Options: nosniff` / `next.config.ts` `headers()` 신설로 전 경로
+  nosniff. MIME 비교는 `.trim().toLowerCase()` 정규화 사본, 서명값·PutObjectCommand는
+  원본 유지(presign 서명↔PUT 헤더 글자 일치 조건). 2026-08-06 보안 감사 H-1 해소.
 - fix(security): events 클라이언트 직접 생성 차단 — `firestore.rules`의 events
   `allow create`가 `hostId` 한 필드만 강제하고 plan·unlocked·maxClips·maxClipSeconds는
   무검증이었음. 이메일 인증만 마친 계정이 브라우저 콘솔에서 클라이언트 SDK로

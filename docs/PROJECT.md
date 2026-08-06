@@ -131,6 +131,10 @@ Legacy 별칭: `--surface`=`var(--surface-1)`, `--border`=`var(--hairline-strong
     update는 `hasOnly(['name','phone'])` 화이트리스트, delete 차단
   - `betaCoupons`·`leads`: 규칙 미기재 → 암묵 거부. Admin SDK 전용
   - catch-all default-deny 미기재 (known-issues LOW 등재)
+- **HTTP 보안 헤더 현 상태 (2026-08-06)**: `next.config.ts` `headers()`가 전 경로
+  (`source: "/:path*"`)에 `X-Content-Type-Options: nosniff` 부착. og-image 라우트는
+  응답에서 자체적으로도 부착. CSP·Content-Disposition은 미도입(known-issues 등재).
+  `middleware.ts` 없음.
 - 한글 인트로/아웃트로 (이벤트 생성 폼 입력 → Firestore 저장 → Shotstack rich-text 클립 삽입, NotoSansKR TTF 호스팅)
 - 자동 삭제 cron (`/api/cron/cleanup`, KST 03:00 daily) — 클립 24h, 완성본 7d. 멱등성 마커: clipsDeletedAt, videoDeletedAt. 완성본 S3 객체 실제 삭제는 2026-07-12(33430b6)에 복구됨 — Track ⑦ 저장 위치 이전 시 누락됐던 드리프트.
 - 이용약관 / 개인정보처리방침 페이지 (`/terms`, `/privacy`) — v0.1 시행. 푸터 링크. 변경 이력은 `docs/legal/CHANGELOG.md`.
