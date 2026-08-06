@@ -1,8 +1,4 @@
-import {
-  collection, addDoc,
-  serverTimestamp, Timestamp,
-} from "firebase/firestore";
-import { getFirebaseFirestore, isFirebaseConfigured } from "./firebase";
+import type { Timestamp } from "firebase/firestore";
 
 export type EventPlan = "free" | "paid";
 export type EventStatus = "open" | "closed" | "rendering" | "done";
@@ -45,26 +41,4 @@ export interface Clip {
   uploaderPhone?: string;
   sessionToken?: string;
   excludedAt?: Timestamp | null;
-}
-
-export async function createEvent(input: {
-  title: string;
-  date: string; // "YYYY-MM-DD"
-  plan: EventPlan;
-  hostId: string;
-}): Promise<{ eventId: string; sessionToken: string }> {
-  if (!isFirebaseConfigured) throw new Error("Firebase not configured");
-  const db = getFirebaseFirestore();
-  const sessionToken = crypto.randomUUID();
-  const ref = await addDoc(collection(db, "events"), {
-    title: input.title,
-    date: Timestamp.fromDate(new Date(input.date + "T00:00:00")),
-    plan: input.plan,
-    hostId: input.hostId,
-    status: "open" as EventStatus,
-    sessionToken,
-    uploadToken: sessionToken,   // 마감 시 sessionToken은 null이 되지만 uploadToken은 보존
-    createdAt: serverTimestamp(),
-  });
-  return { eventId: ref.id, sessionToken };
 }
