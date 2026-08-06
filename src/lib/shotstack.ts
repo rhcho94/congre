@@ -343,7 +343,19 @@ export async function createRender(
     },
   };
 
-  console.log("[shotstack] createRender body:", JSON.stringify(body, null, 2));
+  // 서명 URL(asset.src)은 절대 기록하지 않는다 — 24h presigned URL이 로그로 새면
+  // 참가자 원본 영상이 인증 없이 다운로드 가능해진다. 구조 요약만 남긴다.
+  console.log("[shotstack] createRender summary:", JSON.stringify({
+    trackCount: timeline.tracks.length,
+    clipCount: timeline.tracks.reduce((n, t) => n + t.clips.length, 0),
+    hasSoundtrack: Boolean(timeline.soundtrack),
+    output: {
+      format: body.output.format,
+      fps: body.output.fps,
+      quality: body.output.quality,
+      resolution: `${body.output.size.width}x${body.output.size.height}`,
+    },
+  }));
 
   const res = await fetch(`${baseUrl}/render`, {
     method: "POST",
