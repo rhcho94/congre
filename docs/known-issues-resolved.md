@@ -32,6 +32,22 @@
 - **왜 06-02 정찰은 이걸 못 잡았나**: 그때는 완성본이 Shotstack CDN에 있었고 cleanup의 Shotstack 삭제 코드는 실제로 존재했다. 정찰 결론("삭제 코드 있음")은 그 시점엔 옳았다. 문제는 그 뒤 ⑦이 저장 위치를 바꾸면서 삭제 경로를 같이 안 옮긴 것이다.
 - **학습**: **저장 위치를 바꾸는 작업은 쓰기 경로뿐 아니라 삭제 경로도 짝이다.** 데이터 이사를 하면 "그 데이터를 지우는 코드"의 목적지도 함께 확인한다.
 
+## clips 컬렉션 보안 규칙 정비 필요 [RESOLVED 2026-06-18]
+
+- **현황**: `clips` 컬렉션 보안 규칙이 `allow update, delete: if request.auth != null`. 인증된 호스트면 다른 호스트 클립도 update·delete 가능. 현재 클라이언트가 직접 Firestore에 쓰지 않고 Admin SDK 경유라 실질 위험 낮음.
+- **개선 영역**:
+  - `allow update, delete: if request.auth != null && exists(/databases/$(database)/documents/events/$(resource.data.eventId))` 같은 조건 추가 → 이벤트 호스트 검증
+  - 또는 events 보안 규칙처럼 hostId 매칭 추가
+- **격상 트리거**: 클라이언트 SDK가 clips 직접 쓰는 흐름 추가 시점 + 영업 진입 전 보안 점검
+- **관련 영역**: launch-roadmap S4-09 D2 완성본 보존 (서브컬렉션 전환) 작업과 묶음 가능
+- **출처**: 2026-05-19 v2 P1 정찰
+- **해결**: 2026-06-18 `0a83224`에서 `allow read, create, update, delete: if false`
+  로 완전 차단. 클라이언트 SDK가 clips를 만지는 흐름은 존재하지 않음
+  (firebase/firestore import 파일 3개 = firebase.ts·users.ts·events.ts,
+  clip mutation 전부 Admin SDK).
+- **게시 확인**: 2026-08-06 Firebase 콘솔 규칙 탭 실측으로 게시본도
+  `if false` 확인. 저장소-게시본 일치.
+
 ## ✅ BGM이 영상보다 짧으면 중간에 끊김 — soundtrack loop 미지원 [RESOLVED 2026-06-14]
 
 **해소: 2026-06-14** — timeline.soundtrack(loop 미지원)을 audio clip 0.5s 겹침 직렬 트랙으로 대체. 커밋 0003a1d + 71f1a18.

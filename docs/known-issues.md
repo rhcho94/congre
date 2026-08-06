@@ -2,6 +2,95 @@
 
 > 진행 중·보류·메모 항목만 둔다. 해결 완료 항목은 known-issues-resolved.md로 이동.
 
+## 🔴 저장형 XSS — presign Content-Type 무통제 + og-image 재전송 (미처리)
+
+- **심각도**: HIGH. 2026-08-06 보안 감사 H-1. **이번 사이클 미처리, 다음 사이클 1순위.**
+- **경로(3단 연쇄)**: `api/upload/presign/route.ts:16-21`(intro/outro kind는 확장자
+  화이트리스트 null) → `:105`(클라이언트 `fileType`을 검증 없이 ContentType으로 서명)
+  → `api/host/events/[eventId]/route.ts:172`(introMediaKey 무검증 저장)
+  → `api/og-image/[eventId]/route.ts:56-61`(미인증으로 S3 바이트를 객체 자신의
+  ContentType 그대로 반환 + `Cache-Control: public, max-age=86400`).
+- **완화 장치 부재**: `next.config.ts` 빈 설정. `X-Content-Type-Options`·`Content-Security-Policy`·
+  `Content-Disposition` 저장소 전체 0건. `middleware.ts` 없음.
+- **공격 시나리오**: 이메일 인증만 마친 무료 계정 1개로 presign(kind:"intro",
+  fileType:"text/html") → HTML PUT → 자기 eventId에 introMediaKey 저장 →
+  `app.congre.kr/api/og-image/{자기eventId}`가 공격자 HTML을 text/html로 인증 없이
+  24시간 CDN 캐시 서빙. 같은 오리진 IndexedDB의 Firebase ID 토큰 탈취로 연결.
+- **처방 방향**: presign ContentType 화이트리스트 + og-image 응답 Content-Type
+  고정(image/* 만) + next.config.ts에 nosniff 등 보안 헤더 신설. 파일 3개.
+- **미확인**: S3 버킷 정책·퍼블릭 액세스 차단 설정. text/html 객체가 S3 직접 URL로도
+  노출되는지 확인 필요.
+
+## introMediaKey·s3Key 무검증 — 버킷 내 임의 키 열람 프리미티브
+
+- **심각도**: MEDIUM. 2026-08-06 보안 감사 M-1·M-2.
+- **M-1**: `api/host/events/[eventId]/route.ts:171-178` — introMediaKey/outroMediaKey가
+  `events/{자기eventId}/` 프리픽스 소속인지 검증 없음. 저장된 값은 invite-urls:57-64(1h
+  presigned GET), render/start:149-160(24h presigned GET), og-image:24,48(미인증 프록시)
+  세 곳에서 소유권 재검사 없이 S3 키로 사용됨.
+- **M-2**: `api/clips/route.ts:37,75-83` — 게스트가 보낸 s3Key가 `typeof === "string"`
+  검사만 받고 presign 발급 프리픽스와 대조되지 않음.
+- **전제 조건**: 대상 키를 미리 알아야 성립. 클립 키는 `events/{20자 ID}/clip/{서버ms}-clip-{클라ms}.{ext}`로
+  ms 타임스탬프 2개가 곱해져 무작위 대입 비현실적. 단 로그 유출과 체인을 이루면
+  한 번 샌 키가 상시 열람 창구가 됨(M-4는 `01b80f3`으로 처리 완료).
+- **처방 방향**: 저장·사용 시점에 프리픽스 소속 검증 추가.
+- **처리**: 이번 사이클 보류. H-1 처리 후 재평가.
+
+## 베타 쿠폰 3종 취약 — 10장 규모에서 수용 (Toss PG 전환 시 소멸 예정)
+
+- **심각도**: LOW(원 감사 MEDIUM에서 하향). 2026-08-06 보안 감사 M-3·M-5·M-6.
+- **M-3 계정 미결속**: `api/events/route.ts:117-126` — 쿠폰 = betaCoupons 문서 ID =
+  정규화 전화번호. 검증은 "문서 존재 + used !== true" 둘뿐. 호출자 `users/{uid}.phone`
+  과도, 같은 요청의 organizerPhone과도 대조하지 않음. 번호를 아는 제3자가 선점 가능.
+  `:121` INVALID_COUPON vs `:124` COUPON_ALREADY_USED 응답 차이가 유효 번호 오라클
+  (rate limit 없음).
+- **M-5 트랜잭션 아님**: 읽기 `:119-125` / 쓰기 `:155-158` 사이에 events.add() 왕복 1회.
+  `runTransaction` 사용처 저장소 전체 0건. 동시 요청 N개면 유료 이벤트 N개 생성.
+- **M-6 소진 쓰기 실패 삼킴**: `:155-158`의 betaCoupons set이 `.catch(console.error)`로
+  삼켜지고 요청은 `:168` 성공 응답으로 진행. used가 안 찍히면 그 쿠폰은 계속 유효.
+  순서가 뒤집힘(안전한 순서는 소진 먼저 → 성공 시 생성).
+- **처리**: 셋 다 고치지 않음. 발급 규모 최대 10장(Ray 확인)이고 전부 직접 발급한
+  지인·초기 사용자라 번호 유출 경로가 사실상 없음. Toss PG 승인 시 쿠폰 경로째
+  제거될 임시 코드이며, 잘 도는 결제 경로를 건드리는 위험이 얻는 것보다 큼.
+  M-6은 순서를 뒤집으면 "생성 실패 시 쿠폰 억울 소각"이라는 새 문제를 만듦 —
+  현 구조가 10장 규모에선 오히려 안전한 방향.
+- **격상 트리거**: 쿠폰 발급이 10장 초과 / Toss PG 승인이 무기한 지연되어 쿠폰이
+  임시가 아니게 되는 시점. 둘 중 하나면 M-3·M-6 재평가.
+- **운영 메모**: 쿠폰 소진(`used: true`) 후 되돌리는 앱 내 경로 없음. Firebase 콘솔
+  Data 탭에서 betaCoupons/{번호}의 used를 false로 수동 변경해야 함. 2026-08-06
+  Ray 테스트 중 실제 발생.
+
+## 보안 감사 LOW 9건 (2026-08-06) — 등재만, 미처리
+
+- **출처**: 2026-08-06 `/security-review` 4축 정찰.
+- `GET /api/render/status` 완전 미인증 — `route.ts:4-13`. 토큰 검증 코드 부재.
+  임의 renderId를 Shotstack에 프록시해 `{status, url}` 반환. renderId가 Shotstack
+  발급 UUID라 추측 난이도 높아 LOW. **미확인**: 현재 프론트가 이 라우트를 호출하는지,
+  인증 추가 시 호출부 동반 수정 필요 여부.
+- 원본 예외 메시지 클라이언트 반환 4곳 — clips/[clipId]/playback:65-67,
+  clips/[clipId]:53-55, render/status:15-16, render/start:193-194. render/start는
+  shotstack.ts:360의 벤더 응답 본문 200자가 그대로 노출. 나머지 16개 라우트는
+  INTERNAL_ERROR로 차단됨.
+- 참가자 전화번호 로그 기록 — `cron/check-rendering/route.ts:152`가 게스트 실번호를
+  `phone=${phone}`로 기록. `lib/notifications/channels/sms.ts:31`도 SOLAPI 거부 시
+  `(to: ${m.to})` 기록(프로덕션 실행됨). PIPA 대상 PII가 서드파티 로그에 축적.
+- Shotstack 페치용 서명 URL 만료 24시간 — render/start:96,141,152,159 전부
+  `expiresIn: 86400`. 실제 다운로드는 렌더 시작 직후 수 분 내이므로 노출 창 과도.
+- presign PUT 크기·횟수 제한 없음 — presign:116-123에 ContentLength 미서명. 정원은
+  업로드 완료 후 clips:57-62에서만 검사하고, 409여도 S3 객체는 고아로 남음(삭제 로직 없음).
+  미결제 `plan:"paid"` 이벤트는 렌더는 막히나 업로드 정원 200개×120초는 그대로 수용.
+- users create 필드 화이트리스트 없음 — firestore.rules:24. 자기 문서에 `role:"admin"`
+  등 임의 필드 삽입 가능. 현재 isAdmin/권한성 role을 읽는 코드 0건이라 실권한 상승은
+  없음(잠복 리스크). update는 `hasOnly(['name','phone'])`로 방어됨.
+- 명시적 default-deny catch-all 부재 — firestore.rules에 `match /{document=**} { allow read, write: if false; }`
+  없음. Firestore 암묵 거부로 현재 노출 없으나, 나중에 넓은 match가 추가되면 조용히 열림.
+- `/share/{eventId}` 서명 URL이 공개 HTML에 노출 — `share/[eventId]/page.tsx:53,67`.
+  수신자가 소스에서 S3 URL 추출·재배포 가능. 이벤트를 닫아도 1시간 유효(presigned는
+  취소 불가). 공유 페이지 자체가 공개 설계라 증분 작음.
+- 참가 여부 오라클 — `api/clips/check/route.ts:35-43`. 토큰 게이트는 있으나 초대 링크가
+  전 참가자에게 배포되므로, 게스트가 (정확한 번호 + 정확한 이름)으로 특정인의 참가
+  여부 1비트 획득 가능.
+
 ## API 에러 응답 키 관례 예외 2곳 (에러 통일 시 함정)
 
 - **현황**: 서버 에러 응답 본문의 키는 `error`가 사실상 표준(2026-08-05 전수 정찰 기준 에러 응답 지점 98개 중 대다수). 예외 2곳이 다른 키를 쓴다.
@@ -137,16 +226,6 @@
 - **격상 트리거**: 신규 호스트가 "뭘 해야 할지 모르겠다" 보고 발생 시
 - **처리 후보**: 가입 직후 first-time 안내 모달 / 온보딩 페이지 / 대시보드 빈 상태 placeholder에 가이드 링크 강조 등
 - **관련 영역**: S2-03 P3 이메일 인증 차단 흐름 완료 (2026-05-19 v3). onboarding 개선(first-time 안내 모달 등)은 보정 큐 등재.
-
-## clips 컬렉션 보안 규칙 정비 필요
-
-- **현황**: `clips` 컬렉션 보안 규칙이 `allow update, delete: if request.auth != null`. 인증된 호스트면 다른 호스트 클립도 update·delete 가능. 현재 클라이언트가 직접 Firestore에 쓰지 않고 Admin SDK 경유라 실질 위험 낮음.
-- **개선 영역**:
-  - `allow update, delete: if request.auth != null && exists(/databases/$(database)/documents/events/$(resource.data.eventId))` 같은 조건 추가 → 이벤트 호스트 검증
-  - 또는 events 보안 규칙처럼 hostId 매칭 추가
-- **격상 트리거**: 클라이언트 SDK가 clips 직접 쓰는 흐름 추가 시점 + 영업 진입 전 보안 점검
-- **관련 영역**: launch-roadmap S4-09 D2 완성본 보존 (서브컬렉션 전환) 작업과 묶음 가능
-- **출처**: 2026-05-19 v2 P1 정찰
 
 ## host/page.tsx dead code — dashboard·create 뷰 도달 불가
 

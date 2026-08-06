@@ -2,6 +2,27 @@
 
 > 기능 단위 작업 이력. 최신이 위.
 
+## 2026-08-06
+
+- fix(security): events 클라이언트 직접 생성 차단 — `firestore.rules`의 events
+  `allow create`가 `hostId` 한 필드만 강제하고 plan·unlocked·maxClips·maxClipSeconds는
+  무검증이었음. 이메일 인증만 마친 계정이 브라우저 콘솔에서 클라이언트 SDK로
+  `unlocked:true` 이벤트를 생성하면 `render/start`의 결제 게이트를 통째로 우회 가능한
+  상태. `allow create: if false`로 차단하고, 이에 따라 영구히 동작 불가해지는
+  `lib/events.ts`의 `createEvent` 데드 코드(호출부 0건) 제거. 타입 정의 4개는 보존,
+  `Timestamp`는 `import type` 전환으로 이 모듈이 런타임에 클라이언트 Firestore SDK를
+  끌어오지 않게 됨. 콘솔 게시 + 이벤트 생성 실사용 검증 완료. (bc7915a)
+- fix(security): Shotstack 요청 로그에서 서명 URL 제거 — `lib/shotstack.ts:346`이
+  createRender body 전체를 JSON으로 기록해 참가자 원본 영상·intro/outro·BGM의 24시간
+  presigned URL을 서명값째로 Vercel 런타임 로그에 평문 노출하고 있었음. 로그 열람
+  권한자가 한 줄 복사로 24시간 참가자 영상을 인증 없이 다운로드 가능한 상태.
+  asset.src를 어떤 형태로도 참조하지 않는 구조 요약 로그로 교체(트랙 수·클립 수·
+  soundtrack 유무·output 4종). destinations는 버킷명·리전 포함으로 제외. (01b80f3)
+- docs: 2026-08-06 보안 감사 결과 등재 — HIGH 1건(H-1 XSS 미처리)·MEDIUM 2건·
+  LOW 9건 + 쿠폰 3종 수용 결정을 known-issues.md에 등재. clips 보안 규칙 항목은
+  게시본 실측으로 해결 확인되어 resolved로 이동. PROJECT.md 규칙 현황을
+  2026-05-19 기준에서 2026-08-06 게시본 기준으로 갱신.
+
 ## 2026-08-05
 
 - docs: API 에러 응답 키 관례 예외 2곳 등재 + 서버 단독 변경 금지 규약 추가 — 전수 정찰로 `dashboard/create/page.tsx` 외 서버↔프론트 에러 키 불일치 0건 확정(프론트 `err.code` 매치 5건은 전부 Firebase SDK 예외 객체의 `auth/...` 코드로, 우리 API 응답 본문과 무관). 관례 예외 2곳(`api/clips/route.ts:61` = `code`, `api/user/delete/route.ts` = `code`+`message`)은 짝 프론트가 맞춰져 있어 동작 정상 → 코드 미수정, known-issues 등재 + CLAUDE.md 절대 규칙으로 재발 예방.

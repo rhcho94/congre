@@ -121,11 +121,16 @@ Legacy 별칭: `--surface`=`var(--surface-1)`, `--border`=`var(--hairline-strong
 - 알림 시스템 (Resend 이메일 + SOLAPI SMS, 채널 어댑터 패턴, notifications 컬렉션 이력 저장)
   - 트리거 연결 6건: 이벤트 생성, 렌더 시작, 렌더 완료, 렌더 지연(10분 초과), 렌더 실패, **참가자 결과**
   - 함수만 구현 1건: 첫 클립 업로드
-- **Firestore 보안 규칙 현 상태 (2026-05-19 v3 콘솔 게시 완료)**:
-  - `events`: read 차단, create는 `request.auth != null` + **`email_verified`** + `users/{auth.uid}` 존재 검증, update는 호스트 본인만
-  - `clips`: read·create 차단, update·delete는 `request.auth != null` (클라이언트 열림 영역 — clips 정비 보정 큐 등재)
+- **Firestore 보안 규칙 현 상태 (2026-08-06 콘솔 게시 완료, 저장소 파일과 일치 실측)**:
+  - `events`: read·**create**·update 전부 차단. 생성은 `POST /api/events`(Admin SDK) 전담
+    — 클라이언트 직접 생성을 허용하면 `unlocked:true` 자기부여로 결제 게이트 우회
+    (2026-08-06 보안 감사 H-2, `bc7915a`). delete는 미기재로 암묵 거부
+  - `clips`: read·create·update·delete 전부 차단 (2026-06-18 `0a83224`)
   - `notifications`: read·write 차단 (Admin SDK 전용)
-  - `users`: read·create는 본인 doc만 (`request.auth.uid == userId`), update·delete 차단
+  - `users`: read·create는 본인 doc만(`request.auth.uid == userId`),
+    update는 `hasOnly(['name','phone'])` 화이트리스트, delete 차단
+  - `betaCoupons`·`leads`: 규칙 미기재 → 암묵 거부. Admin SDK 전용
+  - catch-all default-deny 미기재 (known-issues LOW 등재)
 - 한글 인트로/아웃트로 (이벤트 생성 폼 입력 → Firestore 저장 → Shotstack rich-text 클립 삽입, NotoSansKR TTF 호스팅)
 - 자동 삭제 cron (`/api/cron/cleanup`, KST 03:00 daily) — 클립 24h, 완성본 7d. 멱등성 마커: clipsDeletedAt, videoDeletedAt. 완성본 S3 객체 실제 삭제는 2026-07-12(33430b6)에 복구됨 — Track ⑦ 저장 위치 이전 시 누락됐던 드리프트.
 - 이용약관 / 개인정보처리방침 페이지 (`/terms`, `/privacy`) — v0.1 시행. 푸터 링크. 변경 이력은 `docs/legal/CHANGELOG.md`.
