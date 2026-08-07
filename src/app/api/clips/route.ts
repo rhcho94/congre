@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server";
 import { FieldValue } from "firebase-admin/firestore";
 import { getAdminDb } from "@/lib/firebase-admin";
 import { PLAN_CLIP_LIMITS, type PlanId } from "@/lib/plans";
+import { isKeyInEvent } from "@/lib/s3-server";
 
 export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => null);
@@ -51,6 +52,10 @@ export async function POST(request: NextRequest) {
 
   if (data.status !== "open") {
     return Response.json({ error: "EVENT_CLOSED" }, { status: 409 });
+  }
+
+  if (!isKeyInEvent(s3Key, eventId) || (thumbKey !== undefined && !isKeyInEvent(thumbKey, eventId))) {
+    return Response.json({ error: "INVALID_KEY" }, { status: 400 });
   }
 
   const plan = (data.plan as string | undefined ?? "free") as PlanId;

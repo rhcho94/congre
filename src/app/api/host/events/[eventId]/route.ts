@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server";
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { verifyIdToken } from "@/lib/auth-server";
 import { getAdminDb } from "@/lib/firebase-admin";
-import { getVideoPresignedUrl } from "@/lib/s3-server";
+import { getVideoPresignedUrl, isKeyInEvent } from "@/lib/s3-server";
 
 function tsToMs(v: unknown): number | null {
   return v instanceof Timestamp ? v.toMillis() : null;
@@ -158,6 +158,13 @@ export async function PATCH(
     }
     if (snap.data()!.hostId !== uid) {
       return Response.json({ error: "FORBIDDEN" }, { status: 403 });
+    }
+
+    if (
+      (typeof body.introMediaKey === "string" && !isKeyInEvent(body.introMediaKey, eventId)) ||
+      (typeof body.outroMediaKey === "string" && !isKeyInEvent(body.outroMediaKey, eventId))
+    ) {
+      return Response.json({ error: "INVALID_KEY" }, { status: 400 });
     }
 
     const updates: Record<string, unknown> = {};
