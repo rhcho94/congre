@@ -3,6 +3,28 @@
 > known-issues.md에서 분리된 해결 완료 이력. 사고 재발 진단 시 grep 대상.
 > 새 RESOLVED 항목 발생 시 known-issues.md에서 이 파일로 이동.
 
+## ✅ introMediaKey·s3Key 무검증 — 버킷 내 임의 키 열람 프리미티브 (2026-08-07 해소)
+
+- **심각도**: MEDIUM. 2026-08-06 보안 감사 M-1·M-2.
+- **M-1**: `api/host/events/[eventId]/route.ts:171-178` — introMediaKey/outroMediaKey가
+  `events/{자기eventId}/` 프리픽스 소속인지 검증 없음. 저장된 값은 invite-urls:57-64(1h
+  presigned GET), render/start:149-160(24h presigned GET), og-image:24,48(미인증 프록시)
+  세 곳에서 소유권 재검사 없이 S3 키로 사용됨.
+- **M-2**: `api/clips/route.ts:37,75-83` — 게스트가 보낸 s3Key가 `typeof === "string"`
+  검사만 받고 presign 발급 프리픽스와 대조되지 않음.
+- **전제 조건**: 대상 키를 미리 알아야 성립. 클립 키는 `events/{20자 ID}/clip/{서버ms}-clip-{클라ms}.{ext}`로
+  ms 타임스탬프 2개가 곱해져 무작위 대입 비현실적. 단 로그 유출과 체인을 이루면
+  한 번 샌 키가 상시 열람 창구가 됨(M-4는 `01b80f3`으로 처리 완료).
+- **해소**: 2026-08-07 `9779c13`. 클라이언트가 보낸 S3 키가 `events/{eventId}/` 프리픽스에
+  속하는지 **저장 시점에** 검증한다. `isKeyInEvent(key, eventId)` 헬퍼를 `src/lib/s3-server.ts`에
+  신설하고 `api/clips`(s3Key·thumbKey)와 `api/host/events/[eventId]`(introMediaKey·outroMediaKey)에서
+  호출, 위반 시 400 `INVALID_KEY`. 검사는 인증 통과 뒤에 배치했고 `null`(미디어 삭제)은 통과시킨다.
+- **결정 본문**: `docs/decisions/data-flow.md` 2026-08-07 항목 — 갈래 비교(A/B/C), 읽기 시점에
+  검증을 넣지 않은 이유, `videoS3Key` 제외 근거, 정규식 대신 `startsWith`를 쓴 이유.
+- **검증**: build 통과, lint delta 0. 배포 후 실사용 확인 — 인트로 미디어 업로드·삭제 양쪽 통과.
+- **분리 잔존**: presign 발급 성공 로그의 S3 키 평문 기록 건은 미처리 상태로 known-issues.md에
+  별도 항목으로 남겼다.
+
 ## ✅ 인트로/아웃트로 미디어 10MB 제한 — 폰 영상 사실상 업로드 불가 (2026-08-06 해소)
 
 - **현황**: 2026-08-06 H-1 배포 검증 중 발견. 호스트 인트로/아웃트로 미디어 업로드가
@@ -20,7 +42,7 @@
 - **격상 트리거**: 호스트가 인트로 영상 업로드 실패를 신고할 때 / 졸업식 시즌 진입 전.
 - **해소일**: 2026-08-06
 - **해소 내역**: 크기 100MB · 영상 길이 15초로 교체
-- **근거**: `docs/decisions/rendering.md` 2026-08-06 결정 참조
+- **근거**: `docs/decisions/rendering.md` 2026-08-07 결정 참조
 
 ## ✅ 저장형 XSS — presign Content-Type 무통제 + og-image 재전송 (2026-08-06 해소)
 

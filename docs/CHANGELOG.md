@@ -2,8 +2,18 @@
 
 > 기능 단위 작업 이력. 최신이 위.
 
-## 2026-08-06
+## 2026-08-07
 
+- fix(security): S3 키 프리픽스 소속 검증 추가 — 클라이언트가 보낸 S3 키가
+  `events/{eventId}/` 프리픽스에 속하는지 저장 시점에 검증. 종전에는
+  `typeof === "string"` 검사만 있어 버킷 내 임의 키를 자기 이벤트 문서에 심을 수 있었고,
+  그 뒤 presigned GET 발급 지점들이 소유권 재검사 없이 그 키를 서명해 넘겼음.
+  `isKeyInEvent(key, eventId)` 헬퍼를 `lib/s3-server.ts`에 신설하고
+  `api/clips`(s3Key·thumbKey, M-2) / `api/host/events/[eventId]`(introMediaKey·outroMediaKey, M-1)에서
+  호출, 위반 시 400 `INVALID_KEY`. 검사는 인증 통과 뒤 배치(인증 앞에 두면 남의 이벤트 키
+  형식을 떠보는 창구가 됨), `null`(미디어 삭제)은 통과. `videoS3Key`는 버킷 루트
+  `${renderId}.mp4` 형식이라 검증 대상 제외. 2026-08-06 보안 감사 M-1·M-2 해소.
+  결정: decisions/data-flow.md 2026-08-07. 배포 후 인트로 미디어 업로드·삭제 실사용 확인 완료. (9779c13)
 - fix(dashboard): 인트로/아웃트로 미디어 업로드 상한 크기 10MB→100MB + 영상 길이 15초
   검사 신설. `src/lib/shotstack.ts:111`이 인트로 영상을 `length: "auto"`(원본 길이 그대로)로
   타임라인에 넣어 지금까지 크기 제한이 사실상 길이 제한을 겸해 왔음 — 크기만 풀면 긴
@@ -18,6 +28,9 @@
   "권장"이 아닌 상한 표현으로 복원한 것. 아웃트로에만 직렬 배치 안내 1줄 추가 —
   "아웃트로 문구를 함께 넣으면 미디어가 끝난 뒤 이어서 나와요"(2026-05-12 outroText
   overlay 폐기 사양의 UI 노출. 인트로는 overlay라 해당 없음).
+
+## 2026-08-06
+
 - fix(security): 저장형 XSS 3중 차단 — presign kind별 MIME 화이트리스트(intro/outro는
   `image/`·`video/` 접두 + `image/svg+xml` 거부, 불일치 400 `INVALID_CONTENT_TYPE`,
   DB 왕복 전 검사) / og-image 응답 직전 S3 ContentType 재검증(`image/` 접두 + svg 거부,

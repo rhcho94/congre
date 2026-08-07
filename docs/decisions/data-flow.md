@@ -2,6 +2,50 @@
 
 > Firestore·S3·Admin SDK·서버 이전 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-08-07 — 클라이언트 제출 S3 키의 프리픽스 소속 검증 (저장 시점, 갈래 A)
+
+**결정**: 클라이언트가 보낸 S3 키가 `events/{eventId}/` 프리픽스에 속하는지 **저장 시점에**
+검증한다. `isKeyInEvent(key, eventId)` 헬퍼를 `src/lib/s3-server.ts`에 신설하고 두 라우트에서
+호출한다. 위반 시 400 `INVALID_KEY`.
+- `api/clips/route.ts` — `s3Key`, `thumbKey` (M-2)
+- `api/host/events/[eventId]/route.ts` — `introMediaKey`, `outroMediaKey` (M-1)
+
+**종전 상태**: `typeof === "string"` 검사만 있었다. 버킷 내 임의 키를 자기 이벤트 문서에
+심으면, 그 뒤 presigned GET 발급 지점들이 소유권 재검사 없이 그 키를 그대로 서명해 넘겼다.
+
+**검사 위치를 인증 뒤로 둔 이유**: 인증 앞에 두면 남의 이벤트 키 형식을 떠보는 창구가 된다.
+clips는 `sessionToken` 대조 뒤, host는 `hostId === uid` 뒤에 배치한다.
+
+**null 통과**: host 라우트에서 `null`은 "미디어 삭제" 요청이다. `typeof === "string"` 가드로
+검사를 건너뛴다. 이걸 막으면 호스트가 인트로를 못 지운다.
+
+**갈래 비교 (채택 A)**:
+- **A. 프리픽스까지만 `events/{eventId}/`** — 채택. 감사가 지적한 취약점(남의 이벤트 키 열람)이
+  완전히 닫힌다. 같은 이벤트 안에서 종류를 섞는 것은 통과하나 자기 이벤트 내부라 무해.
+- B. 종류 세그먼트까지 `events/{eventId}/intro/` — 기각. 옛 데이터가 다른 종류 폴더를 쓰고
+  있으면 파손. 얻는 방어가 A 대비 없음.
+- C. 템플릿 전체 정규식 매치 — 기각. 파손 위험 최대, 방어 이득 거의 없음.
+
+**읽기 시점에 검증을 넣지 않은 이유**: 쓰기 지점을 전수 조사해 전부 막았으므로 저장된 값은
+이미 조건을 만족한다. 이중 검사는 유지 비용만 늘린다. 쓰기 지점 전수(정찰 확인) —
+`introMediaKey`/`outroMediaKey`는 host 라우트 1곳, `s3Key`/`thumbKey`는 `api/clips` 1곳.
+나머지 2곳(`cron/check-rendering`, `cron/cleanup`)은 서버가 조립하거나 기존 값을 필터링하는
+경로라 클라이언트 입력이 아니다.
+
+**`videoS3Key`를 검증 대상에서 제외한 이유**: 완성본 영상 키는 `${renderId}.mp4` 형식으로
+버킷 루트에 있다. `events/` 프리픽스에 속하지 않으므로 같은 검증을 걸면 완성본이 전부 막힌다.
+"이 버킷의 모든 키가 `events/`로 시작한다"는 명제는 거짓이다.
+
+**정규식 대신 `startsWith`를 쓴 이유**: eventId에 정규식 특수문자가 들어오면 오작동한다.
+접두사 혼동(eventId `"ABC"`가 `"events/ABCD/..."` 키를 통과시키는 것)은 템플릿 끝의 슬래시가
+막는다 — 검증 시 실측 확인.
+
+**변경 파일**: `src/lib/s3-server.ts`, `src/app/api/clips/route.ts`,
+`src/app/api/host/events/[eventId]/route.ts` (커밋 `9779c13`, 3파일 20↑/1↓)
+
+**검증**: build 통과, lint errors 11 / warnings 3 (baseline delta 0). 배포 후 실사용 확인 —
+인트로 미디어 업로드·삭제 양쪽 통과.
+
 ## 2026-08-06 — 업로드 MIME 화이트리스트 정책 (접두 규칙 채택, 열거 방식 폐기)
 
 **결정**: presign의 intro/outro Content-Type 검증을 명시 목록 열거가 아니라
