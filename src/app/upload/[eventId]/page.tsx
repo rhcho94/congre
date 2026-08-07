@@ -522,7 +522,7 @@ function UploadInner() {
 
               <div className="notice" style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginBottom: "1rem" }}>
                 <p style={{ fontWeight: 600 }}>📱 휴대폰을 세로로 들고 찍어주세요</p>
-                <p className="text-sm text-muted">· 최대 {maxClipSeconds}초까지 영상에 담겨요</p>
+                <p className="text-sm text-muted">· 앞부분 {maxClipSeconds}초만 영상에 담겨요 (뒤는 잘려요)</p>
               </div>
 
               {iosDevice ? (
