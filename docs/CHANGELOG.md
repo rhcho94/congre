@@ -4,6 +4,20 @@
 
 ## 2026-08-06
 
+- fix(dashboard): 인트로/아웃트로 미디어 업로드 상한 크기 10MB→100MB + 영상 길이 15초
+  검사 신설. `src/lib/shotstack.ts:111`이 인트로 영상을 `length: "auto"`(원본 길이 그대로)로
+  타임라인에 넣어 지금까지 크기 제한이 사실상 길이 제한을 겸해 왔음 — 크기만 풀면 긴
+  영상이 완성본 맨 앞에 통째로 붙는 문제라, 크기 상향과 길이 검사 신설을 함께 처리.
+  길이 검사는 `<video>` `loadedmetadata`로 duration을 측정해 15초 초과 시 alert, 판정
+  불가(비표준 코덱 등)는 통과시킴(기존 동작 유지). 측정 헬퍼는
+  `src/app/dashboard/events/[eventId]/page.tsx` 내부 전용(게스트 업로드 경로 무접촉).
+  함께 인트로·아웃트로 미디어 섹션에 안내 문구 2곳 신설 —
+  "영상은 15초까지 · 파일 100MB 이하 (사진은 길이 제한 없음)". 이 자리에는 과거
+  "영상 16초 이내 권장 · 길수록 결과물 길어짐"이 있었으나 `c3c69e3`(2026-05-14,
+  인트로/아웃트로 섹션 리디자인)에서 제거된 뒤 안내가 없는 상태였고, 같은 자리에
+  "권장"이 아닌 상한 표현으로 복원한 것. 아웃트로에만 직렬 배치 안내 1줄 추가 —
+  "아웃트로 문구를 함께 넣으면 미디어가 끝난 뒤 이어서 나와요"(2026-05-12 outroText
+  overlay 폐기 사양의 UI 노출. 인트로는 overlay라 해당 없음).
 - fix(security): 저장형 XSS 3중 차단 — presign kind별 MIME 화이트리스트(intro/outro는
   `image/`·`video/` 접두 + `image/svg+xml` 거부, 불일치 400 `INVALID_CONTENT_TYPE`,
   DB 왕복 전 검사) / og-image 응답 직전 S3 ContentType 재검증(`image/` 접두 + svg 거부,

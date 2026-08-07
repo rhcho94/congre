@@ -78,6 +78,28 @@ const dangerBtnStyle: React.CSSProperties = {
   color: "#fff",
 };
 
+/**
+ * 영상 파일의 재생 시간을 초 단위로 측정한다.
+ * 읽기 실패 또는 duration이 유한한 수가 아니면(판정 불가) reject 하지 않고 NaN을 resolve한다.
+ * 호출부는 NaN을 "통과"로 처리한다.
+ */
+function measureVideoDuration(file: File): Promise<number> {
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(file);
+    const video = document.createElement("video");
+    video.preload = "metadata";
+    video.onloadedmetadata = () => {
+      URL.revokeObjectURL(url);
+      resolve(Number.isFinite(video.duration) ? video.duration : NaN);
+    };
+    video.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve(NaN);
+    };
+    video.src = url;
+  });
+}
+
 export default function EventDetailPage() {
   const { eventId } = useParams<{ eventId: string }>();
   const router = useRouter();
@@ -611,9 +633,16 @@ export default function EventDetailPage() {
   }
 
   async function handleIntroMediaUpload(file: File) {
-    if (file.size > 10 * 1024 * 1024) {
-      alert("파일 크기는 10MB 이하만 가능합니다");
+    if (file.size > 100 * 1024 * 1024) {
+      alert("파일 크기는 100MB 이하만 가능합니다");
       return;
+    }
+    if (file.type.startsWith("video/")) {
+      const durationSec = await measureVideoDuration(file);
+      if (Number.isFinite(durationSec) && durationSec > 15) {
+        alert("인트로 영상은 15초 이내만 가능합니다");
+        return;
+      }
     }
     setIntroUploading(true);
     try {
@@ -651,9 +680,16 @@ export default function EventDetailPage() {
   }
 
   async function handleOutroMediaUpload(file: File) {
-    if (file.size > 10 * 1024 * 1024) {
-      alert("파일 크기는 10MB 이하만 가능합니다");
+    if (file.size > 100 * 1024 * 1024) {
+      alert("파일 크기는 100MB 이하만 가능합니다");
       return;
+    }
+    if (file.type.startsWith("video/")) {
+      const durationSec = await measureVideoDuration(file);
+      if (Number.isFinite(durationSec) && durationSec > 15) {
+        alert("아웃트로 영상은 15초 이내만 가능합니다");
+        return;
+      }
     }
     setOutroUploading(true);
     try {
@@ -1215,6 +1251,7 @@ export default function EventDetailPage() {
 
                 <div className="flex flex-col gap-1.5">
                   <span className="text-xs text-muted">미디어 (이미지 또는 영상)</span>
+                  <span className="text-xs text-accent">영상은 15초까지 · 파일 100MB 이하 (사진은 길이 제한 없음)</span>
                   {introUploading ? (
                     <div className="flex items-center gap-2 py-4">
                       <Loader2 size={14} className="animate-spin text-accent" />
@@ -1289,6 +1326,8 @@ export default function EventDetailPage() {
 
                 <div className="flex flex-col gap-1.5">
                   <span className="text-xs text-muted">미디어 (이미지 또는 영상)</span>
+                  <span className="text-xs text-accent">영상은 15초까지 · 파일 100MB 이하 (사진은 길이 제한 없음)</span>
+                  <span className="text-xs text-muted">아웃트로 문구를 함께 넣으면 미디어가 끝난 뒤 이어서 나와요</span>
                   {outroUploading ? (
                     <div className="flex items-center gap-2 py-4">
                       <Loader2 size={14} className="animate-spin text-accent" />
