@@ -489,7 +489,10 @@ iPhone Safari에서 `<input type="file" capture="environment">`로 촬영 시
 ## 2026-05-16 — Shotstack 클립별 length 동적 계산 (사양 C)
 
 - **결정**: createRender 시그니처를 `s3Urls: string[]` → `clips: Array<{src: string; length: number}>`로 변경.
-  videoClips 조립 시 `length: clip.length`, `trim: 0` 명시.
+  videoClips 조립 시 `length: clip.length` 명시.
+  (2026-05-18 `dfe322c`로 제거 — Shotstack이 clip 레벨 `trim`을 400 Unknown property로
+  거부. 공식 스키마상 asset 레벨 전용이며, `trim:0`은 기본 오프셋과 동일해 제거해도
+  동작 동일. 2026-08-07 정정)
   호출부에서 `length = Math.min(duration, maxClipSeconds)` 계산 후 전달.
 - **근거**: Shotstack 공식 문서에서 `length > 원본 영상`일 때 last frame freeze 동작 확인.
   결혼식·졸업식 시장에서 영상 늘어짐은 상품성 손실 — 운영자 결정 (옵션 B 선택).
