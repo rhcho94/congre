@@ -3,6 +3,13 @@
 > known-issues.md에서 분리된 해결 완료 이력. 사고 재발 진단 시 grep 대상.
 > 새 RESOLVED 항목 발생 시 known-issues.md에서 이 파일로 이동.
 
+## ✅ 유료 플랜 실수치(small/medium/large) 미정 — 구조 소멸로 해소 (2026-08-10 해소)
+
+- **원 등재 내용**: 2026-05-29 결정 시점 `plans.ts`에 small 50 / medium 200 / large 5000이 임시값으로 박혀 있어 실수치 확정이 미결이었다.
+- **해소 경위**: 플랜 구조가 free / paid 2종으로 재작성되면서 small·medium·large 개념 자체가 소멸했다. `decisions/market-product.md:48`이 "계산식 전환으로 small/medium/large 실수치 개념 자체 소멸"로 이미 기록하고 있었으나 known-issues 쪽에 반영되지 않아 **문서 간 드리프트**로 남아 있던 건이다.
+- **2026-08-10 코드 실측**: `src/lib/plans.ts`는 `PlanId = "free" | "paid"` 2종. `PLAN_CLIP_LIMITS = { free: 5, paid: 200 }`, `PLAN_MAX_CLIP_SECONDS = { free: 10, paid: 100 }`. 저장소 `src/` 전체에서 small/medium/large 매칭 0건.
+- **stale 서술 함께 정리**: 원 등재의 "무료 클립 수 10개" 서술도 함께 stale이었다. 무료 5개로의 변경은 `decisions/market-product.md:46`에 이미 결정 기록이 있다.
+
 ## ✅ introMediaKey·s3Key 무검증 — 버킷 내 임의 키 열람 프리미티브 (2026-08-07 해소)
 
 - **심각도**: MEDIUM. 2026-08-06 보안 감사 M-1·M-2.
