@@ -442,7 +442,7 @@
 - **격상 트리거**: R9 zip 적용 시 index.html은 Pretendard 전환되는데 pricing.html 누락되면 이 페이지만 Cormorant로 남음.
 - **운영자 결정 (2026-05-30)**: 보류, 이대로. Pricing Section.html 교체로 사실상 해소 영역도 있으나 운영자 명시 결정.
 
-### L8. 랜딩 푸터 = git 외부 직접 수정분 3건 (CD zip 덮어쓰기 주의)
+### L8. 랜딩 푸터 = git 외부 직접 수정분 4건 (CD zip 덮어쓰기 주의)
 
 - **현황**: 2026-05-31 `deploy/index.html` 푸터 4건(L3627·L3628 본문 + L3635·L3636 foot-bottom — `/terms`·`/privacy` 상대경로 → `https://app.congre.kr/terms`·`/privacy` 절대경로)을 CC가 직접 수정·배포. 랜딩은 git 외부 트랙이라 이 수정은 git에 없고 Vercel 배포본(`dpl_9QmSYY5pDJzELxPHPnxiGZv4j86d`)에만 존재.
 - **위험**: 다음에 CD에서 랜딩 zip을 새로 뽑아 풀어덮으면 이 4줄 수정이 사라져 404 재발. CD zip에는 이 수정이 없음.
@@ -451,8 +451,10 @@
 - **관련 결정**: decisions/landing.md 2026-05-31 (12).
 - **L 번호 부여 메모**: 사양 원안은 "L7"이었으나 L7(pricing.html Pretendard) 기존 점유 → 전역 일련번호 룰(CLAUDE.md 학습 룰 #2)에 따라 L8 부여.
 - **2026-08-11 추가분 2건**: (a) `.foot-bottom` 뒤 형제 요소 `<div class="foot-biz">` 사업자 정보 3줄 + `.foot-biz` CSS 4규칙 10줄(:1194-1203). (b) 문의 이메일 `hello@congre.kr` → `cs@rayne.co.kr` — index.html 푸터 4곳(하단 바는 href와 표시 텍스트 둘 다) + pricing.html:1030 "문의하기 →" 버튼 1곳. 배포 `3i3123mbEX7q47doeqBg2tg57WjY`. 백업 `index_pre_bizinfo_backup.html`·`pricing_pre_email_backup.html`(둘 다 편집 전 상태).
-- **다음 CD 랜딩 작업 시 확인 항목 3건**: ① 약관·개인정보 href가 `https://app.congre.kr/...` 절대경로인지 ② `.foot-biz` 블록과 CSS가 있는지, 값 7항목이 `src/app/terms/page.tsx`와 문자 단위 동일한지 ③ 두 파일에 `hello@congre.kr` 잔존 0건인지.
-- **관련 결정**: decisions/landing.md 2026-08-11 (20).
+- **2026-08-11 (2) 추가분**: 통신판매업신고번호 값을 `신고 예정` → `신고 면제 대상 (전자상거래법 제12조 제1항 단서)`로 교체. index.html:3768 1곳. 배포 `dpl_5qTqWwk7iwQsBjCkhV4Z7QEb3eFW`. 백업 `index_pre_mailorder_backup.html`(편집 전 상태, 180,640 바이트). 편집 후 180,692(+52).
+- **모바일 줄바꿈 메모**: 모바일에서 이 줄의 줄바꿈이 다소 어색하나 의도적 보류다(2026-08-11 Ray 결정). 푸터는 카드사 심사관이 항목 내용만 확인하는 지점이고, 줄을 쪼개면 `.foot-biz` 구조가 바뀌어 CD zip 복원 시 확인 항목이 늘어난다. **미관 문제로 보고 고치지 말 것.**
+- **다음 CD 랜딩 작업 시 확인 항목 4건**: ① 약관·개인정보 href가 `https://app.congre.kr/...` 절대경로인지 ② `.foot-biz` 블록과 CSS가 있는지, 값 7항목이 `src/app/terms/page.tsx`와 문자 단위 동일한지 ③ 두 파일에 `hello@congre.kr` 잔존 0건인지 ④ 통신판매업신고번호 값이 `신고 면제 대상 (전자상거래법 제12조 제1항 단서)`인지 (zip에는 `신고 예정`이 들어 있을 것)
+- **관련 결정**: decisions/landing.md 2026-08-11 (20), 2026-08-11 (21).
 
 ### L9. 랜딩 pricing.html 계산기 섹션 = git 외부 직접 수정분 (CD zip 덮어쓰기 주의)
 
@@ -485,9 +487,9 @@
 - **격상 트리거**: 접근성 정비 사이클 착수 시.
 - **L 번호 부여 메모**: L12 다음 전역 일련번호에 따라 L13 부여.
 
-### L14. deploy/ 백업·시안 HTML 20개가 공개 접근 가능 (2026-08-11)
+### L14. deploy/ 백업·시안 HTML 23개가 공개 접근 가능 (2026-08-11)
 
-- **현황**: `npx vercel --prod`는 `deploy/` 폴더를 통째로 업로드하므로, 백업본과 CD 시안이 전부 공개 URL로 접근된다 — 예: `congre.kr/index_v4.html`, `congre.kr/pricing_pre_calc_backup.html`. 2026-08-11 정찰 실측 20개(현행 2 + index 백업 8 + pricing 백업 5 + CD 시안 5). 확장자가 `.backup`·`.bak`인 2건(`index.html.backup`, `index.html.bak`)은 `*.html` 글롭에 안 걸려 별도 존재.
+- **현황**: `npx vercel --prod`는 `deploy/` 폴더를 통째로 업로드하므로, 백업본과 CD 시안이 전부 공개 URL로 접근된다 — 예: `congre.kr/index_v4.html`, `congre.kr/pricing_pre_calc_backup.html`. 2026-08-11 재실측 23개(현행 2 + index 백업 10 + pricing 백업 6 + CD 시안 5) — 통신판매업신고번호 교체분 백업(`index_pre_mailorder_backup.html`) 포함 반영. 확장자가 `.backup`·`.bak`인 2건(`index.html.backup`, `index.html.bak`)은 `*.html` 글롭에 안 걸려 별도 존재.
 - **잠재 리스크**: 기밀은 없으나 `pricing_pre_calc_backup.html`이 폐기된 4단 고정가 시절 가격표라, 검색 유입이나 링크 공유로 도달하면 가격 문의 혼선.
 - **이번 배포로 생긴 문제 아님** — 6/14·6/27 배포에도 동일하게 존재했다.
 - **처치 후보**: (a) `deploy/.vercelignore`에 백업·시안 패턴 등재 (b) 백업을 `deploy/` 밖 별도 폴더로 이동. (b)는 백업 경로 관례를 바꾸므로 영향 범위가 크다.
