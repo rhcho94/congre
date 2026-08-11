@@ -41,7 +41,7 @@ export function baseEmail(preview: string, body: string): string {
           <td style="padding:20px 40px 32px;">
             <p style="margin:0;font-size:11px;color:${C.muted};line-height:1.7;">
               이 메일은 Congre에서 발송된 자동 알림입니다.<br>
-              문의: support@congre.app
+              문의: cs@rayne.co.kr
             </p>
           </td>
         </tr>

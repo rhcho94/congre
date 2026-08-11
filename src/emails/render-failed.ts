@@ -22,7 +22,7 @@ export function renderRenderFailedEmail(ctx: RenderFailedEmailCtx): string {
     </table>
     <p style="margin:0 0 16px;font-size:14px;color:${C.text};line-height:1.7;">
       대시보드에서 이벤트 상태를 확인하고 다시 편집을 시도해 보세요.
-      문제가 지속되면 support@congre.app으로 문의해 주세요.
+      문제가 지속되면 cs@rayne.co.kr으로 문의해 주세요.
     </p>
     <a href="${ctx.dashboardUrl}"
        style="display:inline-block;padding:12px 28px;background:${C.accent};color:#fff;font-size:13px;font-weight:600;text-decoration:none;border-radius:2px;letter-spacing:0.05em;">

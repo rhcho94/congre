@@ -349,8 +349,8 @@ export default function PrivacyPage() {
                   <tr>
                     <td className="border border-border px-3 py-2 font-medium text-foreground bg-surface">연락처</td>
                     <td className="border border-border px-3 py-2">
-                      <a href="mailto:hello@congre.kr" className="text-accent hover:underline">
-                        hello@congre.kr
+                      <a href="mailto:ray@rayne.co.kr" className="text-accent hover:underline">
+                        ray@rayne.co.kr
                       </a>
                     </td>
                   </tr>
@@ -417,8 +417,8 @@ export default function PrivacyPage() {
         <div className="flex flex-col gap-3">
           <p className="text-xs text-muted leading-relaxed">
             개인정보 관련 문의:{" "}
-            <a href="mailto:hello@congre.kr" className="text-accent hover:underline">
-              hello@congre.kr
+            <a href="mailto:cs@rayne.co.kr" className="text-accent hover:underline">
+              cs@rayne.co.kr
             </a>
           </p>
           <a
