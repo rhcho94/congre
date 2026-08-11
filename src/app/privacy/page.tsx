@@ -406,6 +406,48 @@ export default function PrivacyPage() {
           </section>
 
           <section className="flex flex-col gap-2">
+            <h2 className="text-sm font-medium text-foreground">사업자 정보</h2>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse border border-border text-xs">
+                <tbody>
+                  <tr>
+                    <td className="border border-border px-3 py-2 font-medium text-foreground bg-surface">상호</td>
+                    <td className="border border-border px-3 py-2">레이네(Rayne)</td>
+                  </tr>
+                  <tr>
+                    <td className="border border-border px-3 py-2 font-medium text-foreground bg-surface">대표자</td>
+                    <td className="border border-border px-3 py-2">조래환</td>
+                  </tr>
+                  <tr>
+                    <td className="border border-border px-3 py-2 font-medium text-foreground bg-surface">사업자등록번호</td>
+                    <td className="border border-border px-3 py-2">412-19-02824</td>
+                  </tr>
+                  <tr>
+                    <td className="border border-border px-3 py-2 font-medium text-foreground bg-surface">사업장 주소</td>
+                    <td className="border border-border px-3 py-2">경기도 성남시 분당구 미금로 36, 201호 A82호 (구미동, 브리엘프라자)</td>
+                  </tr>
+                  <tr>
+                    <td className="border border-border px-3 py-2 font-medium text-foreground bg-surface">통신판매업신고번호</td>
+                    <td className="border border-border px-3 py-2">신고 예정</td>
+                  </tr>
+                  <tr>
+                    <td className="border border-border px-3 py-2 font-medium text-foreground bg-surface">연락처</td>
+                    <td className="border border-border px-3 py-2">010-7582-2020</td>
+                  </tr>
+                  <tr>
+                    <td className="border border-border px-3 py-2 font-medium text-foreground bg-surface">이메일</td>
+                    <td className="border border-border px-3 py-2">
+                      <a href="mailto:ray@rayne.co.kr" className="text-accent hover:underline">
+                        ray@rayne.co.kr
+                      </a>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section className="flex flex-col gap-2">
             <h2 className="text-sm font-medium text-foreground">부칙</h2>
             <p>이 개인정보 처리방침은 2026년 5월 11일부터 시행합니다. (v0.1)</p>
             <p>이 개인정보 처리방침(v0.2)은 2026년 5월 20일부터 시행합니다.</p>

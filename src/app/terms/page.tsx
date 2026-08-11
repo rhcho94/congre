@@ -319,6 +319,23 @@ export default function TermsPage() {
             </article>
           </section>
 
+          {/* 사업자 정보 */}
+          <section className="flex flex-col gap-4">
+            <h2 className="text-base font-medium text-foreground tracking-wide">사업자 정보</h2>
+            <p>상호: 레이네(Rayne)</p>
+            <p>대표자: 조래환</p>
+            <p>사업자등록번호: 412-19-02824</p>
+            <p>사업장 주소: 경기도 성남시 분당구 미금로 36, 201호 A82호 (구미동, 브리엘프라자)</p>
+            <p>통신판매업신고번호: 신고 예정</p>
+            <p>연락처: 010-7582-2020</p>
+            <p>
+              이메일:{" "}
+              <a href="mailto:ray@rayne.co.kr" className="text-accent hover:underline">
+                ray@rayne.co.kr
+              </a>
+            </p>
+          </section>
+
           {/* 부칙 */}
           <section className="flex flex-col gap-4">
             <h2 className="text-base font-medium text-foreground tracking-wide">부칙</h2>
