@@ -20,7 +20,7 @@ export default function PrivacyPage() {
           <div className="mb-10">
             <p className="eyebrow mb-3">Legal</p>
             <h1 className="display text-3xl">Congre 개인정보처리방침</h1>
-            <p className="text-xs text-muted mt-3">시행일: 2026년 5월 11일 (v0.1) | v0.2 개정: 2026년 5월 20일</p>
+            <p className="text-xs text-muted mt-3">시행일: 2026년 9월 1일</p>
           </div>
 
           <div className="hr mb-10" />
@@ -449,8 +449,7 @@ export default function PrivacyPage() {
 
           <section className="flex flex-col gap-2">
             <h2 className="text-sm font-medium text-foreground">부칙</h2>
-            <p>이 개인정보 처리방침은 2026년 5월 11일부터 시행합니다. (v0.1)</p>
-            <p>이 개인정보 처리방침(v0.2)은 2026년 5월 20일부터 시행합니다.</p>
+            <p>이 개인정보 처리방침은 2026년 9월 1일부터 시행합니다.</p>
           </section>
         </div>
 

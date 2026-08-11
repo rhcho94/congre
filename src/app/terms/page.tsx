@@ -21,7 +21,7 @@ export default function TermsPage() {
           <div className="mb-10">
             <p className="eyebrow mb-3">Legal</p>
             <h1 className="display text-3xl">Congre 서비스 이용약관</h1>
-            <p className="text-xs text-muted mt-3">시행일: 2026년 5월 11일 (v0.1) | v0.2 개정: 2026년 5월 20일</p>
+            <p className="text-xs text-muted mt-3">시행일: 2026년 9월 1일</p>
           </div>
 
           <div className="hr mb-10" />
@@ -339,8 +339,7 @@ export default function TermsPage() {
           {/* 부칙 */}
           <section className="flex flex-col gap-4">
             <h2 className="text-base font-medium text-foreground tracking-wide">부칙</h2>
-            <p>이 약관은 2026년 5월 11일부터 시행합니다. (v0.1)</p>
-            <p>이 약관(v0.2)은 2026년 5월 20일부터 시행합니다.</p>
+            <p>이 약관은 2026년 9월 1일부터 시행합니다.</p>
           </section>
         </div>
 
