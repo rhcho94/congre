@@ -3,6 +3,28 @@
 > known-issues.md에서 분리된 해결 완료 이력. 사고 재발 진단 시 grep 대상.
 > 새 RESOLVED 항목 발생 시 known-issues.md에서 이 파일로 이동.
 
+## ✅ hello@congre.kr·support@congre.app 문의 경로 2개 모두 도달 불가 (2026-08-11 해소)
+
+- **원 발견**: 2026-08-10 세션. congre.kr은 발송 전용 도메인이라 수신 MX 없음(MXToolbox
+  `DNS Record not found`). congre.app은 미소유 도메인으로, `emails/layouts/base.ts:44`가
+  모든 알림 메일 공통 푸터라 지금까지 나간 알림 전부에 도달 불가 문의처가 찍혀 있었다.
+  실고객 없어 실피해 0.
+- **해소**: 2026-08-11. 앱 `b28f30d`, 랜딩 배포 `3i3123mbEX7q47doeqBg2tg57WjY`.
+- **잔존**: `src/lib/notifications/channels/email.ts:5` 폴백값 `noreply@congre.app`은
+  의도적 범위 밖(EMAIL_FROM이 Production에 설정돼 도달 불가 경로). `docs/` 아래 잔재는
+  decisions/notifications.md만 정정 대상, handoff는 불변 이력이라 무수정.
+- **등재 전 해소**: 2026-08-10 세션에서 발견됐으나 known-issues.md에 등재되지 않은 채
+  2026-08-11 세션에서 해소됐다. 등재 누락 자체를 기록으로 남긴다.
+
+## ✅ 랜딩 푸터에 사업자 정보 0건 (2026-08-11 해소)
+
+- **원 발견**: 2026-08-10 세션. 전자상거래법 사업자 신원 표시·카드사 심사 미충족.
+- **해소**: 2026-08-11. index.html 푸터에 7항목 3줄 신설, 앱과 문자 단위 동일. 배포
+  `3i3123mbEX7q47doeqBg2tg57WjY`, 데스크톱·모바일 실물 확인 완료.
+- **후속**: git 외부 트랙이라 CD zip 덮어쓰기 위험은 known-issues L8에 상시 등재.
+  pricing.html은 `<footer>` 자체가 없어 대상 외(decisions/landing.md 2026-08-11 (20)).
+- **등재 전 해소**: (1)과 같은 경위.
+
 ## ✅ 유료 플랜 실수치(small/medium/large) 미정 — 구조 소멸로 해소 (2026-08-10 해소)
 
 - **원 등재 내용**: 2026-05-29 결정 시점 `plans.ts`에 small 50 / medium 200 / large 5000이 임시값으로 박혀 있어 실수치 확정이 미결이었다.
