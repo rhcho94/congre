@@ -2,6 +2,17 @@
 
 > 랜딩 페이지(congre.kr / www.congre.kr, 정적 HTML `deploy/` 폴더) 디자인·자산·배포 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-08-11 (20) — 랜딩 푸터 사업자 정보 신설 + 문의 이메일 회사 도메인 전환
+
+- 배경: 전자상거래법상 사업자 신원 표시 의무와 토스 PG 카드사 심사 대응. 앱(terms·privacy)에는 f7561f6으로 적용됐으나 랜딩은 미적용이었다.
+- 사업자 정보 7항목: index.html 푸터 .foot-bottom 뒤에 형제 요소 <div class="foot-biz"> 신설, 3줄 구성. 값은 src/app/terms/page.tsx:325-335와 문자 단위 동일.
+- .foot-bottom 안에 넣지 않은 이유: 이 블록은 display:flex + justify-content:space-between 가로 2열(© 문구 ↔ .foot-legal)이라 세 번째 자식을 넣으면 데스크톱에서 두 요소 사이에 끼게 된다. 형제로 분리하면 기존 CSS 규칙을 한 줄도 건드리지 않는다.
+- CSS 추가: .foot-biz 4규칙 10줄(margin-top 18px / var(--font-body) / var(--text-s) / var(--muted) / line-height 1.8, p margin 0, a는 색 상속). 기존 .foot-bottom·.foot-legal·.foot-grid·footer 규칙 무접촉. 미디어쿼리 무접촉 — p 나열이라 좁은 화면에서 자연 줄바꿈된다(모바일 실측 확인).
+- 문의 이메일: hello@congre.kr → cs@rayne.co.kr. index.html 푸터 4곳(학교 도입 문의·기업 도입 문의·고객센터 + 하단 바는 href와 표시 텍스트 둘 다) + pricing.html:1030 "문의하기 →" 버튼 1곳. congre.kr은 수신 MX가 없어 종전 주소로 온 문의는 전부 소실되는 상태였다.
+- pricing.html에 사업자 정보를 넣지 않은 이유: 이 파일에는 <footer> 태그가 없다(가격 섹션 하단 안내문 1줄이 전부). 신설하면 L7(Pretendard 미전환)과 톤이 어긋난다. 전자상거래법상 표시 지점은 초기화면이므로 index.html로 요건을 충족한다고 판단. 심사관이 서브페이지까지 요구할 경우 재검토.
+- 랜딩은 git 외부 트랙 → 이 변경은 git에 없고 Vercel 배포본에만 존재한다. 백업: index_pre_bizinfo_backup.html, pricing_pre_email_backup.html (편집 전 상태). 배포: npx vercel --prod, deployment 3i3123mbEX7q47doeqBg2tg57WjY, 별칭 congre.kr·www.congre.kr 양쪽 반영 확인. 데스크톱·모바일 실물 확인 완료.
+- known-issues L8에 확인 항목 등재 (CD zip 덮어쓰기 시 재적용 대상).
+
 ## 2026-06-16 (19) — 랜딩 라이트 톤 전환 (다크+골드 → 밝은 파스텔) 확정·배포
 
 - 방향 전환: 2026-05-23 (다크+골드) 및 2026-06-15 핸드오프(1)의 "히어로=다크"
