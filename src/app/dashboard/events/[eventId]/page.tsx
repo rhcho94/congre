@@ -45,6 +45,7 @@ interface ApiEvent {
   title: string;
   date: number | null;
   status: string;
+  plan: string | null;
   hostId: string;
   uploadToken?: string;
   videoUrl?: string;
@@ -769,6 +770,11 @@ export default function EventDetailPage() {
   }
 
   async function handleClose() {
+    if (event?.plan === "paid") {
+      setShowCloseModal(false);
+      router.push(`/payment/${eventId}`);
+      return;
+    }
     setClosing(true);
     try {
       const idToken = await getFirebaseAuth().currentUser?.getIdToken();
@@ -845,7 +851,11 @@ export default function EventDetailPage() {
               <p className="text-sm text-muted mb-6 leading-relaxed">
                 마감하면 참가자들이 더 이상 영상을 업로드할 수 없습니다.
                 <br />
-                <strong className="text-foreground">이 작업은 되돌릴 수 없습니다.</strong>
+                <strong className="text-foreground">
+                  {event.plan === "paid"
+                    ? "다음 화면에서 결제를 완료하면 마감됩니다. 결제 전에는 마감되지 않습니다."
+                    : "이 작업은 되돌릴 수 없습니다."}
+                </strong>
               </p>
               <div className="flex gap-3">
                 <button onClick={() => setShowCloseModal(false)} disabled={closing} className="btn btn-secondary flex-1">

@@ -77,5 +77,12 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "ORDER_SAVE_FAILED" }, { status: 500 });
   }
 
-  return Response.json({ orderId, amount, clipCount, orderName, maxClipSeconds });
+  return Response.json({
+    orderId,
+    amount,
+    clipCount,
+    orderName,
+    maxClipSeconds,
+    title: (eventData.title ?? null) as string | null,
+  });
 }

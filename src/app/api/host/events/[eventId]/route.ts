@@ -58,6 +58,7 @@ export async function GET(
       title: data.title as string,
       date: tsToMs(data.date),
       status: data.status as string,
+      plan: (data.plan ?? null) as string | null,
       hostId: data.hostId as string,
       uploadToken: (data.uploadToken ?? undefined) as string | undefined,
       videoUrl,

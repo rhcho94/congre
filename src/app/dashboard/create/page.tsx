@@ -78,7 +78,7 @@ function Stepper({
 
 const planOptions: { value: EventPlan; label: string; desc: string; comingSoon?: boolean }[] = [
   { value: "free", label: "무료", desc: "최대 5클립 · 10초 · 워터마크" },
-  { value: "paid", label: "유료", desc: "마감 시 사용량만큼 결제", comingSoon: true },
+  { value: "paid", label: "유료", desc: "마감 시 사용량만큼 결제" },
 ];
 
 type View = "form" | "created";
