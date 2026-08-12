@@ -2,6 +2,59 @@
 
 > 시장 정의·BM·서비스 모델·영상 가치 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-08-12 — 결제 흐름 사양 v2 (토스 심사 대응)
+
+**범위 (가′)**: 캡처 최소선 + 마감 시점 서버 금액 산출. 환불 API·정산·재렌더 80% 결제·실키 전환은 범위 밖.
+
+**과금 규칙 (2026-06-13 (7) 재확인)**
+- 금액 = `event.maxClipSeconds`(호스트 설정값) × 포함된 클립 수 × 100원, 최소 10,000원
+- **길이 항은 설정값 고정. 개별 클립의 `duration`은 금액에 사용하지 않는다** (정찰 보고에서 두 차례 "실측 길이로 바꿔야 한다"는 오판이 나왔으므로 명시)
+- 개수 항은 `excludedAt`이 없는 클립 수 (2026-08-12 결정: 제외된 클립은 과금 제외)
+
+**결제 시점: 결제 먼저 → 마감 나중 (ii안)**
+- 마감 먼저(i안)는 결제 실패 시 이벤트가 마감된 채 남는 문제가 있어 폐기
+- ii안의 약점인 "결제 중 클립 수 변동"은 승인 직전 재검증으로 처리한다 (차단이 아니라 감지 후 재발행)
+
+**흐름**
+1. [마감하기] → 확인 모달 → `plan === "paid"`면 결제 경로 분기
+2. `POST /api/payment/prepare` — 포함 클립 수 집계 → 금액 산출 → `orderId` 발행 → 주문 정보 저장(`clipCount` 포함)
+3. 결제 요약 화면 — 명칭·이미지·상세설명·금액 + 약관 동의 체크박스
+4. 토스 결제위젯 `requestPayment` → `successUrl`로 리다이렉트
+5. `POST /api/payment/confirm` — **2중 검사**
+   (a) 반환 `amount` === 저장 `amount` (토스 공식 표준, 위변조 방지)
+   (b) 지금 센 클립 수 === 저장 `clipCount` (우리 추가, 어긋남 감지)
+   둘 다 통과 시에만 토스 승인 API 호출
+6. 승인 성공 → `unlocked: true` 기록 → close 처리 → 렌더 시작
+
+**(b)가 필요한 이유**: 토스 표준 검사만으로는 클립 수 변동을 못 잡는다. 저장액과 반환액이 둘 다 옛 금액이라 서로 일치하기 때문이다. 토스는 "금액이 조작됐나"를 보지 "금액이 여전히 맞나"를 보지 않는다.
+
+**클립 수 집계 방법**
+- `render/start/route.ts:57,63-69` 패턴을 복사한다 (`where("eventId","==",eventId).get()` 후 `.filter(d => !d.data().excludedAt)`)
+- `api/clips/route.ts:63`의 `.count().get()`은 **사용 금지** — 필터를 걸 수 없어 제외된 클립까지 센다
+- `excludedAt`은 클립 생성 시 미설정이며 falsy로 "포함" 취급된다 (의도된 동작)
+
+**unlocked 필드 재사용**
+- `render/start/route.ts:52`가 `plan === "paid" && !unlocked`로 이미 게이트 중
+- 결제 성공 시 같은 필드를 켜면 렌더 게이트 코드 변경 불필요
+- 2026-08-04 쿠폰 결정의 "결제 승계 설계"가 그대로 성립함을 정찰로 확인
+
+**SDK: v2 확정**
+- `@tosspayments/tosspayments-sdk` (2.7.1). v1 `@tosspayments/payment-widget-sdk`는 공식 문서에 "더 이상 업데이트되지 않음" 명시
+- 토스가 카드사 심사 가이드에서 안내한 URL(`guides/payment-widget/integration`)은 **v1 문서**다. v2 문서는 `guides/v2/` 경로
+- 승인 API: `POST https://api.tosspayments.com/v1/payments/confirm`, `Authorization: Basic {base64(시크릿키 + ":")}`
+- `orderId` 규칙: `^[a-zA-Z0-9_-]{6,64}$`
+
+**키 (2026-08-12 실측)**
+- 결제위젯 키 접두사는 `gck`/`gsk`. API 개별 연동 키(`ck`/`sk`)와 다르며 혼용 시 `INVALID_API_KEY`
+- Rayne 전용 결제위젯 키는 아직 미발급 — 개발자센터에 "내 키는 전자결제 신청하고 확인할 수 있어요" + [이용 신청하기] 버튼 잔존. 별도 신청이 필요한지 심사 완료 시 자동 발급인지 미확인, 담당자 문의 예정
+- 현재는 공개 문서 테스트 키(`test_gck_docs_…` / `test_gsk_docs_…`) 사용. 심사 캡처에 지장 없음 (토스 가이드 4p: 테스트 결제창으로도 심사 가능)
+- 환경변수: `NEXT_PUBLIC_TOSS_CLIENT_KEY` / `TOSS_SECRET_KEY`. **시크릿 키에 `NEXT_PUBLIC_` 접두사 금지**
+- Vercel 설정 실측: Sensitive를 켜면 Development 환경이 잠긴다(값 읽기가 필요한 환경이라 Vercel이 차단). 시크릿 키는 Sensitive + Production/Preview, 로컬은 `.env.local` 직접 기재
+
+**테스트 환경 (공식 문서 확인)**
+- 테스트 키는 실제 카드로 승인해도 실제 청구가 없다. 캡처를 실카드로 찍어도 됨
+- 테스트 환경 API 요청 제한: 분당 100건
+
 ## 2026-08-04 — 베타 쿠폰 해제 (PG 심사 대기 중 유료 기능 임시 개방)
 
 - 배경: Toss PG 심사가 외부 블로커. 결제 없이 실베타 운영이 필요.
