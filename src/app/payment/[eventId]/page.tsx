@@ -12,6 +12,7 @@ import AppHeader from "@/components/AppHeader";
 interface PrepareResponse {
   orderId: string;
   amount: number;
+  rawAmount: number;
   clipCount: number;
   orderName: string;
   maxClipSeconds: number;
@@ -232,8 +233,13 @@ export default function PaymentPage() {
 
             <div className="mb-8">
               <p className="text-xs text-muted mb-2">
-                영상 길이 {prepared.maxClipSeconds}초 × 영상 {prepared.clipCount}개 × 100원 = {prepared.amount.toLocaleString("ko-KR")}원
+                영상 길이 {prepared.maxClipSeconds}초 × 영상 {prepared.clipCount}개 × 100원 = {prepared.rawAmount.toLocaleString("ko-KR")}원
               </p>
+              {prepared.rawAmount !== prepared.amount && (
+                <p className="text-xs text-muted mb-2">
+                  → 최소 결제 금액 {prepared.amount.toLocaleString("ko-KR")}원 적용
+                </p>
+              )}
               <p className="display text-3xl" style={{ color: "var(--accent)" }}>
                 {prepared.amount.toLocaleString("ko-KR")}원
               </p>

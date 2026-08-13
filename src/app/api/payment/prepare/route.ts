@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server";
 import { Timestamp } from "firebase-admin/firestore";
 import { verifyIdToken } from "@/lib/auth-server";
 import { getAdminDb } from "@/lib/firebase-admin";
-import { calcPrice } from "@/lib/plans";
+import { calcPrice, calcRawPrice } from "@/lib/plans";
 
 export async function POST(request: NextRequest) {
   let uid: string;
@@ -58,6 +58,7 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "INVALID_EVENT_DATA" }, { status: 400 });
   }
   const amount = calcPrice(maxClipSeconds, clipCount);
+  const rawAmount = calcRawPrice(maxClipSeconds, clipCount);
 
   const orderId = `congre_${eventId}_${Date.now()}`;
   const orderName = "Congre 영상 제작 — 유료";
@@ -80,6 +81,7 @@ export async function POST(request: NextRequest) {
   return Response.json({
     orderId,
     amount,
+    rawAmount,
     clipCount,
     orderName,
     maxClipSeconds,
