@@ -204,14 +204,10 @@ export async function POST(request: NextRequest) {
     renderStartedAt: Timestamp.fromMillis(now),
     renderEstimateMin,
     expectedCompletedAt: Timestamp.fromMillis(now + renderEstimateMin * 60 * 1000),
-    refund50At: Timestamp.fromMillis(now + (renderEstimateMin + 30) * 60 * 1000),
-    refund100At: Timestamp.fromMillis(now + 24 * 60 * 60 * 1000),
     refundStatus: "none",
     "notifications.renderStartedNotifiedAt": null,
     "notifications.renderCompletedNotifiedAt": null,
     "notifications.renderDelayedNotifiedAt": null,
-    "notifications.refund50NotifiedAt": null,
-    "notifications.refund100NotifiedAt": null,
     "notifications.participantNotifiedAt": null,
   });
 

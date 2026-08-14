@@ -112,16 +112,23 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    const paidAt = Timestamp.now();
     await orderRef.update({
       status: "paid",
       paymentKey,
-      paidAt: Timestamp.now(),
+      paidAt,
     });
     await eventRef.update({
       unlocked: true,
       status: "closed",
       sessionToken: null,
       closedAt: FieldValue.serverTimestamp(),
+      refund50At: Timestamp.fromMillis(
+        paidAt.toMillis() + 4 * 60 * 60 * 1000
+      ),
+      refund100At: Timestamp.fromMillis(
+        paidAt.toMillis() + 48 * 60 * 60 * 1000
+      ),
     });
   } catch (err) {
     console.error("[payment/confirm] failed to save paid status:", err);

@@ -23,7 +23,7 @@ export function renderRefund100Email(ctx: Refund100EmailCtx): string {
       </tr>
     </table>
     <p style="margin:0 0 16px;font-size:14px;color:${C.text};line-height:1.7;">
-      24시간이 지나도록 영상 편집이 완료되지 못한 점에 대해 <strong>결제 금액 전액을 환불</strong>해 드리기로 확정하였습니다.
+      48시간이 지나도록 영상 편집이 완료되지 못한 점에 대해 <strong>결제 금액 전액을 환불</strong>해 드리기로 확정하였습니다.
     </p>
     <p style="margin:0 0 24px;font-size:14px;color:${C.text};line-height:1.7;">
       단, <strong>영상 작업은 끝까지 완성하여 반드시 전달드립니다.</strong> 이것은 저희의 약속입니다. 완성 즉시 별도로 안내드리겠습니다.
