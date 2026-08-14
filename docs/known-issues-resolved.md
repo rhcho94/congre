@@ -3,6 +3,37 @@
 > known-issues.md에서 분리된 해결 완료 이력. 사고 재발 진단 시 grep 대상.
 > 새 RESOLVED 항목 발생 시 known-issues.md에서 이 파일로 이동.
 
+## ✅ 제10조의3 ③ 환불 구간이 코드와 불일치 (2026-08-14 해소)
+
+- **원 발견**: 2026-08-13 세션, 등재는 2026-08-14 `cb5411e`. 약관은 결제 완료 시각 기준
+  4시간/48시간, 코드는 렌더 시작 기준 (추정 완료+30분)/24시간이었다. 값도 기산점도 달랐다.
+  위치는 `src/app/api/render/start/route.ts:207` `refund50At`·`:208` `refund100At`, 읽는
+  곳은 `api/cron/check-render-deadlines/route.ts:71, :89`.
+- **실측(2026-08-14, Firestore 실문서)**: `closedAt` 16:08:35 / `renderStartedAt` 16:08:38 /
+  `refund50At` 16:53:38(45분 후) / `refund100At` 익일 16:08(24시간 후). 무료 이벤트에도 두
+  필드가 기록되고 있었다 — 결제가 없는데 환불 시각이 계산됐다.
+- **해소**: 2026-08-14 `6e18ddd`. 환불 경계 계산을 렌더 시작 → 결제 완료 시점으로 이관.
+  `payment/confirm`이 `paidAt` 기준으로 `refund50At`(+4시간)·`refund100At`(+48시간)을
+  기록하고, `render/start`의 계산 2줄과 `notifications.refund50NotifiedAt`·
+  `refund100NotifiedAt` 리셋 2줄을 제거했다. 메일 문구 `emails/refund-100.ts:26`도
+  24시간 → 48시간으로 함께 고쳤다.
+- **부수 효과**: 무료 이벤트는 `payment/confirm`을 거치지 않아 두 필드가 기록되지 않는다.
+  cron 조건식 `data.refund50At?.toMillis() <= now`는 필드 부재 시 `undefined <= now`가 되어
+  항상 거짓이므로, 무료 제외가 가드 코드 없이 성립한다.
+- **재렌더**: 계산 주체가 결제 시점으로 옮겨져 재렌더가 두 필드를 덮어쓰지 않는다. 리셋도
+  제거돼 이미 발송된 알림이 재발송되지 않는다.
+- **잔존**: PG 취소 호출 코드는 저장소에 없다(`cancelPayment|refund.*api|paymentKey.*cancel`
+  grep 0건). 환불은 운영자 수동 처리 전제다 — `src/emails/refund-50.ts:29` "환불은 저희 팀이
+  직접 처리하며". 약관 제10조의3 ⑧의 "영업일 기준 3일 이내"는 자동화를 약속하지 않으므로
+  수동으로도 성립한다.
+- **잔존**: 이번 변경은 기존 문서를 정리하지 않는다. 과거 렌더로 구 공식의
+  `refund50At`·`refund100At`이 이미 박힌 문서는 값이 남으며, cron이 필드값만 보고 판정하므로
+  그 값이 지난 시각이고 대응 `NotifiedAt`이 null이면 알림이 나갈 수 있다. 2026-08-14 push
+  전 Firestore 콘솔에서 `events` 컬렉션을 `status == "rendering"`으로 조회한 결과 **0건**이었다.
+  cron 조회 조건이 `status == "rendering"` 하나뿐이므로 구 공식 값이 남은 문서가 있더라도
+  알림 경로에 도달하지 않는다. 실피해 없음으로 확정.
+- **잔존**: `render_delayed` 계열 "30분" 문구는 이번 범위 밖 — known-issues에 별도 등재.
+
 ## ✅ 제11조 ⑤(7일 경과 시 예외 없이 삭제)를 뒷받침하는 코드 없음 (2026-08-14 해소)
 
 - **등재 없이 해소된 항목**: 2026-08-13 핸드오프가 "known-issues 신규 등재 5건" 중 하나로
