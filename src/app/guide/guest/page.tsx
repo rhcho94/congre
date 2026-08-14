@@ -49,7 +49,7 @@ export default function GuideGuestPage() {
             <div className="flex flex-col gap-2">
               <p className="text-sm font-medium text-foreground">개인정보</p>
               <p>
-                촬영한 영상은 행사 영상 편집에만 사용되며, 결과 알림 후 24시간 안에 자동 삭제됩니다. 완성본은 7일간 보관됩니다.
+                촬영한 영상은 행사 영상 편집에만 사용되며, 결과 알림 후 48시간 안에 자동 삭제됩니다. 완성본은 7일간 보관됩니다.
               </p>
             </div>
           </section>

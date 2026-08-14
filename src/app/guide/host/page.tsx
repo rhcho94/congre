@@ -179,7 +179,7 @@ export default function GuideHostPage() {
             </div>
             <div className="flex flex-col gap-2">
               <p className="text-sm font-medium text-foreground">자동 삭제 — 보관 기한</p>
-              <p>개별 클립은 결과 알림 후 24시간, 완성 영상은 7일 후 자동 삭제됩니다. 다운로드해 보관해 주세요.</p>
+              <p>개별 클립은 결과 알림 후 48시간, 완성 영상은 7일 후 자동 삭제됩니다. 다운로드해 보관해 주세요.</p>
             </div>
           </section>
 
@@ -232,7 +232,7 @@ export default function GuideHostPage() {
                 <p className="text-sm font-medium text-foreground">
                   Q. 영상은 며칠까지 받을 수 있나요?
                 </p>
-                <p>A. 개별 클립 24시간, 완성본 7일 후 자동 삭제됩니다. 다운로드해 보관해 주세요.</p>
+                <p>A. 개별 클립 48시간, 완성본 7일 후 자동 삭제됩니다. 다운로드해 보관해 주세요.</p>
               </div>
               <div className="flex flex-col gap-1">
                 <p className="text-sm font-medium text-foreground">
