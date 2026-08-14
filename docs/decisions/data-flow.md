@@ -2,6 +2,60 @@
 
 > Firestore·S3·Admin SDK·서버 이전 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-08-14 — cron 실행 시각·클립 보관 실제 구간 (실측)
+
+**cron 스케줄은 UTC**: Vercel 대시보드 Settings → Cron Jobs 화면에 "All scheduled times use
+the UTC timezone." 명시. `vercel.json`의 cleanup `"0 18 * * *"` = 18:00 UTC = KST 03:00.
+Cron Jobs 토글 Enabled, 플랜 Pro(`*/5` 간격 cron 정상).
+
+**실제 클립 보관 구간은 [컷오프, 컷오프+24시간]**: 비교식이
+`participantNotifiedAt <= now - cutoff` 이므로, 컷오프가 경과하기 전에는 어느 회차에서도
+조건이 참이 되지 않는다. 1일 1회 실행은 삭제를 늦추는 방향으로만 작동한다.
+
+**폐기된 가설**: 2026-08-13 핸드오프의 "cron이 03시 1일 1회라 알림이 03시 직전에 나가면
+25시간 만에 삭제될 수 있다 → 컷오프 자체를 올려야 한다"는 부등호 방향을 반대로 읽은 것이다.
+25시간은 24시간보다 길어 애초에 위반이 아니다. 안전마진 없이 정확히 48로 두었고, 실제 보관은
+48~72시간이 된다. 처리방침 "약 48시간" + 제3조 ③ 배치 오차 고지가 이 범위를 덮는다.
+
+## 2026-08-14 — closedAt 신설 + cleanup 지연 이벤트 예외 경로
+
+**결정**: 이벤트 문서에 `closedAt`(마감 시각)을 신설하고, `cron/cleanup`에
+`status in ["closed","rendering"]` 를 훑는 두 번째 순회를 추가해 클립을 7일 후 삭제한다.
+약관 제11조 ⑤ 이행.
+
+**종전 상태**: cleanup 순회 쿼리가 `where("status","==","done")` 하나뿐이라 렌더가 지연·실패한
+이벤트의 클립이 무기한 남았다. 이는 의도된 보호 장치가 아니라 쿼리 필터의 부수 효과다.
+
+**기산 필드로 closedAt을 택한 이유**: `payments/{orderId}.paidAt`은 무료 이벤트에 존재하지
+않고, 이벤트마다 다른 컬렉션 조회가 붙는다. `createdAt`은 약관이 말한 기산점과 다르다.
+`closedAt` 하나면 유료·무료가 통일되며, 유료는 결제와 마감이 같은 순간이라 약관의
+"결제 완료 시점"과 실질 동일하다.
+
+**값 생성은 FieldValue.serverTimestamp()**: `closedAt`은 7일을 세는 기준선이라 기준 시계가
+하나여야 한다. `Timestamp.now()`는 함수가 도는 인스턴스의 시계를 읽으므로 리전별 편차가
+들어온다. 선례 — `render/start`의 `deadlineAt`, `check-rendering`의 `renderDoneAt` 모두
+status 전환과 동시에 남기는 시각이며 전부 서버 센티널이다.
+
+**check-rendering:161(렌더 실패 시 closed 전환)에는 기록하지 않는다**: 이미 마감을 거친
+이벤트가 다시 closed로 가는 경로다. 여기서 덮어쓰면 7일 시계가 처음부터 다시 돌아, 렌더가
+세 번 실패하면 클립이 21일 남는다. `closedAt`은 최초 마감 1회만 기록되는 값이다.
+실측 확인(2026-08-14): `closedAt` 16:08:35 → `renderStartedAt` 16:08:38. rendering 이벤트는
+`closedAt`을 물려받는다.
+
+**closedAt 없는 기존 문서는 건너뛰고 console.warn**: 실고객 0으로 대상이 전부 테스트
+데이터다. 백필 스크립트는 일회성인데 검증 사이클이 붙고, `createdAt` 대체는 기각한 기준을
+뒷문으로 들이는 것이다.
+
+**삭제 로직을 deleteClipsAndMarkEvent()로 공유**: 두 루프가 같은 삭제 동작을 쓰되 가드 조건은
+각자 루프에 남긴다. 가드를 함수 안으로 넣으면 `participantNotifiedAt`이 null인 지연 이벤트가
+영원히 삭제되지 않아 새 경로가 자기 존재 이유를 무력화한다.
+
+**변경 파일**: `api/events/[eventId]/close/route.ts`, `api/payment/confirm/route.ts`,
+`lib/events.ts` (커밋 `4cdcea2`), `api/cron/cleanup/route.ts` (커밋 `3adec53`)
+
+**검증**: build 통과, lint baseline delta 0. 실데이터 확인 — Firestore에서 `closedAt`
+timestamp 기록 확인, cleanup 수동 실행 3회에서 warn 3건 + `clipsDeleted` 0 + HTTP 200, 724ms.
+
 ## 2026-08-07 — 클라이언트 제출 S3 키의 프리픽스 소속 검증 (저장 시점, 갈래 A)
 
 **결정**: 클라이언트가 보낸 S3 키가 `events/{eventId}/` 프리픽스에 속하는지 **저장 시점에**

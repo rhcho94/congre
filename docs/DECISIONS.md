@@ -7,10 +7,10 @@
 - [rendering](decisions/rendering.md) — 영상 편집·Shotstack·클립 (41개)
 - [notifications](decisions/notifications.md) — 이메일·SMS·알림 시나리오 (8개)
 - [auth-model](decisions/auth-model.md) — 호스트 인증·이벤트-바운드 (6개)
-- [legal](decisions/legal.md) — 약관·개인정보·미성년자 (6개)
+- [legal](decisions/legal.md) — 약관·개인정보·미성년자 (8개)
 - [market-product](decisions/market-product.md) — 시장 정의·BM·서비스 모델 (17개)
 - [infra](decisions/infra.md) — Vercel·Firebase·도메인·무료 티어 정책 (6개)
-- [data-flow](decisions/data-flow.md) — Firestore·S3·Admin SDK·서버 이전 (20개)
+- [data-flow](decisions/data-flow.md) — Firestore·S3·Admin SDK·서버 이전 (22개)
 - [landing](decisions/landing.md) — 랜딩 페이지 디자인·자산·배포 (21개)
 - [misc](decisions/misc.md) — 영역 외 결정 (7개)
 
