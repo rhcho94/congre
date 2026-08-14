@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server";
-import { Timestamp } from "firebase-admin/firestore";
+import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { verifyIdToken } from "@/lib/auth-server";
 import { getAdminDb } from "@/lib/firebase-admin";
 import { calcPrice } from "@/lib/plans";
@@ -121,6 +121,7 @@ export async function POST(request: NextRequest) {
       unlocked: true,
       status: "closed",
       sessionToken: null,
+      closedAt: FieldValue.serverTimestamp(),
     });
   } catch (err) {
     console.error("[payment/confirm] failed to save paid status:", err);

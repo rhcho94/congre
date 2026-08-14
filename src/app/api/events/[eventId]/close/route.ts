@@ -1,4 +1,5 @@
 import type { NextRequest } from "next/server";
+import { FieldValue } from "firebase-admin/firestore";
 import { verifyIdToken } from "@/lib/auth-server";
 import { getAdminDb } from "@/lib/firebase-admin";
 
@@ -36,6 +37,7 @@ export async function POST(
   await db.collection("events").doc(eventId).update({
     status: "closed",
     sessionToken: null,
+    closedAt: FieldValue.serverTimestamp(),
   });
 
   return Response.json({ ok: true });
