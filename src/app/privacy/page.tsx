@@ -95,10 +95,17 @@ export default function PrivacyPage() {
                     <td className="border border-border px-3 py-2 align-top">자동 수집</td>
                     <td className="border border-border px-3 py-2 align-top">서비스 이용 시</td>
                   </tr>
+                  <tr>
+                    <td className="border border-border px-3 py-2 align-top">호스트 (회원)</td>
+                    <td className="border border-border px-3 py-2 align-top">결제 수단의 종류, 결제 승인번호, 거래일시, 결제 금액, 결제·취소·환불 내역</td>
+                    <td className="border border-border px-3 py-2 align-top">결제대행사를 통하여 수집</td>
+                    <td className="border border-border px-3 py-2 align-top">유료 이벤트 마감·결제 시</td>
+                  </tr>
                 </tbody>
               </table>
             </div>
             <p>② 회사는 「개인정보 보호법」 제23조에 따른 민감정보(인종, 사상·신념, 정치적 견해, 건강 정보 등) 및 제24조에 따른 고유식별정보(주민등록번호, 운전면허번호 등)를 수집하지 아니합니다.</p>
+            <p>③ 회원의 카드번호, 계좌번호 등 결제수단의 상세 정보는 결제대행사가 수집·보관하며, 회사는 이를 수집하거나 보관하지 아니합니다.</p>
           </section>
 
           <section className="flex flex-col gap-2">
@@ -124,11 +131,11 @@ export default function PrivacyPage() {
                   </tr>
                   <tr>
                     <td className="border border-border px-3 py-2 align-top">참가자 정보 (이름, 휴대전화번호)</td>
-                    <td className="border border-border px-3 py-2 align-top">참가자 결과 알림 발송 시점으로부터 약 24시간</td>
+                    <td className="border border-border px-3 py-2 align-top">결과 알림 발송 시점으로부터 약 48시간. 다만 회사의 사유로 완성본 제작이 지연되거나 실패한 이벤트의 경우 해당 클립과 함께 최대 7일까지 보존될 수 있습니다.</td>
                   </tr>
                   <tr>
                     <td className="border border-border px-3 py-2 align-top">클립 영상</td>
-                    <td className="border border-border px-3 py-2 align-top">참가자 결과 알림 발송 시점으로부터 약 24시간</td>
+                    <td className="border border-border px-3 py-2 align-top">참가자 결과 알림 발송 시점으로부터 약 48시간. 다만 회사의 사유로 완성본 제작이 지연되거나 실패한 이벤트의 클립은 「Congre 서비스 이용약관」 제11조 제⑤항에 따라 결제 완료 시점으로부터 최대 7일까지 보존될 수 있습니다.</td>
                   </tr>
                   <tr>
                     <td className="border border-border px-3 py-2 align-top">완성본 영상</td>
@@ -138,16 +145,28 @@ export default function PrivacyPage() {
                     <td className="border border-border px-3 py-2 align-top">서비스 이용 기록, 접속 IP, 접속 로그</td>
                     <td className="border border-border px-3 py-2 align-top">「통신비밀보호법」에 따라 3개월</td>
                   </tr>
+                  <tr>
+                    <td className="border border-border px-3 py-2 align-top">계약 또는 청약철회 등에 관한 기록</td>
+                    <td className="border border-border px-3 py-2 align-top">「전자상거래 등에서의 소비자보호에 관한 법률」에 따라 5년</td>
+                  </tr>
+                  <tr>
+                    <td className="border border-border px-3 py-2 align-top">대금결제 및 재화 등의 공급에 관한 기록</td>
+                    <td className="border border-border px-3 py-2 align-top">「전자상거래 등에서의 소비자보호에 관한 법률」에 따라 5년</td>
+                  </tr>
+                  <tr>
+                    <td className="border border-border px-3 py-2 align-top">소비자의 불만 또는 분쟁 처리에 관한 기록</td>
+                    <td className="border border-border px-3 py-2 align-top">「전자상거래 등에서의 소비자보호에 관한 법률」에 따라 3년</td>
+                  </tr>
                 </tbody>
               </table>
             </div>
             <p>③ 자동 삭제는 1일 1회 정해진 시각(한국 표준시 기준 새벽 시간대)에 실행되므로, 실제 삭제 시점은 위 기준 시각으로부터 최대 약 24시간의 오차가 있을 수 있습니다.</p>
             <p>④ 다음의 사유에 해당하는 경우에는 해당 사유가 종료될 때까지 개인정보를 보관할 수 있습니다.</p>
             <ol className="list-decimal pl-6 flex flex-col gap-1">
-              <li>관련 법령에 따른 보존 의무가 있는 경우</li>
+              <li>관련 법령에 따른 보존 의무가 있는 경우. 「전자상거래 등에서의 소비자보호에 관한 법률」, 「통신비밀보호법」, 「국세기본법」 등이 이에 해당합니다.</li>
               <li>정보주체와의 분쟁 또는 소송이 진행 중인 경우</li>
             </ol>
-            <p>⑤ 회원이 회원 탈퇴를 신청하는 경우, 본 조 ②항의 보유 기간과 무관하게 회원 계정 정보, 회원이 생성한 모든 이벤트 정보, 부속 클립 및 완성본 영상이 즉시 일괄 삭제됩니다. 자세한 사항은 「Congre 서비스 이용약관」 제18조에서 정합니다.</p>
+            <p>⑤ 회원이 회원 탈퇴를 신청하는 경우, 본 조 ②항의 보유 기간과 무관하게 회원 계정 정보, 회원이 생성한 모든 이벤트 정보, 부속 클립 및 완성본 영상이 즉시 일괄 삭제됩니다. 다만 본 조 ④항에 따라 법령상 보존 의무가 있는 거래기록은 해당 보존 기간이 경과할 때까지 분리 보관되며, 이 경우 보관 항목은 법령이 정한 범위로 한정됩니다. 자세한 사항은 「Congre 서비스 이용약관」 제18조에서 정합니다.</p>
           </section>
 
           <section className="flex flex-col gap-2">
@@ -199,6 +218,11 @@ export default function PrivacyPage() {
                     <td className="border border-border px-3 py-2 align-top">Vercel, Inc.</td>
                     <td className="border border-border px-3 py-2 align-top">서비스 호스팅 및 운영</td>
                     <td className="border border-border px-3 py-2 align-top">서비스 이용 기록, 접속 IP, 접속 로그</td>
+                  </tr>
+                  <tr>
+                    <td className="border border-border px-3 py-2 align-top">토스페이먼츠 주식회사</td>
+                    <td className="border border-border px-3 py-2 align-top">신용카드 등 결제 처리, 결제 취소 및 환불 처리</td>
+                    <td className="border border-border px-3 py-2 align-top">결제 수단의 종류, 결제 승인번호, 거래일시, 결제 금액, 결제·취소·환불 내역</td>
                   </tr>
                 </tbody>
               </table>
