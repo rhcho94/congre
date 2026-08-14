@@ -2,6 +2,69 @@
 
 > 진행 중·보류·메모 항목만 둔다. 해결 완료 항목은 known-issues-resolved.md로 이동.
 
+## ★ 제10조의3 ③ 환불 구간이 코드와 불일치
+
+- **현황**: 약관은 결제 완료 시각 기준 4시간/48시간, 코드는 렌더 시작 기준
+  (추정 완료+30분)/24시간이다. 값도 기산점도 다르다.
+- **위치**: `src/app/api/render/start/route.ts:207` `refund50At`, `:208` `refund100At`.
+  읽는 곳은 `api/cron/check-render-deadlines/route.ts:71, :89`.
+- **실측(2026-08-14, Firestore 실문서)**: `closedAt` 16:08:35 / `renderStartedAt` 16:08:38 /
+  `refund50At` 16:53:38(45분 후) / `refund100At` 익일 16:08(24시간 후).
+- **무료 이벤트에도 두 필드가 기록된다.** 결제가 없는데 환불 시각이 계산되고 있다.
+- **메일 템플릿까지 걸려 있다**: `src/emails/refund-100.ts:26` 본문이 "24시간이 지나도록"으로
+  고객에게 직접 발송된다. 코드 2줄만의 문제가 아니다.
+- **PG 취소 호출 코드는 저장소에 없다**(`cancelPayment|refund.*api|paymentKey.*cancel`
+  grep 0건). 환불은 운영자 수동 처리 전제다 — `src/emails/refund-50.ts:29`
+  "환불은 저희 팀이 직접 처리하며".
+- **처리 방향**: 코드를 약관에 맞춘다(약관은 이미 배포됨). 무료 이벤트 기산점 분기가
+  필요하다. `confirm`이 `payments`에 결제 완료 시각을 어떻게 남기는지 확인이 선행돼야 한다.
+- **격상 트리거**: ★ 토스 PPT ③장 캡처 전에 해소 필요. 캡처가 카드사 확약이 된다.
+
+## prepare 새로고침 시 payments에 pending 문서 누적
+
+- **현황**: 결제 페이지 진입마다 `prepare`가 호출되므로 새로고침하면 `payments`에
+  `pending` 문서가 쌓인다. 금전 영향 없음. 정리 로직 미구현.
+- **처리**: 등재만.
+- **출처**: 2026-08-13 세션 결정 3(새로고침 시 `pending` 누적 허용).
+
+## render/start:50의 plan ?? "free"
+
+- **현황**: `plan` 필드가 결손되면 유료 이벤트가 무료로 통과한다. 청구 누락 방향의
+  조용한 실패다.
+- **위치**: `src/app/api/render/start/route.ts:50`
+- **처리**: 등재만.
+
+## render/start:91의 MISSING_DURATION throw가 try/catch 밖
+
+- **현황**: `MISSING_DURATION` throw가 try/catch 밖에 있어 JSON 에러 응답이 나가지 않는다.
+  클라이언트가 에러 코드를 읽을 수 없다.
+- **위치**: `src/app/api/render/start/route.ts:91`
+- **처리**: 등재만.
+
+## cleanup D-3 루프가 closed·rendering 전량을 조회한다
+
+- **현황**: 쿼리에 `closedAt` 범위 조건을 넣지 않고 메모리에서 걸러낸다.
+- **위치**: `src/app/api/cron/cleanup/route.ts` D-3 루프
+- **의도된 선택**: 범위 조건을 넣으면 `closedAt`이 없는 문서가 쿼리 단계에서 빠져
+  `console.warn`이 안 찍힌다. 조용히 건너뛰는 것보다 로그가 낫다.
+- **격상 트리거**: 이벤트가 수천 건 규모가 될 때.
+
+## cleanup의 clipsDeleted 집계가 에러 경로에서 어긋날 수 있음
+
+- **현황**: `deleteClipsAndMarkEvent()`가 `events.update`를 마치고 반환하므로, `update`가
+  던지면 이미 지운 클립이 집계에서 빠진다.
+- **종전 대비**: 원본은 그 예외가 라우트 전체를 중단시켜 응답 JSON 자체가 나가지 않았다.
+  지금은 바깥 catch가 잡아 나머지 이벤트를 계속 처리한다. 데이터 처리 결과는 동일하고
+  차이는 로그·응답 숫자에만 남는다.
+- **처리**: 고치지 않음.
+
+## cleanup:36 S3 삭제 실패 시에도 Firestore 문서 삭제 강행
+
+- **현황**: 클립 S3 삭제가 실패해도 안쪽 catch가 흡수하고 다음 줄에서 Firestore 문서를
+  무조건 삭제한다. orphan S3 파일이 남을 수 있다.
+- **위치**: `src/app/api/cron/cleanup/route.ts` `deleteClipsAndMarkEvent()` 내부
+- **처리**: 기존 동작이며 이번 작업과 독립. 등재만.
+
 ## isKeyInEvent가 경로 상위 이동 표기를 통과시킴 — 영향 미실측
 
 - **현황**: `isKeyInEvent`(`src/lib/s3-server.ts:6-9`)는 `startsWith` 비교라
@@ -224,23 +287,6 @@
 - **위치**: `src/app/dashboard/events/[eventId]/page.tsx` — 재렌더 확인 모달 / `callRenderStart` (`PAID_NOT_AVAILABLE` 가드만 존재)
 - **결정 사항**: DECISIONS 2026-05-09 (D1) + 2026-05-21 B5. ①② 구현 완료, ③만 잔여.
 - **처리 시점**: 결제 트랙(Toss v2)에서 최초 렌더 결제와 함께 처리.
-
-## 약관이 "무료 베타" 전제 — 유료 도입과 조문 모순
-
-- **현황**: 제10·14·20조가 유료 도입과 모순된다. 환불 조항이 부재하며 제10조 ③이
-  "별도 고지"로 미뤄져 있다.
-- **진행 상태**: 2026-08-11 세션에서 조문 개정안 확정 초안 완료
-  (`docs/legal/terms-privacy-v1.0-draft.md`). 코드 미적용. 개정 범위는 약관 6곳·
-  처리방침 4곳.
-- **격상 트리거**: 결제 연동(ⓐ) 착수 시 개정안 코드 반영.
-- **출처**: 2026-08-10 세션, 등재는 2026-08-11.
-
-## 유료 플랜 UI 잠김 — 토스 심사 "테스트 상품 불가" 요건과 충돌
-
-- **현황**: `comingSoon: true` + "준비 중" 라벨로 유료 플랜 UI가 잠겨 있다. 토스 심사
-  요건 "테스트 상품 불가"와 충돌한다.
-- **처리 시점**: 결제 연동 트랙(ⓐ)에서 해제 예정.
-- **출처**: 2026-08-10 세션, 등재는 2026-08-11.
 
 ## 금액 산출이 클라이언트에만 존재 — 결제 연동 시 서버 계산 필수
 
