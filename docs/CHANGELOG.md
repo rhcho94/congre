@@ -55,6 +55,20 @@
   마감됩니다"로 교체. `prepare` 응답에 `title` 추가. 유료 플랜 `comingSoon` 잠금 해제.
   (16e3afc)
 
+## 2026-08-12
+
+- feat(payment): 결제 준비·승인 API 2개 신설 — `POST /api/payment/prepare`는 포함 클립 수를
+  집계(`!excludedAt`)해 `calcPrice`로 금액을 산출하고 `orderId`를 발행해 `payments` 컬렉션에
+  주문을 저장한다. `POST /api/payment/confirm`은 토스 승인 API 호출 **앞에** 2중 검사를 둔다
+  — (a) 반환 `amount` vs 저장 `amount` 대조(토스 공식 표준, 위변조 방지), (b) 현재 클립 수 vs
+  저장 `clipCount` 재검증(어긋나면 409로 재발행 유도). 둘 다 통과해야 승인을 호출하고, 성공
+  시 `unlocked`·`closed`·`sessionToken`을 한 번의 update로 처리한다. 금액의 길이 항은
+  `event.maxClipSeconds` 설정값이며 클립 `duration`은 쓰지 않는다 — 값이 유효한 정수가 아니면
+  임의 기본값 없이 `INVALID_EVENT_DATA`로 중단한다. 렌더 시작은 이 라우트가 하지 않는다
+  (클라이언트 담당, 코드 ③). 신설 파일 2개 `api/payment/prepare/route.ts`(81줄)·
+  `api/payment/confirm/route.ts`(131줄). 사양: decisions/market-product.md 2026-08-12.
+  (f4b3623)
+
 ## 2026-08-11
 
 - fix(legal): 사업자 정보 통신판매업신고번호 표기를 `신고 예정` → `신고 면제
