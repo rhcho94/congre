@@ -135,7 +135,7 @@ export default function PrivacyPage() {
                   </tr>
                   <tr>
                     <td className="border border-border px-3 py-2 align-top">클립 영상</td>
-                    <td className="border border-border px-3 py-2 align-top">참가자 결과 알림 발송 시점으로부터 약 48시간. 다만 회사의 사유로 완성본 제작이 지연되거나 실패한 이벤트의 클립은 「Congre 서비스 이용약관」 제11조 제⑤항에 따라 결제 완료 시점으로부터 최대 7일까지 보존될 수 있습니다.</td>
+                    <td className="border border-border px-3 py-2 align-top">참가자 결과 알림 발송 시점으로부터 약 48시간. 다만 회사의 사유로 완성본 제작이 지연되거나 실패한 이벤트의 클립은 「Congre 서비스 이용약관」 제11조 제⑤항에 따라 결제 완료 시점(무료 플랜의 경우 이벤트 마감 시점)으로부터 최대 7일까지 보존될 수 있습니다.</td>
                   </tr>
                   <tr>
                     <td className="border border-border px-3 py-2 align-top">완성본 영상</td>
