@@ -4,6 +4,15 @@
 
 ## 2026-08-14
 
+- fix(refund): 환불 구간을 약관 제10조의3에 정렬 — 환불 경계 계산을 렌더 시작 → 결제 완료
+  시점으로 이관. `payment/confirm`이 `paidAt` 상수 기준으로 `refund50At`(+4시간)·
+  `refund100At`(+48시간)을 events에 기록하고, `render/start`의 계산 2줄과
+  `notifications.refund50NotifiedAt`·`refund100NotifiedAt` 리셋 2줄 제거. 구 공식은 렌더
+  시작 기준 (추정 완료+30분)/24시간으로 값도 기산점도 약관과 달랐다. 리셋 제거로 재렌더 시
+  과거 시각 재계산에 의한 환불 메일 오발송 경로가 닫혔다. 무료 이벤트는 confirm을 거치지
+  않아 두 필드 미기록으로 자연 제외(가드 코드 0줄). 메일 문구 `emails/refund-100.ts:26`
+  24시간 → 48시간 동반 수정. push 전 Firestore `status == "rendering"` 조회 0건으로 기존
+  문서 영향 없음 확인. (6e18ddd)
 - fix(cleanup): 클립 보관 48시간 + 지연·실패 이벤트 클립 7일 삭제 경로 — `cutoffClips`
   24→48시간. 순회 쿼리가 `status == "done"` 하나뿐이라 렌더가 지연·실패한 이벤트의
   클립이 무기한 남던 구조에 D-3 루프를 신설, `status in ["closed","rendering"]`을 훑어
