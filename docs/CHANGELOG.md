@@ -2,6 +2,22 @@
 
 > 기능 단위 작업 이력. 최신이 위.
 
+## 2026-08-15
+
+- feat(payment): 결제 성공·실패 페이지 신설 — 토스 결제창이 리다이렉트하는
+  `/payment/success`·`/payment/fail` 두 경로에 페이지 자체가 없어 결제 완료 후 404로
+  떨어지던 상태를 해소. success는 `authStateReady()` 대기 후 confirm → render/start →
+  이벤트 페이지 이동 순으로 진행한다. 리다이렉트로 새로 열리는 페이지라 Firebase 로그인
+  복원 전 `currentUser`가 null일 수 있어 대기가 필수다. 에러는 `CLIP_COUNT_CHANGED` /
+  `ORDER_NOT_PENDING` / 그 외 3갈래로 분기하며, `confirm:111`이 토스 응답 본문을 그대로
+  흘려보내므로 `error ?? code` 순으로 읽는다. render/start만 실패한 경우는 별도 상태로
+  분리해 결제 완료 사실을 명시하고 이벤트 페이지 링크를 준다. fail은 API 호출 없이
+  `code`·`message` 표시 + 대시보드 링크. lint baseline 11→12 동반 상향
+  (`success/page.tsx:44` `set-state-in-effect` 1건, `verify-email:23`과 같은 패턴).
+  (f9f54c9)
+- docs(handoff): 8/14 (2) 세션 핸드오프 커밋 누락분 등재 — 내용 수정 없이 그대로 커밋.
+  (f53d478)
+
 ## 2026-08-14
 
 - fix(refund): 환불 구간을 약관 제10조의3에 정렬 — 환불 경계 계산을 렌더 시작 → 결제 완료

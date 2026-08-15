@@ -36,6 +36,20 @@
 - **처리**: 등재만.
 - **출처**: 2026-08-13 세션 결정 3(새로고침 시 `pending` 누적 허용).
 
+## CLIP_COUNT_CHANGED 안내가 재발행 경로를 못 짚는다
+
+- **현황**: `payment/success/page.tsx`의 409 분기는 `/dashboard` 링크만 준다.
+  `/payment/{eventId}`로 직행시키려 했으나 `api/payment/confirm/route.ts:69-72`의 409 응답
+  본문에 `eventId`가 없다(`savedCount`·`currentCount`·`newAmount`만). success 페이지는 이
+  API로만 `eventId`를 얻으므로 실패 응답에서는 알 수 없다.
+- **문구 문제 동반**: 안내가 "대시보드에서 다시 결제를 진행해 주세요"인데, 이 상황에서
+  `payments`는 `stale`이 되고 이벤트는 `open`으로 남는다. 실제로는 대시보드에서
+  [마감하기]를 다시 눌러야 결제창으로 간다. "결제" 버튼을 찾는 고객이 헤맬 수 있다.
+- **잠재성**: 길이 막힌 건 아니고 한 단계 더 걷는다. 실고객 0 단계.
+- **해소 방법**: 409 응답에 `eventId` 추가 → success에서 `/payment/{eventId}` 링크 +
+  문구를 [마감하기] 기준으로 교체.
+- **격상 트리거**: 유료 개시 전. API 수정을 동반하므로 카드사 심사 트랙 종료 후 착수.
+
 ## render/start:50의 plan ?? "free"
 
 - **현황**: `plan` 필드가 결손되면 유료 이벤트가 무료로 통과한다. 청구 누락 방향의
@@ -451,10 +465,11 @@
   - `react-hooks/set-state-in-effect` 9건 (dashboard/events/[eventId] 3, upload/[eventId] 2, dashboard 1, mypage 1, share/[eventId]/ShareActions 1, verify-email 1)
   - `react-hooks/refs` 2건 (upload/[eventId] 2)
 - **2026-05-31 사이클 6 처리**: `react/no-unescaped-entities` 규칙을 `eslint.config.mjs`에서 `"off"`로 비활성화 (커밋 `69639d2`). 따옴표/아포스트로피 HTML entity 강제 규칙으로 화면 영향 없음, 자동수정 불가 + 92건 대량이라 일괄 비활성화 채택.
-- **현재 baseline**: 11 errors + 3 warnings.
-  - `react-hooks/set-state-in-effect` 9건 — 별도 트랙
+- **현재 baseline**: 12 errors + 3 warnings. (2026-08-15 상향, Ray 승인)
+  - `react-hooks/set-state-in-effect` 10건 — 별도 트랙
   - `react-hooks/refs` 2건 — 별도 트랙
   - 둘 다 메타상 `fixable: "code"`이나 실제 동작 영향 가능성 있어 자동수정 안전성 미검증 → 수동 점검 트랙
+- **2026-08-15 상향 (11 → 12)**: `payment/success/page.tsx:44` 쿼리 유효성 검사 실패 분기에서 `set-state-in-effect` 1건 추가. 최초 구현은 `Promise.resolve().then()` 래핑으로 규칙을 우회해 11을 유지했으나, `verify-email/page.tsx:23`의 동일 상황이 동기 호출로 baseline에 포함돼 있어 같은 문제에 두 가지 처리가 공존하게 된다. 우회를 걷어내고 baseline을 올리는 쪽을 택했다. 커밋 `f9f54c9`.
 - **격상 트리거**: react-hooks/* 11건 정리 사이클 착수 시. 사용자가 별도로 지시.
 - **검증 게이트 운영**: 신규 작업의 lint 게이트는 "errors ≤ 11 (현 baseline)"으로 운영. delta 0이면 통과.
 - **2026-05-31 B 정찰**: 잔존 11건(set-state-in-effect 9 + refs 2)을 한 건씩 분류. 결과 **[실제 위험] 0 / [무해·관행] 9 / [불확실] 2**.
