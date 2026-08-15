@@ -15,6 +15,18 @@
   `code`·`message` 표시 + 대시보드 링크. lint baseline 11→12 동반 상향
   (`success/page.tsx:44` `set-state-in-effect` 1건, `verify-email:23`과 같은 패턴).
   (f9f54c9)
+- verify(payment): 결제 전 구간 실동작 검증 — `rhcho94+tosstest@gmail.com` 계정으로 신규
+  이벤트(클립 3개, 10,000원) 테스트 결제 1건 실행. 카카오페이 승인 → `/payment/success` →
+  `confirm` → `render/start` → Shotstack 렌더 → 27초 완성본 출력까지 전 구간 정상.
+  `authStateReady()` 대기가 실제 리다이렉트 경로에서 작동함을 확인했다(대기 없이는
+  `AUTH_FAILED`로 떨어졌을 경로). 다만 카카오페이는 외부 앱 경유 리다이렉트라 success
+  화면이 사용자에게 표시되지 않고 곧바로 이벤트 페이지로 전환된다 — 동작은 정상이나 이
+  경로에서는 success 화면 캡처가 불가능하다.
+- verify(refund): 게이트 #7 환불 구간 실측 검증 — Firestore `events` 문서에서
+  `closedAt` 16:46:30 / `refund50At` 20:46:30 (+4시간) / `refund100At` 8/17 16:46:30
+  (+48시간)로 확인. 초 단위까지 동일해 `paidAt` 단일 시계 설계가 의도대로 작동했다.
+  약관 제10조의3 ③과 코드가 실데이터로 정렬됨을 확인. `plan: "paid"`,
+  `status: "rendering"`, `renderId` 발급도 정상.
 - docs(handoff): 8/14 (2) 세션 핸드오프 커밋 누락분 등재 — 내용 수정 없이 그대로 커밋.
   (f53d478)
 
