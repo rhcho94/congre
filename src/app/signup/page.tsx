@@ -78,7 +78,7 @@ export default function SignupPage() {
         <main className="mx-auto max-w-md px-6 py-16">
           <div className="glass-panel w-full p-10">
             <h1 className="display text-3xl text-center mb-2">호스트 가입</h1>
-            <p className="text-muted text-sm text-center mb-10">가입하면 바로 무료로 테스트해 볼 수 있어요</p>
+            <p className="text-muted text-sm text-center mb-10">가입하면 바로 무료로 시작할 수 있어요</p>
 
             {!isFirebaseConfigured && (
               <div className="mb-6 notice">
