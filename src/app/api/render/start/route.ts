@@ -208,7 +208,6 @@ export async function POST(request: NextRequest) {
     "notifications.renderStartedNotifiedAt": null,
     "notifications.renderCompletedNotifiedAt": null,
     "notifications.renderDelayedNotifiedAt": null,
-    "notifications.participantNotifiedAt": null,
   });
 
   if (eventData.organizerEmail && eventData.organizerPhone) {

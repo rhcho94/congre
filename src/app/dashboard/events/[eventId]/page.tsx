@@ -1166,14 +1166,20 @@ export default function EventDetailPage() {
                     </div>
                   </div>
 
-                  <button
-                    onClick={() => setShowRerenderModal(true)}
-                    disabled={closing}
-                    className="btn btn-secondary w-full"
-                    style={{ marginTop: 4 }}
-                  >
-                    영상 다시 만들기
-                  </button>
+                  {clips.length > 0 && (
+                    <>
+                      <p className="text-sm text-muted" style={{ marginTop: 4 }}>
+                        참가자 영상은 완성본이 나온 뒤 48시간까지 보관돼요. 그 뒤에는 다시 만들 수 없어요.
+                      </p>
+                      <button
+                        onClick={() => setShowRerenderModal(true)}
+                        disabled={closing}
+                        className="btn btn-secondary w-full"
+                      >
+                        영상 다시 만들기
+                      </button>
+                    </>
+                  )}
                 </div>
               ) : (
                 <div className="notice flex items-center gap-3">
@@ -1512,11 +1518,12 @@ export default function EventDetailPage() {
                         </div>
                         <button
                           onClick={() => handleToggleExclusion(clip)}
+                          disabled={event.status === "rendering"}
                           className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 text-xs tracking-widest uppercase transition-all duration-200 mr-2"
                           style={
                             clip.excludedAt
-                              ? { border: "1px solid #e05252", color: "#e05252", borderRadius: "var(--r-sm)" }
-                              : { border: "1px solid var(--hairline-strong)", color: "var(--muted)", borderRadius: "var(--r-sm)" }
+                              ? { border: "1px solid #e05252", color: "#e05252", borderRadius: "var(--r-sm)", ...(event.status === "rendering" ? { opacity: 0.4, cursor: "not-allowed" } : {}) }
+                              : { border: "1px solid var(--hairline-strong)", color: "var(--muted)", borderRadius: "var(--r-sm)", ...(event.status === "rendering" ? { opacity: 0.4, cursor: "not-allowed" } : {}) }
                           }
                           aria-label={clip.excludedAt ? "복원" : "제외"}
                         >
