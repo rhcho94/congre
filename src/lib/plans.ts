@@ -27,3 +27,7 @@ export function calcRawPrice(maxClipSeconds: number, clipCount: number): number 
 export function calcPrice(maxClipSeconds: number, clipCount: number): number {
   return Math.max(calcRawPrice(maxClipSeconds, clipCount), MIN_PRICE);
 }
+
+export function calcRerenderPrice(firstAmount: number): number {
+  return Math.round(firstAmount * 0.8);
+}

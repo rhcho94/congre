@@ -56,20 +56,24 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "INVALID_EVENT_DATA" }, { status: 400 });
   }
 
-  const clipsSnap = await db.collection("clips").where("eventId", "==", eventId).get();
-  const currentCount = clipsSnap.docs.filter((d) => !d.data().excludedAt).length;
+  const mode = order.mode ?? "first";
 
-  if (currentCount !== order.clipCount) {
-    const newAmount = calcPrice(maxClipSeconds, currentCount);
-    try {
-      await orderRef.update({ status: "stale" });
-    } catch (err) {
-      console.error("[payment/confirm] failed to mark order stale:", err);
+  if (mode === "first") {
+    const clipsSnap = await db.collection("clips").where("eventId", "==", eventId).get();
+    const currentCount = clipsSnap.docs.filter((d) => !d.data().excludedAt).length;
+
+    if (currentCount !== order.clipCount) {
+      const newAmount = calcPrice(maxClipSeconds, currentCount);
+      try {
+        await orderRef.update({ status: "stale" });
+      } catch (err) {
+        console.error("[payment/confirm] failed to mark order stale:", err);
+      }
+      return Response.json(
+        { error: "CLIP_COUNT_CHANGED", savedCount: order.clipCount, currentCount, newAmount },
+        { status: 409 }
+      );
     }
-    return Response.json(
-      { error: "CLIP_COUNT_CHANGED", savedCount: order.clipCount, currentCount, newAmount },
-      { status: 409 }
-    );
   }
 
   const secretKey = process.env.TOSS_SECRET_KEY;
@@ -118,18 +122,29 @@ export async function POST(request: NextRequest) {
       paymentKey,
       paidAt,
     });
-    await eventRef.update({
-      unlocked: true,
-      status: "closed",
-      sessionToken: null,
-      closedAt: FieldValue.serverTimestamp(),
+    const refundFields = {
       refund50At: Timestamp.fromMillis(
         paidAt.toMillis() + 4 * 60 * 60 * 1000
       ),
       refund100At: Timestamp.fromMillis(
         paidAt.toMillis() + 48 * 60 * 60 * 1000
       ),
-    });
+    };
+
+    if (mode === "first") {
+      await eventRef.update({
+        unlocked: true,
+        status: "closed",
+        sessionToken: null,
+        closedAt: FieldValue.serverTimestamp(),
+        firstPaidAmount: amount,
+        ...refundFields,
+      });
+    } else {
+      await eventRef.update({
+        ...refundFields,
+      });
+    }
   } catch (err) {
     console.error("[payment/confirm] failed to save paid status:", err);
     return Response.json({ error: "SAVE_FAILED" }, { status: 500 });

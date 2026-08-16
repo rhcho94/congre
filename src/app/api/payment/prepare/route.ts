@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server";
 import { Timestamp } from "firebase-admin/firestore";
 import { verifyIdToken } from "@/lib/auth-server";
 import { getAdminDb } from "@/lib/firebase-admin";
-import { calcPrice, calcRawPrice } from "@/lib/plans";
+import { calcPrice, calcRawPrice, calcRerenderPrice } from "@/lib/plans";
 
 export async function POST(request: NextRequest) {
   let uid: string;
@@ -37,12 +37,16 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "NOT_PAID_PLAN" }, { status: 400 });
   }
 
-  if (eventData.status !== "open") {
-    return Response.json({ error: "EVENT_NOT_OPEN" }, { status: 400 });
-  }
-
-  if (eventData.unlocked === true) {
-    return Response.json({ error: "ALREADY_UNLOCKED" }, { status: 400 });
+  let mode: "first" | "rerender";
+  if (eventData.status === "open" && eventData.unlocked !== true) {
+    mode = "first";
+  } else if (
+    (eventData.status === "closed" || eventData.status === "done") &&
+    eventData.unlocked === true
+  ) {
+    mode = "rerender";
+  } else {
+    return Response.json({ error: "INVALID_EVENT_STATE" }, { status: 400 });
   }
 
   const clipsSnap = await db.collection("clips").where("eventId", "==", eventId).get();
@@ -54,11 +58,26 @@ export async function POST(request: NextRequest) {
   }
 
   const maxClipSeconds = eventData.maxClipSeconds as number | undefined;
+
   if (typeof maxClipSeconds !== "number" || !Number.isInteger(maxClipSeconds) || maxClipSeconds <= 0) {
     return Response.json({ error: "INVALID_EVENT_DATA" }, { status: 400 });
   }
-  const amount = calcPrice(maxClipSeconds, clipCount);
-  const rawAmount = calcRawPrice(maxClipSeconds, clipCount);
+
+  let amount: number;
+  let rawAmount: number;
+  let firstAmount: number | undefined;
+
+  if (mode === "first") {
+    amount = calcPrice(maxClipSeconds, clipCount);
+    rawAmount = calcRawPrice(maxClipSeconds, clipCount);
+  } else {
+    firstAmount = eventData.firstPaidAmount as number | undefined;
+    if (typeof firstAmount !== "number" || !Number.isInteger(firstAmount) || firstAmount <= 0) {
+      return Response.json({ error: "MISSING_FIRST_AMOUNT" }, { status: 400 });
+    }
+    amount = calcRerenderPrice(firstAmount);
+    rawAmount = amount;
+  }
 
   const orderId = `congre_${eventId}_${Date.now()}`;
   const orderName = "Congre 영상 제작 — 유료";
@@ -72,6 +91,7 @@ export async function POST(request: NextRequest) {
       clipCount,
       status: "pending",
       createdAt: Timestamp.now(),
+      mode,
     });
   } catch (err) {
     console.error("[payment/prepare] failed to save order:", err);
@@ -86,5 +106,7 @@ export async function POST(request: NextRequest) {
     orderName,
     maxClipSeconds,
     title: (eventData.title ?? null) as string | null,
+    mode,
+    ...(mode === "rerender" ? { firstAmount } : {}),
   });
 }
