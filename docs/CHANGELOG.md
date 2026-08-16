@@ -2,8 +2,46 @@
 
 > 기능 단위 작업 이력. 최신이 위.
 
+## 2026-08-16
+
+- verify(rerender): 재렌더 유료화 실동작 검증 — `rhcho94+tosstest@gmail.com` 이벤트
+  `aVuMJn7tk4mrMJW8FXsm`에서 최초 10,000원 → 재렌더 8,000원 결제 완료. `closedAt`
+  14:39:58과 `participantNotifiedAt` 14:45:4x가 최초 값 그대로 유지되고 `status`는
+  `done` 유지, `firstPaidAmount` 10000 기록, `refund50At`이 재렌더 결제
+  시각(14:56:16) +4시간으로 갱신됨을 확인. `renderCompletedNotifiedAt`은 `null`로
+  남아 `render/start`의 나머지 리셋 3개가 살아 있음을 함께 확인했다. 결제는 1회 실패
+  후 재시도로 완료 — 원인은 테스트 키 분당 100건 제한(`TOO_MANY_REQUESTS`).
+- fix(rerender): 재렌더 결제 버튼 라벨이 길어 줄바꿈이 생기던 것을
+  해소. (325600c)
+- feat(rerender): 재렌더 유료화 클라이언트 — done 화면 재렌더 버튼에 `clips.length > 0`
+  가드를 걸어 클립 만료 후 "돈 받고 렌더 실패"가 되는 경로를 차단했다(약관 제14조 ④).
+  유료 플랜은 결제 경로로 분기하며, 모달에 금액(처음 결제 금액의 80%)과 기한(48시간)
+  2줄 고지를 넣어 약관 제14조 ③의 사전 고지·확인 의무를 이행한다. 버튼 라벨은 유료
+  `결제하고 만들기` / 무료 `다시 만들기`. (ae4b6dc)
+- feat(payment): 재렌더 결제 서버 로직 — `payment/prepare`가 요청 본문의 `mode`를 받지
+  않고 events의 `status`·`unlocked`로 first/rerender를 자동 판정한다. 클라이언트가
+  `mode`를 보내면 금액을 임의로 깎을 수 있어 2026-08-06 감사 H-2(unlocked 자기부여)와
+  같은 계열의 우회가 되기 때문이다. 금액은 `round(최초 결제액 × 0.8)`이고 기준값은
+  신설 필드 `events.firstPaidAmount`에서 읽는다(`payments` 쿼리는 재렌더 주문이
+  쌓이면 정렬·인덱스가 필요해 기각). rerender confirm은 `refund50At`·`refund100At`만
+  갱신하고 `closedAt`·`status`·`unlocked`·`sessionToken`·`firstPaidAmount`는 쓰지
+  않는다. 409 `CLIP_COUNT_CHANGED` 검사는 first에서만 수행한다 — 재편집은 클립 수를
+  바꾸는 것이 목적이라 rerender에 그대로 두면 정상 요청이 전부 막힌다.
+  `AMOUNT_MISMATCH`는 토스 표준이라 두 mode 공통 유지. (8290dbe)
+- fix(rerender): 재렌더 사전 정리 4건 — 클립 토글 비활성 조건을 `isClosed`에서
+  `status === "rendering"`으로 좁혔다(closed·done에서 클립을 고르는 것이 재편집의
+  목적이다). `render/start`의 `participantNotifiedAt: null` 리셋도 제거했다. 이
+  리셋이 있으면 재렌더마다 필드가 초기화되고 cron이 새 시각으로 재기록해 cleanup
+  D-1의 클립 48시간 시계가 매번 연장된다. 2026-08-14에 `closedAt` 축에서 막은 것과
+  같은 구조가 이 축에 남아 있었다. 부수 효과로 재렌더 시 참가자 알림 재발송도
+  멈춘다(`check-rendering:131` 가드가 제 역할을 회복). 인접 3개 NotifiedAt과
+  `refundStatus`는 렌더 진행 알림 축이라 유지. (a1735a0)
+
 ## 2026-08-15
 
+- fix(signup): 가입 안내 문구에서 "테스트" 제거 — `/signup` 상단 안내가 "가입하면 바로 무료로
+  테스트해 볼 수 있어요"였다. 토스 1차 심사 지적이 "테스트 상품 불가"였으므로 제출 캡처 ④에
+  이 단어가 남으면 오해 소지가 있어 교체했다. (c29efdc)
 - feat(payment): 결제 성공·실패 페이지 신설 — 토스 결제창이 리다이렉트하는
   `/payment/success`·`/payment/fail` 두 경로에 페이지 자체가 없어 결제 완료 후 404로
   떨어지던 상태를 해소. success는 `authStateReady()` 대기 후 confirm → render/start →
