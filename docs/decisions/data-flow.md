@@ -2,6 +2,8 @@
 
 > Firestore·S3·Admin SDK·서버 이전 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
+> 재렌더 유료화 관련 클립 시계·결제 흐름 결정은 `decisions/market-product.md` 2026-08-16 항목에 있다.
+
 ## 2026-08-14 — cron 실행 시각·클립 보관 실제 구간 (실측)
 
 **cron 스케줄은 UTC**: Vercel 대시보드 Settings → Cron Jobs 화면에 "All scheduled times use

@@ -2,6 +2,51 @@
 
 > 시장 정의·BM·서비스 모델·영상 가치 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-08-16 — 재렌더 유료화 사양
+
+> 약관 정렬분(환불 시계·고지 의무·48시간 창)은 `legal.md` 2026-08-16 항목에 있다.
+
+**결정 1: 재렌더 금액 = `round(최초 결제액 × 0.8)`**
+- 상태: `payment/prepare`가 rerender mode에서 이 식으로 금액을 산출한다.
+- 이유: 최초 결제에 `MIN_PRICE` 10,000원이 이미 걸려 있어, 재렌더 최소 금액 8,000원이 별도 상수 없이 자동으로 도출된다. 재렌더용 하한 상수를 따로 두면 같은 규칙이 두 곳에 생겨 드리프트 원인이 된다.
+
+**결정 2: 80%의 기준은 최초 결제액 고정 — 현재 클립 수 재계산이 아니다**
+- 상태: 재렌더 시점의 클립 수로 금액을 다시 계산하지 않는다.
+- 이유: 랜딩 pricing 문구가 "처음 금액의 80%"다. 재계산 방식은 이 문구와 어긋나고, 클립을 줄여 재렌더하면 금액이 내려가 재편집을 반복할 유인이 생긴다.
+
+**결정 3: mode를 클라이언트에서 받지 않고 서버가 자동 판정한다**
+- 상태: `payment/prepare`가 요청 본문의 `mode`를 읽지 않는다. events 문서의 `status`·`unlocked`로 판정한다.
+  - `open` + `!unlocked` → first
+  - `closed`·`done` + `unlocked` → rerender
+  - 그 외(`rendering` 포함) → 400 `INVALID_EVENT_STATE`
+- 이유: 클라이언트가 mode를 보낼 수 있으면 first 결제 건에 rerender를 실어 금액을 20% 깎을 수 있다. 2026-08-06 감사 H-2(unlocked 자기부여)와 같은 계열의 우회다.
+
+**결정 4: 80% 기준값은 `events.firstPaidAmount` 신설 필드에서 읽는다**
+- 상태: 최초 결제 confirm 시점에 이 필드를 기록하고, rerender prepare가 읽는다.
+- 이유: `payments` 컬렉션 쿼리로 최초 결제액을 찾는 방식은 재렌더 주문이 쌓이면 정렬과 복합 인덱스가 필요해진다. 필드 1개 추가가 비용이 작다.
+- 함의: 이 필드는 `8290dbe`부터 기록된다. 그 이전에 결제된 이벤트에는 없어 재렌더가 `MISSING_FIRST_AMOUNT` 400으로 막힌다. 백필 코드는 만들지 않았다(실고객 0, YAGNI).
+
+**결정 5: rerender confirm은 `refund50At`·`refund100At`만 쓴다**
+- 상태: rerender mode의 confirm이 `closedAt`·`status`·`unlocked`·`sessionToken`·`firstPaidAmount`를 쓰지 않는다.
+- 이유: `closedAt`을 쓰면 cleanup의 클립 7일 시계가 리셋된다. `status`를 쓰면 `done` 이벤트가 `closed`로 강등된다. `firstPaidAmount`를 rerender에서도 쓰면 다음 재렌더가 80%의 80%로 계산된다.
+
+**결정 6: 409 `CLIP_COUNT_CHANGED` 검사는 first에서만 수행한다**
+- 상태: rerender mode는 이 검사를 건너뛴다. `AMOUNT_MISMATCH`는 두 mode 공통으로 유지한다.
+- 이유: 재편집의 목적 자체가 클립 구성을 바꾸는 것이다. rerender에 이 검사를 두면 정상 요청이 전부 막힌다. `AMOUNT_MISMATCH`는 토스 표준 위변조 방지 절차라 제거 대상이 아니다.
+
+**결정 7: done 화면 재렌더 버튼에 `clips.length > 0` 가드를 건다**
+- 상태: 클립이 없으면 버튼을 노출하지 않는다.
+- 이유: 클립 만료 후에도 버튼이 보이면, 유료화 이후에는 "돈을 받고 렌더에 실패하는" 경로가 된다. 약관 제14조 ④와 정렬된다.
+
+**결정 8: 클립 토글 비활성은 `status === "rendering"`일 때만 적용한다**
+- 상태: `isClosed` 기준을 쓰지 않는다. `closed`·`done`에서는 토글이 열려 있다.
+- 이유: 그 상태에서 클립을 고르는 것이 재편집의 목적이다. `isClosed`로 막으면 재편집 기능이 성립하지 않는다.
+
+**결정 9: `render/start`의 `participantNotifiedAt: null` 리셋을 제거한다**
+- 상태: 리셋 4건 중 이 한 건만 제거했다. 인접 3개 NotifiedAt과 `refundStatus`는 렌더 진행 알림 축이라 유지한다.
+- 이유: 이 리셋이 있으면 재렌더마다 필드가 초기화되고 cron이 새 시각으로 재기록해, cleanup D-1의 클립 48시간 시계가 재렌더할 때마다 연장된다. 2026-08-14에 `closedAt` 축에서 막은 것과 같은 구조가 이 축에 남아 있었다.
+- 함의: 부수 효과로 재렌더 시 참가자 알림 재발송이 멈춘다(`check-rendering:131` 가드가 제 역할을 회복한다).
+
 ## 2026-08-12 — 결제 흐름 사양 v2 (토스 심사 대응)
 
 **범위 (가′)**: 캡처 최소선 + 마감 시점 서버 금액 산출. 환불 API·정산·재렌더 80% 결제·실키 전환은 범위 밖.
