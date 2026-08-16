@@ -17,6 +17,8 @@ interface PrepareResponse {
   orderName: string;
   maxClipSeconds: number;
   title: string | null;
+  mode?: "first" | "rerender";
+  firstAmount?: number;
 }
 
 const prepareErrorMessages: Record<string, string> = {
@@ -26,6 +28,8 @@ const prepareErrorMessages: Record<string, string> = {
   NO_CLIPS: "업로드된 영상이 없어 결제할 수 없습니다.",
   FORBIDDEN: "이 이벤트에 접근할 권한이 없습니다.",
   EVENT_NOT_FOUND: "이벤트를 찾을 수 없습니다.",
+  INVALID_EVENT_STATE: "지금은 결제를 진행할 수 없는 상태예요.",
+  MISSING_FIRST_AMOUNT: "이 이벤트는 재편집 결제를 지원하지 않아요.",
 };
 
 export default function PaymentPage() {
@@ -232,13 +236,21 @@ export default function PaymentPage() {
             </div>
 
             <div className="mb-8">
-              <p className="text-xs text-muted mb-2">
-                영상 길이 {prepared.maxClipSeconds}초 × 영상 {prepared.clipCount}개 × 100원 = {prepared.rawAmount.toLocaleString("ko-KR")}원
-              </p>
-              {prepared.rawAmount !== prepared.amount && (
+              {prepared.mode === "rerender" ? (
                 <p className="text-xs text-muted mb-2">
-                  → 최소 결제 금액 {prepared.amount.toLocaleString("ko-KR")}원 적용
+                  처음 결제 금액 {(prepared.firstAmount ?? 0).toLocaleString("ko-KR")}원의 80%
                 </p>
+              ) : (
+                <>
+                  <p className="text-xs text-muted mb-2">
+                    영상 길이 {prepared.maxClipSeconds}초 × 영상 {prepared.clipCount}개 × 100원 = {prepared.rawAmount.toLocaleString("ko-KR")}원
+                  </p>
+                  {prepared.rawAmount !== prepared.amount && (
+                    <p className="text-xs text-muted mb-2">
+                      → 최소 결제 금액 {prepared.amount.toLocaleString("ko-KR")}원 적용
+                    </p>
+                  )}
+                </>
               )}
               <p className="display text-3xl" style={{ color: "var(--accent)" }}>
                 {prepared.amount.toLocaleString("ko-KR")}원

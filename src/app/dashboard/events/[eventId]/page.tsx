@@ -880,6 +880,11 @@ export default function EventDetailPage() {
               <p className="text-sm text-muted mb-6">
                 현재 전체 {clips.length}개 중 {includedCount}개 포함
               </p>
+              {event.plan === "paid" && (
+                <p className="text-sm text-muted mb-6">
+                  처음 결제 금액의 80%가 부과돼요. 참가자 영상 보관 기간(48시간)이 지나면 다시 만들 수 없어요.
+                </p>
+              )}
               {includedCount === 0 && (
                 <p className="text-sm mb-4" style={{ color: "#e05252" }}>
                   포함된 클립이 없어요. 제외를 해제해주세요.
@@ -890,11 +895,18 @@ export default function EventDetailPage() {
                   취소
                 </button>
                 <button
-                  onClick={() => { setShowRerenderModal(false); handleRestartRender(); }}
+                  onClick={() => {
+                    setShowRerenderModal(false);
+                    if (event.plan === "paid") {
+                      router.push(`/payment/${eventId}`);
+                    } else {
+                      handleRestartRender();
+                    }
+                  }}
                   disabled={includedCount === 0 || closing}
                   className="btn btn-primary flex-1"
                 >
-                  {closing ? "처리 중..." : "다시 만들기"}
+                  {closing ? "처리 중..." : event.plan === "paid" ? "결제하고 다시 만들기" : "다시 만들기"}
                 </button>
               </div>
             </div>
