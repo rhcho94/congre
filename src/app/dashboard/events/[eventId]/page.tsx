@@ -906,7 +906,7 @@ export default function EventDetailPage() {
                   disabled={includedCount === 0 || closing}
                   className="btn btn-primary flex-1"
                 >
-                  {closing ? "처리 중..." : event.plan === "paid" ? "결제하고 다시 만들기" : "다시 만들기"}
+                  {closing ? "처리 중..." : event.plan === "paid" ? "결제하고 만들기" : "다시 만들기"}
                 </button>
               </div>
             </div>
