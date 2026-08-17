@@ -23,7 +23,7 @@ export async function notifyRenderDelayed(ctx: RenderDelayedCtx): Promise<void> 
       message: {
         subject: `[Congre] '${ctx.title}' 영상 편집이 지연되고 있습니다`,
         html,
-        text: `'${ctx.title}' 영상 편집이 지연되고 있습니다. 30분 이내 미완료 시 50% 환불이 확정됩니다. 문의: 카카오톡 @congre\n\n대시보드: ${ctx.dashboardUrl}`,
+        text: `'${ctx.title}' 영상 편집이 지연되고 있습니다. 결제 후 4시간이 지나도록 완료되지 않으면 50% 환불이 확정됩니다. 문의: 카카오톡 @congre\n\n대시보드: ${ctx.dashboardUrl}`,
       },
     },
     {

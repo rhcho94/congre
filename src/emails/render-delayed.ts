@@ -24,7 +24,7 @@ export function renderRenderDelayedEmail(ctx: RenderDelayedEmailCtx): string {
       현재 영상 편집이 예상 완료 시각을 초과하였습니다. 저희 팀이 빠르게 확인하고 있으며, 영상은 반드시 완성하여 전달드리겠습니다.
     </p>
     <p style="margin:0 0 24px;font-size:14px;color:${C.text};line-height:1.7;">
-      지금으로부터 <strong>30분 이내에도 완료되지 않을 경우 결제 금액의 50%가 자동으로 환불 확정</strong>됩니다. 별도로 연락드리겠습니다.
+      <strong>결제 후 4시간이 지나도록 완료되지 않을 경우 결제 금액의 50%가 자동으로 환불 확정</strong>됩니다. 별도로 연락드리겠습니다.
     </p>
     <a href="${ctx.dashboardUrl}"
        style="display:inline-block;padding:12px 28px;background:${C.accent};color:#fff;font-size:13px;font-weight:600;text-decoration:none;border-radius:2px;letter-spacing:0.05em;margin-bottom:20px;">

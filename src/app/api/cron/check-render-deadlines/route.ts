@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // ② refund_50 (T+E+30분 초과 + 미발송)
+    // ② refund_50 (refund50At = paidAt + 4시간 초과 + 미발송)
     if (
       data.refund50At?.toMillis() <= now &&
       data.notifications?.refund50NotifiedAt == null
