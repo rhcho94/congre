@@ -2,6 +2,16 @@
 
 > 기능 단위 작업 이력. 최신이 위.
 
+## 2026-08-17
+
+- fix(notifications): 지연 알림 환불 고지를 결제 후 4시간 기준으로 정정 — 메일·plain
+  text·SMS 3채널의 "30분 이내" 상대시간 문구를 `paidAt` + 4시간 기산점 명시로
+  교체했다. 실제 `refund50At`은 결제 완료 기준 절대시각인데 문구는 발송 시점부터의
+  상대시간을 말해 클립 수에 따라 최대 3시간 30분까지 오차가 벌어졌었다. 같은
+  커밋에서 `cron/check-render-deadlines/route.ts:69`의 "T+E+30분" 주석도 함께
+  정정했다(코드 로직 무변경, 주석만). 문구 3곳 정정 + cron 주석 정정 1곳이 같은
+  커밋으로 처리됐다. (`bf93b72`)
+
 ## 2026-08-16
 
 - verify(rerender): 재렌더 유료화 실동작 검증 — `rhcho94+tosstest@gmail.com` 이벤트
@@ -10,7 +20,8 @@
   `done` 유지, `firstPaidAmount` 10000 기록, `refund50At`이 재렌더 결제
   시각(14:56:16) +4시간으로 갱신됨을 확인. `renderCompletedNotifiedAt`은 `null`로
   남아 `render/start`의 나머지 리셋 3개가 살아 있음을 함께 확인했다. 결제는 1회 실패
-  후 재시도로 완료 — 원인은 테스트 키 분당 100건 제한(`TOO_MANY_REQUESTS`).
+  후 재시도로 완료 — 원인은 테스트 키 분당 100건 제한(`TOO_MANY_REQUESTS`). 실키(운영
+  키)에도 동일한 rate limit이 걸리는지는 확인한 바 없다.
 - fix(rerender): 재렌더 결제 버튼 라벨이 길어 줄바꿈이 생기던 것을
   해소. (325600c)
 - feat(rerender): 재렌더 유료화 클라이언트 — done 화면 재렌더 버튼에 `clips.length > 0`
