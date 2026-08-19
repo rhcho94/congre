@@ -527,7 +527,7 @@
 - **출처**: 2026-06-14 결제 트랙 단계 1·2 세션.
 - 2026-08-04 갱신: 베타 쿠폰 경로는 서버가 maxClips를 20으로 고정 저장하므로 이 경로에서는 발생하지 않음(b0e7988). 일반 유료 경로는 미해소 — 결제 트랙에서 처리.
 
-## 랜딩 페이지 영역 (L4~L5, L7~L9, L11~L14)
+## 랜딩 페이지 영역 (L4~L5, L7~L9, L11~L16)
 
 ### L4. 후기 섹션 실사진/아바타 미적용
 
@@ -601,6 +601,35 @@
 - **처리**: 지금 안 함(YAGNI). 실고객 0이고 검색 유입 경로도 없다.
 - **격상 트리거**: 정식 오픈 시 / 옛 가격표 관련 문의가 실제로 발생할 때.
 - **L 번호 부여 메모**: L13 다음 전역 일련번호(CLAUDE.md 학습 룰 #2)에 따라 L14 부여.
+- **2026-08-19 갱신**: 백업 2건(index_pre_faqabout_backup.html, pricing_pre_freelabel_backup.html)이 추가돼 deploy/ 최상위 .html이 23개에서 25개가 됐다. 신설 faq.html·about.html은 정식 페이지이므로 이 집계에 포함하지 않는다.
+
+### L15. 랜딩 faq.html·about.html 신설 + 푸터 정리 = git 외부 직접 수정분 (CD zip 덮어쓰기 주의)
+
+- **현황**: 2026-08-19 세션에서 deploy/ 폴더에 아래를 직접 작업·배포했다. 랜딩은 git 외부 트랙이라 이 변경은 git에 없고 Vercel 배포본에만 존재한다(L8·L9와 같은 계열).
+  (a) faq.html 신설 (13,854B) — 10문항 3그룹, details/summary 네이티브 아코디언, 추가 JS 0줄
+  (b) about.html 신설 (8,581B) — 서비스 소개 + 문의(cs@) + 사업자 정보 7항목(ray@). 사업자 정보는 terms/page.tsx와 문자 단위 동일 확인함
+  (c) index.html 푸터 3건 — "자주 묻는 질문" href="#"→"/faq", "소개" href="#"→"/about" (둘 다 data-cta·data-soon 속성 제거), "블로그" 링크 요소 제거
+  (d) pricing.html:954 "무료 테스트 해보기" → "무료로 해보기" (8/15 c29efdc가 앱 /signup에서 "테스트"를 제거한 것과 같은 사유. 랜딩은 그때 범위 밖이라 남아 있었다)
+  (e) faq.html·about.html 푸터의 제품 열 앵커는 "/#how"·"/#cases" 절대경로다. index.html의 "#how"·"#cases"를 그대로 쓰면 새 페이지에 해당 id가 없어 죽은 링크가 되기 때문이다. data-scroll 속성도 제거했다(이를 잡는 JS 리스너가 파일 전체에 없음을 정찰로 확인)
+- **배포**: production 별칭 www.congre.kr, 배포본 congre-landing-ge9niknqi-rhcho94s-projects.vercel.app
+- **백업**: index_pre_faqabout_backup.html(180,692B, 편집 전), pricing_pre_freelabel_backup.html(30,920B, 편집 전)
+- **위험**: 다음에 CD에서 랜딩 zip을 새로 뽑아 풀어덮으면 신설 2파일이 사라지고 푸터가 원복돼 "준비 중" 토스트가 재발한다. pricing의 "테스트" 문구도 되살아난다.
+- **다음 CD 랜딩 작업 시 확인 항목 4건**:
+  ① faq.html·about.html이 존재하는지 (zip에는 없다)
+  ② index.html에 data-cta="soon" 잔존 0곳인지
+  ③ index.html에 "블로그" 잔존 0곳인지
+  ④ pricing.html에 "테스트" 잔존 0곳인지
+- **L 번호 부여 메모**: L14 다음 전역 일련번호(CLAUDE.md 학습 룰 #2)에 따라 L15 부여.
+
+### L16. 랜딩 index.html data-cta 위임 리스너 주석이 실태와 어긋남
+
+- **현황**: index.html:3942 주석이 "// Delegate click on any [data-cta] — only 'soon' and 'demo' remain" 인데, 2026-08-19 작업으로 data-cta="soon"이 0곳이 됐다.
+- **영향**: 없음. 리스너 코드 자체는 'demo' 분기 때문에 여전히 필요하다.
+- **관련**: L12에 등재된 대로 #demoModal은 여는 입구가 없어 도달 불가다. 즉 'demo'도 사실상 죽은 코드이며, 리스너째 정리될 항목이다.
+- **처리**: 등재만. 랜딩은 CD zip 덮어쓰기 트랙이라 주석 한 줄을 위해 직접 수정분을 늘리지 않는다.
+- **격상 트리거**: 랜딩 코드 정리 사이클 착수 시 L12와 함께 일괄.
+- **L 번호 부여 메모**: L15 다음 전역 일련번호(CLAUDE.md 학습 룰 #2)에 따라 L16 부여.
+- **출처**: 2026-08-19 세션.
 
 ## 가입 모델 재검토 트랙 (외부 검증 후)
 
