@@ -53,10 +53,6 @@ export async function POST(request: NextRequest) {
   const includedDocs = clipsSnap.docs.filter((d) => !d.data().excludedAt);
   const clipCount = includedDocs.length;
 
-  if (clipCount === 0) {
-    return Response.json({ error: "NO_CLIPS" }, { status: 400 });
-  }
-
   const maxClipSeconds = eventData.maxClipSeconds as number | undefined;
 
   if (typeof maxClipSeconds !== "number" || !Number.isInteger(maxClipSeconds) || maxClipSeconds <= 0) {

@@ -222,6 +222,14 @@ export default function PaymentPage() {
 
             <p className="display text-xl mb-2">{prepared.orderName}</p>
 
+            {prepared.clipCount === 0 && (
+              <div className="notice mb-6">
+                <p className="text-sm text-muted leading-relaxed">
+                  ⚠️ 아직 업로드된 영상이 없습니다. 이 상태로 결제하면 제작할 영상이 없습니다. 결제 후 4시간 이내에는 환불이 제한됩니다.
+                </p>
+              </div>
+            )}
+
             <div className="notice mb-8">
               <p className="text-sm text-muted leading-relaxed whitespace-pre-line">
                 {`행사 참가자들이 올린 영상을 자동으로 편집해 완성본 1편으로 만들어 드립니다.
