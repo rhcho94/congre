@@ -47,7 +47,9 @@
 - `npx firebase emulators:start --only firestore` — Firestore 보안 규칙 테스트 (사전 조건: Java)
 
 ### 랜딩
-- `cd C:\Users\PC\Downloads\congre\deploy && npx vercel --prod --yes` — 프로덕션 배포
+- 랜딩 프로덕션 배포 — PowerShell에서 `&&`가 동작하지 않으므로 한 줄씩 실행:
+  - `cd C:\Users\PC\Downloads\congre\deploy`
+  - `npx vercel --prod --yes`
 
 ## 작업 트랙 (두 트랙 분리)
 
@@ -246,6 +248,19 @@ docs/
 
 본 프로젝트에서 사고로 학습된 룰. 추가 시 가장 위에 한 줄로.
 
+- **빌드 게이트 지표 이름 정정**: `npm run build`의 기준값은 "정적 페이지 32/32"다
+  (`Generating static pages (32/32)`). 이는 라우트 수가 아니다.
+  Route (app) 표에 나열되는 라우트는 42개이며 별개 지표다.
+  과거 문서의 "빌드 32라우트"는 잘못된 이름이다.
+- **동적 라우트 파일 git add는 literal 지정자 필요**: 경로에 대괄호가 있는 파일
+  (`src/app/payment/[eventId]/page.tsx` 등)은 git이 대괄호를 문자 클래스 패턴으로
+  읽어 "did not match any files"로 실패한다. `git add -- ':(literal)<경로>'` 형태로
+  지정자를 붙인다. 와일드카드 금지 원칙은 그대로 유지한다.
+- **경로·명령·환경값은 추측하지 말고 CLAUDE.md 「환경 정보」 절을 먼저 볼 것**:
+  2026-09-01 세션에서 랜딩 배포 경로를 `C:\projects\congre\deploy`로 안내했으나
+  실제 경로와 배포 명령이 이미 CLAUDE.md 「환경 정보 > 랜딩 페이지」와
+  「자주 쓰는 명령」에 적혀 있었다. 문서가 있는데 안 읽고 추측한 사고다.
+  문서의 상대 경로 표기(`deploy/`)를 저장소 하위 경로로 읽은 것이 발단이다.
 - **커밋을 미루면 `git diff`는 그 사이 모든 턴의 누적이다**: 턴 단위 검증 조건은 훅 범위나 예상 삭제 줄 수로 쓴다.
 - **eye는 게이트 실행자가 아니라 독립 관측자다**: axe가 build/lint를 돌려 왔어도 eye 단계는 소멸하지 않는다. 커밋 프롬프트 직전에 eye 보고서가 컨텍스트에 텍스트로 존재하는지 확인한다.
 - **핸드오프 본문은 작성 시점 스냅샷이다**: git 상태는 문서가 아니라 명령으로 실측한다.
