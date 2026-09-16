@@ -3,6 +3,30 @@
 > known-issues.md에서 분리된 해결 완료 이력. 사고 재발 진단 시 grep 대상.
 > 새 RESOLVED 항목 발생 시 known-issues.md에서 이 파일로 이동.
 
+## ✅ L14. deploy/ 백업·시안 HTML이 공개 접근 가능 (2026-09-16 해소)
+
+- **해소: 2026-09-16** — `deploy/.vercelignore`를 신설해 백업(`*_backup.html`·`*.bak`·`*.backup`)·시안(`Landing v*.html`·`index_v*.html`·`Pricing Card.html`)·운영 문서(`*.md`·`handoff/`)·작업 자료(`screenshots/`·`.thumbnail`·`uploads/`의 mp4·png·jpeg)·비밀 설정(`.env*`·`.vercel`)을 업로드에서 제외했다. 파일은 로컬에 남는다. 배포(`congre-landing`) 후 실측으로 `CLAUDE.md`·백업·시안·스크린샷·uploads 원본이 404이고, 현행 페이지 4개와 `uploads/*.jpg` 5개·`videos/`·`images/`·`image-slot.js`·`.image-slots.state.json`이 정상임을 확인했다. `.env.local`은 규칙 신설 전부터 404였다. 실측 과정에서 `CLAUDE.md` 등 `.md` 문서도 공개돼 있었음이 확인됐다(민감 키워드 13종 실매치 0건).
+- **현황**: `npx vercel --prod`는 `deploy/` 폴더를 통째로 업로드하므로, 백업본과 CD 시안이 전부 공개 URL로 접근된다 — 예: `congre.kr/index_v4.html`, `congre.kr/pricing_pre_calc_backup.html`. 2026-08-11 재실측 23개(현행 2 + index 백업 10 + pricing 백업 6 + CD 시안 5) — 통신판매업신고번호 교체분 백업(`index_pre_mailorder_backup.html`) 포함 반영. 확장자가 `.backup`·`.bak`인 2건(`index.html.backup`, `index.html.bak`)은 `*.html` 글롭에 안 걸려 별도 존재.
+- **잠재 리스크**: 기밀은 없으나 `pricing_pre_calc_backup.html`이 폐기된 4단 고정가 시절 가격표라, 검색 유입이나 링크 공유로 도달하면 가격 문의 혼선.
+- **이번 배포로 생긴 문제 아님** — 6/14·6/27 배포에도 동일하게 존재했다.
+- **처치 후보**: (a) `deploy/.vercelignore`에 백업·시안 패턴 등재 (b) 백업을 `deploy/` 밖 별도 폴더로 이동. (b)는 백업 경로 관례를 바꾸므로 영향 범위가 크다.
+- **처리**: 지금 안 함(YAGNI). 실고객 0이고 검색 유입 경로도 없다.
+- **격상 트리거**: 정식 오픈 시 / 옛 가격표 관련 문의가 실제로 발생할 때.
+- **L 번호 부여 메모**: L13 다음 전역 일련번호(CLAUDE.md 학습 룰 #2)에 따라 L14 부여.
+- **2026-08-19 갱신**: 백업 2건(index_pre_faqabout_backup.html, pricing_pre_freelabel_backup.html)이 추가돼 deploy/ 최상위 .html이 23개에서 25개가 됐다. 신설 faq.html·about.html은 정식 페이지이므로 이 집계에 포함하지 않는다.
+- **2026-09-01 실측 갱신**: `C:\Users\PC\Downloads\congre\deploy` 직접 확인.
+  index 계열 12개(`index.html.backup`·`index.html.bak`·`index_pre_*_backup.html` 등),
+  pricing 계열 7개(`pricing_old_backup.html`·`pricing_pre_*_backup.html` 등),
+  `Landing v1~v4.html`, `index_v4.html`, `index_v5_r9_backup.html`이 배포 대상
+  폴더에 있다. 정적 배포이므로 `congre.kr/<파일명>` 형태로 공개 접근 가능하다.
+  `index_pre_mailorder_backup.html`·`index_pre_bizinfo_backup.html`에 사업자
+  정보·통신판매업 표기의 옛 버전이 남아 있을 가능성이 있으나 **내용은 확인하지
+  않았다**. 검색엔진 노출 여부도 미확인.
+- **처치 후보**: 삭제는 되돌릴 곳이 없어(git 밖) 위험하다. `vercel.json` 제외
+  규칙 또는 백업 파일을 `deploy/` 밖으로 이동하는 쪽이 안전하다.
+- **격상 트리거**: 토스 회신 수신 후 별도 트랙. 회신 대기 중에는 랜딩 재배포를
+  피한다.
+
 ## ✅ 랜딩 pricing에 재편집 기한(48시간)이 빠져 있다 (2026-09-01 해소)
 
 - **해소: 2026-09-01** — 토스 제작 기간 기재 작업과 함께 랜딩 각주를 3항목으로

@@ -9,6 +9,11 @@
   `privacy/page.tsx`의 `신고 면제 대상 (전자상거래법 제12조 제1항 단서)` 표기를
   교체했다. 주소 등 다른 항목과 시행일은 그대로 두었다. build 정적 페이지
   32/32, lint 12 errors + 3 warnings(기준선과 동일).
+- chore(landing): 랜딩 통신판매업신고번호 교체 + 배포 제외 규칙 신설 —
+  index·about·faq 4곳의 신고번호를 교체하고 `deploy/.vercelignore`를 신설해
+  백업·시안·운영 문서·작업 자료를 업로드에서 제외했다. `deploy/`는 git 밖이라
+  커밋 없음. `npx vercel --prod`로 `congre-landing` 프로젝트에 배포.
+  이 PC의 Vercel CLI 로그인이 풀려 첫 배포가 에러로 멈췄고, 로그인 후 재배포했다.
 
 ## 2026-09-01
 
