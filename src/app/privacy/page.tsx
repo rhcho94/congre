@@ -452,7 +452,7 @@ export default function PrivacyPage() {
                   </tr>
                   <tr>
                     <td className="border border-border px-3 py-2 font-medium text-foreground bg-surface">통신판매업신고번호</td>
-                    <td className="border border-border px-3 py-2">신고 면제 대상 (전자상거래법 제12조 제1항 단서)</td>
+                    <td className="border border-border px-3 py-2">제2026-성남분당B-0854호</td>
                   </tr>
                   <tr>
                     <td className="border border-border px-3 py-2 font-medium text-foreground bg-surface">연락처</td>
