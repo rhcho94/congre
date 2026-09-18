@@ -59,7 +59,6 @@ interface ApiEvent {
   videoTransition: string | null;
   showNames: boolean;
   bgmMood: string | null;
-  renderId: string | null;
   previousVideos?: PreviousVideo[];
 }
 
@@ -112,9 +111,7 @@ export default function EventDetailPage() {
   const [clips, setClips] = useState<ApiClip[]>([]);
   const [showCloseModal, setShowCloseModal] = useState(false);
   const [showRerenderModal, setShowRerenderModal] = useState(false);
-  const [showReopenModal, setShowReopenModal] = useState(false);
   const [closing, setClosing] = useState(false);
-  const [reopening, setReopening] = useState(false);
   const [lotteryOpen, setLotteryOpen] = useState(false);
   const [lotteryTargetCount, setLotteryTargetCount] = useState(1);
   const [lotteryWinners, setLotteryWinners] = useState<ApiClip[]>([]);
@@ -773,6 +770,11 @@ export default function EventDetailPage() {
   }
 
   async function handleClose() {
+    if (event?.plan === "paid") {
+      setShowCloseModal(false);
+      router.push(`/payment/${eventId}`);
+      return;
+    }
     setClosing(true);
     try {
       const idToken = await getFirebaseAuth().currentUser?.getIdToken();
@@ -785,40 +787,14 @@ export default function EventDetailPage() {
       if (!closeRes.ok) throw new Error(`close failed: ${closeRes.status}`);
       setShowCloseModal(false);
 
-      if (event?.plan === "paid") {
-        router.push(`/payment/${eventId}`);
-        return;
-      }
-
       if (clips.length > 0 && event) {
         await callRenderStart(idToken, eventId);
       }
 
-    } catch (err) {
-      console.error("[event-close] failed:", err);
+    } catch {
       alert("마감 처리 중 오류가 발생했습니다.");
     } finally {
       setClosing(false);
-    }
-  }
-
-  async function handleReopen() {
-    setReopening(true);
-    try {
-      const idToken = await getFirebaseAuth().currentUser?.getIdToken();
-      if (!idToken) throw new Error("인증 토큰 발급 실패");
-      const res = await fetch(`/api/events/${eventId}/reopen`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${idToken}` },
-      });
-      if (!res.ok) throw new Error(`reopen failed: ${res.status}`);
-      setShowReopenModal(false);
-      setEvent((prev) => (prev ? { ...prev, status: "open" } : prev));
-    } catch (err) {
-      console.error("[event-reopen] failed:", err);
-      alert("마감 취소 중 오류가 발생했습니다.");
-    } finally {
-      setReopening(false);
     }
   }
 
@@ -872,21 +848,12 @@ export default function EventDetailPage() {
           <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-6">
             <div className="notice max-w-sm w-full">
               <p className="display text-lg mb-3">정말 마감하시겠습니까?</p>
-              <p className="text-sm text-muted mb-3 leading-relaxed">
-                마감하면 참가자들이 더 이상 영상을 업로드할 수 없습니다.
-              </p>
-              <p className="text-sm text-muted mb-3">
-                업로드 {clips.length}개 중 {includedCount}개가 영상에 포함됩니다.
-              </p>
-              {includedCount === 0 && (
-                <p className="text-sm mb-4" style={{ color: "#e05252" }}>
-                  {clips.length === 0 ? "업로드된 클립이 없어 마감할 수 없어요." : "포함된 클립이 없어요. 제외를 해제해주세요."}
-                </p>
-              )}
               <p className="text-sm text-muted mb-6 leading-relaxed">
+                마감하면 참가자들이 더 이상 영상을 업로드할 수 없습니다.
+                <br />
                 <strong className="text-foreground">
                   {event.plan === "paid"
-                    ? "지금 마감이 확정되며, 다음 화면에서 결제를 진행합니다."
+                    ? "다음 화면에서 결제를 완료하면 마감됩니다. 결제 전에는 마감되지 않습니다."
                     : "이 작업은 되돌릴 수 없습니다."}
                 </strong>
               </p>
@@ -894,7 +861,7 @@ export default function EventDetailPage() {
                 <button onClick={() => setShowCloseModal(false)} disabled={closing} className="btn btn-secondary flex-1">
                   취소
                 </button>
-                <button onClick={handleClose} disabled={closing || includedCount === 0} className="btn flex-1" style={dangerBtnStyle}>
+                <button onClick={handleClose} disabled={closing} className="btn flex-1" style={dangerBtnStyle}>
                   {closing ? "처리 중..." : "마감 확인"}
                 </button>
               </div>
@@ -940,26 +907,6 @@ export default function EventDetailPage() {
                   className="btn btn-primary flex-1"
                 >
                   {closing ? "처리 중..." : event.plan === "paid" ? "결제하고 만들기" : "다시 만들기"}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Reopen confirmation modal */}
-        {showReopenModal && (
-          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-6">
-            <div className="notice max-w-sm w-full">
-              <p className="display text-lg mb-3">마감을 취소할까요?</p>
-              <p className="text-sm text-muted mb-6 leading-relaxed">
-                참가자가 다시 업로드할 수 있게 됩니다.
-              </p>
-              <div className="flex gap-3">
-                <button onClick={() => setShowReopenModal(false)} disabled={reopening} className="btn btn-secondary flex-1">
-                  취소
-                </button>
-                <button onClick={handleReopen} disabled={reopening} className="btn btn-primary flex-1">
-                  {reopening ? "처리 중..." : "다시 열기"}
                 </button>
               </div>
             </div>
@@ -1143,16 +1090,6 @@ export default function EventDetailPage() {
                   style={{ height: 40, padding: "0 16px", fontSize: 13 }}
                 >
                   {closing ? "처리 중..." : "영상 생성 다시 시작"}
-                </button>
-              )}
-              {event.status === "closed" && !event.renderId && (
-                <button
-                  onClick={() => setShowReopenModal(true)}
-                  disabled={reopening}
-                  className="btn btn-secondary"
-                  style={{ height: 40, padding: "0 16px", fontSize: 13 }}
-                >
-                  마감 취소하고 다시 열기
                 </button>
               )}
               {clips.length > 0 && (

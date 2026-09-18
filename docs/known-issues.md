@@ -2,16 +2,6 @@
 
 > 진행 중·보류·메모 항목만 둔다. 해결 완료 항목은 known-issues-resolved.md로 이동.
 
-## 결제 전 마감 방치 시 cleanup이 클립을 먼저 지운다
-
-- **현황**: `closedAt`이 결제 전에 기록되기 시작하면서 cleanup cron
-  (`src/app/api/cron/cleanup/route.ts:130-141`)이 `closed` 이벤트의 클립을
-  `closedAt` 기준으로 지운다. 유료 이벤트가 결제 전 마감 상태로 방치되면
-  클립이 먼저 삭제될 수 있다.
-- **영향**: 이 상태에서 마감을 되돌리면 클립이 없는 빈 이벤트가 된다.
-- **처리**: 실고객 0 단계라 현재는 차단하지 않는다.
-- **출처**: 2026-09-18 세션.
-
 ## SMS render_delayed 템플릿이 90바이트 제약을 초과
 
 - **현황**: `src/lib/notifications/sms-templates.ts:8-9` 주석이 모든 템플릿을 90바이트

@@ -292,7 +292,7 @@ export default function PaymentPage() {
 
             <button
               onClick={handlePay}
-              disabled={!agreed || !widgetReady || paying || prepared.clipCount === 0}
+              disabled={!agreed || !widgetReady || paying}
               className="btn btn-primary w-full"
             >
               {paying ? "결제 진행 중..." : `${prepared.amount.toLocaleString("ko-KR")}원 결제하기`}
