@@ -72,6 +72,7 @@ export async function GET(
       videoTransition: (data.videoTransition ?? null) as string | null,
       showNames: (data.showNames ?? false) as boolean,
       bgmMood: (data.bgmMood ?? null) as string | null,
+      renderId: (data.renderId ?? null) as string | null,
       previousVideos,
     });
   } catch (err) {
