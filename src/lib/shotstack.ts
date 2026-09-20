@@ -164,7 +164,7 @@ export async function createRender(
   const transitionsOut = pickSequence(transitionPool, clips.length);
 
   const videoClips = clips.map((clip, i) => ({
-    asset: { type: "video", src: clip.src, volumeEffect: "fadeInFadeOut" },
+    asset: { type: "video", src: clip.src, volumeEffect: "fadeInFadeOut", transcode: true },
     start: "auto",
     length: clip.length,
     fit: "contain",
