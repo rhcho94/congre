@@ -60,6 +60,8 @@ export async function GET(
       status: data.status as string,
       plan: (data.plan ?? null) as string | null,
       hostId: data.hostId as string,
+      unlocked: (data.unlocked ?? false) as boolean,
+      refundStatus: (data.refundStatus ?? null) as string | null,
       uploadToken: (data.uploadToken ?? undefined) as string | undefined,
       videoUrl,
       introText: (data.introText ?? null) as string | null,

@@ -47,6 +47,8 @@ interface ApiEvent {
   status: string;
   plan: string | null;
   hostId: string;
+  unlocked?: boolean;
+  refundStatus?: string | null;
   uploadToken?: string;
   videoUrl?: string;
   introText: string | null;
@@ -759,6 +761,8 @@ export default function EventDetailPage() {
         message = "서버 설정 오류로 영상 생성을 시작하지 못했어요. 운영자에게 문의해주세요.";
       } else if (code === "PAID_NOT_AVAILABLE") {
         message = "유료 플랜은 현재 준비 중입니다.";
+      } else if (code === "REFUND_LOCKED") {
+        message = "환불 대상으로 확정된 이벤트라 다시 만들 수 없어요. 카카오톡 @congre로 문의해 주세요.";
       } else {
         message = `영상 생성 시작에 실패했습니다 (${code ?? renderRes.status}). 운영자에게 문의해주세요.`;
       }
@@ -838,6 +842,8 @@ export default function EventDetailPage() {
 
   const isClosed = event.status !== "open";
   const includedCount = clips.filter((c) => !c.excludedAt).length;
+  const isFreeRestart = event.status === "closed" && event.unlocked === true;
+  const isRefundLocked = event.status === "closed" && event.plan === "paid" && event.refundStatus === "100";
 
   return (
     <>
@@ -880,7 +886,7 @@ export default function EventDetailPage() {
               <p className="text-sm text-muted mb-6">
                 현재 전체 {clips.length}개 중 {includedCount}개 포함
               </p>
-              {event.plan === "paid" && (
+              {event.plan === "paid" && !isFreeRestart && (
                 <p className="text-sm text-muted mb-6">
                   처음 결제 금액의 80%가 부과돼요. 참가자 영상 보관 기간(48시간)이 지나면 다시 만들 수 없어요.
                 </p>
@@ -897,7 +903,9 @@ export default function EventDetailPage() {
                 <button
                   onClick={() => {
                     setShowRerenderModal(false);
-                    if (event.plan === "paid") {
+                    if (isFreeRestart) {
+                      handleRestartRender();
+                    } else if (event.plan === "paid") {
                       router.push(`/payment/${eventId}`);
                     } else {
                       handleRestartRender();
@@ -906,7 +914,7 @@ export default function EventDetailPage() {
                   disabled={includedCount === 0 || closing}
                   className="btn btn-primary flex-1"
                 >
-                  {closing ? "처리 중..." : event.plan === "paid" ? "결제하고 만들기" : "다시 만들기"}
+                  {closing ? "처리 중..." : (event.plan === "paid" && !isFreeRestart) ? "결제하고 만들기" : "다시 만들기"}
                 </button>
               </div>
             </div>
@@ -1083,14 +1091,20 @@ export default function EventDetailPage() {
                 </button>
               )}
               {event.status === "closed" && clips.length > 0 && (
-                <button
-                  onClick={() => setShowRerenderModal(true)}
-                  disabled={closing}
-                  className="btn btn-primary"
-                  style={{ height: 40, padding: "0 16px", fontSize: 13 }}
-                >
-                  {closing ? "처리 중..." : "영상 생성 다시 시작"}
-                </button>
+                isRefundLocked ? (
+                  <p className="text-sm text-muted">
+                    환불 대상으로 확정된 이벤트라 다시 만들 수 없어요. 카카오톡 @congre로 문의해 주세요.
+                  </p>
+                ) : (
+                  <button
+                    onClick={() => setShowRerenderModal(true)}
+                    disabled={closing}
+                    className="btn btn-primary"
+                    style={{ height: 40, padding: "0 16px", fontSize: 13 }}
+                  >
+                    {closing ? "처리 중..." : "영상 생성 다시 시작"}
+                  </button>
+                )
               )}
               {clips.length > 0 && (
                 <button

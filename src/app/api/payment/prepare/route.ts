@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
   if (eventData.status === "open" && eventData.unlocked !== true) {
     mode = "first";
   } else if (
-    (eventData.status === "closed" || eventData.status === "done") &&
+    eventData.status === "done" &&
     eventData.unlocked === true
   ) {
     mode = "rerender";

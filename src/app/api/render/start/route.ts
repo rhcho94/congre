@@ -54,6 +54,11 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "PAID_NOT_AVAILABLE" }, { status: 403 });
   }
 
+  if (plan === "paid" && eventData.status === "closed" && eventData.refundStatus === "100") {
+    console.error("[render/start] blocked: refund 100 locked", { eventId });
+    return Response.json({ error: "REFUND_LOCKED" }, { status: 403 });
+  }
+
   const clipsSnap = await db.collection("clips").where("eventId", "==", eventId).get();
 
   if (clipsSnap.empty) {
