@@ -774,7 +774,7 @@ export default function EventDetailPage() {
   }
 
   async function handleClose() {
-    if (event?.plan === "paid") {
+    if (event?.plan === "paid" && event?.unlocked !== true) {
       setShowCloseModal(false);
       router.push(`/payment/${eventId}`);
       return;
@@ -842,6 +842,7 @@ export default function EventDetailPage() {
 
   const isClosed = event.status !== "open";
   const includedCount = clips.filter((c) => !c.excludedAt).length;
+  const needsPayment = event.plan === "paid" && event.unlocked !== true;
   const isFreeRestart = event.status === "closed" && event.unlocked === true;
   const isRefundLocked = event.status === "closed" && event.plan === "paid" && event.refundStatus === "100";
 
@@ -858,7 +859,7 @@ export default function EventDetailPage() {
                 마감하면 참가자들이 더 이상 영상을 업로드할 수 없습니다.
                 <br />
                 <strong className="text-foreground">
-                  {event.plan === "paid"
+                  {needsPayment
                     ? "다음 화면에서 결제를 완료하면 마감됩니다. 결제 전에는 마감되지 않습니다."
                     : "이 작업은 되돌릴 수 없습니다."}
                 </strong>
