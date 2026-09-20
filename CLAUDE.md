@@ -105,7 +105,7 @@ CD 자체 학습 자료: https://support.claude.com/en/articles/14604416-get-sta
 ### 검증 게이트 (커밋 전 필수)
 본 앱 atomic 커밋 전:
 1. `npm run build` — 빌드 통과
-2. `npm run lint` — errors 0 (warnings 개수 기존과 동일)
+2. `npm run lint` — baseline 대비 delta 0 (현 baseline은 `docs/known-issues.md` "본 앱 lint errors baseline" 항목)
 
 랜딩 atomic 변경 전:
 - `index.html` 브라우저 로컬 점검 (`python3 -m http.server` 또는 VS Code Live Server)

@@ -2,6 +2,30 @@
 
 > 기능 단위 작업 이력. 최신이 위.
 
+## 2026-09-20
+
+- fix(payment): 렌더 실패 후 재과금 차단 + 전액 환불 이벤트 재시작 잠금 (`fc1e487`) —
+  `status: "closed"` + `unlocked: true`는 "결제(또는 쿠폰)했으나 성공한 렌더가 없음"만을
+  뜻하는데, 재시작 모달이 이 상태에서도 결제 페이지로 보내 `prepare`가 재렌더(최초 결제액
+  80%)로 판정했다. `prepare`의 재렌더 판정을 `done`으로 한정하고, 대시보드는 이 상태에서
+  결제 대신 무료로 렌더를 다시 시작한다. `refundStatus: "100"`인 유료 마감 이벤트는
+  `render/start`가 403 `REFUND_LOCKED`로 막고 대시보드는 안내 문구를 띄운다. host GET에
+  `unlocked`·`refundStatus` 추가. build 정적 페이지 32/32, lint 12 errors + 3 warnings
+  (기준선과 동일). 프로덕션 실화면 T1~T4 통과.
+- fix(dashboard): 쿠폰 이벤트 마감 시 결제 페이지로 가던 문제 수정 (`495e047`) —
+  `handleClose`가 `plan === "paid"`만 보고 쿠폰 이벤트(`unlocked: true`)도 결제 페이지로
+  보내 400 `INVALID_EVENT_STATE`로 막혔다. 2026-08-13 `16e3afc`부터 있던 버그. 결제 필요
+  판정을 `plan === "paid" && unlocked !== true`로 바꿔 쿠폰 이벤트는 무료 플랜과 같이
+  close → render/start로 진행한다. 마감 모달 결제 안내 문구도 같은 기준. build 32/32,
+  lint delta 0. 실화면 통과. 같은 날 베타 쿠폰 이벤트 1건은 Firestore 수동 마감으로 우회했다.
+
+## 2026-09-18
+
+- revert(payment): 유료 이벤트 결제 전 마감 + 클립 0개 차단 (`3615b9b` → `5ff0661`) —
+  결제 전 마감이 `closed` + `unlocked: false`를 만들어, `status === "open"`을 요구하는
+  `prepare`의 최초 결제 분기에 맞지 않아 400으로 유료 결제가 막혔다. 같은 날 롤백.
+  되살릴 때는 `3615b9b`의 diff(코드·문서) 참조. 재시도 일정 미정.
+
 ## 2026-09-16
 
 - fix(legal): 약관·개인정보처리방침의 통신판매업신고번호를 신고번호로 교체 —
