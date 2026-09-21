@@ -47,7 +47,7 @@ export default async function SharePage({ params }: Props) {
   const status = data.status as string;
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
   const shareUrl = `${appUrl}/share/${eventId}`;
-  const logoUrl = `${appUrl}/logo.png`;
+  const shareImageUrl = `${appUrl}/og-image.png`;
 
   const isReady = status === "done" && !!videoS3Key;
   const videoUrl = isReady ? await getVideoPresignedUrl(videoS3Key!) : undefined;
@@ -70,7 +70,7 @@ export default async function SharePage({ params }: Props) {
                 className="w-full"
                 style={{ aspectRatio: "9/16", background: "#0c0b09", borderRadius: "var(--r-md)" }}
               />
-              <ShareActions eventTitle={title} shareUrl={shareUrl} logoUrl={logoUrl} />
+              <ShareActions eventTitle={title} shareUrl={shareUrl} shareImageUrl={shareImageUrl} />
             </>
           ) : (
             <div className="flex flex-col items-center gap-3 py-16 text-center" style={scrim}>

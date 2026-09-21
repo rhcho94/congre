@@ -11,10 +11,10 @@ interface KakaoInstance {
 interface Props {
   eventTitle: string;
   shareUrl: string;
-  logoUrl: string;
+  shareImageUrl: string;
 }
 
-export function ShareActions({ eventTitle, shareUrl, logoUrl }: Props) {
+export function ShareActions({ eventTitle, shareUrl, shareImageUrl }: Props) {
   const [kakaoReady, setKakaoReady] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
 
@@ -47,7 +47,7 @@ export function ShareActions({ eventTitle, shareUrl, logoUrl }: Props) {
         content: {
           title: eventTitle,
           description: "Congre로 만든 영상입니다 🎬",
-          imageUrl: logoUrl,
+          imageUrl: shareImageUrl,
           link: { mobileWebUrl: shareUrl, webUrl: shareUrl },
         },
       });

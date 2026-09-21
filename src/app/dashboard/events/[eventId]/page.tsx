@@ -579,7 +579,7 @@ export default function EventDetailPage() {
         content: {
           title: event.title,
           description: "Congre로 만든 영상입니다 🎬",
-          imageUrl: `${appUrl}/logo.png`,
+          imageUrl: `${appUrl}/og-image.png`,
           link: {
             mobileWebUrl: shareUrl,
             webUrl: shareUrl,
