@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
         console.error("[payment/confirm] failed to mark order stale:", err);
       }
       return Response.json(
-        { error: "CLIP_COUNT_CHANGED", savedCount: order.clipCount, currentCount, newAmount },
+        { error: "CLIP_COUNT_CHANGED", eventId, savedCount: order.clipCount, currentCount, newAmount },
         { status: 409 }
       );
     }

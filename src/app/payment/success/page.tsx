@@ -83,6 +83,7 @@ function PaymentSuccessContent() {
           const msg = confirmBody?.message;
 
           if (confirmRes.status === 409 && code === "CLIP_COUNT_CHANGED") {
+            setEventId(confirmBody.eventId ?? null);
             setClipCountInfo({
               savedCount: confirmBody.savedCount ?? 0,
               currentCount: confirmBody.currentCount ?? 0,
@@ -182,11 +183,24 @@ function PaymentSuccessContent() {
               <p className="text-xs text-muted mb-6 leading-relaxed">
                 결제 준비 시점 {clipCountInfo.savedCount}개 → 현재 {clipCountInfo.currentCount}개로 바뀌어
                 결제가 진행되지 않았습니다. 새 금액은 {clipCountInfo.newAmount.toLocaleString("ko-KR")}원입니다.
-                대시보드에서 다시 결제를 진행해 주세요.
+                {eventId
+                  ? " 아래 버튼으로 새 금액을 확인하고 다시 결제해 주세요."
+                  : " 대시보드에서 이벤트를 열어 다시 결제를 진행해 주세요."}
               </p>
-              <Link href="/dashboard" className="btn btn-secondary">
-                대시보드로 이동
-              </Link>
+              {eventId ? (
+                <div className="flex flex-col gap-3">
+                  <Link href={`/payment/${eventId}`} className="btn btn-primary">
+                    새 금액으로 결제하기
+                  </Link>
+                  <Link href="/dashboard" className="btn btn-secondary">
+                    대시보드로 이동
+                  </Link>
+                </div>
+              ) : (
+                <Link href="/dashboard" className="btn btn-secondary">
+                  대시보드로 이동
+                </Link>
+              )}
             </>
           )}
 
