@@ -2,6 +2,23 @@
 
 > 기능 단위 작업 이력. 최신이 위.
 
+## 2026-09-21
+
+- fix(render): 참가자 클립에 `transcode: true` 적용 (`59d10a2`) — 인트로·아웃트로 텍스트가
+  있는 이벤트에서 세로 촬영 클립이 완성본에 90도 누워 나왔다. 폰 영상은 픽셀이 가로로
+  저장되고 "90도 돌려 재생하라"는 회전 메타데이터가 따로 붙는데, timeline에 `rich-text`
+  asset이 들어가면 Shotstack이 이 메타데이터를 적용하지 않았다. Shotstack 공식 스키마
+  `videoasset.yaml`의 `transcode` 필드(설명에 "fix rotation problems" 명시)로 프리프로세싱
+  단계에서 강제 재인코딩해 해결했다. `shotstack.ts:167` 한 줄. build 정적 페이지 32/32,
+  lint 12 errors + 3 warnings(기준선과 동일). 프로덕션 실측 통과.
+- fix(share): 카카오 공유 카드 이미지를 `logo.png` → `og-image.png`로 통일 (`4bb80a7`) —
+  링크를 붙여넣었을 때 뜨는 OG 미리보기는 `og-image.png`(1200×630, 사람들 사진 + 문구)인데
+  카카오톡 버튼(`Kakao.Share.sendDefault`)은 `logo.png`(회색 배경 로고)를 보내 같은 영상을
+  공유하는데 카드 그림이 달랐다. 두 경로는 별개다 — OG는 카카오 스크랩 봇이 메타태그를
+  읽고, `sendDefault`는 JS가 `content.imageUrl`을 직접 넘긴다. 완성 페이지와 대시보드 두
+  입구를 같은 이미지로 맞추고, `logoUrl` 변수·prop을 `shareImageUrl`로 고쳤다.
+  build 32/32, lint delta 0.
+
 ## 2026-09-20
 
 - fix(payment): 렌더 실패 후 재과금 차단 + 전액 환불 이벤트 재시작 잠금 (`fc1e487`) —

@@ -2,6 +2,131 @@
 
 > 진행 중·보류·메모 항목만 둔다. 해결 완료 항목은 known-issues-resolved.md로 이동.
 
+## 세로 클립 회전 문제의 원인이 규명되지 않았다
+
+- **현황**: 인트로·아웃트로 텍스트(`rich-text`)가 있으면 세로 클립이 눕고 없으면 정상인
+  것까지는 실험으로 확정했으나, 내부 메커니즘은 모른다. 두 가설이 남아 있다.
+  H1 — `rich-text`가 트랙의 첫 클립이라 영상이 두 번째로 밀려서.
+  H2 — timeline에 `rich-text` 또는 `timeline.fonts`가 존재하기만 해도.
+- **렌더 0건으로 가르는 방법**: 무료 플랜 워터마크(`shotstack.ts:250-266`)는 `rich-text`를
+  `tracks.unshift`로 **별도 트랙**에 붙이고 `fonts`도 함께 붙는다(`:154`). 즉 무료 플랜
+  이벤트는 텍스트가 없어도 `rich-text` + `fonts`를 갖지만 영상은 자기 트랙의 첫 클립
+  자리를 유지한다. "무료 플랜 + 인트로 텍스트 없음 + 세로 클립" 완성본의 방향을 확인하면
+  된다. 누움 → H2 / 정상 → H1.
+- **주의**: 워터마크는 `length: "end"`라 영상과 시간축이 겹치지만 인트로 텍스트(0~3초)는
+  겹치지 않는다. "겹침 여부"가 제3의 변수라면 이 판정은 무효다.
+- **영향**: 현재 `transcode: true`가 증상을 덮고 있다. Shotstack이 근본 동작을 고쳐도 우리는
+  재인코딩 비용을 계속 낸다. 되돌릴 근거가 없다.
+- **처리**: 등재만.
+- **격상 트리거**: 렌더 비용·시간이 문제가 될 때 / 렌더 경로를 다시 손댈 때.
+- **출처**: 2026-09-21 세션. decisions/rendering.md 2026-09-21 항목.
+
+## makeMediaClip에 transcode가 적용되지 않았다
+
+- **현황**: `src/lib/shotstack.ts:97-113`의 `makeMediaClip`이 호스트 인트로·아웃트로 미디어를
+  만드는데 `transcode` 필드가 없다. 참가자 클립(`:167`)에만 적용했다.
+- **미확인**: 2026-09-21 테스트에서 인트로 미디어 조합은 정상이었으나, 그 파일에 회전
+  메타데이터가 있었는지 확인하지 않았다. 없었다면 테스트가 이 경로를 검증하지 못한 것이다.
+- **영향**: 호스트가 폰으로 세로로 찍은 영상을 인트로·아웃트로로 올리면 같은 증상이 날 수 있다.
+- **참고**: 이 함수는 반환 타입이 명시 선언돼 있어(`:101-107`) 필드를 추가할 때 타입도 함께
+  고쳐야 한다.
+- **처리**: 등재만.
+- **격상 트리거**: 호스트 인트로 영상에서 회전 증상이 보고될 때.
+- **출처**: 2026-09-21 세션.
+
+## probe baseUrl에 /edit/ 누락 의심
+
+- **현황**: Shotstack 공식 OAS(`paths/probe.yaml`)는 probe의 base URL을
+  `https://api.shotstack.io/edit/{version}`으로 문서화한다. 우리 코드
+  (`src/lib/shotstack.ts:23-26`)는 `https://api.shotstack.io/v1` / `.../stage`로
+  **`/edit/`가 빠져 있다**. 렌더용 `baseUrl`(`:19-21`)에는 들어 있다.
+- **조용한 실패 구조**: `probeDurationSec`은 실패 시 `null`을 반환하고(`:47-50`), 호출부는
+  `null`이면 기본 동작으로 떨어진다(`render/start:168-172`). 404여도 화면에는 아무 표시가
+  없다. BGM·인트로 영상 길이 측정이 계속 실패하고 있어도 모른다.
+- **확인 방법**: Vercel 대시보드 Logs 탭에서 렌더 시각 구간을 `probe`로 검색.
+  `[shotstack] probe non-OK: 404` 가 보이면 실제 버그다.
+- **미확인**: 과거에 `/v1/probe/` 경로도 받았을 가능성이 있어 단정하지 않는다.
+- **처리**: 등재만.
+- **격상 트리거**: 로그 확인 후 / probe 경로를 손댈 때.
+- **출처**: 2026-09-20 세션.
+
+## Vercel Preview 환경에 SHOTSTACK_API_KEY가 없다
+
+- **현황**: Production 스코프에만 있고 Preview에는 없다. `resolveShotstackEnv`
+  (`shotstack.ts:5-14`)는 `VERCEL_ENV`가 production이 아니면 stage로 떨어지므로, Preview
+  배포는 stage 엔드포인트로 가되 키가 없어 `assertApiKey`가 던진다.
+- **영향**: 브랜치 push만으로 테스트 렌더를 돌릴 수 없다. 렌더 경로를 바꿀 때마다
+  프로덕션 환경변수를 직접 바꿨다 되돌리거나 프로덕션에서 바로 시험해야 한다.
+- **참고**: API 키 변수는 `SHOTSTACK_API_KEY` 하나뿐인데 Shotstack은 stage와 production
+  키가 다르다. Preview 스코프에 stage 키를 넣으면 해소된다.
+- **처리**: 등재만.
+- **격상 트리거**: 렌더 경로를 다시 손댈 때.
+- **출처**: 2026-09-20~21 세션.
+
+## NEXT_PUBLIC_APP_URL이 비면 카카오 공유 imageUrl이 상대 경로가 된다
+
+- **현황**: `share/[eventId]/page.tsx:50`과 `dashboard/events/[eventId]/page.tsx:582`가
+  `${appUrl}/og-image.png`로 이미지 URL을 만든다. `appUrl`은
+  `process.env.NEXT_PUBLIC_APP_URL ?? ""`이라 비면 `/og-image.png`라는 상대 경로가 되고,
+  카카오 서버는 이걸 가져갈 수 없다.
+- **비대칭**: 같은 함수의 `shareUrl`에는 폴백이 있지만(`dashboard:576`) `imageUrl`에는 없다.
+- **영향**: 환경변수 누락 시 카드 이미지가 안 뜬다. 에러도 안 난다.
+- **처리**: 등재만.
+- **격상 트리거**: 공유 경로를 다시 손댈 때 / 환경변수 구성이 바뀔 때.
+- **출처**: 2026-09-21 세션.
+
+## 카카오 SDK를 버전 없는 kakao.min.js로 로드한다 (2곳)
+
+- **현황**: `share/[eventId]/ShareActions.tsx:27`과
+  `dashboard/events/[eventId]/page.tsx:337`이 `https://developers.kakao.com/sdk/js/kakao.min.js`
+  를 `integrity` 속성 없이 동적 삽입한다. 버전 고정이 없다.
+- **영향**: 카카오가 SDK를 바꾸면 예고 없이 동작이 달라질 수 있고, 무결성 검증이 없다.
+- **처리**: 등재만.
+- **격상 트리거**: CSP 도입 시 함께 / 공유 기능 장애 발생 시.
+- **출처**: 2026-09-21 세션.
+
+## cleanup이 S3 삭제 실패를 삼키고 썸네일은 아예 지우지 않는다
+
+- **현황**: `cron/cleanup/route.ts:21-32`의 `deleteClipsAndMarkEvent`가 `deleteS3Object`
+  실패를 `console.warn`으로만 남기고 Firestore clips 문서는 그대로 지운다. 문서가 사라지면
+  `s3Key`를 잃어 재시도할 근거가 없다. 그리고 clips 문서의 `thumbKey`(썸네일 S3 키)를
+  삭제하는 코드가 없다.
+- **영향**: S3에 고아 파일이 남는다. 참가자 원본 영상과 썸네일 모두 개인정보 파기와
+  연결된 경로다.
+- **관련**: known-issues "cleanup:36 S3 삭제 실패 시에도 Firestore 문서 삭제 강행"과 같은
+  축이며, 썸네일 누락이 새로 확인된 부분이다.
+- **처리**: 등재만.
+- **격상 트리거**: cleanup을 다시 손댈 때 / 개인정보 파기 점검 시.
+- **출처**: 2026-09-21 세션.
+
+## 갤럭시 HDR(HLG 10bit) 클립의 완성본 표현이 미확인
+
+- **현황**: Galaxy S26 Ultra / Android 16이 `.mp4` HEVC **10bit HLG**로 저장한다(MediaInfo
+  실측). 완성본은 `format: "mp4"`, `quality: "high"`(`shotstack.ts:329-333`)로 나간다.
+  HDR 소스가 SDR 출력으로 변환될 때 색이 어떻게 표현되는지 확인하지 않았다.
+- **추가 변수**: 2026-09-21부터 `transcode: true`가 걸려 재인코딩을 한 번 더 거친다.
+- **영향**: 색이 바래거나 어둡게 나올 수 있다. 실제 증상 보고는 없다.
+- **처리**: 등재만.
+- **격상 트리거**: 색상 관련 호스트 문의 발생 시.
+- **출처**: 2026-09-21 세션.
+
+## 이벤트별 인트로 이미지 OG 라우트의 실동작이 미확인
+
+- **현황**: `/api/og-image/<eventId>`는 이벤트에 `introMediaType === "image"`인
+  `introMediaKey`가 있으면 S3 객체 바이트를 서빙하고, 없거나 실패하면
+  `https://app.congre.kr/og-image.png`로 **302 리다이렉트**한다(`route.ts:5-9,25`).
+  이 라우트가 실제로 인트로 이미지를 서빙하는 경로를 타는 것을 확인한 적이 없다.
+- **미확인 2**: 카카오 스크래퍼가 302 리다이렉트를 따라가는지 확인하지 못했다. 카카오 공식
+  문서가 조사 환경에서 접근 차단이라 이미지 fetch 실패 시 동작(기본 이미지 대체 여부)도
+  원문으로 못 읽었다.
+- **왜 중요한가**: 카카오 공유 카드를 `og-image.png` 공용 이미지 대신 이벤트별 인트로
+  이미지로 바꾸는 안(안 A)의 전제다. 이 둘이 확인돼야 2단계로 갈 수 있다.
+- **관련**: known-issues "L10 OG 이미지 프록시 — scout 실측 확정 3건 + fallback 문서 드리프트",
+  decisions/misc.md 2026-09-21 항목.
+- **처리**: 등재만.
+- **격상 트리거**: 카카오 공유 카드 2단계 착수 시.
+- **출처**: 2026-09-21 세션.
+
 ## 환불 집행 코드가 없다 — 수동 처리 추정
 
 - **현황**: `src/app/api/`에 토스 결제취소 API(`/v1/payments/{paymentKey}/cancel`) 호출이

@@ -35,7 +35,7 @@ npx firebase emulators:start --only firestore
 
 - Next.js (TypeScript, App Router)
 - Firebase Auth + Firestore (project: congre-mvp, Blaze 요금제)
-- AWS S3 (bucket: congre-mvp-videos)
+- AWS S3 (bucket: congre-mvp-videos, region: ap-southeast-2)
 - Shotstack (AI 영상 편집) — production 키 적용. rich-text asset으로 한글 인트로/아웃트로 렌더.
 - `public/fonts/NotoSansKR-Regular.ttf` — 한글 렌더링용 커스텀 TTF (SIL OFL). Shotstack `timeline.fonts` 소스.
 - `public/fonts/CormorantGaramond-Italic.ttf` — Shotstack 워터마크용 italic 세리프 TTF (SIL OFL). 무료 플랜 워터마크 `timeline.fonts` 소스.
@@ -136,7 +136,7 @@ Legacy 별칭: `--surface`=`var(--surface-1)`, `--border`=`var(--hairline-strong
   응답에서 자체적으로도 부착. CSP·Content-Disposition은 미도입(known-issues 등재).
   `middleware.ts` 없음.
 - 한글 인트로/아웃트로 (이벤트 생성 폼 입력 → Firestore 저장 → Shotstack rich-text 클립 삽입, NotoSansKR TTF 호스팅)
-- 자동 삭제 cron (`/api/cron/cleanup`, KST 03:00 daily) — 클립 24h, 완성본 7d. 멱등성 마커: clipsDeletedAt, videoDeletedAt. 완성본 S3 객체 실제 삭제는 2026-07-12(33430b6)에 복구됨 — Track ⑦ 저장 위치 이전 시 누락됐던 드리프트.
+- 자동 삭제 cron (`/api/cron/cleanup`, `vercel.json` 기준 `0 18 * * *` = UTC 18:00, KST 익일 03:00 1회) — 원본 클립은 `participantNotifiedAt` + **48시간**(`status: "done"` 이벤트 한정), 완성본은 배열 원소별 `doneAt` + 7일, 마감 후 정체(`closed`·`rendering`)는 `closedAt` + 7일. 세 시계가 서로 다른 필드를 기산점으로 쓴다. 멱등성 마커: clipsDeletedAt, videoDeletedAt. 완성본 S3 객체 실제 삭제는 2026-07-12(33430b6)에 복구됨 — Track ⑦ 저장 위치 이전 시 누락됐던 드리프트.
 - 이용약관 / 개인정보처리방침 페이지 (`/terms`, `/privacy`) — v0.1 시행. 푸터 링크. 변경 이력은 `docs/legal/CHANGELOG.md`.
 - **마이페이지 P1·P2·P3·P4** (`/mypage` — 이벤트 요약 + 프로필 표시 + name·phone 수정 + 비밀번호 변경 + 회원 탈퇴. dashboard nav 링크. 2026-05-20)
 - 참가자 영상 클립 음량 페이드 (volumeEffect: fadeInFadeOut, BGM mixing 영역)

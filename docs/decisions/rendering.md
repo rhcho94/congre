@@ -4,6 +4,53 @@
 
 > 재렌더 유료화 관련 클립 시계·결제 흐름 결정은 `decisions/market-product.md` 2026-08-16 항목에 있다.
 
+## 2026-09-21 — 세로 클립 90도 회전 대응으로 `transcode: true` 채택
+
+- **결정**: 참가자 클립 asset에 `transcode: true`를 붙인다(`shotstack.ts:167`). Shotstack이
+  프리프로세싱 단계에서 강제 재인코딩하며 회전 메타데이터를 픽셀에 굽는다. 커밋 `59d10a2`.
+- **근거**: Shotstack 공식 스키마 `schemas/videoasset.yaml`의 `transcode` 필드 설명 원문에
+  "This can help resolve compatibility issues, **fix rotation problems**, synchronize audio,
+  or convert formats"가 들어 있다. 벤더가 이 증상을 겨냥해 만든 유일한 API 레벨 스위치다.
+- **기각 1 — `transform.rotate`로 직접 회전**: 가능하지만 `fit`/`scale`과의 적용 순서,
+  각도 부호(+90/-90), 세로 출력에 맞추는 스케일 보정이 전부 공식 문서에 없다. 공식 예제도
+  45도 장식용뿐이라 시행착오 렌더가 여러 번 필요하다. `transcode`는 한 줄로 끝난다.
+- **기각 2 — Ingest API `fixRotation`**: 실존하는 옵션이고 설명 문구도 우리 증상을 정확히
+  겨냥한다("smartphones that have orientation metadata that may not work correctly with
+  certain video editing software, including the Shotstack Edit API"). 그러나 `POST /sources`
+  등록 → 비동기 변환 완료 대기 → 결과 URL을 Edit 클립 `src`로 사용하는 단계를 새로 만들어야
+  하고, Shotstack 스토리지에 원본 사본이 쌓여 삭제 로직 대응이 추가로 필요하다. 과금·보관
+  정책도 미확인이다. `transcode`로 충분하면 불필요하다.
+- **기각 3 — 텍스트 asset type 교체**: `title`·`html`·`text` 모두 공식 deprecated이고
+  (2026-08-11 OAS v1.15.0) Shotstack이 전부 `rich-text`로 가라고 안내한다. 갈아탈 대상이 없다.
+- **원인 규명은 미룬다**: 텍스트 유무로 갈리는 내부 메커니즘은 규명하지 않았다. 두 가설이
+  남아 있다 — H1(rich-text가 트랙의 첫 클립이라 영상이 두 번째로 밀림) / H2(timeline에
+  rich-text 또는 `fonts`가 존재하기만 해도). `transcode`는 어느 쪽이든 동작하므로 증상
+  해결을 먼저 했다. 규명은 known-issues "세로 클립 회전 문제의 원인이 규명되지 않았다"로 이월.
+- **비용 트레이드오프**: 원인을 모르는 채 증상을 덮는 선택이다. Shotstack이 근본 동작을
+  고쳐도 우리는 재인코딩 비용을 계속 낸다. 되돌릴 근거를 만들려면 위 규명이 선행돼야 한다.
+- **실측 근거 (프로덕션, 2026-09-20~21)**:
+  - 세로 촬영 클립의 구조 — 픽셀은 가로로 저장되고 회전 메타데이터가 따로 붙는다.
+    iPhone 15 Pro / iOS 26.7: `.mov`, H.264, 1920×1080, Rotation 90.
+    Galaxy S26 Ultra / Android 16: `.mp4`, HEVC 10bit HLG, 3840×2160, Rotation 90.
+    둘 다 MediaInfo 실측.
+  - 같은 클립 파일로 인트로·아웃트로 텍스트 유무만 바꾼 실험 — 텍스트 있으면 누움,
+    없으면 정상. 원인이 `rich-text` 관련임을 확정했다.
+  - `transcode: true` 적용 후 — 텍스트 있음/없음 모두 정상(이중 회전 없음), 한글 인트로
+    폰트 정상, 인트로 텍스트 + 인트로 미디어 2트랙 조합도 정상. 렌더 시간 체감 변화 없음
+    (단 클립 1개짜리 테스트 기준이며, 클립 다수 이벤트에서는 재측정 필요).
+- **기각된 가설 (다시 밟지 말 것)**:
+  - "Shotstack이 회전 메타데이터를 원래 무시한다" — 틀림. 텍스트 없는 이벤트는 정상이다.
+    한 이벤트만 보고 일반화한 오류였다.
+  - "업로드 과정에서 파일이 변형된다" — 틀림. 원본 blob이 가공 없이 S3로 간다
+    (`upload/[eventId]/page.tsx:257-284`, canvas는 썸네일 전용).
+  - "`videoFilter` 등 이벤트 설정 차이" — 틀림. 두 이벤트 모두 해당 필드 자체가 없었다.
+  - "`useDualTrack`이 텍스트 유무로 갈린다" — 틀림. 실제는 **미디어** 기준이다
+    (`shotstack.ts:144-146`). 두 이벤트 모두 단일 트랙 분기를 탔다.
+  - `fit` 값 변경(`contain`/`crop`/`cover`) — 회전과 무관한 축이다. 참고로 Shotstack의
+    `cover`는 CSS와 달리 비율 무시 stretch이고, 비율 유지 크롭은 `crop`이다.
+- **범위 밖**: 호스트 인트로·아웃트로 미디어를 만드는 `makeMediaClip`
+  (`shotstack.ts:97-113`)에는 넣지 않았다. known-issues 참조.
+
 ## 2026-08-07 — 인트로/아웃트로 미디어 상한 크기 100MB · 영상 길이 15초로 확정
 
 ### 결정
