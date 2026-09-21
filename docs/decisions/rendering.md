@@ -50,6 +50,15 @@
     `cover`는 CSS와 달리 비율 무시 stretch이고, 비율 유지 크롭은 `crop`이다.
 - **범위 밖**: 호스트 인트로·아웃트로 미디어를 만드는 `makeMediaClip`
   (`shotstack.ts:97-113`)에는 넣지 않았다. known-issues 참조.
+- **probe 경로 수정은 묶어서 미룬다**: `probeBaseUrl`의 `/v1` → `/edit/v1` 수정을 지금
+  하지 않고 위 `makeMediaClip` transcode 작업과 묶는다. 이유는 둘이다. (1) 현재 동작
+  중이다 — Vercel Logs 2026-09-07~09-21 Console Level Error 0건이고 같은 기간 production
+  렌더가 있었으므로 레거시 경로가 응답하고 있다. 급하지 않다. (2) 두 작업의 비용 대부분이
+  production 검증 렌더인데, 같은 파일(`shotstack.ts`)을 고치고 같은 방식으로 검증하므로
+  렌더 1회를 공유할 수 있다. Preview 환경에 `SHOTSTACK_API_KEY`가 없어 테스트 렌더를
+  따로 못 돌리는 제약이 이 판단을 굳혔다. 커밋은 각각 따로 한다.
+  **감수한 위험**: 그 작업 전에 레거시 경로가 닫히면 렌더는 성공한 채 BGM 끊김·자막
+  어긋남으로 품질만 조용히 떨어진다. 증상 목록은 known-issues에 기록했다.
 
 ## 2026-08-07 — 인트로/아웃트로 미디어 상한 크기 100MB · 영상 길이 15초로 확정
 

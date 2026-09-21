@@ -30,25 +30,41 @@
 - **영향**: 호스트가 폰으로 세로로 찍은 영상을 인트로·아웃트로로 올리면 같은 증상이 날 수 있다.
 - **참고**: 이 함수는 반환 타입이 명시 선언돼 있어(`:101-107`) 필드를 추가할 때 타입도 함께
   고쳐야 한다.
-- **처리**: 등재만.
+- **처리**: 등재만. 착수 시 "probe baseUrl이 공식 스펙과 다르다" 항목의 경로 수정과 같은
+  검증 렌더로 묶어 진행한다.
 - **격상 트리거**: 호스트 인트로 영상에서 회전 증상이 보고될 때.
 - **출처**: 2026-09-21 세션.
 
-## probe baseUrl에 /edit/ 누락 의심
+## probe baseUrl이 공식 스펙과 다르다 — 스펙 불일치, 현재 동작함 (2026-09-21 판정)
 
-- **현황**: Shotstack 공식 OAS(`paths/probe.yaml`)는 probe의 base URL을
-  `https://api.shotstack.io/edit/{version}`으로 문서화한다. 우리 코드
-  (`src/lib/shotstack.ts:23-26`)는 `https://api.shotstack.io/v1` / `.../stage`로
-  **`/edit/`가 빠져 있다**. 렌더용 `baseUrl`(`:19-21`)에는 들어 있다.
-- **조용한 실패 구조**: `probeDurationSec`은 실패 시 `null`을 반환하고(`:47-50`), 호출부는
-  `null`이면 기본 동작으로 떨어진다(`render/start:168-172`). 404여도 화면에는 아무 표시가
-  없다. BGM·인트로 영상 길이 측정이 계속 실패하고 있어도 모른다.
-- **확인 방법**: Vercel 대시보드 Logs 탭에서 렌더 시각 구간을 `probe`로 검색.
-  `[shotstack] probe non-OK: 404` 가 보이면 실제 버그다.
-- **미확인**: 과거에 `/v1/probe/` 경로도 받았을 가능성이 있어 단정하지 않는다.
-- **처리**: 등재만.
-- **격상 트리거**: 로그 확인 후 / probe 경로를 손댈 때.
-- **출처**: 2026-09-20 세션.
+- **사실**: production `probeBaseUrl`은 `https://api.shotstack.io/v1`이다
+  (`src/lib/shotstack.ts:23-26`, stage는 `.../stage`). 공식 스펙의 base URL은
+  `https://api.shotstack.io/edit/{version}`(version enum: `v1` | `stage`)이며 경로는
+  `/probe/{url}`이다. 출처는 `shotstack/oas-api-definition`의 `paths/probe.yaml`과
+  `api.oas3.yaml` 원문. 같은 파일의 렌더용 `baseUrl`(`:18-21`)에는 `/edit/`가 들어 있다.
+  즉 probe만 `/edit/`가 빠져 있다.
+- **판정 근거 (버그 아님)**: Vercel Logs, 2026-09-07~09-21(2주 구간), 검색어 없이
+  Console Level Error **0건**. 같은 기간 production 렌더가 존재한다
+  (2026-09-21 10:52 `POST /api/render/start` 200). probe는 렌더마다 BGM으로 **최소 1회**
+  호출되고(`render/start:169`, `bgmSrc`는 항상 생성됨), HTTP non-OK는 `console.error`로
+  기록된다(`shotstack.ts:48`). 에러가 한 건도 없으므로 **레거시 경로가 현재 응답 중**이다.
+- **판정의 한계**: 200을 받았는데 `success !== true`이거나 `duration`이 비정상인 경우는
+  로그 없이 `null`을 반환한다(`shotstack.ts:51`, `:54`). 이 경우는 로그로 탐지할 수 없다.
+  성공 시 로그도 없다.
+- **레거시 경로가 닫히면 나타날 증상** — 렌더는 성공하고 화면에는 아무 표시가 없다:
+  - 로그에 `[shotstack] probe non-OK:` 출현
+  - BGM이 loop 트랙 대신 `timeline.soundtrack` 폴백(`shotstack.ts:288`, `:319-324`)
+    → `0003a1d`(2026-06-14) 이전의 끊김 재발 가능
+  - 인트로 영상이 있을 때 참가자 이름 자막이 앞으로 어긋남
+    (`captionStartOffset`이 0으로 남음, `shotstack.ts:186-188`)
+  - BGM loop 개수 과소 계산(`shotstack.ts:269-283`의 `totalDuration`)
+  → **BGM 끊김이나 자막 어긋남이 다시 보고되면 이 항목부터 의심한다.**
+- **처리 방침**: 경로를 `/edit/`로 맞추는 수정은 "makeMediaClip에 transcode가 적용되지
+  않았다" 항목과 **묶어서** 진행한다. 커밋은 각각 따로 하되 production 검증 렌더 1회를
+  공유한다. Preview 환경에 `SHOTSTACK_API_KEY`가 없어 테스트 렌더를 따로 돌릴 수 없기
+  때문이다.
+- **격상 트리거**: 위 증상 중 하나가 보고될 때 / 묶인 작업에 착수할 때.
+- **출처**: 2026-09-20 등재, 2026-09-21 판정.
 
 ## Vercel Preview 환경에 SHOTSTACK_API_KEY가 없다
 
