@@ -4,6 +4,36 @@
 
 ## 2026-09-21
 
+- fix(payment): 클립 0개 결제 차단을 `prepare` 서버 가드로 원복 (`987e5d5`) —
+  2026-08-24 토스 심사 대응으로 뺐던 가드(`f58281d`)를 되돌렸다. 심사 트랙이 끝나 가드를
+  제거한 사유가 사라졌고, 그 사이 "결제는 되는데 렌더만 실패"하는 경로가 열려 있었다
+  (2026-09-21 10:49 재현: 결제 승인 후 `render/start`가 400 `NO_CLIPS`). `clipCount === 0`이면
+  400 `NO_CLIPS`를 돌려주며, mode 판정 뒤에 있어 최초 결제·재렌더 두 경로에 모두 적용된다.
+  도달 불가가 된 클립 0개 경고 배너는 삭제했다. build 정적 페이지 32/32, lint 12 errors +
+  3 warnings(기준선과 동일). 실화면에서 "업로드된 영상이 없어 결제할 수 없습니다." 확인.
+- fix(logging): 토스 승인 거절과 렌더 시작 실패에 서버 로그 추가 (`e523b29`) —
+  로그 없이 4xx·5xx만 돌려주던 세 곳을 메웠다. `confirm`의 토스 거절 분기는
+  `orderId`·HTTP 상태·토스 `code`·`message`를 남기고(`paymentKey`와 응답 본문 전체는 제외),
+  `render/start`의 `createRender` catch와 대시보드 재렌더 버튼 catch에는 CLAUDE.md:155
+  형식대로 `console.error`를 넣었다. 대시보드 쪽은 바인딩 없는 `catch {}`를 `catch (err)`로
+  바꿨다. 동작 변경 없음. build 32/32, lint delta 0.
+- fix(payment): 409 `CLIP_COUNT_CHANGED`에서 결제 페이지로 직행 (`9dd3a04`) —
+  클립 수가 바뀌어 결제가 멈췄을 때 안내가 `/dashboard` 링크만 줘서, 고객이 대시보드에서
+  [마감하기]를 다시 찾아 눌러야 했다. 409 응답 본문에 `eventId`를 추가하고(값은 주문 문서의
+  `order.eventId`) 409 화면에 [새 금액으로 결제하기] → `/payment/{eventId}` 버튼을 넣었다.
+  409 시점에 이벤트가 `open`으로 남으므로 `prepare`가 다시 최초 결제로 받아 새 금액·새
+  주문을 만든다. `eventId`가 없을 때는 기존 대시보드 링크만 표시한다. build 32/32,
+  lint delta 0. 테스트 키로 결제 → 409 → 재결제 → 렌더 → 편집 완료까지 종단 검증.
+- docs: probe baseUrl 판정 반영 (`8e5eb2f`) — 공식 스펙은
+  `https://api.shotstack.io/edit/{version}`인데 코드는 `/edit/`가 빠진 `/v1`을 쓴다. Vercel Logs
+  2026-09-07~09-21 구간 Console Level Error 0건 + 같은 기간 production 렌더 존재로
+  레거시 경로가 응답 중임을 확인해 "버그 의심"에서 "스펙 불일치, 현재 동작함"으로 판정을
+  바꿨다. 경로 수정은 `makeMediaClip` transcode 작업과 묶어 production 검증 렌더 1회를
+  공유하기로 했다.
+- docs: CC 보고 형식 규칙 추가 (`6c3da92`) — CC의 정찰·실행 보고를 백틱 4개 코드 블록
+  하나에 담는다는 규칙을 CLAUDE.md 「응답 스타일」에 넣었다. 운영자가 복사 버튼 한 번으로
+  채팅 클로드에 넘기기 위함.
+
 - fix(render): 참가자 클립에 `transcode: true` 적용 (`59d10a2`) — 인트로·아웃트로 텍스트가
   있는 이벤트에서 세로 촬영 클립이 완성본에 90도 누워 나왔다. 폰 영상은 픽셀이 가로로
   저장되고 "90도 돌려 재생하라"는 회전 메타데이터가 따로 붙는데, timeline에 `rich-text`
