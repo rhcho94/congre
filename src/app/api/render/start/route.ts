@@ -195,6 +195,7 @@ export async function POST(request: NextRequest) {
       })(),
     );
   } catch (err) {
+    console.error("[render/start] failed:", { eventId, error: err });
     const msg = err instanceof Error ? err.message : "render_failed";
     return Response.json({ error: msg }, { status: 500 });
   }

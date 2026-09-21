@@ -808,7 +808,8 @@ export default function EventDetailPage() {
       const idToken = await getFirebaseAuth().currentUser?.getIdToken();
       if (!idToken) throw new Error("인증 토큰 발급 실패");
       await callRenderStart(idToken, eventId);
-    } catch {
+    } catch (err) {
+      console.error("[render-restart] failed:", err);
       alert("영상 생성 시작 중 오류가 발생했습니다.");
     } finally {
       setClosing(false);

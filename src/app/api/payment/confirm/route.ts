@@ -107,6 +107,7 @@ export async function POST(request: NextRequest) {
   }
 
   if (!tossRes.ok) {
+    console.error("[payment/confirm] toss confirm non-OK:", { orderId, status: tossRes.status, code: tossJson?.code, message: tossJson?.message });
     try {
       await orderRef.update({ status: "failed" });
     } catch (err) {
