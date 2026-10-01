@@ -369,7 +369,7 @@ export default function TermsPage() {
             <p>사업자등록번호: 412-19-02824</p>
             <p>사업장 주소: 경기도 성남시 분당구 미금로 36, 201호 A82호 (구미동, 브리엘프라자)</p>
             <p>통신판매업신고번호: 제2026-성남분당B-0854호</p>
-            <p>연락처: 010-7582-2020</p>
+            <p>연락처: 010-5891-7583</p>
             <p>
               이메일:{" "}
               <a href="mailto:ray@rayne.co.kr" className="text-accent hover:underline">

@@ -2,6 +2,17 @@
 
 > 기능 단위 작업 이력. 최신이 위.
 
+## 2026-10-01
+
+- chore(legal): 외부 노출 연락처를 `010-7582-2020` → `010-5891-7583`으로 교체 — 홈페이지
+  노출용 번호를 새로 개통해 교체했다(Ray). 본 앱 2곳(`terms/page.tsx` 사업자 정보,
+  `privacy/page.tsx` 사업자 정보 표) + 랜딩 4곳(`index.html` 푸터, `about.html` 사업자 정보
+  블록·푸터, `faq.html` 푸터)에 같은 하이픈 표기로 넣었고, 초안 문서
+  `docs/legal/terms-privacy-v1.0-draft.md` 연락처 행도 함께 맞췄다. 랜딩 백업 파일·과거
+  handoff 기록·내부 알림 번호 `CONGRE_INTERNAL_PHONE`·Firestore `betaCoupons` 문서 ID는
+  외부에 노출되지 않아 유지했다. 약관·개인정보처리방침 시행일 `2026년 9월 1일`은 그대로.
+  SMS 발신번호(`SOLAPI_SENDER`)·토스 가맹점 정보·카카오 채널 프로필은 Ray 작업.
+
 ## 2026-09-21
 
 - fix(payment): 클립 0개 결제 차단을 `prepare` 서버 가드로 원복 (`987e5d5`) —

@@ -456,7 +456,7 @@ export default function PrivacyPage() {
                   </tr>
                   <tr>
                     <td className="border border-border px-3 py-2 font-medium text-foreground bg-surface">연락처</td>
-                    <td className="border border-border px-3 py-2">010-7582-2020</td>
+                    <td className="border border-border px-3 py-2">010-5891-7583</td>
                   </tr>
                   <tr>
                     <td className="border border-border px-3 py-2 font-medium text-foreground bg-surface">이메일</td>
