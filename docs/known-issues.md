@@ -329,6 +329,47 @@
 - **격상 트리거**: 알림 문자 비용이 유의미해지는 시점 / SMS 템플릿을 다시 손대게 될 때.
 - **출처**: 2026-08-17 세션.
 
+## 무료 이벤트에도 render_delayed 알림이 "결제 4시간 후 50% 환불" 문구로 발송된다
+
+- **현황**: `render_delayed`는 `expectedCompletedAt` 하나만 보고 발송된다
+  (`src/app/api/cron/check-render-deadlines/route.ts:53-58`). 이 필드는 `render/start`에서
+  무료·유료 구분 없이 기록되고(`src/app/api/render/start/route.ts:212`), cron 조회 조건도
+  `status == "rendering"` 하나뿐이어서 plan 필터가 없다
+  (`src/app/api/cron/check-render-deadlines/route.ts:21`). 그래서 결제하지 않은 무료 이벤트
+  호스트도 렌더가 추정 시간을 넘기면 결제·환불 문구를 받는다.
+- **채널 2곳 모두 해당**: SMS는 `src/lib/notifications/sms-templates.ts:15-16`
+  "편집 지연 중. 결제 4시간 후 50% 환불 확정." 이메일도 같다 — plain text
+  `src/lib/notifications/scenarios/render-delayed.ts:26` "결제 후 4시간이 지나도록 완료되지
+  않으면 50% 환불이 확정됩니다", HTML 본문 `src/emails/render-delayed.ts:27` "결제 후 4시간이
+  지나도록 완료되지 않을 경우 결제 금액의 50%가 자동으로 환불 확정". SMS만의 문제가 아니다.
+- **refund 계열과 구조가 다르다**: `refund_50`·`refund_100`은 결제 시에만 기록되는
+  `refund50At`·`refund100At`을 보므로(`cron/check-render-deadlines/route.ts:71`, `:89`) 필드
+  부재 시 비교식이 거짓이 되어 무료가 가드 코드 없이 걸러진다 — known-issues-resolved.md의
+  2026-08-14 `6e18ddd` 기록. `render_delayed`는 그 구조 밖에 있다.
+- **영향**: 결제하지 않은 고객이 환불 안내를 받는다. 문의·혼선을 유발한다.
+- **발동 조건**: 렌더가 `renderEstimateMin`을 넘길 때. 이 값은 최소 15분이다
+  (`src/app/api/render/start/route.ts:203`).
+- **처리**: 등재만.
+- **관련**: 바로 위 "SMS render_delayed 템플릿이 90바이트 제약을 초과" 항목과 같은 템플릿이다.
+  문안을 다시 설계할 때 두 건을 함께 고친다.
+- **격상 트리거**: 위 90바이트 항목과 같다 — SMS 템플릿을 다시 손대게 될 때. 추가로 무료
+  이벤트 호스트에게서 이 문자 관련 문의가 들어올 때.
+- **출처**: 2026-10-01 세션 (SOLAPI_SENDER 교체 전 "결제 없이 SMS가 나가는 경로" 정찰).
+
+## participant-result.ts 주석이 실제 연결 상태와 어긋남
+
+- **현황**: `src/lib/notifications/scenarios/participant-result.ts:14` 주석이 "Trigger not
+  connected yet — will be wired in a future PR when participant contact collection is built."인데,
+  실제로는 `src/app/api/cron/check-rendering/route.ts:146`에서 호출되어 참가자 전화번호로
+  SMS가 나간다. 수신 대상은 제외(`excludedAt`)되지 않은 클립의 `uploaderPhone` distinct
+  집합이다(`cron/check-rendering/route.ts:136-143`).
+- **영향**: 동작 영향 없음. 주석을 믿으면 "참가자에게는 문자가 안 나간다"고 오판할 수 있다.
+  실발송 테스트 시 호스트뿐 아니라 참가자 폰으로도 나간다.
+- **처리**: 등재만. 해당 파일을 다른 이유로 수정할 때 주석도 함께 고친다.
+- **관련**: 같은 유형(주석이 실태와 어긋남)의 랜딩 항목 L16이 있다. 본 항목은 본 앱 파일이라
+  L 번호 체계(랜딩 페이지 영역) 밖이다.
+- **출처**: 2026-10-01 세션.
+
 ## 재렌더 시 refundStatus가 "none"으로 되돌아감
 
 - **현황**: `src/app/api/render/start/route.ts`의 update 블록이 `refundStatus: "none"`을
