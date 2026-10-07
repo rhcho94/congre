@@ -26,13 +26,13 @@
 - 로컬 경로: `C:\Users\PC\Downloads\congre\deploy`
 - GitHub: 없음 (git 외부). 변경 이력은 Vercel Deployments 탭이 유일
 - 배포: Vercel 프로젝트 `congre-landing`, 도메인 `https://congre.kr` + `https://www.congre.kr`
-- 자산: `deploy/videos/` (영상 5개) + `.image-slots.state.json` (이미지 41장 base64)
+- 자산: deploy/site.css(공통 스타일), deploy/media/(데모 영상 v2·사진), deploy/videos/wedding_2.mp4
 
 ## 기술 스택
 
 본 앱: Next.js (App Router) + TypeScript, Tailwind v4 (config 없음, @import 방식), Firebase, AWS S3, Shotstack, Vercel.
 
-랜딩: 단일 `index.html` + 인라인 CSS/JS + `image-slot.js` (이미지 슬롯 컴포넌트). 정적 호스팅.
+랜딩: 정적 HTML 4페이지(index·about·faq·pricing) + 공통 site.css + 짧은 인라인 스크립트. 정적 호스팅.
 
 폰트: UI Gowun Dodum, 펜 글씨 Nanum Pen Script (둘 다 Google Fonts OFL). 영상 한글 NotoSansKR(`public/fonts/NotoSansKR-Regular.ttf`), 영상 워터마크 Nanum Pen(`public/fonts/NanumPenScript-Regular.ttf`).
 
@@ -59,7 +59,7 @@
 |---|---|---|
 | 코드 형태 | Next.js 컴포넌트 분산 | 단일 index.html |
 | 형상관리 | git (`rhcho94/congre`) | git 외부 (현재) |
-| 변경 도구 | CC (직접 코드 수정·커밋) | CD에서 zip 생성 → 로컬 풀어덮기 |
+| 변경 도구 | CC (직접 코드 수정·커밋) | CC 직접 수정(2026-10-07부터. CD zip 덮어쓰기 금지) |
 | 배포 트리거 | git push → Vercel 자동 | `npx vercel --prod --yes` 수동 |
 | 도메인 | app.congre.kr | congre.kr, www.congre.kr |
 

@@ -170,38 +170,28 @@ npx firebase emulators:start --only firestore
 - Vercel 프로젝트: `congre-landing`
 - 작업 폴더: `C:\Users\PC\Downloads\congre\deploy` (git 외부)
 - 배포 명령: `npx vercel --prod --yes`
-- 변경 도구: CD (Claude Design)에서 zip 받아 로컬 풀어덮기 후 배포
+- 변경 도구: CC 직접 수정 (2026-10-07 전면 개편부터. CD zip 덮어쓰기 금지)
 - 변경 이력: Vercel Deployments 탭 (git 외부)
 
 ### 자산 인벤토리
 
-영상 (`deploy/videos/`):
-- demo.mp4 — Hero 완성본 샘플 (2026-06-27 가로 16:9 폰 목업 인라인 + 음소거 토글). 4:3(1440×1080) 파일에 16:9 콘텐츠+상하 띠 → known-issues L11
-- wedding_1.mp4 — Showcase 마퀴 결혼식 (결혼식 레퍼런스. 옛 "Hero 영상" 라벨은 2026-06-27 히어로 재구성으로 무효)
-- wedding_2.mp4 — Bento 결혼식 타일, 다국어 셀카
-- wedding_intro.mp4 — 결혼식 인트로
-- graduation.mp4 — Bento 졸업식 타일, 중학교 졸업 + How it works LIVE·EDITING 과정 영상(2026-06-27 히어로→How 이동)
-- challenge.mp4 — Bento 챌린지·모임 타일, K-pop 챌린지
+지금 쓰는 것만:
+- `site.css` — 4페이지 공통
+- `media/` — demo-v2.mp4, poster, ch0~5, final, selfie-m·f, occasion-dol·birth·grad
+- `videos/wedding_2.mp4` — 완성본 예시 재생
+- `images/og-image.png` — 결혼식판
+- `favicon.ico`·`apple-touch-icon.png`
 
-이미지: `.image-slots.state.json` (base64 인코딩, 41장)
-- 졸업식 20장 + 결혼식 20장 + K-pop 10장 = 운영자 결정 (2026-05-30) — 41장 충분, L2 known-issue 해소 처리 (known-issues-resolved.md 2026-05-27 항목)
+폴더에 남아 있지만 쓰지 않는 것(videos의 demo·wedding_1·wedding_intro·graduation·challenge, images의 png 4개, image-slot.js·.image-slots.state.json, uploads/*.jpg 3개): 미사용, 배포에는 포함(.vercelignore 정리는 별도).
 
-### 8섹션 흐름
+### 6섹션 흐름 (2026-10-07)
 
-Hero / Showcase / How it works / Why now / Moments / Occasions / Testimonials / Trust / CTA / Footer
+소개 / 50초로 보는 하루 / 완성본 예시 / 다른 행사 / 후기 / 시작하기
 
-(2026-05-30 V5 R10 swap — Showcase가 Hero 직후로 이동. 결과물 hook 먼저 → 동작 → 비교 흐름. decisions/landing.md 2026-05-30 (10))
-
-(data-screen-label 라벨 중복 이슈는 known-issues 랜딩 영역 L1, 2026-05-27 해소)
-
-### 히어로 재구성 (2026-06-27)
-
-- 헤드라인 "이 순간을 영원히, **영상 방명록**" (옛 "행사가 끝나기 전에, 영상이 나옵니다" 폐기). 배지 "QR 스캔 → 촬영 → 행사 영상 완성" (옛 "LIVE·AI 영상 메이커" 폐기).
-- CTA 1개로 축소 — 상단바 "시작하기" + 히어로 "1분 데모 보기" 삭제, "무료로 시작하기"만 유지.
-- 완성본 샘플 `demo.mp4`를 히어로에 인라인: 가로 16:9 폰 목업 `.hero-demo-phone`(showcase-phone 패턴 변형) + 음소거 토글 `.hero-mute-toggle`. demo.mp4 띠 처리는 known-issues L11.
-- 옛 히어로의 **LIVE·EDITING 과정 영상은 더 이상 히어로에 없음** — `vid-main`(graduation.mp4 배경 + AI 진행률 오버레이)을 How it works 섹션으로 이동. `.howto` 100vh 높이 잠금(max-height/overflow) 해제.
-- 배포: www.congre.kr (랜딩 git 외부 트랙). 핸드오프 docs/handoff/2026-06-27-landing-hero-redesign.md.
+(옛 8섹션 흐름·히어로 재구성 내용은 decisions/landing.md에 이력으로 남아 있다.)
 
 ### 추가 페이지
 
-- `/pricing` (= `deploy/pricing.html`) — Pricing Section.html로 통째 교체. 가격 4장 카드 (무료·소형·중형·라지) + footnote 박힘. Pretendard 톤 (V5 일관). 라이브 반영 `www.congre.kr/pricing`. 2026-05-30. 직전 리드 폼 영역은 별도 트랙으로 분리 (본 앱 `/api/lead` 백엔드는 유지).
+- `/pricing`: 요금 계산기(무료·유료·별도 문의), 2026-10-07 공통 디자인·푸터 적용
+- `/faq`: 자주 묻는 질문 10문항 3그룹(details/summary 아코디언), 2026-10-07 공통 디자인 적용
+- `/about`: 서비스 소개·문의·사업자 정보, 2026-10-07 공통 디자인 적용
