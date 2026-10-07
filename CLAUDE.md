@@ -34,7 +34,7 @@
 
 랜딩: 단일 `index.html` + 인라인 CSS/JS + `image-slot.js` (이미지 슬롯 컴포넌트). 정적 호스팅.
 
-폰트: 본문 Pretendard, 디스플레이 Cormorant Garamond italic, 한글 NotoSansKR (영상은 `public/fonts/NotoSansKR-Regular.ttf`).
+폰트: UI Gowun Dodum, 펜 글씨 Nanum Pen Script (둘 다 Google Fonts OFL). 영상 한글 NotoSansKR(`public/fonts/NotoSansKR-Regular.ttf`), 영상 워터마크 Nanum Pen(`public/fonts/NanumPenScript-Regular.ttf`).
 
 주요 의존성·환경변수는 `docs/PROJECT.md` 참조.
 
@@ -165,21 +165,20 @@ CD 자체 학습 자료: https://support.claude.com/en/articles/14604416-get-sta
 
 ## 디자인 토큰 (CSS 변수)
 
-라이트 테마가 기본(`:root`). 다크는 `[data-theme="dark"]` 스코프로 업로드·공유 화면에만 적용. 정의 위치: `src/app/globals.css` (값은 2026-06-17 실값 기준).
+라이트 단일 테마(`:root`). 다크 테마(`[data-theme="dark"]`)는 2026-10-07 폐지 진행 중(업로드·공유 화면 정리 커밋에서 삭제 — 삭제 커밋에서 이 줄을 "다크 테마 폐지(2026-10-07)"로 고친다). 정의 위치: `src/app/globals.css`. 기준: `docs/decisions/design.md`.
 
-**라이트 기본(:root)**
-- 배경: `var(--bg)` (#f4f1ea) + 전역 `body::before` bgflow 14s 파스텔 그라데이션(#b9a8e6·#98c6ea·#f0a8d0·#a0ddc8·#e6d68f)
-- Surface: `var(--surface-1)` (#ffffff), `var(--surface-2)` (#f0ece2), `var(--surface-3)` (#e8e2d5)
-- 액센트: `var(--accent)` (#E8794A, 주황), `var(--accent-hi)` (#ef8a5d) — 골드 #c8892c는 폐기(다크 스코프에만 잔존)
-- 텍스트: `var(--text)` (#1a1612), `var(--text-dim)` (#3d362e), `var(--muted)` (#6b635a)
-- 헤어라인: `var(--hairline)`, `var(--hairline-strong)`
-- 폰트: `var(--font-body)`=Pretendard(본문), `var(--font-display)`=Cormorant Garamond(next/font 주입), 영상 한글 NotoSansKR
+- 바탕 `--bg` #EEF4FB (단색, 움직이는 배경 없음)
+- 표면 `--surface-1` #FFFFFF, `--surface-2` #F5F8FC, `--surface-3` #E6EDF7, 종이 `--paper` #FFFFFF
+- 잉크(액센트) `--accent` #1F3C9C, `--accent-hi` #152B73, `--accent-soft` rgba(31,60,156,0.10)
+- 글자 `--text` #222222, `--text-dim` #333333, 보조 `--muted` #4A5468
+- 선 `--hairline`/`--line` #C9D6EA, 입력 테두리 `--hairline-strong`/`--field` #7F92B8
+- 위험 `--danger` #A61B1B. 펜 `--pen-red` #C62828 · `--pen-green` #2E7D32 · `--pen-purple` #6A1B9A · `--pen-brown` #8D4E00. 테이프 `--tape` rgba(255,214,102,0.6)
+- 글꼴: UI 전부 Gowun Dodum 400(`--font-body`=`--font-display`), 펜 글씨 Nanum Pen Script(`--font-pen`). 로고는 글꼴이 아니라 SVG(BrandName)
+- 모양: 버튼 6px, 입력칸 6px·높이 50px, 카드 직각 1px 선, 상태는 점 + 글자
+- 공통 클래스: `.btn`/`.btn-primary`/`.btn-secondary`/`.btn-danger`/`.btn-quiet`/`.btn-kakao`, `.input`, `.panel`·`.notice`·`.glass-panel`(셋 다 같은 종이 카드. glass는 이름만 남음), `.badge`(점 + 글자), `.pen`
 - Legacy 별칭: `--surface`=`var(--surface-1)`, `--border`=`var(--hairline-strong)`, `--accent-bright`=`var(--accent-hi)`
-- 글로벌 유틸: `.glass-panel`(frosted glass + inset sheen + fractalNoise grain), `.glow-accent`, `.rule`
 
-**다크 오버라이드(`[data-theme="dark"]`)**: --bg #0c0b09 / --surface-1 #151310 / --accent #c8892c(골드) 등 12개 변수 재정의.
-
-랜딩 트랙은 이 토큰을 인라인으로 사용 (CSS 변수 없으면 hex 직접). 본 앱 토큰과 동기 유지.
+랜딩(`deploy/site.css`)도 같은 값을 쓴다. 둘을 바꿀 때는 함께 바꾼다.
 
 ## 채팅 인계 (HANDOVER) 규약
 
@@ -216,6 +215,7 @@ docs/
 │   ├── infra.md
 │   ├── data-flow.md
 │   ├── landing.md          (랜딩 영역, 2026-05-27 신규)
+│   ├── design.md           (룩앤필·토큰·로고, 2026-10-07 신규)
 │   └── misc.md
 ├── known-issues.md         진행 중 이슈
 ├── known-issues-resolved.md 해결된 이슈 아카이브

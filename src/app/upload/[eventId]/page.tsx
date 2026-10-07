@@ -542,8 +542,7 @@ function UploadInner() {
                     style={{
                       aspectRatio: "9 / 16",
                       maxHeight: "58vh",
-                      background: "color-mix(in srgb, var(--surface-1) 70%, transparent)",
-                      backdropFilter: "blur(8px)",
+                      background: "var(--surface-1)",
                       border: "2px solid var(--hairline-strong)",
                       borderRadius: "var(--r-md)",
                     }}
@@ -577,8 +576,7 @@ function UploadInner() {
                     style={{
                       aspectRatio: "9 / 16",
                       maxHeight: "58vh",
-                      background: "color-mix(in srgb, var(--surface-1) 70%, transparent)",
-                      backdropFilter: "blur(8px)",
+                      background: "var(--surface-1)",
                       border: "2px solid var(--hairline-strong)",
                       borderRadius: "var(--r-md)",
                     }}

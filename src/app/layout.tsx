@@ -1,12 +1,18 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond } from "next/font/google";
+import { Gowun_Dodum, Nanum_Pen_Script } from "next/font/google";
 import "./globals.css";
 
-const cormorant = Cormorant_Garamond({
-  variable: "--font-display",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
-  style: ["normal", "italic"],
+const gowun = Gowun_Dodum({
+  variable: "--font-gowun",
+  weight: "400",
+  preload: false,
+  display: "swap",
+});
+
+const nanumPen = Nanum_Pen_Script({
+  variable: "--font-nanum-pen",
+  weight: "400",
+  preload: false,
   display: "swap",
 });
 
@@ -20,13 +26,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="ko" className={cormorant.variable}>
-      <head>
-        <link
-          rel="stylesheet"
-          href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
-        />
-      </head>
+    <html lang="ko" className={`${gowun.variable} ${nanumPen.variable}`}>
       <body className="min-h-screen">{children}</body>
     </html>
   );

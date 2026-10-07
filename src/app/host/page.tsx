@@ -244,7 +244,7 @@ export default function HostPage() {
               {resetOpen && (
                 <div
                   className="fixed inset-0 z-50 flex items-center justify-center px-6"
-                  style={{ background: "rgba(12,11,9,0.8)", backdropFilter: "blur(4px)" }}
+                  style={{ background: "rgba(12,11,9,0.8)" }}
                   onClick={() => setResetOpen(false)}
                 >
                   <div

@@ -1,42 +1,56 @@
 @import "tailwindcss";
 
 :root {
-  /* ───────── 베이스 & 표면 (라이트, 2026-06-16 전환) ───────── */
-  --bg: #f4f1ea;
-  --surface-1: #ffffff;
-  --surface-2: #f0ece2;
-  --surface-3: #e8e2d5;
+  /* ───────── 베이스 & 표면 (롤링페이퍼안, 2026-10-07. 기준: docs/decisions/design.md) ───────── */
+  --bg: #EEF4FB;
+  --surface-1: #FFFFFF;
+  --surface-2: #F5F8FC;
+  --surface-3: #E6EDF7;
+  --paper: #FFFFFF;
 
-  /* ───────── 브랜드 (주황, 랜딩 통일) ───────── */
-  --accent: #E8794A;
-  --accent-hi: #ef8a5d;
-  --accent-soft: #E8794A1f;
-  --warm: oklch(0.68 0.16 35);
-  --warm-soft: oklch(0.68 0.16 35 / 0.18);
+  /* ───────── 잉크 (액센트) ───────── */
+  --accent: #1F3C9C;
+  --accent-hi: #152B73;
+  --accent-soft: rgba(31,60,156,0.10);
+  --warm: #C62828;
+  --warm-soft: rgba(198,40,40,0.10);
 
   /* ───────── 텍스트 ───────── */
-  --text: #1a1612;
-  --text-dim: #3d362e;
-  --muted: #6b635a;
+  --text: #222222;
+  --text-dim: #333333;
+  --muted: #4A5468;
 
-  /* ───────── 헤어라인 (솔리드 보더 대신) ───────── */
-  --hairline: rgba(26, 22, 18, 0.08);
-  --hairline-strong: rgba(26, 22, 18, 0.14);
+  /* ───────── 선 ───────── */
+  --hairline: #C9D6EA;
+  --hairline-strong: #7F92B8;
+  --line: #C9D6EA;
+  --field: #7F92B8;
+
+  /* ───────── 위험·펜·장식 ───────── */
+  --danger: #A61B1B;
+  --pen-red: #C62828;
+  --pen-green: #2E7D32;
+  --pen-purple: #6A1B9A;
+  --pen-brown: #8D4E00;
+  --tape: rgba(255,214,102,0.6);
+  --dot-gray: #8A93A6;
 
   /* ───────── 카카오 ───────── */
   --kakao: #fee500;
   --kakao-ink: #181600;
 
-  /* ───────── 타이포 ───────── */
-  --serif: "Cormorant Garamond", "Noto Serif KR", serif;
-  --sans: "Pretendard Variable", Pretendard, system-ui, sans-serif;
-  --pretendard: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', sans-serif;
-  --font-body: "Pretendard Variable", Pretendard, system-ui, sans-serif;
+  /* ───────── 타이포 (Gowun Dodum 400 하나, 펜 글씨 Nanum Pen Script. next/font 변수는 layout.tsx) ───────── */
+  --serif: var(--font-gowun), "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --sans: var(--font-gowun), "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --pretendard: var(--font-gowun), "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --font-body: var(--font-gowun), "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --font-display: var(--font-gowun), "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --font-pen: var(--font-nanum-pen), "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
 
   /* ───────── radius ───────── */
-  --r-sm: 14px;
-  --r-md: 22px;
-  --r-lg: 28px;
+  --r-sm: 6px;
+  --r-md: 0;
+  --r-lg: 0;
 
   /* ───────── 레이아웃 ───────── */
   --content: 1240px;
@@ -49,7 +63,7 @@
   --accent-bright: var(--accent-hi);
 }
 
-/* ───────── 다크 스코프 (upload/share 2화면 한정) ───────── */
+/* ───────── 다크 스코프 (upload/share 2화면 한정 — 2026-10-07 폐지 진행 중) ───────── */
 [data-theme="dark"] {
   --bg: #0c0b09;
   --surface-1: #151310;
@@ -96,84 +110,53 @@
   box-sizing: border-box;
 }
 
+/* Gowun Dodum은 굵기가 400 하나라, 남은 font-medium/semibold/bold·<strong>이 가짜 굵게로 뭉개지지 않게 한다. */
+html {
+  font-synthesis: none;
+}
+
 body {
-  background: transparent;
+  background: var(--bg);
   color: var(--text);
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
 }
 
-/* 전역 그라데이션 배경 (라이트 화면 베이스). 다크 화면은 내부 PageBackdrop 사진(z:-10)이 이 레이어(z:-11)를 덮음. */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -11;
-  background: linear-gradient(-45deg, #b9a8e6, #98c6ea, #f0a8d0, #a0ddc8, #e6d68f, #b9a8e6);
-  background-size: 400% 400%;
-  animation: bgflow 14s ease infinite;
-}
-@keyframes bgflow {
-  0%   { background-position: 0% 50%; }
-  50%  { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
+/* 움직임 줄이기 설정이면 애니메이션·전환을 사실상 끈다 (Tailwind 유틸리티·인라인을 이기려고 !important). */
 @media (prefers-reduced-motion: reduce) {
-  body::before { animation: none; }
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
-/* Film grain overlay — 라이트 베이스에서 거슬려 전 화면 OFF. 다크 화면 grain 유지 여부는 실측 영역. */
-body::after {
-  display: none;
-  content: '';
-  position: fixed;
-  inset: -50%;
-  width: 200%;
-  height: 200%;
-  opacity: 0.038;
-  pointer-events: none;
-  z-index: 9999;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.78' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E");
-  background-size: 256px 256px;
-  animation: grain 0.45s steps(2) infinite;
-}
-
-@keyframes grain {
-  0%, 100% { transform: translate(0, 0); }
-  20%       { transform: translate(-1.5%, 1%); }
-  40%       { transform: translate(1.5%, -1%); }
-  60%       { transform: translate(-1%, 1.5%); }
-  80%       { transform: translate(1%, -1.5%); }
-}
-
-/* Decorative rule used across pages (legacy) */
+/* 구분선 (legacy) */
 .rule {
   width: 100%;
   height: 1px;
-  background: linear-gradient(90deg, transparent, var(--border) 20%, var(--border) 80%, transparent);
+  background: var(--hairline);
 }
 
 /* ─────────────────────────────────────────────────────────────
-   공통 컴포넌트 클래스 (CD 명세 — 14개 화면 공유 영역)
-   정의만. 화면 파일 적용은 다음 커밋(2/2).
+   공통 컴포넌트 클래스 (2026-10-07 롤링페이퍼안)
    ───────────────────────────────────────────────────────────── */
 
-/* 제목 — 랜딩 Hero와 동일 (Pretendard 700 normal). CD 명세의 serif italic은 무시. */
+/* 제목 — 잉크, 400 */
 .display {
-  font-family: var(--pretendard);
+  font-family: var(--font-display);
   font-style: normal;
-  font-weight: 700;
-  letter-spacing: -0.03em;
+  font-weight: 400;
+  letter-spacing: 0;
   line-height: 1.22;
+  color: var(--accent);
 }
 
-/* eyebrow 라벨 */
+/* 작은 소제목 라벨 */
 .eyebrow {
-  font-family: var(--sans);
-  font-size: 11px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.28em;
+  font-size: 13px;
+  font-weight: 400;
   color: var(--muted);
 }
 .eyebrow .accent { color: var(--accent); }
@@ -184,13 +167,13 @@ body::after {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  height: 52px;
+  height: 50px;
   padding: 0 24px;
-  border-radius: 999px;
-  font-family: var(--pretendard);
-  font-weight: 600;
-  font-size: 15px;
-  letter-spacing: 0.01em;
+  border-radius: 6px;
+  font-family: inherit;
+  font-weight: 400;
+  font-size: 16px;
+  letter-spacing: 0;
   border: 0;
   cursor: pointer;
   transition: background .15s ease, color .15s ease, transform .12s ease, border-color .15s ease;
@@ -198,33 +181,43 @@ body::after {
 .btn:active { transform: translateY(1px); }
 .btn:disabled { opacity: .5; cursor: not-allowed; }
 
-/* Primary (골드) */
+/* Primary — 채운 잉크 = 주 동작 */
 .btn-primary {
   background: var(--accent);
-  color: #1a1308;
+  color: #fff;
 }
 .btn-primary:hover { background: var(--accent-hi); }
 
-/* Secondary (ghost) */
+/* Secondary — 흰 바탕 + 잉크 테두리 = 보조 동작 */
 .btn-secondary {
+  background: #fff;
+  color: var(--accent);
+  border: 1.5px solid var(--accent);
+}
+.btn-secondary:hover { background: var(--bg); }
+
+/* Danger — 투명 바탕 + 위험색 테두리 = 위험 동작 */
+.btn-danger {
+  background: transparent;
+  color: var(--danger);
+  border: 1.5px solid var(--danger);
+}
+
+/* Quiet (link-like) — 머리글 링크, 터치 영역 44px */
+.btn-quiet {
+  display: inline-flex;
+  align-items: center;
   background: transparent;
   color: var(--text);
-  border: 1px solid var(--hairline-strong);
-}
-.btn-secondary:hover { border-color: var(--text); }
-
-/* Quiet (link-like) */
-.btn-quiet {
-  background: transparent;
-  color: var(--muted);
   height: auto;
+  min-height: 44px;
   padding: 0;
   border-radius: 0;
-  font-weight: 500;
+  font-weight: 400;
 }
-.btn-quiet:hover { color: var(--text); }
+.btn-quiet:hover { color: var(--accent); }
 
-/* Kakao */
+/* Kakao — 카카오 브랜드 색 유지, 모서리는 .btn의 6px */
 .btn-kakao {
   background: var(--kakao);
   color: var(--kakao-ink);
@@ -238,20 +231,19 @@ body::after {
 /* 입력칸 */
 .input {
   width: 100%;
-  height: 56px;
-  padding: 0 18px;
-  background: var(--surface-2);
-  border: 1px solid var(--hairline);
-  border-radius: var(--r-sm);
+  height: 50px;
+  padding: 0 16px;
+  background: #fff;
+  border: 1.5px solid var(--field);
+  border-radius: 6px;
   color: var(--text);
   font-family: inherit;
   font-size: 16px;
-  transition: background .15s, border-color .15s, box-shadow .15s;
+  transition: border-color .15s, box-shadow .15s;
 }
-.input::placeholder { color: var(--muted); }
+.input::placeholder { color: #6B7385; }
 .input:focus {
   outline: 0;
-  background: var(--surface-3);
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-soft);
 }
@@ -267,61 +259,59 @@ body::after {
   padding: 22px 24px;
 }
 
-/* 경고·안내·모달용 강조 박스 */
+/* 경고·안내·모달용 종이 카드 */
 .notice {
-  background: var(--surface-1);
-  border: 1px solid var(--hairline-strong);
-  border-radius: var(--r-md);
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 0;
   padding: 20px;
 }
 
-/* 옵션 섹션용 면 박스 (배경 장식 가리는 용도) */
+/* 옵션 섹션용 종이 카드 */
 .panel {
-  background: var(--surface-1);
-  border: 1px solid var(--hairline);
-  border-radius: var(--r-md);
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 0;
   padding: 24px;
 }
 
-/* 글래스 패널 — 흐르는 배경 위 가독성 확보용 공용 카드. create 등의 인라인 glassPanel과 동일 사양을 클래스화. */
+/* .panel과 같은 종이 카드 (이름만 남음 — 사용처를 건드리지 않으려고 유지) */
 .glass-panel {
-  background: color-mix(in srgb, var(--surface-1) 78%, transparent);
-  backdrop-filter: blur(22px) saturate(140%);
-  -webkit-backdrop-filter: blur(22px) saturate(140%);
-  border: 1px solid var(--hairline-strong);
-  border-radius: var(--r-md);
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 0;
   padding: 24px;
   position: relative;
-  overflow: hidden;
-  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.7);
-}
-.glass-panel::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  mix-blend-mode: overlay;
-  opacity: 0.1;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-/* 배지 / 상태 */
+/* 상태 표시 — 9px 점 + 글자 (알약 배지 아님) */
 .badge {
   display: inline-flex;
   align-items: center;
-  height: 28px;
-  padding: 0 12px;
-  border-radius: 999px;
-  font-family: var(--sans);
-  font-size: 11px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
+  gap: 6px;
+  height: auto;
+  padding: 0;
+  background: none;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text);
 }
-.badge-live { background: var(--warm-soft); color: var(--warm); }
-.badge-done { background: var(--accent-soft); color: var(--accent); }
-.badge-draft { background: var(--surface-2); color: var(--muted); }
+.badge::before {
+  content: "";
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--dot-gray);
+  flex-shrink: 0;
+}
+.badge-live::before { background: var(--accent); }
+.badge-done::before { background: #2E7D32; }
+.badge-draft::before { background: var(--dot-gray); }
+
+/* 펜 글씨 */
+.pen {
+  font-family: var(--font-pen);
+}
 
 /* 헤어라인 구분선 (솔리드 보더 대안) */
 .hr {

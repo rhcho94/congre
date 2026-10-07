@@ -12,13 +12,14 @@
 - [infra](decisions/infra.md) — Vercel·Firebase·도메인·무료 티어 정책 (7개)
 - [data-flow](decisions/data-flow.md) — Firestore·S3·Admin SDK·서버 이전 (22개)
 - [landing](decisions/landing.md) — 랜딩 페이지 디자인·자산·배포 (21개)
+- [design](decisions/design.md) — 룩앤필·디자인 토큰·로고·화면 규칙 (2개)
 - [misc](decisions/misc.md) — 영역 외 결정 (8개)
 
 ## 메타
 
 (이전 결정들) — 결정 본문 없는 메모. 각 항목은 코드·docs 다른 위치에 흔적 있음.
 - Tailwind v4 채택 (config 파일 없는 @import 방식)
-- Cormorant Garamond + DM Sans 폰트 조합
+- Cormorant Garamond + DM Sans 폰트 조합 (2026-10-07 Gowun Dodum + Nanum Pen Script로 교체, decisions/design.md)
 - Shotstack 선택 (AI 영상 편집)
 - Firebase + S3 분리 구조
 - BrandName 컴포넌트 도입

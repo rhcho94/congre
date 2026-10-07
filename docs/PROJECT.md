@@ -46,30 +46,36 @@ npx firebase emulators:start --only firestore
 
 ## 디자인 시스템
 
-라이트/파스텔 톤이 기본. 다크는 업로드·공유 화면(`[data-theme="dark"]` 스코프)에만. 정의: `src/app/globals.css` (값은 2026-06-17 라이트 실값 기준).
+라이트 단일 테마(`:root`). 정의 위치: `src/app/globals.css`. 기준: `docs/decisions/design.md`.
 
 | 토큰 | 값 | 용도 |
 |---|---|---|
-| `--bg` | #f4f1ea | 페이지 배경(아이보리) — `body::before` bgflow 14s 파스텔 그라데이션이 위에 깔림 |
-| `--surface-1` | #ffffff | 카드 배경(불투명 흰색) |
-| `--surface-2` | #f0ece2 | 카드 내부 강조 / 입력칸 |
-| `--surface-3` | #e8e2d5 | 더 강한 강조 / 입력 focus |
-| `--accent` | #E8794A | 주황 액센트(랜딩 통일, 골드 #c8892c 폐기) |
-| `--accent-hi` | #ef8a5d | 액센트 hover |
-| `--accent-soft` | #E8794A1f | 액센트 약(배지·box-shadow 등) |
-| `--text` | #1a1612 | 본문 텍스트(먹색) |
-| `--text-dim` | #3d362e | 본문 보조 |
-| `--muted` | #6b635a | 보조 텍스트 |
-| `--hairline` | rgba(26, 22, 18, 0.08) | 약한 헤어라인 보더 |
-| `--hairline-strong` | rgba(26, 22, 18, 0.14) | 강한 헤어라인 보더 |
-| `--font-display` | Cormorant Garamond italic (next/font 주입) | 디스플레이 |
-| `--font-body` | Pretendard Variable, Pretendard, system-ui, sans-serif | 본문 (라틴·한글 모두 커버, 랜딩과 통일. 2026-06-10) |
+| `--bg` | #EEF4FB | 바탕 (단색, 움직이는 배경 없음) |
+| `--surface-1` | #FFFFFF | 표면 |
+| `--surface-2` | #F5F8FC | 표면 |
+| `--surface-3` | #E6EDF7 | 표면 |
+| `--paper` | #FFFFFF | 종이 |
+| `--accent` | #1F3C9C | 잉크(액센트) |
+| `--accent-hi` | #152B73 | 잉크(액센트) hover |
+| `--accent-soft` | rgba(31,60,156,0.10) | 잉크(액센트) 약 |
+| `--text` | #222222 | 글자 |
+| `--text-dim` | #333333 | 글자 |
+| `--muted` | #4A5468 | 보조 글자 |
+| `--hairline` / `--line` | #C9D6EA | 선 |
+| `--hairline-strong` / `--field` | #7F92B8 | 입력 테두리 |
+| `--danger` | #A61B1B | 위험 |
+| `--pen-red` · `--pen-green` · `--pen-purple` · `--pen-brown` | #C62828 · #2E7D32 · #6A1B9A · #8D4E00 | 펜 |
+| `--tape` | rgba(255,214,102,0.6) | 테이프 |
+| `--font-body` = `--font-display` | Gowun Dodum 400 | 글꼴: UI 전부 |
+| `--font-pen` | Nanum Pen Script | 글꼴: 펜 글씨 (로고는 글꼴이 아니라 SVG(BrandName)) |
 
-Legacy 별칭: `--surface`=`var(--surface-1)`, `--border`=`var(--hairline-strong)`, `--accent-bright`=`var(--accent-hi)`.
+- 모양: 버튼 6px, 입력칸 6px·높이 50px, 카드 직각 1px 선, 상태는 점 + 글자
+- 공통 클래스: `.btn`/`.btn-primary`/`.btn-secondary`/`.btn-danger`/`.btn-quiet`/`.btn-kakao`, `.input`, `.panel`·`.notice`·`.glass-panel`(셋 다 같은 종이 카드. glass는 이름만 남음), `.badge`(점 + 글자), `.pen`
+- Legacy 별칭: `--surface`=`var(--surface-1)`, `--border`=`var(--hairline-strong)`, `--accent-bright`=`var(--accent-hi)`
 
-다크 오버라이드(`[data-theme="dark"]` 12개 변수): --bg #0c0b09 / --surface-1 #151310 / --surface-2 #1e1a13 / --surface-3 #28221a / --accent #c8892c(골드) / --accent-hi #d99a3a / --accent-soft #c8892c1f / --text #ede8df / --text-dim #c8c2b6 / --muted #79716a / --hairline rgba(237, 232, 223, 0.07) / --hairline-strong rgba(237, 232, 223, 0.14).
+다크 테마 폐지 진행 중(2026-10-07)
 
-글로벌 유틸리티: `.glass-panel` (frosted glass + inset sheen + fractalNoise grain), `.rule` (장식 수평선).
+랜딩(`deploy/site.css`)도 같은 값을 쓴다. 둘을 바꿀 때는 함께 바꾼다.
 
 ## 브랜드 표기 규칙
 
