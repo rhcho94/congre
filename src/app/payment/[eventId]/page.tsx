@@ -152,11 +152,11 @@ export default function PaymentPage() {
         <PageBackdrop pattern="a" />
         <div className="min-h-screen flex items-center justify-center px-6">
           <div className="glass-panel max-w-sm w-full p-8 text-center">
-            <p className="text-xs text-accent font-medium tracking-wide mb-2">Firebase 미연결</p>
+            <p className="text-xs text-accent font-medium mb-2">Firebase 미연결</p>
             <p className="text-xs text-muted leading-relaxed mb-4">
               .env.local에 Firebase 설정값을 추가하면 결제를 진행할 수 있습니다.
             </p>
-            <Link href="/host" className="btn-quiet text-xs tracking-widest uppercase">
+            <Link href="/host" className="btn-quiet text-sm">
               ← 로그인 페이지
             </Link>
           </div>
@@ -182,7 +182,7 @@ export default function PaymentPage() {
         <PageBackdrop pattern="a" />
         <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-6">
           <p className="text-muted text-sm text-center">{prepareError}</p>
-          <Link href={`/dashboard/events/${eventId}`} className="btn-quiet text-xs tracking-widest uppercase text-accent">
+          <Link href={`/dashboard/events/${eventId}`} className="btn-quiet text-sm text-accent">
             ← 이벤트로 돌아가기
           </Link>
         </div>
@@ -200,7 +200,7 @@ export default function PaymentPage() {
       <div className="min-h-screen">
         <AppHeader>
           <div className="flex items-center gap-3 sm:gap-4">
-            <Link href={`/dashboard/events/${eventId}`} className="btn-quiet text-xs tracking-widest uppercase whitespace-nowrap">
+            <Link href={`/dashboard/events/${eventId}`} className="btn-quiet text-sm whitespace-nowrap">
               ← 이벤트로 돌아가기
             </Link>
           </div>
@@ -208,7 +208,6 @@ export default function PaymentPage() {
 
         <main className="mx-auto max-w-lg px-6 py-16">
           <div className="glass-panel p-10">
-            <p className="eyebrow mb-4">Payment</p>
             <h1 className="display text-3xl mb-2">결제하기</h1>
             <p className="text-sm text-muted mb-8">{prepared.title}</p>
 

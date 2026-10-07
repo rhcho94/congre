@@ -97,11 +97,11 @@ export default function DashboardPage() {
         <PageBackdrop pattern="b" />
         <div className="min-h-screen flex items-center justify-center px-6">
           <div className="max-w-sm w-full notice text-center">
-            <p className="text-xs text-accent font-medium tracking-wide mb-2">Firebase 미연결</p>
+            <p className="text-xs text-accent font-medium mb-2">Firebase 미연결</p>
             <p className="text-xs text-muted leading-relaxed mb-4">
               .env.local에 Firebase 설정값을 추가하면 대시보드를 사용할 수 있습니다.
             </p>
-            <Link href="/host" className="btn-quiet text-xs tracking-widest uppercase">
+            <Link href="/host" className="btn-quiet text-sm">
               ← 로그인 페이지
             </Link>
           </div>
@@ -128,13 +128,13 @@ export default function DashboardPage() {
         <AppHeader>
           <div className="flex items-center gap-3 sm:gap-6">
             <span className="hidden sm:inline text-xs text-muted truncate max-w-[180px]">{user?.email}</span>
-            <Link href="/guide/host" className="btn-quiet text-xs tracking-widest uppercase whitespace-nowrap">
+            <Link href="/guide/host" className="btn-quiet text-sm whitespace-nowrap">
               사용 가이드
             </Link>
-            <Link href="/mypage" className="btn-quiet text-xs tracking-widest uppercase whitespace-nowrap">
+            <Link href="/mypage" className="btn-quiet text-sm whitespace-nowrap">
               마이페이지
             </Link>
-            <button onClick={() => logout()} className="btn-quiet text-xs tracking-widest uppercase whitespace-nowrap">
+            <button onClick={() => logout()} className="btn-quiet text-sm whitespace-nowrap">
               로그아웃
             </button>
           </div>
@@ -143,7 +143,6 @@ export default function DashboardPage() {
         <main className="mx-auto max-w-3xl px-6 py-16">
           <div className="flex items-end justify-between mb-10">
             <div>
-              <p className="eyebrow mb-2">Dashboard</p>
               <h1 className="display text-3xl">내 이벤트</h1>
             </div>
             {user?.emailVerified ? (
@@ -184,7 +183,7 @@ export default function DashboardPage() {
               />
               {/* 콘텐츠 */}
               <div className="relative z-10">
-                <p className="text-muted text-sm mb-6">5분이면 완성본까지 직접 볼 수 있어요</p>
+                <p className="text-muted text-sm mb-6">마감하면 통상 10분 이내에 완성본을 직접 볼 수 있어요</p>
                 <div className="flex flex-wrap items-start justify-center gap-x-3 gap-y-3 mb-6">
                   <div className="flex flex-col items-center gap-2">
                     <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[var(--surface-2)] text-xs text-[var(--accent)]">1</span>
@@ -207,8 +206,8 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 <p className="text-xs text-muted mb-6">하객이 없어도 혼자 한 바퀴 돌려볼 수 있어요</p>
-                <Link href="/dashboard/create" className="text-xs tracking-widest uppercase text-accent hover:brightness-110 transition-all">
-                  첫 이벤트 만들기 →
+                <Link href="/dashboard/create" className="text-sm text-accent hover:brightness-110 transition-all">
+                  첫 이벤트 만들기
                 </Link>
               </div>
             </div>

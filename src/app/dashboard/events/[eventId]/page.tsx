@@ -578,7 +578,7 @@ export default function EventDetailPage() {
         objectType: "feed",
         content: {
           title: event.title,
-          description: "Congre로 만든 영상입니다 🎬",
+          description: "Congre로 만든 영상입니다",
           imageUrl: `${appUrl}/og-image.png`,
           link: {
             mobileWebUrl: shareUrl,
@@ -833,7 +833,7 @@ export default function EventDetailPage() {
         <PageBackdrop pattern="c" />
         <div className="min-h-screen flex flex-col items-center justify-center gap-4">
           <p className="text-muted text-sm">이벤트를 찾을 수 없습니다.</p>
-          <Link href="/dashboard" className="btn-quiet text-xs tracking-widest uppercase text-accent">
+          <Link href="/dashboard" className="btn-quiet text-sm text-accent">
             ← 대시보드
           </Link>
         </div>
@@ -1056,13 +1056,13 @@ export default function EventDetailPage() {
 
         <AppHeader>
           <div className="flex items-center gap-3 sm:gap-4">
-            <Link href="/guide/host" className="btn-quiet text-xs tracking-widest uppercase whitespace-nowrap">
+            <Link href="/guide/host" className="btn-quiet text-sm whitespace-nowrap">
               사용 가이드
             </Link>
-            <Link href="/mypage" className="btn-quiet text-xs tracking-widest uppercase whitespace-nowrap">
+            <Link href="/mypage" className="btn-quiet text-sm whitespace-nowrap">
               마이페이지
             </Link>
-            <Link href="/dashboard" className="btn-quiet text-xs tracking-widest uppercase whitespace-nowrap">
+            <Link href="/dashboard" className="btn-quiet text-sm whitespace-nowrap">
               ← 대시보드
             </Link>
           </div>
@@ -1072,7 +1072,6 @@ export default function EventDetailPage() {
           {/* Event header */}
           <div className="flex items-start justify-between mb-10 gap-4">
             <div className="min-w-0">
-              <p className="eyebrow mb-2">Event</p>
               <h1 className="display text-3xl">{event.title}</h1>
               <p className="text-xs text-muted mt-2">
                 {event.date ? new Date(event.date).toLocaleDateString("ko-KR") : ""}
@@ -1127,10 +1126,10 @@ export default function EventDetailPage() {
             <div className="notice mb-8">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-2 h-2 rounded-full bg-[#7b8ce0] animate-pulse" />
-                <p className="text-sm text-muted">AI가 영상을 편집하고 있습니다...</p>
+                <p className="text-sm text-muted">영상을 자동으로 편집하고 있습니다...</p>
               </div>
               <p className="text-xs text-muted opacity-60 pl-5">
-                3~5분 소요 · 완료되면 자동으로 업데이트됩니다
+                통상 10분 이내에 완성돼요. 완료되면 자동으로 업데이트됩니다.
               </p>
             </div>
           ) : event.status === "done" ? (
@@ -1167,7 +1166,7 @@ export default function EventDetailPage() {
                     rel="noopener noreferrer"
                     className="btn btn-primary w-full"
                   >
-                    영상 다운로드 →
+                    영상 다운로드
                   </a>
 
                   {/* SNS 공유 — 보조 행, 작게 */}
@@ -1258,7 +1257,7 @@ export default function EventDetailPage() {
             <p className="text-xs text-muted mb-5 leading-relaxed">
               이벤트 영상 시작과 끝에 짧은 동영상, 텍스트, 사진을 추가할 수 있어요. 비워두면 참가자 영상만으로 만들어집니다.
               <br />
-              📱 세로 영상(9:16)을 권장해요.
+              세로 영상(9:16)을 권장해요.
             </p>
 
             <div className="flex flex-col gap-6">
@@ -1547,7 +1546,7 @@ export default function EventDetailPage() {
                         <button
                           onClick={() => handleToggleExclusion(clip)}
                           disabled={event.status === "rendering"}
-                          className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 text-xs tracking-widest uppercase transition-all duration-200 mr-2"
+                          className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 text-sm transition-all duration-200 mr-2"
                           style={
                             clip.excludedAt
                               ? { border: "1px solid #e05252", color: "#e05252", borderRadius: "var(--r-sm)", ...(event.status === "rendering" ? { opacity: 0.4, cursor: "not-allowed" } : {}) }
@@ -1563,7 +1562,7 @@ export default function EventDetailPage() {
                         </button>
                         <button
                           onClick={() => handlePlayClip(clip)}
-                          className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 text-xs tracking-widest uppercase transition-all duration-200"
+                          className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 text-sm transition-all duration-200"
                           style={
                             isActive
                               ? { border: "1px solid var(--accent)", color: "var(--accent)", borderRadius: "var(--r-sm)" }

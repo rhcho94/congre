@@ -77,7 +77,7 @@ function Stepper({
 }
 
 const planOptions: { value: EventPlan; label: string; desc: string; comingSoon?: boolean }[] = [
-  { value: "free", label: "무료", desc: "최대 5클립 · 10초 · 워터마크" },
+  { value: "free", label: "무료", desc: "최대 5클립, 10초, 워터마크" },
   { value: "paid", label: "유료", desc: "마감 시 사용량만큼 결제" },
 ];
 
@@ -230,11 +230,11 @@ export default function CreateEventPage() {
         <PageBackdrop pattern="a" />
         <div className="min-h-screen flex items-center justify-center px-6">
           <div className="glass-panel max-w-sm w-full p-8 text-center">
-            <p className="text-xs text-accent font-medium tracking-wide mb-2">Firebase 미연결</p>
+            <p className="text-xs text-accent font-medium mb-2">Firebase 미연결</p>
             <p className="text-xs text-muted leading-relaxed mb-4">
               .env.local에 Firebase 설정값을 추가하면 이벤트를 생성할 수 있습니다.
             </p>
-            <Link href="/host" className="btn-quiet text-xs tracking-widest uppercase">
+            <Link href="/host" className="btn-quiet text-sm">
               ← 로그인 페이지
             </Link>
           </div>
@@ -261,13 +261,13 @@ export default function CreateEventPage() {
         <AppHeader>
           {view === "form" && (
             <div className="flex items-center gap-3 sm:gap-4">
-              <Link href="/guide/host" className="btn-quiet text-xs tracking-widest uppercase whitespace-nowrap">
+              <Link href="/guide/host" className="btn-quiet text-sm whitespace-nowrap">
                 사용 가이드
               </Link>
-              <Link href="/mypage" className="btn-quiet text-xs tracking-widest uppercase whitespace-nowrap">
+              <Link href="/mypage" className="btn-quiet text-sm whitespace-nowrap">
                 마이페이지
               </Link>
-              <Link href="/dashboard" className="btn-quiet text-xs tracking-widest uppercase whitespace-nowrap">
+              <Link href="/dashboard" className="btn-quiet text-sm whitespace-nowrap">
                 ← 대시보드
               </Link>
             </div>
@@ -277,7 +277,6 @@ export default function CreateEventPage() {
         <main className="mx-auto max-w-lg px-6 py-16">
           {view === "form" ? (
             <div className="glass-panel p-10">
-              <p className="eyebrow mb-4">New Event</p>
               <h1 className="display text-3xl mb-10">새 이벤트 만들기</h1>
 
               <form onSubmit={handleSubmit} className="flex flex-col gap-6">
@@ -363,7 +362,7 @@ export default function CreateEventPage() {
 
                 {couponEntered ? (
                   <div className="flex flex-col gap-1.5">
-                    <span className="eyebrow" style={{ letterSpacing: "normal" }}>개수와 길이</span>
+                    <span className="eyebrow">개수와 길이</span>
                     <div
                       className="p-4 flex flex-col gap-1.5"
                       style={{
@@ -382,7 +381,7 @@ export default function CreateEventPage() {
                   </div>
                 ) : form.plan === "free" ? (
                   <div className="flex flex-col gap-1.5">
-                    <span className="eyebrow" style={{ letterSpacing: "normal" }}>개수와 길이</span>
+                    <span className="eyebrow">개수와 길이</span>
                     <div
                       className="p-4 flex flex-col gap-1.5"
                       style={{
@@ -402,7 +401,7 @@ export default function CreateEventPage() {
                 ) : (
                   <>
                     <div className="flex flex-col gap-1.5">
-                      <span className="eyebrow" style={{ letterSpacing: "normal" }}>영상 개수 (정원)</span>
+                      <span className="eyebrow">영상 개수 (정원)</span>
                       <Stepper
                         value={form.maxClips}
                         min={10}
@@ -415,7 +414,7 @@ export default function CreateEventPage() {
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                      <span className="eyebrow" style={{ letterSpacing: "normal" }}>영상 길이</span>
+                      <span className="eyebrow">영상 길이</span>
                       <Stepper
                         value={form.maxClipSeconds}
                         min={10}
@@ -526,7 +525,7 @@ export default function CreateEventPage() {
 
               <div className="flex flex-col gap-3">
                 <Link href={`/dashboard/events/${createdEventId}`} className="btn btn-primary w-full">
-                  이벤트 대시보드로 이동 →
+                  이벤트 대시보드로 이동
                 </Link>
                 <Link href="/dashboard" className="btn btn-secondary w-full">
                   목록으로 돌아가기

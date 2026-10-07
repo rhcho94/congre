@@ -8,17 +8,16 @@ export default function PrivacyPage() {
       <PageBackdrop pattern="d" />
       <div className="min-h-screen">
         <nav className="flex items-center justify-between px-8 py-6">
-          <a href={LANDING_URL} className="text-xl tracking-wider hover:opacity-75 transition-opacity duration-200">
+          <a href={LANDING_URL} className="inline-flex items-center hover:opacity-75 transition-opacity duration-200">
             <BrandName />
           </a>
-          <a href={LANDING_URL} className="btn-quiet text-xs tracking-widest uppercase">
+          <a href={LANDING_URL} className="btn-quiet text-sm">
             ← 홈
           </a>
         </nav>
 
         <main className="mx-auto max-w-3xl px-6 py-16">
           <div className="mb-10">
-            <p className="eyebrow mb-3">Legal</p>
             <h1 className="display text-3xl">Congre 개인정보처리방침</h1>
             <p className="text-xs text-muted mt-3">시행일: 2026년 9월 1일</p>
           </div>
@@ -488,7 +487,7 @@ export default function PrivacyPage() {
           </p>
           <a
             href={LANDING_URL}
-            className="text-xs text-muted hover:text-accent tracking-widest uppercase transition-colors duration-200"
+            className="text-xs text-muted hover:text-accent transition-colors duration-200"
           >
             ← 홈으로
           </a>

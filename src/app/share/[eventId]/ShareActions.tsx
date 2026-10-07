@@ -46,7 +46,7 @@ export function ShareActions({ eventTitle, shareUrl, shareImageUrl }: Props) {
         objectType: "feed",
         content: {
           title: eventTitle,
-          description: "Congre로 만든 영상입니다 🎬",
+          description: "Congre로 만든 영상입니다",
           imageUrl: shareImageUrl,
           link: { mobileWebUrl: shareUrl, webUrl: shareUrl },
         },

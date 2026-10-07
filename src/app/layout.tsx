@@ -17,9 +17,9 @@ const nanumPen = Nanum_Pen_Script({
 });
 
 export const metadata: Metadata = {
-  title: "Congre — 이벤트 순간을 하나의 영상으로",
+  title: "Congre | 이벤트 순간을 하나의 영상으로",
   description:
-    "QR로 참가자 영상을 모아 AI가 자동 편집해주는 이벤트 영상 플랫폼",
+    "QR로 참가자 영상을 모아 자동으로 편집해 주는 이벤트 영상 플랫폼",
 };
 
 export default function RootLayout({

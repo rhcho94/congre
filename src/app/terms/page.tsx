@@ -9,17 +9,16 @@ export default function TermsPage() {
       <PageBackdrop pattern="d" />
       <div className="min-h-screen">
         <nav className="flex items-center justify-between px-8 py-6">
-          <a href={LANDING_URL} className="text-xl tracking-wider hover:opacity-75 transition-opacity duration-200">
+          <a href={LANDING_URL} className="inline-flex items-center hover:opacity-75 transition-opacity duration-200">
             <BrandName />
           </a>
-          <a href={LANDING_URL} className="btn-quiet text-xs tracking-widest uppercase">
+          <a href={LANDING_URL} className="btn-quiet text-sm">
             ← 홈
           </a>
         </nav>
 
         <main className="mx-auto max-w-3xl px-6 py-16">
           <div className="mb-10">
-            <p className="eyebrow mb-3">Legal</p>
             <h1 className="display text-3xl">Congre 서비스 이용약관</h1>
             <p className="text-xs text-muted mt-3">시행일: 2026년 9월 1일</p>
           </div>
@@ -29,7 +28,7 @@ export default function TermsPage() {
           <div className="glass-panel flex flex-col gap-12 text-sm leading-relaxed text-muted">
           {/* 제1장 총칙 */}
           <section className="flex flex-col gap-4">
-            <h2 className="text-base font-medium text-foreground tracking-wide">제1장 총칙</h2>
+            <h2 className="text-base font-medium text-foreground">제1장 총칙</h2>
 
             <article className="flex flex-col gap-2">
               <h3 className="text-sm font-medium text-foreground">제1조 (목적)</h3>
@@ -71,7 +70,7 @@ export default function TermsPage() {
 
           {/* 제2장 이용계약 */}
           <section className="flex flex-col gap-4">
-            <h2 className="text-base font-medium text-foreground tracking-wide">제2장 이용계약</h2>
+            <h2 className="text-base font-medium text-foreground">제2장 이용계약</h2>
 
             <article className="flex flex-col gap-2">
               <h3 className="text-sm font-medium text-foreground">제5조 (이용계약의 체결)</h3>
@@ -116,7 +115,7 @@ export default function TermsPage() {
 
           {/* 제3장 서비스 제공 */}
           <section className="flex flex-col gap-4">
-            <h2 className="text-base font-medium text-foreground tracking-wide">제3장 서비스 제공</h2>
+            <h2 className="text-base font-medium text-foreground">제3장 서비스 제공</h2>
 
             <article className="flex flex-col gap-2">
               <h3 className="text-sm font-medium text-foreground">제8조 (제공 서비스의 내용)</h3>
@@ -199,7 +198,7 @@ export default function TermsPage() {
 
           {/* 제4장 데이터 처리 */}
           <section className="flex flex-col gap-4">
-            <h2 className="text-base font-medium text-foreground tracking-wide">제4장 데이터 처리</h2>
+            <h2 className="text-base font-medium text-foreground">제4장 데이터 처리</h2>
 
             <article className="flex flex-col gap-2">
               <h3 className="text-sm font-medium text-foreground">제11조 (영상 데이터의 보유 및 자동 삭제)</h3>
@@ -253,7 +252,7 @@ export default function TermsPage() {
 
           {/* 제5장 회사·회원의 의무 */}
           <section className="flex flex-col gap-4">
-            <h2 className="text-base font-medium text-foreground tracking-wide">제5장 회사·회원의 의무</h2>
+            <h2 className="text-base font-medium text-foreground">제5장 회사·회원의 의무</h2>
 
             <article className="flex flex-col gap-2">
               <h3 className="text-sm font-medium text-foreground">제15조 (회사의 의무)</h3>
@@ -301,7 +300,7 @@ export default function TermsPage() {
 
           {/* 제6장 계약 해지 및 책임 */}
           <section className="flex flex-col gap-4">
-            <h2 className="text-base font-medium text-foreground tracking-wide">제6장 계약 해지 및 책임</h2>
+            <h2 className="text-base font-medium text-foreground">제6장 계약 해지 및 책임</h2>
 
             <article className="flex flex-col gap-2">
               <h3 className="text-sm font-medium text-foreground">제18조 (회원 탈퇴 및 자료 삭제)</h3>
@@ -363,7 +362,7 @@ export default function TermsPage() {
 
           {/* 사업자 정보 */}
           <section className="flex flex-col gap-4">
-            <h2 className="text-base font-medium text-foreground tracking-wide">사업자 정보</h2>
+            <h2 className="text-base font-medium text-foreground">사업자 정보</h2>
             <p>상호: 레이네(Rayne)</p>
             <p>대표자: 조래환</p>
             <p>사업자등록번호: 412-19-02824</p>
@@ -380,7 +379,7 @@ export default function TermsPage() {
 
           {/* 부칙 */}
           <section className="flex flex-col gap-4">
-            <h2 className="text-base font-medium text-foreground tracking-wide">부칙</h2>
+            <h2 className="text-base font-medium text-foreground">부칙</h2>
             <p>이 약관은 2026년 9월 1일부터 시행합니다.</p>
           </section>
         </div>
@@ -396,7 +395,7 @@ export default function TermsPage() {
           </p>
           <a
             href={LANDING_URL}
-            className="text-xs text-muted hover:text-accent tracking-widest uppercase transition-colors duration-200"
+            className="text-xs text-muted hover:text-accent transition-colors duration-200"
           >
             ← 홈으로
           </a>

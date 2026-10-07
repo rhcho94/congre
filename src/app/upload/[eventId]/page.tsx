@@ -412,7 +412,7 @@ function UploadInner() {
             <p className="display text-xl mb-2">마감된 이벤트입니다</p>
             <p className="text-sm text-muted leading-relaxed">업로드 기간이 종료되었습니다.</p>
           </div>
-          <a href={LANDING_URL} className="btn-quiet text-xs tracking-widest uppercase">
+          <a href={LANDING_URL} className="btn-quiet text-sm">
             홈으로
           </a>
         </div>
@@ -427,7 +427,7 @@ function UploadInner() {
       <div className="min-h-screen flex flex-col" style={{ maxWidth: "480px", margin: "0 auto" }}>
         {/* Header */}
         <header className="px-6 py-5 flex items-center justify-between">
-          <a href={LANDING_URL} className="text-xl tracking-wider hover:opacity-75 transition-opacity duration-200">
+          <a href={LANDING_URL} className="inline-flex items-center hover:opacity-75 transition-opacity duration-200">
             <BrandName />
           </a>
         </header>
@@ -442,7 +442,7 @@ function UploadInner() {
         {/* S3 미연결 배너 */}
         {s3Ready === false && (
           <div className="mx-6 mt-2 notice">
-            <p className="text-xs text-accent font-medium tracking-wide mb-0.5">S3 미연결</p>
+            <p className="text-xs text-accent font-medium mb-0.5">S3 미연결</p>
             <p className="text-xs text-muted leading-relaxed">
               .env.local에 AWS 설정값을 추가하면 실제 업로드가 가능합니다.
             </p>
@@ -462,7 +462,7 @@ function UploadInner() {
                   "다시 오셨네요. 이름과 전화번호를 확인해주세요. 같은 이름으로는 한 번만 올릴 수 있어요."
                 ) : (
                   <>
-                    🎬 {hostDisplay}님과 함께 만드는 영상이에요
+                    {hostDisplay}님과 함께 만드는 영상이에요
                     <br />
                     {maxClipSeconds}초짜리 영상을 올려주세요.
                     <br />
@@ -521,7 +521,7 @@ function UploadInner() {
               </p>
 
               <div className="notice" style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginBottom: "1rem" }}>
-                <p style={{ fontWeight: 600 }}>📱 휴대폰을 세로로 들고 찍어주세요</p>
+                <p style={{ fontWeight: 600 }}>휴대폰을 세로로 들고 찍어주세요</p>
                 <p className="text-sm text-muted">· 앞부분 {maxClipSeconds}초만 영상에 담겨요 (뒤는 잘려요)</p>
               </div>
 
@@ -529,7 +529,7 @@ function UploadInner() {
                 <>
                   {/* iOS 안내 박스 */}
                   <div className="w-full notice flex flex-col gap-2">
-                    <p className="text-xs text-accent font-medium tracking-wide">iPhone 사용 중이시군요</p>
+                    <p className="text-xs text-accent font-medium">iPhone 사용 중이시군요</p>
                     <p className="text-xs text-muted leading-relaxed">
                       iOS 정책상 iPhone 즉석 촬영은 화질이 낮습니다.<br />
                       미리 카메라 앱으로 영상을 찍어두신 뒤 아래 버튼을 눌러주세요.
@@ -561,7 +561,7 @@ function UploadInner() {
                           <polyline points="21 15 16 10 5 21" />
                         </svg>
                       </div>
-                      <p className="text-base tracking-widest uppercase font-medium text-muted group-hover:text-accent transition-colors duration-300">
+                      <p className="text-base font-medium text-muted group-hover:text-accent transition-colors duration-300">
                         갤러리에서 선택
                       </p>
                       <p className="text-sm text-muted">최대 {maxClipSeconds}초</p>
@@ -594,14 +594,14 @@ function UploadInner() {
                           <rect x="1" y="5" width="15" height="14" rx="2" />
                         </svg>
                       </div>
-                      <p className="text-base tracking-widest uppercase font-medium text-muted group-hover:text-accent transition-colors duration-300">
+                      <p className="text-base font-medium text-muted group-hover:text-accent transition-colors duration-300">
                         지금 촬영하기
                       </p>
                       <p className="text-sm text-muted">최대 {maxClipSeconds}초 · 탭하여 시작</p>
                     </div>
                   </label>
 
-                  <label className="btn-quiet text-xs tracking-widest uppercase cursor-pointer">
+                  <label className="btn-quiet text-sm cursor-pointer">
                     <input type="file" accept="video/*" className="sr-only" onChange={handleFileSelected} />
                     갤러리에서 선택
                   </label>
@@ -609,7 +609,7 @@ function UploadInner() {
               )}
 
               <p className="text-xs text-center text-muted leading-relaxed opacity-80" style={scrim}>
-                AI가 모든 순간을 모아 하나의 영상으로 편집해드려요.
+                모든 순간을 모아 자동으로 한 편의 영상으로 편집해 드려요.
               </p>
             </>
           )}
@@ -632,7 +632,7 @@ function UploadInner() {
                 업로드하기
               </button>
 
-              <button onClick={reRecord} className="btn-quiet text-xs text-center uppercase tracking-widest">
+              <button onClick={reRecord} className="btn-quiet text-sm text-center">
                 다시 촬영
               </button>
             </div>
@@ -674,7 +674,7 @@ function UploadInner() {
               {/* 배지 미리보기 */}
               <div className="flex flex-col items-center gap-2">
                 <CongreBadge />
-                <p className="text-[10px] tracking-widest uppercase text-muted opacity-60">
+                <p className="text-[13px] text-muted">
                   곧 Congre 배지가 담긴 편집 영상을 받아보실 수 있어요
                 </p>
               </div>

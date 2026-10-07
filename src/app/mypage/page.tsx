@@ -222,11 +222,11 @@ export default function MyPage() {
         <PageBackdrop pattern="b" />
         <div className="min-h-screen flex items-center justify-center px-6">
           <div className="max-w-sm w-full notice text-center">
-            <p className="text-xs text-accent font-medium tracking-wide mb-2">Firebase 미연결</p>
+            <p className="text-xs text-accent font-medium mb-2">Firebase 미연결</p>
             <p className="text-xs text-muted leading-relaxed mb-4">
               .env.local에 Firebase 설정값을 추가하면 마이페이지를 사용할 수 있습니다.
             </p>
-            <Link href="/host" className="btn-quiet text-xs tracking-widest uppercase">
+            <Link href="/host" className="btn-quiet text-sm">
               ← 로그인 페이지
             </Link>
           </div>
@@ -253,10 +253,10 @@ export default function MyPage() {
         <AppHeader>
           <div className="flex items-center gap-3 sm:gap-6">
             <span className="hidden sm:inline text-xs text-muted truncate max-w-[180px]">{user?.email}</span>
-            <Link href="/guide/host" className="btn-quiet text-xs tracking-widest uppercase whitespace-nowrap">
+            <Link href="/guide/host" className="btn-quiet text-sm whitespace-nowrap">
               사용 가이드
             </Link>
-            <button onClick={() => logout()} className="btn-quiet text-xs tracking-widest uppercase whitespace-nowrap">
+            <button onClick={() => logout()} className="btn-quiet text-sm whitespace-nowrap">
               로그아웃
             </button>
           </div>
@@ -264,7 +264,6 @@ export default function MyPage() {
 
         <main className="mx-auto max-w-3xl px-6 py-16">
           <div className="mb-10">
-            <p className="eyebrow mb-2">Mypage</p>
             <h1 className="display text-3xl">내 계정</h1>
           </div>
 
@@ -276,8 +275,8 @@ export default function MyPage() {
             <div className="notice mb-8 text-center">
               <p className="text-muted text-sm mb-4">아직 이벤트가 없습니다.</p>
               {user?.emailVerified ? (
-                <Link href="/dashboard/create" className="text-xs tracking-widest uppercase text-accent hover:brightness-110 transition-all">
-                  첫 이벤트 만들기 →
+                <Link href="/dashboard/create" className="text-sm text-accent hover:brightness-110 transition-all">
+                  첫 이벤트 만들기
                 </Link>
               ) : (
                 <span className="text-xs text-muted">이메일 인증 후 이벤트를 만들 수 있습니다</span>
@@ -289,8 +288,8 @@ export default function MyPage() {
                 <span className="text-sm text-foreground">진행 중 {inProgress}개</span>
                 <span className="text-sm text-muted">완료된 {doneCount}개</span>
               </div>
-              <Link href="/dashboard" className="btn-quiet text-xs tracking-widest uppercase">
-                내 이벤트 관리하기 →
+              <Link href="/dashboard" className="btn-quiet text-sm">
+                내 이벤트 관리하기
               </Link>
             </div>
           )}
@@ -347,7 +346,7 @@ export default function MyPage() {
                 </div>
               </div>
             ) : (
-              <button onClick={handlePwStart} className="btn-quiet text-xs tracking-widest uppercase">
+              <button onClick={handlePwStart} className="btn-quiet text-sm">
                 비밀번호 변경
               </button>
             )}
@@ -411,7 +410,7 @@ export default function MyPage() {
                 </div>
               </div>
             ) : (
-              <button onClick={handleDelStart} className="btn-quiet text-xs tracking-widest uppercase hover:text-red-400">
+              <button onClick={handleDelStart} className="btn-quiet text-sm hover:text-red-400">
                 회원 탈퇴
               </button>
             )}
@@ -484,7 +483,7 @@ export default function MyPage() {
                   </div>
                 ) : (
                   userDoc !== null && (
-                    <button onClick={handleEditStart} className="btn-quiet text-xs tracking-widest uppercase self-start">
+                    <button onClick={handleEditStart} className="btn-quiet text-sm self-start">
                       프로필 수정
                     </button>
                   )

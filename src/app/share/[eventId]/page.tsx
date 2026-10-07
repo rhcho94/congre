@@ -16,10 +16,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     if (!snap.exists) return { title: "Congre" };
     const title = snap.data()!.title as string;
     return {
-      title: `${title} — Congre`,
+      title: `${title} | Congre`,
       openGraph: {
         title,
-        description: "Congre로 만든 영상입니다 🎬",
+        description: "Congre로 만든 영상입니다",
         images: [`https://app.congre.kr/api/og-image/${eventId}`],
       },
     };

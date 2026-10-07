@@ -67,10 +67,10 @@ export default function SignupPage() {
       <PageBackdrop pattern="a" />
       <div className="min-h-screen">
         <nav className="flex items-center justify-between px-8 py-6">
-          <a href={LANDING_URL} className="text-xl tracking-wider hover:opacity-75 transition-opacity duration-200">
+          <a href={LANDING_URL} className="inline-flex items-center hover:opacity-75 transition-opacity duration-200">
             <BrandName />
           </a>
-          <Link href="/host" className="btn-quiet text-xs tracking-widest uppercase">
+          <Link href="/host" className="btn-quiet text-sm">
             로그인
           </Link>
         </nav>
@@ -82,7 +82,7 @@ export default function SignupPage() {
 
             {!isFirebaseConfigured && (
               <div className="mb-6 notice">
-                <p className="text-xs text-accent mb-1 font-medium tracking-wide">Firebase 미연결</p>
+                <p className="text-xs text-accent mb-1 font-medium">Firebase 미연결</p>
                 <p className="text-xs text-muted leading-relaxed">
                   .env.local에 Firebase 설정값을 추가하면 실제 가입이 가능합니다.
                 </p>

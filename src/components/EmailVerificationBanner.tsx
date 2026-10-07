@@ -89,7 +89,7 @@ export function EmailVerificationBanner() {
         <button
           onClick={handleResend}
           disabled={resending || resendCooldown > 0}
-          className="px-4 py-2 border border-border text-xs tracking-widest uppercase text-muted hover:border-accent hover:text-foreground transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-4 py-2 border border-border text-sm text-muted hover:border-accent hover:text-foreground transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {resendCooldown > 0
             ? `재발송 (${resendCooldown})`
@@ -100,7 +100,7 @@ export function EmailVerificationBanner() {
         <button
           onClick={handleReload}
           disabled={reloading}
-          className="px-4 py-2 border border-border text-xs tracking-widest uppercase text-muted hover:border-accent hover:text-foreground transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-4 py-2 border border-border text-sm text-muted hover:border-accent hover:text-foreground transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {reloading ? "확인 중..." : "인증 완료"}
         </button>

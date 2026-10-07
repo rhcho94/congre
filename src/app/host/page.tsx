@@ -165,13 +165,13 @@ export default function HostPage() {
       <PageBackdrop pattern="a" />
       <div className="min-h-screen">
         <nav className="flex items-center justify-between px-8 py-6">
-          <a href={LANDING_URL} className="text-xl tracking-wider hover:opacity-75 transition-opacity duration-200">
+          <a href={LANDING_URL} className="inline-flex items-center hover:opacity-75 transition-opacity duration-200">
             <BrandName />
           </a>
           {user && (
             <div className="flex items-center gap-6">
               <span className="text-xs text-muted truncate max-w-[180px]">{user.email}</span>
-              <button onClick={handleLogout} className="btn-quiet text-xs tracking-widest uppercase">
+              <button onClick={handleLogout} className="btn-quiet text-sm">
                 로그아웃
               </button>
             </div>
@@ -182,12 +182,11 @@ export default function HostPage() {
           {view === "login" && (
             <>
               <div className="glass-panel w-full max-w-md mx-auto p-10">
-                <p className="eyebrow mb-4 text-center">Host</p>
                 <h1 className="display text-3xl text-center mb-10">주최자 로그인</h1>
 
                 {!isFirebaseConfigured && (
                   <div className="mb-6 notice">
-                    <p className="text-xs text-accent mb-1 font-medium tracking-wide">Firebase 미연결</p>
+                    <p className="text-xs text-accent mb-1 font-medium">Firebase 미연결</p>
                     <p className="text-xs text-muted leading-relaxed">
                       .env.local에 Firebase 설정값을 추가하면 실제 로그인이 가능합니다.
                     </p>
@@ -346,7 +345,7 @@ export default function HostPage() {
 
           {view === "create" && (
             <div>
-              <button onClick={() => setView("dashboard")} className="btn-quiet text-xs tracking-widest uppercase mb-8 inline-block">
+              <button onClick={() => setView("dashboard")} className="btn-quiet text-sm mb-8 inline-block">
                 ← 목록으로
               </button>
 
