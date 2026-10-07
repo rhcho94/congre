@@ -2,6 +2,17 @@ import { BrandName } from "@/components/BrandName";
 import { LANDING_URL } from "@/lib/constants";
 import PageBackdrop from "@/components/PageBackdrop";
 
+// 제5조의2 국외 이전 — 좁은 화면용 카드
+const TRANSFER_CARD: React.CSSProperties = { background: "var(--paper)", border: "1px solid var(--line)", padding: 16 };
+const TRANSFER_DL: React.CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "96px 1fr",
+  gap: "6px 10px",
+  fontSize: 14,
+  lineHeight: 1.5,
+  color: "var(--text)",
+};
+
 export default function PrivacyPage() {
   return (
     <>
@@ -233,7 +244,75 @@ export default function PrivacyPage() {
           <section className="flex flex-col gap-2">
             <h2 className="text-sm font-medium text-foreground">제5조의2 (개인정보의 국외 이전)</h2>
             <p>① 회사는 서비스 제공을 위하여 다음과 같이 개인정보를 국외로 이전합니다.</p>
-            <div className="overflow-x-auto">
+            {/* 640px 미만: 수탁자마다 카드 한 장 (글자는 아래 표와 같음) */}
+            <div className="flex flex-col gap-3 sm:hidden">
+              <div className="flex flex-col gap-1.5" style={TRANSFER_CARD}>
+                <h3 style={{ fontSize: 17, color: "var(--text)" }}>Google LLC</h3>
+                <dl style={TRANSFER_DL}>
+                  <dt className="text-muted">이전 국가·리전</dt>
+                  <dd>미국 (Firestore 리전: us-central1)</dd>
+                  <dt className="text-muted">이전 일시 및 방법</dt>
+                  <dd>서비스 이용 시점에 네트워크를 통한 전송</dd>
+                  <dt className="text-muted">이전 항목</dt>
+                  <dd>호스트 이메일, 비밀번호 해시, 이름, 이벤트 정보</dd>
+                  <dt className="text-muted">보유 기간</dt>
+                  <dd>제3조에 따른 보유 기간</dd>
+                </dl>
+              </div>
+              <div className="flex flex-col gap-1.5" style={TRANSFER_CARD}>
+                <h3 style={{ fontSize: 17, color: "var(--text)" }}>Amazon Web Services, Inc.</h3>
+                <dl style={TRANSFER_DL}>
+                  <dt className="text-muted">이전 국가·리전</dt>
+                  <dd>ap-southeast-2</dd>
+                  <dt className="text-muted">이전 일시 및 방법</dt>
+                  <dd>클립 영상 업로드 시점에 네트워크를 통한 전송</dd>
+                  <dt className="text-muted">이전 항목</dt>
+                  <dd>클립 영상 콘텐츠</dd>
+                  <dt className="text-muted">보유 기간</dt>
+                  <dd>제3조에 따른 보유 기간</dd>
+                </dl>
+              </div>
+              <div className="flex flex-col gap-1.5" style={TRANSFER_CARD}>
+                <h3 style={{ fontSize: 17, color: "var(--text)" }}>Shotstack Pty Ltd</h3>
+                <dl style={TRANSFER_DL}>
+                  <dt className="text-muted">이전 국가·리전</dt>
+                  <dd>호주</dd>
+                  <dt className="text-muted">이전 일시 및 방법</dt>
+                  <dd>완성본 영상 생성 시점에 네트워크를 통한 전송</dd>
+                  <dt className="text-muted">이전 항목</dt>
+                  <dd>클립 영상 콘텐츠, 인트로·아웃트로 텍스트</dd>
+                  <dt className="text-muted">보유 기간</dt>
+                  <dd>제3조에 따른 보유 기간</dd>
+                </dl>
+              </div>
+              <div className="flex flex-col gap-1.5" style={TRANSFER_CARD}>
+                <h3 style={{ fontSize: 17, color: "var(--text)" }}>Resend, Inc.</h3>
+                <dl style={TRANSFER_DL}>
+                  <dt className="text-muted">이전 국가·리전</dt>
+                  <dd>미국</dd>
+                  <dt className="text-muted">이전 일시 및 방법</dt>
+                  <dd>알림 발송 시점에 네트워크를 통한 전송</dd>
+                  <dt className="text-muted">이전 항목</dt>
+                  <dd>호스트 이메일, 이름</dd>
+                  <dt className="text-muted">보유 기간</dt>
+                  <dd>발송 직후 처리 완료</dd>
+                </dl>
+              </div>
+              <div className="flex flex-col gap-1.5" style={TRANSFER_CARD}>
+                <h3 style={{ fontSize: 17, color: "var(--text)" }}>Vercel, Inc.</h3>
+                <dl style={TRANSFER_DL}>
+                  <dt className="text-muted">이전 국가·리전</dt>
+                  <dd>미국 (글로벌 엣지 네트워크 포함)</dd>
+                  <dt className="text-muted">이전 일시 및 방법</dt>
+                  <dd>서비스 이용 시점에 네트워크를 통한 전송</dd>
+                  <dt className="text-muted">이전 항목</dt>
+                  <dd>서비스 이용 기록, 접속 IP, 접속 로그</dd>
+                  <dt className="text-muted">보유 기간</dt>
+                  <dd>제3조에 따른 보유 기간</dd>
+                </dl>
+              </div>
+            </div>
+            <div className="hidden sm:block overflow-x-auto">
               <table className="w-full border-collapse border border-border text-xs">
                 <thead>
                   <tr className="bg-surface">
