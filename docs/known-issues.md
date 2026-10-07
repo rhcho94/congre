@@ -611,14 +611,6 @@
 - **미검증**: 위 내용은 코드 정적 대조 결과. 두 예외 경로가 실제 트리거됐을 때의 런타임 동작은 미확인.
 - **출처**: 2026-08-05 scout 전수 정찰(src/app/api 전 route.ts 에러 응답 + src/app·src/components 프론트 에러 읽기 지점 전수).
 
-## 게스트 화면 data-theme="dark" 미적용 — 색 상속 체인 단절 (가설)
-
-- 현황: upload/[eventId] layout.tsx L72에 `<div data-theme="dark">`가 있으나, h1.display의 DevTools 계산값이 rgb(26,22,18)(라이트 --text)로 나옴. 같은 화면 본문은 정상 흰색. 2026-08-04 커밋 a2344b9에서 두 h1에 인라인 color를 박아 증상만 우회한 상태.
-- 가설(CC, 확신도 중상): body(globals.css L99-104)가 다크 래퍼보다 조상이라 color: var(--text)가 그 위치에서 검정으로 계산됨. [data-theme="dark"](L53-69)는 변수만 재정의할 뿐 color를 걸지 않으므로, 변수를 직접 참조하지 않고 순수 상속하는 .display (L162-168, color 선언 없음)는 계산된 검정을 그대로 물려받음. text-foreground·.eyebrow는 자기 위치에서 var를 재평가하므로 정상.
-- 판별법: upload 화면에서 <body>의 computed color 확인. rgb(26,22,18)이면 가설 확정.
-- 처치 후보 3갈래(미결정): ⓐ .display에 color: var(--text) 추가(전역 영향) ⓑ 다크 래퍼 div에 color: var(--text) 부여(스코프 진입점에서 상속 리셋) ⓒ 다크 스코프를 body/html에 적용.
-- 격상 트리거: 게스트 계열 화면에 유사 색 문제가 또 발생하거나, 인라인 color 지정 지점이 3곳 이상으로 늘어날 때.
-
 ## 쿠폰 재사용 에러 메시지 실측 미검증
 
 - 현황: 커밋 b950821에서 서버 에러 응답 키를 error로 통일하고 프론트 매핑(INVALID_COUPON / COUPON_ALREADY_USED)을 추가했으나, 실호출 검증은 미실시. eye의 코드 구조 대조만 통과.

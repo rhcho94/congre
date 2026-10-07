@@ -4,6 +4,7 @@
 
 ## 2026-10-07
 
+- feat: 참가자 업로드 화면 개편 — 다크 테마·스크림을 걷고 밝은 종이 톤으로, 맨 위 사진을 행사 공용 사진(bg-event.jpg, 함께 스크롤)으로 바꿨다(bg-stage-a~e.png 삭제). 머리글에 참가자 가이드 링크(새 탭), 행사 카드("{호스트}님이 초대했어요" + 제목 + 펜 글씨 예시), 입력 도움말, 개인정보처리방침 링크와 동의 체크(필수, 저장 안 함)를 넣었다. 흐름(이름·전화번호 → 다음 → 촬영)은 그대로(decisions/design.md 2026-10-07 참가자 첫 화면 흐름 유지).
 - style: 장식 라벨·이모지·화살표·"AI" 표현 정리 — 영어 eyebrow 8곳(New Event, Event, Dashboard, Host, Mypage, Payment, Legal×2) 삭제, 글자 간격·장식 대문자 클래스 삭제(머리글 링크는 14px 보통 글자), 이모지·버튼 끝 "→" 삭제, "AI가" → "자동으로", 탭 제목 " — " → " | ", 완성 시간 안내를 "통상 10분 이내"로 통일, 무료 플랜 설명을 쉼표 표기로. 가이드·알림 메일은 따로 정리(decisions/design.md 2026-10-06 F 규칙).
 - feat: 브랜드 표기를 로고 D로 교체 — BrandName을 로고 D 인라인 SVG로, 파비콘·apple-icon·OG 이미지(행사 공용판)·logo.png를 새 그림으로 바꿨다. 무료 워터마크 미리보기(CongreBadge)는 펜 글씨로, Shotstack 워터마크는 Nanum Pen 52px 흰색 0.6으로 바꾸고 Cormorant TTF를 삭제했다(decisions/design.md 2026-10-06, rendering.md 2026-10-07). 실제 렌더 확인은 다음 테스트 렌더(H2) 때.
 - style: 앱 테마를 롤링페이퍼안 토큰·글꼴로 교체 — 색(바탕 #EEF4FB, 잉크 #1F3C9C 등)·글꼴(Gowun Dodum, Nanum Pen Script)·버튼·카드·배지 모양을 새 기준으로 바꾸고 움직이는 배경과 유리 효과를 삭제했다(decisions/design.md 2026-10-07).

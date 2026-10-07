@@ -12,13 +12,6 @@ import { isIOS } from "@/lib/device";
 
 type Stage = "verifying" | "invalid" | "uploader" | "idle" | "preview" | "uploading" | "done" | "error";
 
-// 게스트 화면 텍스트는 솔리드 카드 없이 사진 위에 직접 — 가독성 위해 국소 스크림 적용
-const scrim: React.CSSProperties = {
-  background: "linear-gradient(180deg, rgba(12,11,9,0.78), rgba(12,11,9,0.90))",
-  borderRadius: "var(--r-md)",
-  padding: "16px 18px",
-};
-
 async function captureThumbnail(blob: Blob): Promise<Blob | null> {
   return new Promise((resolve) => {
     const video = document.createElement("video");
@@ -109,6 +102,7 @@ function UploadInner() {
   const [phone, setPhone] = useState("");
   const [uploaderError, setUploaderError] = useState("");
   const [isReturning, setIsReturning] = useState(false);
+  const [agreed, setAgreed] = useState(false);
   const [s3Ready, setS3Ready] = useState<boolean | null>(null);
   const [iosDevice, setIosDevice] = useState(false);
 
@@ -196,6 +190,10 @@ function UploadInner() {
     }
     if (!/^010\d{8}$/.test(phoneClean)) {
       setUploaderError("전화번호는 010으로 시작하는 11자리 숫자로 입력해주세요");
+      return;
+    }
+    if (!agreed) {
+      setUploaderError("위 내용에 동의해 주세요.");
       return;
     }
 
@@ -401,14 +399,14 @@ function UploadInner() {
     return (
       <>
         <PageBackdrop pattern="e" />
-        <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center gap-6" style={{ maxWidth: "480px", margin: "0 auto" }}>
-          <div className="w-16 h-16 flex items-center justify-center" style={{ border: "1px solid var(--hairline-strong)", borderRadius: "var(--r-sm)" }}>
+        <div className="min-h-screen flex flex-col items-center justify-center px-5 text-center gap-6" style={{ maxWidth: "480px", margin: "0 auto" }}>
+          <div className="w-16 h-16 flex items-center justify-center" style={{ background: "#fff", border: "1px solid var(--line)" }}>
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-muted">
               <path d="M18 11V7a6 6 0 0 0-12 0v4" />
               <rect x="3" y="11" width="18" height="11" rx="1" />
             </svg>
           </div>
-          <div style={scrim}>
+          <div className="notice w-full">
             <p className="display text-xl mb-2">마감된 이벤트입니다</p>
             <p className="text-sm text-muted leading-relaxed">업로드 기간이 종료되었습니다.</p>
           </div>
@@ -420,93 +418,132 @@ function UploadInner() {
     );
   }
 
-  // ── idle / preview / uploading / done / error ──
+  // ── uploader / idle / preview / uploading / done / error ──
   return (
     <>
       <PageBackdrop pattern="e" />
       <div className="min-h-screen flex flex-col" style={{ maxWidth: "480px", margin: "0 auto" }}>
         {/* Header */}
-        <header className="px-6 py-5 flex items-center justify-between">
+        <header className="flex items-center justify-between gap-2 pl-5 pr-3.5 py-2 min-h-[56px]">
           <a href={LANDING_URL} className="inline-flex items-center hover:opacity-75 transition-opacity duration-200">
-            <BrandName />
+            <BrandName height={30} />
+          </a>
+          {/* 새 탭 — 촬영·업로드 중에 눌러도 찍은 영상이 사라지지 않게 */}
+          <a href="/guide/guest" target="_blank" rel="noopener" className="btn-quiet text-sm"
+            style={{ padding: "0 4px" }}>
+            참가자 가이드
           </a>
         </header>
 
-        {/* Event info — 사진 위 텍스트, 국소 스크림 */}
-        <div className="px-6 pt-4 pb-4">
-          <div style={scrim}>
-            <h1 className="display text-2xl" style={{ color: "#ede8df" }}>{event?.title ?? "이벤트"}</h1>
-          </div>
-        </div>
+        <main className="flex-1 flex flex-col gap-3.5 px-5 pb-7">
+          {stage === "uploader" && !isReturning && <FlowStrip />}
 
-        {/* S3 미연결 배너 */}
-        {s3Ready === false && (
-          <div className="mx-6 mt-2 notice">
-            <p className="text-xs text-accent font-medium mb-0.5">S3 미연결</p>
-            <p className="text-xs text-muted leading-relaxed">
-              .env.local에 AWS 설정값을 추가하면 실제 업로드가 가능합니다.
-            </p>
-          </div>
-        )}
+          {/* 행사 카드 */}
+          <section className="notice flex flex-col gap-2" style={{ padding: "16px 18px 14px" }}>
+            <p className="text-sm text-muted">{hostDisplay}님이 초대했어요</p>
+            <h1 className="display" style={{ fontSize: 26, lineHeight: 1.3 }}>{event?.title ?? "이벤트"}</h1>
+            {stage === "uploader" && (
+              <>
+                <p style={{ fontSize: 15, lineHeight: 1.6, color: "var(--text-dim)" }}>축하 한마디 남겨 주세요</p>
+                <p
+                  className="pen"
+                  style={{ paddingTop: 8, borderTop: "1px dashed var(--line)", fontSize: 24, lineHeight: 1.2, color: "var(--pen-red)" }}
+                >
+                  예) 축하해요! 오늘처럼 늘 웃는 날만 있길
+                </p>
+              </>
+            )}
+          </section>
 
-        <div className="hr mx-6 my-5" />
-
-        <main className="flex-1 flex flex-col items-center px-6 py-4 gap-6">
+          {/* S3 미연결 배너 */}
+          {s3Ready === false && (
+            <div className="notice">
+              <p className="text-xs text-accent mb-0.5">S3 미연결</p>
+              <p className="text-xs text-muted leading-relaxed">
+                .env.local에 AWS 설정값을 추가하면 실제 업로드가 가능합니다.
+              </p>
+            </div>
+          )}
 
           {/* ── uploader ── */}
           {stage === "uploader" && (
             <>
-              {!isReturning && <FlowStrip />}
-              <p className="text-sm text-center text-foreground leading-relaxed break-keep" style={scrim}>
-                {isReturning ? (
-                  "다시 오셨네요. 이름과 전화번호를 확인해주세요. 같은 이름으로는 한 번만 올릴 수 있어요."
-                ) : (
-                  <>
-                    {hostDisplay}님과 함께 만드는 영상이에요
-                    <br />
-                    {maxClipSeconds}초짜리 영상을 올려주세요.
-                    <br />
-                    <br />
-                    이름·전화번호는 영상 구분과 완성본 전달에 사용해요.
-                    <br />
-                    이름은 닉네임이어도 괜찮아요.
-                  </>
-                )}
-              </p>
-              <div className="w-full flex flex-col gap-3">
+              {isReturning ? (
+                <p className="break-keep" style={{ fontSize: 15, lineHeight: 1.6 }}>
+                  다시 오셨네요. 이름과 전화번호를 확인해주세요. 같은 이름으로는 한 번만 올릴 수 있어요.
+                </p>
+              ) : (
+                <ul className="list-disc flex flex-col gap-1" style={{ paddingLeft: 18, fontSize: 15, lineHeight: 1.55 }}>
+                  <li>폰을 세로로 들고 {maxClipSeconds}초 동안 찍어요</li>
+                  <li>{maxClipSeconds}초가 넘으면 앞부분만 들어가요</li>
+                </ul>
+              )}
+
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="uploader-name" style={{ fontSize: 15 }}>이름</label>
                 <div className="relative">
                   <input
+                    id="uploader-name"
                     type="text"
                     value={name}
                     onChange={(e) => { setName(e.target.value.slice(0, 20)); setUploaderError(""); }}
                     onKeyDown={(e) => { if (e.key === "Enter") handleUploaderNext(); }}
-                    placeholder="이름 (최대 20자)"
+                    placeholder="예: 대학 동기 서연"
                     maxLength={20}
                     autoFocus
-                    className="input pr-14"
+                    className="input"
+                    style={{ paddingRight: 56 }}
                   />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted tabular-nums pointer-events-none">
+                  <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[13px] text-muted tabular-nums pointer-events-none">
                     {name.length}/20
                   </span>
                 </div>
+                <p className="text-[13px] text-muted" style={{ lineHeight: 1.55 }}>어떤 사이인지 같이 적으면 더 좋아요.</p>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="uploader-phone" style={{ fontSize: 15 }}>전화번호</label>
                 <input
+                  id="uploader-phone"
                   type="tel"
                   inputMode="numeric"
                   value={phone}
                   onChange={(e) => { setPhone(e.target.value.slice(0, 13)); setUploaderError(""); }}
                   onKeyDown={(e) => { if (e.key === "Enter") handleUploaderNext(); }}
-                  placeholder="010-1234-5678 또는 01012345678"
+                  placeholder="01012345678"
                   maxLength={13}
                   className="input"
                 />
-                {uploaderError && (
-                  <p className="text-xs" style={{ color: "#e05252" }}>{uploaderError}</p>
-                )}
+                <p className="text-[13px] text-muted" style={{ lineHeight: 1.55 }}>완성본이 나오면 문자로 알려 드려요.</p>
               </div>
+
+              <p className="text-[13px]" style={{ lineHeight: 1.55, color: "var(--text-dim)" }}>
+                이름과 전화번호는 영상 구분과 완성본 알림에만 써요. 보낸 영상은 결과를 알린 뒤 48시간이 지나면 지워져요.{" "}
+                <a href="/privacy" target="_blank" rel="noopener" className="underline" style={{ color: "var(--accent)" }}>
+                  개인정보처리방침
+                </a>
+              </p>
+
+              <label className="flex items-start gap-2.5 min-h-[44px] py-2.5 cursor-pointer" style={{ fontSize: 14, lineHeight: 1.5 }}>
+                <input
+                  type="checkbox"
+                  checked={agreed}
+                  onChange={(e) => { setAgreed(e.target.checked); setUploaderError(""); }}
+                  className="shrink-0 cursor-pointer"
+                  style={{ width: 22, height: 22, margin: 0, accentColor: "var(--accent)" }}
+                />
+                <span>위 내용에 동의해요 (필수)</span>
+              </label>
+
+              {uploaderError && (
+                <p className="text-[13px]" style={{ color: "var(--danger)" }}>{uploaderError}</p>
+              )}
+
               <button
                 onClick={handleUploaderNext}
-                disabled={!name.trim() || !phone.trim()}
+                disabled={!name.trim() || !phone.trim() || !agreed}
                 className="btn btn-primary w-full"
+                style={{ height: 54, fontSize: 17, marginTop: 4 }}
               >
                 다음
               </button>
@@ -516,21 +553,23 @@ function UploadInner() {
           {/* ── idle ── */}
           {stage === "idle" && (
             <>
-              <p className="text-sm text-center text-foreground leading-relaxed" style={scrim}>
+              <p className="text-center" style={{ fontSize: 15 }}>
                 소중한 순간을 영상으로 남겨주세요
               </p>
 
-              <div className="notice" style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginBottom: "1rem" }}>
-                <p style={{ fontWeight: 600 }}>휴대폰을 세로로 들고 찍어주세요</p>
-                <p className="text-sm text-muted">· 앞부분 {maxClipSeconds}초만 영상에 담겨요 (뒤는 잘려요)</p>
+              <div className="notice">
+                <ul className="list-disc flex flex-col gap-1" style={{ paddingLeft: 18, fontSize: 15, lineHeight: 1.55 }}>
+                  <li>휴대폰을 세로로 들고 찍어주세요</li>
+                  <li>앞부분 {maxClipSeconds}초만 영상에 담겨요 (뒤는 잘려요)</li>
+                </ul>
               </div>
 
               {iosDevice ? (
                 <>
-                  {/* iOS 안내 박스 */}
+                  {/* iOS 안내 */}
                   <div className="w-full notice flex flex-col gap-2">
-                    <p className="text-xs text-accent font-medium">iPhone 사용 중이시군요</p>
-                    <p className="text-xs text-muted leading-relaxed">
+                    <p className="text-sm text-accent">iPhone 사용 중이시군요</p>
+                    <p className="text-[13px] text-muted leading-relaxed">
                       iOS 정책상 iPhone 즉석 촬영은 화질이 낮습니다.<br />
                       미리 카메라 앱으로 영상을 찍어두신 뒤 아래 버튼을 눌러주세요.
                     </p>
@@ -538,13 +577,12 @@ function UploadInner() {
 
                   {/* 갤러리 선택 — 큰 박스 */}
                   <label
-                    className="group relative w-full hover:bg-[var(--surface-2)] transition-all duration-300 flex flex-col items-center justify-center gap-5 cursor-pointer"
+                    className="group relative w-full hover:bg-[var(--surface-2)] transition-colors duration-300 flex flex-col items-center justify-center gap-5 cursor-pointer"
                     style={{
                       aspectRatio: "9 / 16",
                       maxHeight: "58vh",
                       background: "var(--surface-1)",
-                      border: "2px solid var(--hairline-strong)",
-                      borderRadius: "var(--r-md)",
+                      border: "1.5px solid var(--field)",
                     }}
                   >
                     <input type="file" accept="video/*" className="sr-only" onChange={handleFileSelected} />
@@ -561,7 +599,7 @@ function UploadInner() {
                           <polyline points="21 15 16 10 5 21" />
                         </svg>
                       </div>
-                      <p className="text-base font-medium text-muted group-hover:text-accent transition-colors duration-300">
+                      <p className="text-base text-accent">
                         갤러리에서 선택
                       </p>
                       <p className="text-sm text-muted">최대 {maxClipSeconds}초</p>
@@ -572,13 +610,12 @@ function UploadInner() {
                 <>
                   {/* 카메라 촬영 — 큰 박스 */}
                   <label
-                    className="group relative w-full hover:bg-[var(--surface-2)] transition-all duration-300 flex flex-col items-center justify-center gap-5 cursor-pointer"
+                    className="group relative w-full hover:bg-[var(--surface-2)] transition-colors duration-300 flex flex-col items-center justify-center gap-5 cursor-pointer"
                     style={{
                       aspectRatio: "9 / 16",
                       maxHeight: "58vh",
                       background: "var(--surface-1)",
-                      border: "2px solid var(--hairline-strong)",
-                      borderRadius: "var(--r-md)",
+                      border: "1.5px solid var(--field)",
                     }}
                   >
                     <input type="file" accept="video/*" capture="environment" className="sr-only" onChange={handleFileSelected} />
@@ -594,21 +631,21 @@ function UploadInner() {
                           <rect x="1" y="5" width="15" height="14" rx="2" />
                         </svg>
                       </div>
-                      <p className="text-base font-medium text-muted group-hover:text-accent transition-colors duration-300">
+                      <p className="text-base text-accent">
                         지금 촬영하기
                       </p>
                       <p className="text-sm text-muted">최대 {maxClipSeconds}초 · 탭하여 시작</p>
                     </div>
                   </label>
 
-                  <label className="btn-quiet text-sm cursor-pointer">
+                  <label className="btn-quiet text-sm cursor-pointer self-center">
                     <input type="file" accept="video/*" className="sr-only" onChange={handleFileSelected} />
                     갤러리에서 선택
                   </label>
                 </>
               )}
 
-              <p className="text-xs text-center text-muted leading-relaxed opacity-80" style={scrim}>
+              <p className="text-[13px] text-center text-muted leading-relaxed">
                 모든 순간을 모아 자동으로 한 편의 영상으로 편집해 드려요.
               </p>
             </>
@@ -619,7 +656,7 @@ function UploadInner() {
             <div className="w-full flex flex-col gap-5">
               <div
                 className="relative w-full bg-black overflow-hidden"
-                style={{ aspectRatio: "9 / 16", maxHeight: "54vh", borderRadius: "var(--r-md)" }}
+                style={{ aspectRatio: "9 / 16", maxHeight: "54vh" }}
               >
                 <span className="absolute top-3 left-3 w-5 h-5 border-t border-l z-10" style={{ borderColor: "var(--hairline-strong)" }} />
                 <span className="absolute top-3 right-3 w-5 h-5 border-t border-r z-10" style={{ borderColor: "var(--hairline-strong)" }} />
@@ -632,7 +669,7 @@ function UploadInner() {
                 업로드하기
               </button>
 
-              <button onClick={reRecord} className="btn-quiet text-sm text-center">
+              <button onClick={reRecord} className="btn-quiet text-sm self-center">
                 다시 촬영
               </button>
             </div>
@@ -640,7 +677,7 @@ function UploadInner() {
 
           {/* ── uploading ── */}
           {stage === "uploading" && (
-            <div className="w-full flex flex-col items-center gap-6 py-10" style={scrim}>
+            <div className="notice w-full flex flex-col items-center gap-6" style={{ padding: "40px 20px" }}>
               <p className="eyebrow">
                 {retryNum > 0 ? `재시도 중... (${retryNum}/3)` : "업로드 중..."}
               </p>
@@ -656,7 +693,7 @@ function UploadInner() {
 
           {/* ── done ── */}
           {stage === "done" && (
-            <div className="w-full flex flex-col items-center gap-6 text-center py-10" style={scrim}>
+            <div className="notice w-full flex flex-col items-center gap-6 text-center" style={{ padding: "40px 20px" }}>
               <div className="w-20 h-20 rounded-full border-2 border-accent flex items-center justify-center">
                 <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-accent">
                   <polyline points="20 6 9 17 4 12" />
@@ -687,24 +724,24 @@ function UploadInner() {
 
           {/* ── error ── */}
           {stage === "error" && (
-            <div className="w-full flex flex-col items-center gap-6 text-center py-10" style={scrim}>
-              <div className="w-16 h-16 flex items-center justify-center" style={{ border: "1px solid var(--hairline-strong)", borderRadius: "var(--r-sm)" }}>
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-muted">
+            <div className="notice w-full flex flex-col items-center gap-6 text-center" style={{ padding: "40px 20px" }}>
+              <div className="w-16 h-16 flex items-center justify-center" style={{ border: "1px solid var(--line)" }}>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ color: "var(--danger)" }}>
                   <line x1="18" y1="6" x2="6" y2="18" />
                   <line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
               </div>
               <div>
                 <p className="text-base text-foreground mb-2">오류가 발생했습니다</p>
-                <p className="text-sm text-muted leading-relaxed">{errorMsg}</p>
+                <p className="text-sm leading-relaxed" style={{ color: "var(--danger)" }}>{errorMsg}</p>
               </div>
               <div className="flex gap-4">
                 {blobRef.current && (
-                  <button onClick={handleUpload} className="btn btn-primary" style={{ height: 44, padding: "0 20px", fontSize: 13 }}>
+                  <button onClick={handleUpload} className="btn btn-primary" style={{ height: 44, padding: "0 20px", fontSize: 15 }}>
                     다시 시도
                   </button>
                 )}
-                <button onClick={reRecord} className="btn btn-secondary" style={{ height: 44, padding: "0 20px", fontSize: 13 }}>
+                <button onClick={reRecord} className="btn btn-secondary" style={{ height: 44, padding: "0 20px", fontSize: 15 }}>
                   다시 촬영
                 </button>
               </div>

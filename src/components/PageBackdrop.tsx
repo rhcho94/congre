@@ -1,53 +1,27 @@
 /**
- * PageBackdrop — 전 페이지 공통 배경 사진 + 오버레이.
- * 패턴별 농도 분기: 첫인상 화면(form/guest)은 사진 살림, 작업/읽기는 흐리게.
- * 사진 자산은 public/images/bg-stage-{a..e}.png.
+ * PageBackdrop — 참가자·공유 화면(pattern "e") 맨 위 사진 배경.
+ * 사진은 public/images/bg-event.jpg(768×620). 아래쪽은 그림 파일 안에서 이미 바탕색으로 덮여 있다.
+ * 페이지와 함께 스크롤된다(fixed 아님). 나머지 패턴은 그리지 않는다.
  */
 
 type Pattern = "a" | "b" | "c" | "d" | "e";
 
-const FIRST_IMPRESSION: Record<Pattern, boolean> = {
-  a: true,  // 폼류 — 사진 살림
-  b: false, // 목록류 — 흐리게
-  c: false, // 작업 — 흐리게
-  d: false, // 정적 — 흐리게
-  e: true,  // 게스트 — 사진 살림
-};
-
 export default function PageBackdrop({ pattern }: { pattern: Pattern }) {
   if (pattern !== "e") return null;
 
-  const firstImpression = FIRST_IMPRESSION[pattern];
-
   return (
-    <>
-      <div
-        aria-hidden
-        className="fixed inset-0 pointer-events-none"
-        style={{
-          zIndex: -10,
-          backgroundImage: `url(/images/bg-stage-${pattern}.png)`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          ...(firstImpression
-            ? { filter: "saturate(0.9) brightness(0.92)" }
-            : {
-                opacity: 0.4,
-                filter: "saturate(0.85) brightness(1.0) blur(1px)",
-                transform: "scale(1.08)",
-              }),
-        }}
-      />
-      <div
-        aria-hidden
-        className="fixed inset-0 pointer-events-none"
-        style={{
-          zIndex: -9,
-          background: firstImpression
-            ? "linear-gradient(180deg, rgba(12,11,9,0.45) 0%, rgba(12,11,9,0.62) 50%, rgba(12,11,9,0.80) 100%)"
-            : "linear-gradient(180deg, rgba(12,11,9,0.30) 0%, rgba(12,11,9,0.45) 100%)",
-        }}
-      />
-    </>
+    <div
+      aria-hidden
+      style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        width: "100%",
+        aspectRatio: "768 / 620",
+        background: "url(/images/bg-event.jpg) top center / 100% auto no-repeat",
+        zIndex: -10,
+        pointerEvents: "none",
+      }}
+    />
   );
 }

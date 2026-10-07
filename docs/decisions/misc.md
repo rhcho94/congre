@@ -131,6 +131,8 @@ CD 원본은 `<link>`로 Noto Sans KR(400/500/600) Google Fonts를 head에 로�
 - `src/components/FlowStrip.tsx` (신규)
 - `src/app/upload/[eventId]/page.tsx` — import + uploader 분기 첫 자식으로 `{!isReturning && <FlowStrip />}` 삽입
 
+- 2026-10-07: 유지. 참가자 첫 화면을 롤링페이퍼안으로 바꾸면서 시안에 없던 4단계 띠를 남기기로 했다(Ray 결정, 참가자 흐름 유지와 같은 이유). 색만 새 토큰(잉크)으로 바뀌었다.
+
 ## 2026-05-14 (2) — Track 4 강화: 1차 변경 폭 부족 → 한 단계 상향
 
 - **결정**: (1) 배경 토큰 추가 명도 상향 (#13110f→#1f1c18 / #1c1916→#2a261f / #26211a→#34302a). (2) Primary 버튼 그라디언트를 더 밝은 팔레트(from-[#f5b04a] to-[#a06f1f])로 교체 + inset highlight·drop shadow·amber glow 복합 shadow 풀세트 적용 + glow-accent 클래스 제거(shadow에 통합). (3) 헤일로 4곳(landing Final CTA·host·upload·events done) opacity-15→opacity-25, ellipse 70% 60%→100% 90%로 강화.

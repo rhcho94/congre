@@ -69,5 +69,5 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default function UploadLayout({ children }: { children: ReactNode }) {
-  return <div data-theme="dark">{children}</div>;
+  return <>{children}</>;
 }
