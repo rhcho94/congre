@@ -15,7 +15,7 @@ export function renderFirstClipUploadedEmail(ctx: FirstClipUploadedEmailCtx): st
            style="background:${C.bg};border:1px solid ${C.border};border-radius:4px;margin-bottom:28px;">
       <tr>
         <td style="padding:20px 24px;">
-          <p style="margin:0 0 6px;font-size:11px;color:${C.muted};text-transform:uppercase;letter-spacing:0.1em;">이벤트</p>
+          <p style="margin:0 0 6px;font-size:11px;color:${C.muted};">이벤트</p>
           <p style="margin:0;font-size:17px;font-weight:700;color:${C.text};">${ctx.title}</p>
         </td>
       </tr>
@@ -24,8 +24,8 @@ export function renderFirstClipUploadedEmail(ctx: FirstClipUploadedEmailCtx): st
       대시보드에서 업로드된 클립을 실시간으로 확인할 수 있습니다.
     </p>
     <a href="${ctx.dashboardUrl}"
-       style="display:inline-block;padding:12px 28px;background:${C.accent};color:#fff;font-size:13px;font-weight:600;text-decoration:none;border-radius:2px;letter-spacing:0.05em;">
-      대시보드 확인하기 →
+       style="display:inline-block;padding:12px 28px;background:${C.accent};color:#fff;font-size:13px;font-weight:600;text-decoration:none;border-radius:6px;">
+      대시보드 확인하기
     </a>
     `
   );

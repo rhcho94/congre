@@ -15,9 +15,9 @@ export function renderRefund50Email(ctx: Refund50EmailCtx): string {
            style="background:${C.bg};border:1px solid ${C.border};border-radius:4px;margin-bottom:28px;">
       <tr>
         <td style="padding:20px 24px;">
-          <p style="margin:0 0 6px;font-size:11px;color:${C.muted};text-transform:uppercase;letter-spacing:0.1em;">이벤트</p>
+          <p style="margin:0 0 6px;font-size:11px;color:${C.muted};">이벤트</p>
           <p style="margin:0 0 16px;font-size:17px;font-weight:700;color:${C.text};">${ctx.title}</p>
-          <p style="margin:0 0 4px;font-size:11px;color:${C.muted};text-transform:uppercase;letter-spacing:0.1em;">환불 내용</p>
+          <p style="margin:0 0 4px;font-size:11px;color:${C.muted};">환불 내용</p>
           <p style="margin:0;font-size:14px;font-weight:700;color:${C.accent};">결제 금액의 50% 환불 확정</p>
         </td>
       </tr>
@@ -29,8 +29,8 @@ export function renderRefund50Email(ctx: Refund50EmailCtx): string {
       환불은 저희 팀이 직접 처리하며, 절차 안내는 카카오톡 채널로 연락 주시면 안내드리겠습니다.
     </p>
     <a href="${ctx.dashboardUrl}"
-       style="display:inline-block;padding:12px 28px;background:${C.accent};color:#fff;font-size:13px;font-weight:600;text-decoration:none;border-radius:2px;letter-spacing:0.05em;margin-bottom:20px;">
-      대시보드 확인하기 →
+       style="display:inline-block;padding:12px 28px;background:${C.accent};color:#fff;font-size:13px;font-weight:600;text-decoration:none;border-radius:6px;margin-bottom:20px;">
+      대시보드 확인하기
     </a>
     <p style="margin:20px 0 0;font-size:13px;color:${C.muted};line-height:1.7;">
       환불 절차 문의: 카카오톡 채널 <strong style="color:${C.text};">@congre</strong><br>

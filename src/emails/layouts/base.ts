@@ -1,13 +1,16 @@
 const C = {
-  bg: "#f5f0e8",
+  bg: "#EEF4FB",
   surface: "#ffffff",
-  text: "#1a1208",
-  muted: "#6b6560",
-  accent: "#c8892c",
-  border: "#e5dfd6",
+  text: "#222222",
+  muted: "#4A5468",
+  accent: "#1F3C9C",
+  border: "#C9D6EA",
   dangerBg: "#fff5f5",
-  dangerText: "#c0392b",
+  dangerText: "#A61B1B",
 };
+
+// 머리글 로고 이미지(public/email-logo.png, 250×80을 절반 크기로 표시)
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://app.congre.kr";
 
 export function baseEmail(preview: string, body: string): string {
   return `<!DOCTYPE html>
@@ -17,7 +20,7 @@ export function baseEmail(preview: string, body: string): string {
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${preview}</title>
 </head>
-<body style="margin:0;padding:40px 0;background:${C.bg};font-family:'DM Sans',Helvetica,Arial,sans-serif;">
+<body style="margin:0;padding:40px 0;background:${C.bg};font-family:'Apple SD Gothic Neo','Malgun Gothic','맑은 고딕',sans-serif;">
   <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="max-width:580px;margin:0 auto;">
     <tr><td>
       <!-- Header -->
@@ -25,7 +28,7 @@ export function baseEmail(preview: string, body: string): string {
              style="background:${C.surface};border-bottom:1px solid ${C.border};">
         <tr>
           <td style="padding:28px 40px;">
-            <span style="font-size:20px;font-weight:700;color:${C.accent};letter-spacing:0.12em;">Congre</span>
+            <img src="${APP_URL}/email-logo.png" width="125" height="40" alt="Congre" style="display:block;border:0;outline:none;text-decoration:none">
           </td>
         </tr>
       </table>
