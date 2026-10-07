@@ -73,7 +73,7 @@ npx firebase emulators:start --only firestore
 - 공통 클래스: `.btn`/`.btn-primary`/`.btn-secondary`/`.btn-danger`/`.btn-quiet`/`.btn-kakao`, `.input`, `.panel`·`.notice`·`.glass-panel`(셋 다 같은 종이 카드. glass는 이름만 남음), `.badge`(점 + 글자), `.pen`
 - Legacy 별칭: `--surface`=`var(--surface-1)`, `--border`=`var(--hairline-strong)`, `--accent-bright`=`var(--accent-hi)`
 
-다크 테마 폐지 진행 중(2026-10-07)
+다크 테마 폐지(2026-10-07)
 
 랜딩(`deploy/site.css`)도 같은 값을 쓴다. 둘을 바꿀 때는 함께 바꾼다.
 

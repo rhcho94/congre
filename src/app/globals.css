@@ -63,25 +63,6 @@
   --accent-bright: var(--accent-hi);
 }
 
-/* ───────── 다크 스코프 (upload/share 2화면 한정 — 2026-10-07 폐지 진행 중) ───────── */
-[data-theme="dark"] {
-  --bg: #0c0b09;
-  --surface-1: #151310;
-  --surface-2: #1e1a13;
-  --surface-3: #28221a;
-
-  --accent: #c8892c;
-  --accent-hi: #d99a3a;
-  --accent-soft: #c8892c1f;
-
-  --text: #ede8df;
-  --text-dim: #c8c2b6;
-  --muted: #79716a;
-
-  --hairline: rgba(237, 232, 223, 0.07);
-  --hairline-strong: rgba(237, 232, 223, 0.14);
-}
-
 @theme inline {
   --color-background:     var(--bg);
   --color-foreground:     var(--text);

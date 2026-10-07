@@ -64,6 +64,7 @@ export async function GET(
       refundStatus: (data.refundStatus ?? null) as string | null,
       uploadToken: (data.uploadToken ?? undefined) as string | undefined,
       videoUrl,
+      videoDeletedAt: tsToMs(data.videoDeletedAt),
       introText: (data.introText ?? null) as string | null,
       introMediaKey: (data.introMediaKey ?? null) as string | null,
       introMediaType: (data.introMediaType ?? null) as "image" | "video" | null,

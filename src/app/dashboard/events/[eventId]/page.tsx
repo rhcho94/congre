@@ -51,6 +51,7 @@ interface ApiEvent {
   refundStatus?: string | null;
   uploadToken?: string;
   videoUrl?: string;
+  videoDeletedAt?: number | null;
   introText: string | null;
   introMediaKey: string | null;
   introMediaType: "image" | "video" | null;
@@ -1208,12 +1209,17 @@ export default function EventDetailPage() {
                     </>
                   )}
                 </div>
+              ) : event.videoDeletedAt ? (
+                <div className="notice flex flex-col gap-2">
+                  <h2 className="display" style={{ fontSize: 18, lineHeight: 1.35 }}>보관 기간(7일)이 지나 완성본이 삭제됐어요</h2>
+                  <p style={{ fontSize: 15 }}>다운로드해 두셨다면 그 파일을 써 주세요.</p>
+                </div>
               ) : (
                 <div className="notice flex items-center gap-3">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5ba06e" strokeWidth="1.5">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2E7D32" strokeWidth="1.5">
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
-                  <p className="text-sm" style={{ color: "#5ba06e" }}>편집이 완료되었습니다</p>
+                  <p className="text-sm" style={{ color: "#2E7D32" }}>편집이 완료되었습니다</p>
                 </div>
               )}
             </div>
@@ -1250,6 +1256,8 @@ export default function EventDetailPage() {
             </div>
           )}
 
+          {event.status !== "done" && (
+          <>
           {/* 영상 시작·끝 꾸미기 */}
           <div className={`panel mb-8 ${isClosed ? "opacity-60" : ""}`}>
             <p className="eyebrow mb-1" style={{ color: "var(--accent)" }}>선택 옵션 — 영상 시작·끝 꾸미기</p>
@@ -1522,8 +1530,11 @@ export default function EventDetailPage() {
               </div>
             </div>
           </div>
+          </>
+          )}
 
-          {/* Clips list */}
+          {/* Clips list — 완성 뒤 클립이 0개면 섹션째 숨김 */}
+          {!(event.status === "done" && clips.length === 0) && (
           <div>
             <p className="eyebrow mb-4" style={{ color: "var(--accent)" }}>업로드된 클립 ({clips.length}개)</p>
             {clips.length === 0 ? (
@@ -1610,6 +1621,7 @@ export default function EventDetailPage() {
               </div>
             )}
           </div>
+          )}
 
           {/* QR & 공유 — open일 때만 */}
           {event.status === "open" && shareUrl && (

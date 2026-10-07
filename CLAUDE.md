@@ -165,7 +165,7 @@ CD 자체 학습 자료: https://support.claude.com/en/articles/14604416-get-sta
 
 ## 디자인 토큰 (CSS 변수)
 
-라이트 단일 테마(`:root`). 다크 테마(`[data-theme="dark"]`)는 2026-10-07 폐지 진행 중(업로드·공유 화면 정리 커밋에서 삭제 — 삭제 커밋에서 이 줄을 "다크 테마 폐지(2026-10-07)"로 고친다). 정의 위치: `src/app/globals.css`. 기준: `docs/decisions/design.md`.
+라이트 단일 테마(`:root`). 다크 테마 폐지(2026-10-07). 정의 위치: `src/app/globals.css`. 기준: `docs/decisions/design.md`.
 
 - 바탕 `--bg` #EEF4FB (단색, 움직이는 배경 없음)
 - 표면 `--surface-1` #FFFFFF, `--surface-2` #F5F8FC, `--surface-3` #E6EDF7, 종이 `--paper` #FFFFFF
