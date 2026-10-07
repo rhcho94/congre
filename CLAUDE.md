@@ -146,7 +146,7 @@ CD 자체 학습 자료: https://support.claude.com/en/articles/14604416-get-sta
 
 ## 절대 규칙
 
-- 브랜드 "Congre" 표기는 반드시 `src/components/BrandName.tsx` 컴포넌트 사용. 인라인 텍스트로 흩어 쓰지 말 것.
+- 브랜드 로고 표기는 반드시 `src/components/BrandName.tsx`(로고 D SVG) 사용. 인라인 텍스트로 로고를 흉내 내지 말 것. 예외 3곳: 무료 워터마크 미리보기 `CongreBadge`(영상 속 글씨 모양을 그대로 보여 주는 펜 글씨 텍스트), 공유 페이지 만료 카드의 로고 마크 SVG, 메일 머리글 로고 이미지(`public/email-logo.png`). 문장 속 "Congre"(예: "Congre로 만든 영상입니다")는 보통 글자.
 - 변수명·파일명·환경변수·도메인 등 기술 식별자는 소문자 (congre-mvp, app.congre.kr).
 - Tailwind는 v4 사용 중이며 **config 파일 없음**. `@import` 방식. tailwind.config.js 만들지 말 것.
 - 커밋 메시지는 conventional commits (feat:, fix:, chore:, docs:, refactor:).

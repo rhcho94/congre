@@ -4,6 +4,14 @@
 
 > 재렌더 유료화 관련 클립 시계·결제 흐름 결정은 `decisions/market-product.md` 2026-08-16 항목에 있다.
 
+## 2026-10-07 — 무료 워터마크 글꼴·색 변경, 끝 화면 로고 카드 보류
+
+- **결정**: 무료 플랜 워터마크 "made by Congre"의 글꼴을 Nanum Pen(로고 D 글씨체)으로, 크기 40 → 52, 색 #c8892c → #FFFFFF, 투명도 0.40 → 0.6으로 바꾼다. 텍스트·위치(오른쪽 아래)·길이(end)·트랙 위치는 그대로. 글꼴 파일 `public/fonts/NanumPenScript-Regular.ttf`(라틴 부분 글꼴 31,620바이트, 파일 안 family 이름 "Nanum Pen")를 `timeline.fonts`에 넣고 CormorantGaramond-Italic.ttf는 삭제했다.
+- **근거**: 로고를 D 하나로 통일(F10)하면서 영상 속 글씨체도 맞췄다. 크기 52는 Nanum Pen 글자가 같은 크기의 Cormorant보다 작게 보여 비슷한 크기로 맞춘 값이다(정지 화면 위 합성으로 비교, 40 대비 1.3배). 흰색 60%는 어떤 장면에서도 읽히되 영상을 가리지 않는 정도로 Ray가 고른 값이다(2026-10-07 워터마크 색 결정). 금색 40%는 영상 정지 화면 위에 합성해 봤을 때 거의 보이지 않았다(실제 렌더 관찰 아님).
+- **확인 상태**: **실제 렌더로는 아직 확인하지 않았다.** 코드 값과 정지 화면 합성으로만 봤다. 다음 무료 플랜 테스트 렌더(H2) 때 오른쪽 아래 글자가 Nanum Pen으로 나오는지, 크기·투명도가 적당한지 확인한다. family 이름이 맞지 않으면 Shotstack은 기본 글꼴로 대체하므로 글꼴 모양을 꼭 본다.
+- **보류**: 영상 끝 화면에 로고 카드를 붙이는 것은 하지 않았다. 렌더 구성을 바꾸는 일이라 실제 렌더를 보고 확인해야 해서, 어차피 하는 다음 테스트 렌더(H2) 때 함께 한다(2026-10-07 결정 4). 크레딧 때문은 아니다(월 200, 지난 6개월 사용 20 미만). 인트로·아웃트로 글자 색 #c8892c도 같은 이유로 그때.
+- **출처**: 2026-10-07 채팅 결정 4(끝 화면 보류, 워터마크 글꼴만)와 워터마크 색 결정(흰색 60%).
+
 ## 2026-09-21 — 세로 클립 90도 회전 대응으로 `transcode: true` 채택
 
 - **결정**: 참가자 클립 asset에 `transcode: true`를 붙인다(`shotstack.ts:167`). Shotstack이
@@ -433,6 +441,8 @@ AWS IAM (콘솔 직접). 코드 변경 없음.
 - `552f373` fix: drop unsupported width/height from watermark rich-text asset (제약 (a) 발견 후)
 - `d652e15` fix: move watermark track to top layer so it stays visible (제약 (b) 발견 후)
 - `5ccd6e8` fix: add whitespace padding to watermark for edge spacing (제약 (c) 적용)
+
+→ 2026-10-07 글꼴·색 변경(위 항목)
 
 ## 2026-05-30 — 워터마크 정밀 수치 확정
 

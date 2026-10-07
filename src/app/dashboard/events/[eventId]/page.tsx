@@ -1147,7 +1147,7 @@ export default function EventDetailPage() {
                   {/* 배지 미리보기 */}
                   <div className="flex flex-col items-center gap-2 py-1">
                     <CongreBadge />
-                    <p className="text-[10px] tracking-widest uppercase text-muted opacity-60">
+                    <p className="text-[13px] text-muted">
                       공유 시 이 배지가 함께 표시됩니다
                     </p>
                   </div>

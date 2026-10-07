@@ -157,7 +157,7 @@ export async function createRender(
   const hasAnyText = !!(intro?.text || outro?.text);
   const fonts: Array<{ src: string }> = [];
   if (hasAnyText || showNames) fonts.push({ src: `${appUrl}/fonts/NotoSansKR-Regular.ttf` });
-  if (plan === "free") fonts.push({ src: `${appUrl}/fonts/CormorantGaramond-Italic.ttf` });
+  if (plan === "free") fonts.push({ src: `${appUrl}/fonts/NanumPenScript-Regular.ttf` });
 
   const transitionPool = TRANSITION_POOLS[style?.transition ?? "default"];
   const transitionsIn = pickSequence(transitionPool, clips.length);
@@ -254,12 +254,12 @@ export async function createRender(
           asset: {
             type: "rich-text",
             text: "made by Congre   \n ",
-            font: { family: "Cormorant Garamond", size: 40, color: "#c8892c" },
+            font: { family: "Nanum Pen", size: 52, color: "#FFFFFF" },
             align: { horizontal: "right", vertical: "bottom" },
           },
           start: 0,
           length: "end",
-          opacity: 0.40,
+          opacity: 0.6,
         },
       ],
     });

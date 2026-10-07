@@ -4,6 +4,7 @@
 
 ## 2026-10-07
 
+- feat: 브랜드 표기를 로고 D로 교체 — BrandName을 로고 D 인라인 SVG로, 파비콘·apple-icon·OG 이미지(행사 공용판)·logo.png를 새 그림으로 바꿨다. 무료 워터마크 미리보기(CongreBadge)는 펜 글씨로, Shotstack 워터마크는 Nanum Pen 52px 흰색 0.6으로 바꾸고 Cormorant TTF를 삭제했다(decisions/design.md 2026-10-06, rendering.md 2026-10-07). 실제 렌더 확인은 다음 테스트 렌더(H2) 때.
 - style: 앱 테마를 롤링페이퍼안 토큰·글꼴로 교체 — 색(바탕 #EEF4FB, 잉크 #1F3C9C 등)·글꼴(Gowun Dodum, Nanum Pen Script)·버튼·카드·배지 모양을 새 기준으로 바꾸고 움직이는 배경과 유리 효과를 삭제했다(decisions/design.md 2026-10-07).
 
 ## 2026-10-01
