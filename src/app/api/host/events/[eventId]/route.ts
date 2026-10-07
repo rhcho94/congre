@@ -59,6 +59,8 @@ export async function GET(
       date: tsToMs(data.date),
       status: data.status as string,
       plan: (data.plan ?? null) as string | null,
+      maxClips: (data.maxClips ?? null) as number | null,
+      maxClipSeconds: (data.maxClipSeconds ?? null) as number | null,
       hostId: data.hostId as string,
       unlocked: (data.unlocked ?? false) as boolean,
       refundStatus: (data.refundStatus ?? null) as string | null,
