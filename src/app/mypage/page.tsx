@@ -17,6 +17,9 @@ interface ApiEvent {
   status: EventStatus;
 }
 
+// 작은 버튼 — 높이 44px, 15px
+const SMALL_BTN: React.CSSProperties = { height: 44, fontSize: 15, padding: "0 16px" };
+
 export default function MyPage() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
@@ -262,17 +265,16 @@ export default function MyPage() {
           </div>
         </AppHeader>
 
-        <main className="mx-auto max-w-3xl px-6 py-16">
-          <div className="mb-10">
-            <h1 className="display text-3xl">내 계정</h1>
-          </div>
+        <main className="mx-auto max-w-3xl px-5 pt-2 pb-16 flex flex-col gap-4">
+          <h1 className="display" style={{ fontSize: 28, lineHeight: 1.3, paddingTop: 12 }}>내 계정</h1>
 
           {user && !user.emailVerified && <EmailVerificationBanner />}
 
+          {/* 이벤트 요약 */}
           {eventsLoading ? (
             <p className="text-center text-muted text-sm py-8 animate-pulse">불러오는 중...</p>
           ) : events.length === 0 ? (
-            <div className="notice mb-8 text-center">
+            <div className="notice text-center">
               <p className="text-muted text-sm mb-4">아직 이벤트가 없습니다.</p>
               {user?.emailVerified ? (
                 <Link href="/dashboard/create" className="text-sm text-accent hover:brightness-110 transition-all">
@@ -283,30 +285,109 @@ export default function MyPage() {
               )}
             </div>
           ) : (
-            <div className="glass-panel flex items-center justify-between mb-8">
+            <section className="notice flex items-center justify-between gap-3" style={{ padding: 16 }}>
               <div className="flex flex-col gap-1">
-                <span className="text-sm text-foreground">진행 중 {inProgress}개</span>
+                <span style={{ fontSize: 15 }}>진행 중 {inProgress}개</span>
                 <span className="text-sm text-muted">완료된 {doneCount}개</span>
               </div>
-              <Link href="/dashboard" className="btn-quiet text-sm">
+              <Link href="/dashboard" className="btn btn-secondary shrink-0" style={SMALL_BTN}>
                 내 이벤트 관리하기
               </Link>
-            </div>
+            </section>
           )}
 
-          <div className="glass-panel mb-10">
-            <p className="eyebrow mb-6">비밀번호</p>
+          {/* 프로필 */}
+          <section className="notice flex flex-col gap-4" style={{ padding: 16 }}>
+            <h2 style={{ fontSize: 17 }}>프로필</h2>
+            {userDocLoading ? (
+              <p className="text-muted text-sm animate-pulse">불러오는 중...</p>
+            ) : (
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[13px] text-muted">이메일</span>
+                  <span style={{ fontSize: 15 }}>{user?.email ?? "—"}</span>
+                </div>
+
+                {editMode ? (
+                  <>
+                    <div className="flex flex-col gap-1.5">
+                      <span className="text-[15px]">이름</span>
+                      <input
+                        type="text"
+                        value={editName}
+                        onChange={(e) => setEditName(e.target.value)}
+                        disabled={saving}
+                        className="input"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <span className="text-[15px]">전화번호</span>
+                      <input
+                        type="text"
+                        value={editPhone}
+                        onChange={(e) => setEditPhone(e.target.value)}
+                        disabled={saving}
+                        className="input"
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-[13px] text-muted">이름</span>
+                      <span style={{ fontSize: 15 }}>{userDoc?.name ?? "-"}</span>
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-[13px] text-muted">전화번호</span>
+                      <span style={{ fontSize: 15 }}>{userDoc?.phone ?? "-"}</span>
+                    </div>
+                  </>
+                )}
+
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[13px] text-muted">가입일</span>
+                  <span style={{ fontSize: 15 }}>
+                    {userDoc?.createdAt
+                      ? userDoc.createdAt.toDate().toLocaleDateString("ko-KR")
+                      : "-"}
+                  </span>
+                </div>
+
+                {editMode ? (
+                  <div className="flex gap-3 pt-2">
+                    <button onClick={handleSave} disabled={saving} className="btn btn-primary">
+                      {saving ? "저장 중..." : "저장"}
+                    </button>
+                    <button onClick={handleCancel} disabled={saving} className="btn btn-secondary">
+                      취소
+                    </button>
+                  </div>
+                ) : (
+                  userDoc !== null && (
+                    <button onClick={handleEditStart} className="btn btn-secondary self-start" style={SMALL_BTN}>
+                      프로필 수정
+                    </button>
+                  )
+                )}
+              </div>
+            )}
+          </section>
+
+          {/* 비밀번호 */}
+          <section className="notice flex flex-col gap-4" style={{ padding: 16 }}>
+            <h2 style={{ fontSize: 17 }}>비밀번호</h2>
             {pwMode ? (
-              <div className="flex flex-col gap-6">
+              <div className="flex flex-col gap-5">
                 <div className="flex flex-col gap-1.5">
-                  <span className="eyebrow">현재 비밀번호</span>
+                  <span className="text-[15px]">현재 비밀번호</span>
                   <div className="relative">
                     <input
                       type={showCurrentPw ? "text" : "password"}
                       value={currentPw}
                       onChange={(e) => setCurrentPw(e.target.value)}
                       disabled={pwSaving}
-                      className="input pr-10"
+                      className="input"
+                      style={{ paddingRight: 44 }}
                     />
                     <button
                       type="button"
@@ -318,14 +399,15 @@ export default function MyPage() {
                   </div>
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <span className="eyebrow">새 비밀번호 (6자 이상)</span>
+                  <span className="text-[15px]">새 비밀번호 (6자 이상)</span>
                   <div className="relative">
                     <input
                       type={showNewPw ? "text" : "password"}
                       value={newPw}
                       onChange={(e) => setNewPw(e.target.value)}
                       disabled={pwSaving}
-                      className="input pr-10"
+                      className="input"
+                      style={{ paddingRight: 44 }}
                     />
                     <button
                       type="button"
@@ -346,41 +428,36 @@ export default function MyPage() {
                 </div>
               </div>
             ) : (
-              <button onClick={handlePwStart} className="btn-quiet text-sm">
+              <button onClick={handlePwStart} className="btn btn-secondary self-start" style={SMALL_BTN}>
                 비밀번호 변경
               </button>
             )}
-          </div>
+          </section>
 
-          <div className="glass-panel mb-10">
-            <p className="eyebrow mb-6">회원 탈퇴</p>
+          {/* 회원 탈퇴 — 맨 아래, 위 카드와 떨어뜨림 */}
+          <section className="flex flex-col gap-2" style={{ marginTop: 32 }}>
+            <h2 style={{ fontSize: 17, color: "var(--danger)" }}>회원 탈퇴</h2>
             {inProgress > 0 ? (
               <p className="text-sm text-muted leading-relaxed">
                 진행 중 이벤트가 {inProgress}개 있습니다. 모든 이벤트를 마감한 후 탈퇴할 수 있습니다.
               </p>
             ) : delMode ? (
-              <div className="flex flex-col gap-6">
-                <div
-                  className="p-4"
-                  style={{
-                    background: "var(--surface-2)",
-                    border: "1px solid var(--hairline)",
-                    borderRadius: "var(--r-sm)",
-                  }}
-                >
+              <div className="flex flex-col gap-5">
+                <div className="notice" style={{ padding: 16 }}>
                   <p className="text-sm text-foreground leading-relaxed">
                     회원 탈퇴 시 회원 정보, 모든 이벤트, 업로드된 클립, 완성본 영상이 즉시 삭제되며 복구할 수 없습니다.
                   </p>
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <span className="eyebrow">현재 비밀번호</span>
+                  <span className="text-[15px]">현재 비밀번호</span>
                   <div className="relative">
                     <input
                       type={showDelPw ? "text" : "password"}
                       value={delPw}
                       onChange={(e) => setDelPw(e.target.value)}
                       disabled={delSaving}
-                      className="input pr-10"
+                      className="input"
+                      style={{ paddingRight: 44 }}
                     />
                     <button
                       type="button"
@@ -396,11 +473,7 @@ export default function MyPage() {
                     onClick={handleDelSubmit}
                     disabled={delSaving}
                     className="btn"
-                    style={{
-                      border: "1px solid #7f1d1d",
-                      color: "#fca5a5",
-                      background: "transparent",
-                    }}
+                    style={{ background: "var(--danger)", color: "#fff" }}
                   >
                     {delSaving ? "처리 중..." : "탈퇴"}
                   </button>
@@ -410,87 +483,11 @@ export default function MyPage() {
                 </div>
               </div>
             ) : (
-              <button onClick={handleDelStart} className="btn-quiet text-sm hover:text-red-400">
+              <button onClick={handleDelStart} className="btn btn-danger self-start" style={SMALL_BTN}>
                 회원 탈퇴
               </button>
             )}
-          </div>
-
-          <div className="glass-panel">
-            <p className="eyebrow mb-6">프로필</p>
-            {userDocLoading ? (
-              <p className="text-muted text-sm animate-pulse">불러오는 중...</p>
-            ) : (
-              <div className="flex flex-col gap-6">
-                <div className="flex flex-col gap-1">
-                  <span className="eyebrow">이메일</span>
-                  <span className="text-sm text-foreground">{user?.email ?? "—"}</span>
-                </div>
-
-                {editMode ? (
-                  <>
-                    <div className="flex flex-col gap-1.5">
-                      <span className="eyebrow">이름</span>
-                      <input
-                        type="text"
-                        value={editName}
-                        onChange={(e) => setEditName(e.target.value)}
-                        disabled={saving}
-                        className="input"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <span className="eyebrow">전화번호</span>
-                      <input
-                        type="text"
-                        value={editPhone}
-                        onChange={(e) => setEditPhone(e.target.value)}
-                        disabled={saving}
-                        className="input"
-                      />
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="flex flex-col gap-1">
-                      <span className="eyebrow">이름</span>
-                      <span className="text-sm text-foreground">{userDoc?.name ?? "-"}</span>
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <span className="eyebrow">전화번호</span>
-                      <span className="text-sm text-foreground">{userDoc?.phone ?? "-"}</span>
-                    </div>
-                  </>
-                )}
-
-                <div className="flex flex-col gap-1">
-                  <span className="eyebrow">가입일</span>
-                  <span className="text-sm text-foreground">
-                    {userDoc?.createdAt
-                      ? userDoc.createdAt.toDate().toLocaleDateString("ko-KR")
-                      : "-"}
-                  </span>
-                </div>
-
-                {editMode ? (
-                  <div className="flex gap-3 pt-2">
-                    <button onClick={handleSave} disabled={saving} className="btn btn-primary">
-                      {saving ? "저장 중..." : "저장"}
-                    </button>
-                    <button onClick={handleCancel} disabled={saving} className="btn btn-secondary">
-                      취소
-                    </button>
-                  </div>
-                ) : (
-                  userDoc !== null && (
-                    <button onClick={handleEditStart} className="btn-quiet text-sm self-start">
-                      프로필 수정
-                    </button>
-                  )
-                )}
-              </div>
-            )}
-          </div>
+          </section>
         </main>
       </div>
     </>

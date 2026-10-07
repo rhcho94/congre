@@ -33,6 +33,9 @@ const statusBadgeClass: Record<EventStatus, string> = {
   done: "badge-done",
 };
 
+// "+ 새 이벤트" — 채운 잉크 작은 버튼(44px)
+const NEW_EVENT_BTN: React.CSSProperties = { height: 44, fontSize: 15, padding: "0 18px" };
+
 export default function DashboardPage() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
@@ -140,18 +143,16 @@ export default function DashboardPage() {
           </div>
         </AppHeader>
 
-        <main className="mx-auto max-w-3xl px-6 py-16">
-          <div className="flex items-end justify-between mb-10">
-            <div>
-              <h1 className="display text-3xl">내 이벤트</h1>
-            </div>
+        <main className="mx-auto max-w-3xl px-5 pt-2 pb-16 flex flex-col gap-4">
+          <div className="flex items-end justify-between gap-3" style={{ paddingTop: 12 }}>
+            <h1 className="display" style={{ fontSize: 28, lineHeight: 1.3 }}>내 이벤트</h1>
             {user?.emailVerified ? (
-              <Link href="/dashboard/create" className="btn btn-secondary">
+              <Link href="/dashboard/create" className="btn btn-primary shrink-0" style={NEW_EVENT_BTN}>
                 + 새 이벤트
               </Link>
             ) : (
-              <div className="flex flex-col items-end gap-1">
-                <button disabled className="btn btn-secondary opacity-50 cursor-not-allowed">
+              <div className="flex flex-col items-end gap-1 shrink-0">
+                <button disabled className="btn btn-primary" style={NEW_EVENT_BTN}>
                   + 새 이벤트
                 </button>
                 <span className="text-xs text-muted">이메일 인증 후 이용 가능</span>
@@ -161,12 +162,10 @@ export default function DashboardPage() {
 
           {user && !user.emailVerified && <EmailVerificationBanner />}
 
-          <div className="hr mb-8" />
-
           {eventsLoading ? (
             <p className="text-center text-muted text-sm py-16 animate-pulse">불러오는 중...</p>
           ) : events.length === 0 ? (
-            <div className="notice text-center py-16 relative overflow-hidden">
+            <div className="notice text-center relative overflow-hidden" style={{ padding: "64px 20px" }}>
               {/* 배경 이미지 레이어 */}
               <div
                 className="absolute inset-0"
@@ -212,28 +211,30 @@ export default function DashboardPage() {
               </div>
             </div>
           ) : (
-            <div className="flex flex-col gap-3">
-              {events.map((event) => (
-                <Link
-                  key={event.id}
-                  href={`/dashboard/events/${event.id}`}
-                  className="glass-panel flex items-center justify-between"
-                >
-                  <div className="flex flex-col gap-1 min-w-0 flex-1">
-                    <span className="text-sm text-foreground font-medium truncate">
-                      {event.title}
+            <div className="flex flex-col" style={{ borderTop: "1px solid var(--line)" }}>
+              {events.map((event) => {
+                const dateLabel = event.date
+                  ? new Date(event.date).toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" })
+                  : "";
+                // 옛 플랜 값(small 등)은 라벨이 없어 날짜만 남는다
+                const meta = [dateLabel, planLabels[event.plan]].filter(Boolean).join(", ");
+                return (
+                  <Link
+                    key={event.id}
+                    href={`/dashboard/events/${event.id}`}
+                    className="flex items-center justify-between gap-3 hover:bg-[var(--surface-2)] transition-colors"
+                    style={{ padding: "14px 4px", minHeight: 64, borderBottom: "1px solid var(--line)", color: "var(--text)" }}
+                  >
+                    <span className="flex flex-col gap-0.5 min-w-0 flex-1">
+                      <span className="truncate" style={{ fontSize: 16 }}>{event.title}</span>
+                      {meta && <span className="text-sm text-muted">{meta}</span>}
                     </span>
-                    <span className="text-xs text-muted">
-                      {event.date ? new Date(event.date).toLocaleDateString("ko-KR") : ""}
-                      {" · "}
-                      {planLabels[event.plan]}
+                    <span className={`badge ${statusBadgeClass[event.status]} shrink-0`}>
+                      {statusLabels[event.status]}
                     </span>
-                  </div>
-                  <span className={`badge ${statusBadgeClass[event.status]} shrink-0 ml-4`}>
-                    {statusLabels[event.status]}
-                  </span>
-                </Link>
-              ))}
+                  </Link>
+                );
+              })}
             </div>
           )}
         </main>

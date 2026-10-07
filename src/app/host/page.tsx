@@ -164,7 +164,7 @@ export default function HostPage() {
     <>
       <PageBackdrop pattern="a" />
       <div className="min-h-screen">
-        <nav className="flex items-center justify-between px-8 py-6">
+        <nav className="flex items-center justify-between gap-2 px-5 py-2 min-h-[60px]">
           <a href={LANDING_URL} className="inline-flex items-center hover:opacity-75 transition-opacity duration-200">
             <BrandName />
           </a>
@@ -178,11 +178,11 @@ export default function HostPage() {
           )}
         </nav>
 
-        <main className="mx-auto max-w-2xl px-6 py-16">
+        <main className="mx-auto max-w-2xl px-5 pt-2 pb-16">
           {view === "login" && (
             <>
-              <div className="glass-panel w-full max-w-md mx-auto p-10">
-                <h1 className="display text-3xl text-center mb-10">주최자 로그인</h1>
+              <div className="w-full max-w-md mx-auto">
+                <h1 className="display mb-6" style={{ fontSize: 28, lineHeight: 1.3, paddingTop: 12 }}>주최자 로그인</h1>
 
                 {!isFirebaseConfigured && (
                   <div className="mb-6 notice">
@@ -195,7 +195,7 @@ export default function HostPage() {
 
                 <form onSubmit={handleLogin} className="flex flex-col gap-4">
                   <label className="flex flex-col gap-1.5">
-                    <span className="eyebrow">이메일</span>
+                    <span className="text-[15px]">이메일</span>
                     <input
                       type="email"
                       placeholder="host@congre.io"
@@ -208,7 +208,7 @@ export default function HostPage() {
                   </label>
 
                   <label className="flex flex-col gap-1.5">
-                    <span className="eyebrow">비밀번호</span>
+                    <span className="text-[15px]">비밀번호</span>
                     <input
                       type="password"
                       placeholder="••••••••"
@@ -221,20 +221,20 @@ export default function HostPage() {
                   </label>
 
                   {loginError && (
-                    <p className="text-xs" style={{ color: "#d45040" }}>{loginError}</p>
+                    <p className="text-[13px]" style={{ color: "var(--danger)" }}>{loginError}</p>
                   )}
 
-                  <button type="submit" disabled={loginLoading} className="btn btn-primary mt-2">
+                  <button type="submit" disabled={loginLoading} className="btn btn-primary mt-2" style={{ height: 54, fontSize: 17 }}>
                     {loginLoading ? "로그인 중..." : "로그인"}
                   </button>
                 </form>
 
                 <div className="mt-4 text-center flex items-center justify-center gap-3">
-                  <button type="button" onClick={openResetModal} className="btn-quiet text-xs">
+                  <button type="button" onClick={openResetModal} className="btn-quiet text-sm">
                     비밀번호를 잊으셨나요?
                   </button>
                   <span className="text-xs text-muted">·</span>
-                  <Link href="/signup" className="btn-quiet text-xs">
+                  <Link href="/signup" className="btn-quiet text-sm" style={{ color: "var(--accent)" }}>
                     회원가입
                   </Link>
                 </div>
@@ -251,7 +251,7 @@ export default function HostPage() {
                     onClick={(e) => e.stopPropagation()}
                   >
                     <div className="flex items-center justify-between">
-                      <p className="eyebrow">비밀번호 재설정</p>
+                      <p className="display" style={{ fontSize: 18 }}>비밀번호 재설정</p>
                       <button onClick={() => setResetOpen(false)} className="text-muted hover:text-foreground transition-colors" aria-label="닫기">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                           <line x1="18" y1="6" x2="6" y2="18" />
@@ -263,10 +263,10 @@ export default function HostPage() {
                     {resetSent ? (
                       <div className="flex flex-col gap-3">
                         <div className="flex items-center gap-2">
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5ba06e" strokeWidth="1.5">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2E7D32" strokeWidth="1.5">
                             <polyline points="20 6 9 17 4 12" />
                           </svg>
-                          <p className="text-sm" style={{ color: "#5ba06e" }}>재설정 메일을 보냈습니다</p>
+                          <p className="text-sm" style={{ color: "#2E7D32" }}>재설정 메일을 보냈습니다</p>
                         </div>
                         <p className="text-xs text-muted leading-relaxed">
                           {resetEmail} 로 전송됐습니다. 메일함을 확인해주세요.
@@ -281,7 +281,7 @@ export default function HostPage() {
                           가입한 이메일을 입력하면 비밀번호 재설정 링크를 보내드립니다.
                         </p>
                         <label className="flex flex-col gap-1.5">
-                          <span className="eyebrow">이메일</span>
+                          <span className="text-[15px]">이메일</span>
                           <input
                             type="email"
                             placeholder="host@congre.io"
@@ -294,7 +294,7 @@ export default function HostPage() {
                           />
                         </label>
                         {resetError && (
-                          <p className="text-xs" style={{ color: "#d45040" }}>{resetError}</p>
+                          <p className="text-[13px]" style={{ color: "var(--danger)" }}>{resetError}</p>
                         )}
                         <button type="submit" disabled={resetLoading} className="btn btn-primary">
                           {resetLoading ? "발송 중..." : "재설정 메일 보내기"}

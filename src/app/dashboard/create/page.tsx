@@ -11,7 +11,6 @@ import { type EventPlan } from "@/lib/events";
 import { isFirebaseConfigured, getFirebaseAuth } from "@/lib/firebase";
 import { getUserDoc } from "@/lib/users";
 import { calcPrice } from "@/lib/plans";
-import { ChevronUp, ChevronDown } from "lucide-react";
 
 function Stepper({
   value, min, max, step, onChange, suffix, disabled,
@@ -27,51 +26,33 @@ function Stepper({
   const clamp = (v: number) => Math.min(max, Math.max(min, v));
   const atMax = value >= max;
   const atMin = value <= min;
+  const sideBtn: React.CSSProperties = { width: 52, height: 52, padding: 0, fontSize: 24, flexShrink: 0 };
   return (
-    <div
-      className="flex items-center justify-between p-4"
-      style={{
-        background: "var(--surface-2)",
-        border: "1px solid var(--hairline)",
-        borderRadius: "var(--r-sm)",
-      }}
-    >
-      <span className="text-base text-foreground font-medium">
+    <div className="flex items-center gap-2">
+      <button
+        type="button"
+        onClick={() => onChange(clamp(value - step))}
+        disabled={disabled || atMin}
+        aria-label="줄이기"
+        className="btn btn-secondary"
+        style={sideBtn}
+      >
+        −
+      </button>
+      <div className="input flex-1 flex items-center justify-center" style={{ height: 52, fontSize: 18 }}>
         {value}
-        <span className="text-sm text-muted ml-1">{suffix}</span>
-      </span>
-      <div className="flex flex-col gap-1">
-        <button
-          type="button"
-          onClick={() => onChange(clamp(value + step))}
-          disabled={disabled || atMax}
-          aria-label="증가"
-          className="flex items-center justify-center transition-opacity disabled:opacity-30"
-          style={{
-            width: 28, height: 22,
-            background: "var(--surface-3)",
-            border: "1px solid var(--hairline)",
-            borderRadius: 4,
-          }}
-        >
-          <ChevronUp size={14} />
-        </button>
-        <button
-          type="button"
-          onClick={() => onChange(clamp(value - step))}
-          disabled={disabled || atMin}
-          aria-label="감소"
-          className="flex items-center justify-center transition-opacity disabled:opacity-30"
-          style={{
-            width: 28, height: 22,
-            background: "var(--surface-3)",
-            border: "1px solid var(--hairline)",
-            borderRadius: 4,
-          }}
-        >
-          <ChevronDown size={14} />
-        </button>
+        <span className="text-muted" style={{ fontSize: 14, marginLeft: 4 }}>{suffix}</span>
       </div>
+      <button
+        type="button"
+        onClick={() => onChange(clamp(value + step))}
+        disabled={disabled || atMax}
+        aria-label="늘리기"
+        className="btn btn-secondary"
+        style={sideBtn}
+      >
+        +
+      </button>
     </div>
   );
 }
@@ -274,14 +255,19 @@ export default function CreateEventPage() {
           )}
         </AppHeader>
 
-        <main className="mx-auto max-w-lg px-6 py-16">
+        <main className="mx-auto max-w-lg px-5 pt-2 pb-16">
           {view === "form" ? (
-            <div className="glass-panel p-10">
-              <h1 className="display text-3xl mb-10">새 이벤트 만들기</h1>
+            <div>
+              <h1 className="display mb-4" style={{ fontSize: 28, lineHeight: 1.3, paddingTop: 12 }}>새 이벤트 만들기</h1>
+
+              {/* A3 — 참가자에게 미리 알리기 */}
+              <div className="notice mb-6" style={{ padding: 16 }}>
+                <p style={{ fontSize: 15, lineHeight: 1.6 }}>참가자에게 영상을 모은다는 걸 미리 알려 주세요. 미리 알면 참여도 늘어요.</p>
+              </div>
 
               <form onSubmit={handleSubmit} className="flex flex-col gap-6">
                 <label className="flex flex-col gap-1.5">
-                  <span className="eyebrow">이벤트 이름</span>
+                  <span className="text-[15px]">이벤트 이름</span>
                   <input
                     type="text"
                     placeholder="팀 워크샵 2026"
@@ -294,7 +280,7 @@ export default function CreateEventPage() {
                 </label>
 
                 <label className="flex flex-col gap-1.5">
-                  <span className="eyebrow">이벤트 날짜</span>
+                  <span className="text-[15px]">이벤트 날짜</span>
                   <input
                     type="date"
                     value={form.date}
@@ -302,24 +288,23 @@ export default function CreateEventPage() {
                     required
                     disabled={submitting}
                     className="input"
-                    style={{ colorScheme: "dark" }}
                   />
                 </label>
 
                 {!couponEntered && (
                   <div className="flex flex-col gap-1.5">
-                    <span className="eyebrow">플랜 선택</span>
+                    <span className="text-[15px]">플랜 선택</span>
                     <div className="grid grid-cols-2 gap-2">
                       {planOptions.map((opt) => {
                         const locked = opt.comingSoon;
                         return (
                           <label
                             key={opt.value}
-                            className="flex flex-col gap-0.5 p-4 transition-all duration-150"
+                            className="flex flex-col gap-1 transition-colors duration-150"
                             style={{
-                              background: form.plan === opt.value ? "var(--surface-3)" : "var(--surface-2)",
-                              border: `1px solid ${form.plan === opt.value ? "var(--accent)" : "var(--hairline)"}`,
-                              borderRadius: "var(--r-sm)",
+                              background: "#fff",
+                              border: form.plan === opt.value ? "2px solid var(--accent)" : "1px solid var(--line)",
+                              padding: form.plan === opt.value ? 11 : 12,
                               cursor: locked ? "not-allowed" : "pointer",
                               opacity: locked ? 0.55 : 1,
                             }}
@@ -333,11 +318,26 @@ export default function CreateEventPage() {
                               disabled={submitting || locked}
                               className="sr-only"
                             />
-                            <span className="text-sm text-foreground font-medium">
+                            <span className="flex items-center gap-2" style={{ fontSize: 16 }}>
+                              <span
+                                aria-hidden
+                                className="shrink-0 flex items-center justify-center"
+                                style={{
+                                  width: 20,
+                                  height: 20,
+                                  borderRadius: "50%",
+                                  border: `1.5px solid ${form.plan === opt.value ? "var(--accent)" : "var(--field)"}`,
+                                  background: form.plan === opt.value ? "var(--accent)" : "#fff",
+                                }}
+                              >
+                                {form.plan === opt.value && (
+                                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#fff" }} />
+                                )}
+                              </span>
                               {opt.label}
                               {locked && <span className="text-xs text-muted ml-1.5">· 준비 중</span>}
                             </span>
-                            <span className="text-xs text-muted">{opt.desc}</span>
+                            <span className="text-[13px] text-muted">{opt.desc}</span>
                           </label>
                         );
                       })}
@@ -346,7 +346,7 @@ export default function CreateEventPage() {
                 )}
 
                 <label className="flex flex-col gap-1.5">
-                  <span className="eyebrow">베타 쿠폰 (전화번호)</span>
+                  <span className="text-[15px]">베타 쿠폰 (전화번호)</span>
                   <input
                     type="tel"
                     placeholder="쿠폰 발급받은 전화번호"
@@ -362,15 +362,8 @@ export default function CreateEventPage() {
 
                 {couponEntered ? (
                   <div className="flex flex-col gap-1.5">
-                    <span className="eyebrow">개수와 길이</span>
-                    <div
-                      className="p-4 flex flex-col gap-1.5"
-                      style={{
-                        background: "var(--surface-2)",
-                        border: "1px solid var(--hairline)",
-                        borderRadius: "var(--r-sm)",
-                      }}
-                    >
+                    <span className="text-[15px]">개수와 길이</span>
+                    <div className="notice flex flex-col gap-1.5" style={{ padding: 16 }}>
                       <p className="text-sm text-foreground">
                         <strong>20개</strong> × <strong>30초</strong> 고정
                       </p>
@@ -381,15 +374,8 @@ export default function CreateEventPage() {
                   </div>
                 ) : form.plan === "free" ? (
                   <div className="flex flex-col gap-1.5">
-                    <span className="eyebrow">개수와 길이</span>
-                    <div
-                      className="p-4 flex flex-col gap-1.5"
-                      style={{
-                        background: "var(--surface-2)",
-                        border: "1px solid var(--hairline)",
-                        borderRadius: "var(--r-sm)",
-                      }}
-                    >
+                    <span className="text-[15px]">개수와 길이</span>
+                    <div className="notice flex flex-col gap-1.5" style={{ padding: 16 }}>
                       <p className="text-sm text-foreground">
                         <strong>5개</strong> × <strong>10초</strong> 고정
                       </p>
@@ -401,7 +387,7 @@ export default function CreateEventPage() {
                 ) : (
                   <>
                     <div className="flex flex-col gap-1.5">
-                      <span className="eyebrow">영상 개수 (정원)</span>
+                      <span className="text-[15px]">영상 개수 (정원)</span>
                       <Stepper
                         value={form.maxClips}
                         min={10}
@@ -414,7 +400,7 @@ export default function CreateEventPage() {
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                      <span className="eyebrow">영상 길이</span>
+                      <span className="text-[15px]">영상 길이</span>
                       <Stepper
                         value={form.maxClipSeconds}
                         min={10}
@@ -426,19 +412,12 @@ export default function CreateEventPage() {
                       />
                     </div>
 
-                    <div
-                      className="p-4 flex flex-col gap-1.5"
-                      style={{
-                        background: "var(--surface-2)",
-                        border: "1px solid var(--hairline)",
-                        borderRadius: "var(--r-sm)",
-                      }}
-                    >
+                    <div className="notice flex flex-col gap-1.5" style={{ padding: 16 }}>
                       <p className="text-sm text-foreground leading-relaxed">
                         정원이 다 차면 최대{" "}
-                        <strong style={{ color: "var(--accent)" }}>
+                        <span style={{ color: "var(--accent)" }}>
                           {calcPrice(form.maxClipSeconds, form.maxClips).toLocaleString("ko-KR")}원
-                        </strong>
+                        </span>
                         , 실제 결제는 마감 시 올라온 영상 수로 계산돼요 (최소 10,000원).
                       </p>
                       <p className="text-xs text-muted">
@@ -448,11 +427,11 @@ export default function CreateEventPage() {
                   </>
                 )}
 
-                <div className="pt-2" style={{ borderTop: "1px solid var(--hairline)" }}>
-                  <p className="eyebrow mb-4 mt-4">알림 수신 정보</p>
+                <div className="pt-2" style={{ borderTop: "1px solid var(--line)" }}>
+                  <h2 className="mb-4 mt-4" style={{ fontSize: 17, color: "var(--text)" }}>알림 수신 정보</h2>
                   <div className="flex flex-col gap-4">
                     <label className="flex flex-col gap-1.5">
-                      <span className="eyebrow">이메일</span>
+                      <span className="text-[15px]">이메일</span>
                       <input
                         type="email"
                         placeholder="organizer@example.com"
@@ -464,7 +443,7 @@ export default function CreateEventPage() {
                       />
                     </label>
                     <label className="flex flex-col gap-1.5">
-                      <span className="eyebrow">휴대폰 번호</span>
+                      <span className="text-[15px]">휴대폰 번호</span>
                       <input
                         type="tel"
                         placeholder="01012345678"
@@ -478,7 +457,7 @@ export default function CreateEventPage() {
                   </div>
                 </div>
 
-                <button type="submit" disabled={submitting} className="btn btn-primary mt-2">
+                <button type="submit" disabled={submitting} className="btn btn-primary mt-2" style={{ height: 54, fontSize: 17 }}>
                   {submitting ? "생성 중..." : "이벤트 시작하기"}
                 </button>
               </form>
@@ -502,8 +481,8 @@ export default function CreateEventPage() {
 
               <div className="card flex flex-col items-center gap-6 mb-8">
                 <div className="flex flex-col items-center gap-3">
-                  <QRCodeSVG value={shareUrl} size={180} bgColor="#151310" fgColor="#ede8df" level="M" />
-                  <button onClick={handleQRDownload} className="btn btn-secondary" style={{ height: 36, padding: "0 14px", fontSize: 12 }}>
+                  <QRCodeSVG value={shareUrl} size={180} bgColor="#FFFFFF" fgColor="#1F3C9C" level="M" />
+                  <button onClick={handleQRDownload} className="btn btn-secondary" style={{ height: 44, padding: "0 16px", fontSize: 15 }}>
                     QR 이미지 저장
                   </button>
                 </div>
@@ -516,7 +495,7 @@ export default function CreateEventPage() {
                     >
                       {shareUrl}
                     </span>
-                    <button onClick={handleCopy} className="btn btn-secondary shrink-0" style={{ height: 36, padding: "0 14px", fontSize: 12 }}>
+                    <button onClick={handleCopy} className="btn btn-secondary shrink-0" style={{ height: 44, padding: "0 16px", fontSize: 15 }}>
                       {copied ? "복사됨" : "복사"}
                     </button>
                   </div>

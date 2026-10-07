@@ -263,7 +263,7 @@ export default function PaymentPage() {
             <div id="toss-agreement" className="mb-6" />
 
             {widgetError && (
-              <p className="text-sm mb-4" style={{ color: "#e05252" }}>
+              <p className="text-sm mb-4" style={{ color: "var(--danger)" }}>
                 {widgetError}
               </p>
             )}

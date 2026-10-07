@@ -24,6 +24,9 @@ function getSignupErrorMessage(code: string): string {
   }
 }
 
+const CHECK_ROW: React.CSSProperties = { padding: "11px 0", fontSize: 14, lineHeight: 1.5 };
+const CHECK_BOX: React.CSSProperties = { width: 22, height: 22, margin: 0, accentColor: "var(--accent)" };
+
 export default function SignupPage() {
   const router = useRouter();
 
@@ -66,7 +69,7 @@ export default function SignupPage() {
     <>
       <PageBackdrop pattern="a" />
       <div className="min-h-screen">
-        <nav className="flex items-center justify-between px-8 py-6">
+        <nav className="flex items-center justify-between gap-2 px-5 py-2 min-h-[60px]">
           <a href={LANDING_URL} className="inline-flex items-center hover:opacity-75 transition-opacity duration-200">
             <BrandName />
           </a>
@@ -75,10 +78,10 @@ export default function SignupPage() {
           </Link>
         </nav>
 
-        <main className="mx-auto max-w-md px-6 py-16">
-          <div className="glass-panel w-full p-10">
-            <h1 className="display text-3xl text-center mb-2">호스트 가입</h1>
-            <p className="text-muted text-sm text-center mb-10">가입하면 바로 무료로 시작할 수 있어요</p>
+        <main className="mx-auto max-w-md px-5 pt-2 pb-16">
+          <div className="w-full">
+            <h1 className="display mb-1" style={{ fontSize: 28, lineHeight: 1.3, paddingTop: 12 }}>호스트 가입</h1>
+            <p className="text-muted text-sm mb-6">가입하면 바로 무료로 시작할 수 있어요</p>
 
             {!isFirebaseConfigured && (
               <div className="mb-6 notice">
@@ -91,7 +94,7 @@ export default function SignupPage() {
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <label htmlFor="signup-email" className="flex flex-col gap-1.5">
-                <span className="eyebrow">이메일</span>
+                <span className="text-[15px]">이메일</span>
                 <input
                   id="signup-email"
                   name="email"
@@ -103,11 +106,11 @@ export default function SignupPage() {
                   disabled={loading}
                   className="input"
                 />
-                <p className="text-xs text-muted mt-1">완성본 링크와 알림을 이 주소로 보내드려요</p>
+                <p className="text-[13px] text-muted">완성본 링크와 알림을 이 주소로 보내드려요</p>
               </label>
 
               <label htmlFor="signup-password" className="flex flex-col gap-1.5">
-                <span className="eyebrow">비밀번호</span>
+                <span className="text-[15px]">비밀번호</span>
                 <input
                   id="signup-password"
                   name="password"
@@ -123,7 +126,7 @@ export default function SignupPage() {
               </label>
 
               <label htmlFor="signup-name" className="flex flex-col gap-1.5">
-                <span className="eyebrow">이름</span>
+                <span className="text-[15px]">이름</span>
                 <input
                   id="signup-name"
                   name="name"
@@ -135,11 +138,11 @@ export default function SignupPage() {
                   disabled={loading}
                   className="input"
                 />
-                <p className="text-xs text-muted mt-1">완성본과 하객 초대 화면에 표시돼요</p>
+                <p className="text-[13px] text-muted">완성본과 하객 초대 화면에 표시돼요</p>
               </label>
 
               <label htmlFor="signup-phone" className="flex flex-col gap-1.5">
-                <span className="eyebrow">전화번호</span>
+                <span className="text-[15px]">전화번호</span>
                 <input
                   id="signup-phone"
                   name="phone"
@@ -151,67 +154,70 @@ export default function SignupPage() {
                   disabled={loading}
                   className="input"
                 />
-                <p className="text-xs text-muted mt-1">완성본이 준비되면 문자로 알려드려요</p>
+                <p className="text-[13px] text-muted">완성본이 준비되면 문자로 알려드려요</p>
               </label>
 
-              <div className="flex flex-col gap-2 pt-2">
-                <label className="flex items-start gap-3 cursor-pointer">
+              <div className="flex flex-col pt-1">
+                <label className="flex items-start gap-2.5 cursor-pointer" style={CHECK_ROW}>
                   <input
                     type="checkbox"
                     checked={termsAgreed}
                     onChange={(e) => setTermsAgreed(e.target.checked)}
                     disabled={loading}
-                    className="mt-0.5 accent-[var(--accent)]"
+                    className="shrink-0"
+                    style={CHECK_BOX}
                   />
-                  <span className="text-xs text-muted leading-relaxed">
+                  <span>
                     <Link href="/terms" target="_blank" className="text-accent hover:underline">
                       이용약관
                     </Link>
                     에 동의합니다 (필수)
                   </span>
                 </label>
-                <label className="flex items-start gap-3 cursor-pointer">
+                <label className="flex items-start gap-2.5 cursor-pointer" style={CHECK_ROW}>
                   <input
                     type="checkbox"
                     checked={privacyAgreed}
                     onChange={(e) => setPrivacyAgreed(e.target.checked)}
                     disabled={loading}
-                    className="mt-0.5 accent-[var(--accent)]"
+                    className="shrink-0"
+                    style={CHECK_BOX}
                   />
-                  <span className="text-xs text-muted leading-relaxed">
+                  <span>
                     <Link href="/privacy" target="_blank" className="text-accent hover:underline">
                       개인정보처리방침
                     </Link>
                     에 동의합니다 (필수)
                   </span>
                 </label>
-                <label className="flex items-start gap-3 cursor-pointer">
+                <label className="flex items-start gap-2.5 cursor-pointer" style={CHECK_ROW}>
                   <input
                     type="checkbox"
                     checked={ageAgreed}
                     onChange={(e) => setAgeAgreed(e.target.checked)}
                     disabled={loading}
-                    className="mt-0.5 accent-[var(--accent)]"
+                    className="shrink-0"
+                    style={CHECK_BOX}
                   />
-                  <span className="text-xs text-muted leading-relaxed">
-                    만 19세 이상입니다. (필수)
+                  <span className="flex flex-col gap-0.5">
+                    <span>만 19세 이상입니다. (필수)</span>
+                    <span className="text-[13px] text-muted">서비스는 성인(만 19세 이상) 대상이에요</span>
                   </span>
-                  <p className="text-xs text-muted mt-1">서비스는 성인(만 19세 이상) 대상이에요</p>
                 </label>
               </div>
 
               {error && (
-                <p className="text-xs" style={{ color: "#d45040" }}>{error}</p>
+                <p className="text-[13px]" style={{ color: "var(--danger)" }}>{error}</p>
               )}
 
-              <button type="submit" disabled={!canSubmit} className="btn btn-primary mt-2">
+              <button type="submit" disabled={!canSubmit} className="btn btn-primary mt-2" style={{ height: 54, fontSize: 17 }}>
                 {loading ? "가입 중..." : "무료로 시작하기"}
               </button>
             </form>
 
             <div className="mt-4 text-center">
-              <span className="text-xs text-muted">이미 계정이 있으신가요? </span>
-              <Link href="/host" className="btn-quiet text-xs">
+              <span className="text-[13px] text-muted">이미 계정이 있으신가요? </span>
+              <Link href="/host" className="btn-quiet text-[13px]" style={{ color: "var(--accent)" }}>
                 로그인
               </Link>
             </div>
