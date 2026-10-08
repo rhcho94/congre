@@ -71,7 +71,7 @@ function makeTextClip(
       asset: {
         type: "rich-text",
         text,
-        font: { family: "Noto Sans KR", size: 64, color: "#c8892c" },
+        font: { family: "Noto Sans KR", size: 64, color: "#FFFFFF" },
         background: { color: "#0c0b09" },
         align: { horizontal: "center", vertical: "middle" },
       },
@@ -84,7 +84,7 @@ function makeTextClip(
     asset: {
       type: "rich-text",
       text,
-      font: { family: "Noto Sans KR", size: 64, color: "#c8892c" },
+      font: { family: "Noto Sans KR", size: 64, color: "#FFFFFF" },
       background: { color: "#0c0b09", opacity: 0.5 },
       stroke: { width: 4, color: "#0c0b09", opacity: 1 },
       align: { horizontal: "center", vertical: "middle" },

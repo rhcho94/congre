@@ -4,6 +4,7 @@
 
 ## 2026-10-08
 
+- style(render): 인트로·아웃트로 글자 금색 → 흰색(decisions/rendering.md 2026-10-08).
 - fix(dashboard): 호스트 이벤트 화면의 클립 목록 5초 폴링을 받는 중·편집 중일 때만. 완성·마감 뒤에도 탭이 열려 있으면 계속 돌며 호출마다 Firestore를 1+클립 수만큼 읽던 문제(10/08 Vercel 로그로 발견).
 - fix(render): Shotstack probe 주소를 공식 스펙(/edit/{version}/probe)으로. 옛 주소도 응답 중이었으나 닫히면 BGM 끊김·자막 어긋남이 소리 없이 생길 수 있어서.
 - fix(render): 호스트 인트로·아웃트로 영상에도 transcode를 걸어 세로 영상이 눕지 않게(참가자 클립은 2026-09-20 59d10a2에서 적용됨). 사진에는 걸지 않음.
