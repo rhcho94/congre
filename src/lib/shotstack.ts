@@ -329,7 +329,7 @@ export async function createRender(
     output: {
       format: "mp4",
       fps: 30,
-      quality: "high",
+      quality: "medium",
       size: { width: 1080, height: 1920 },
       destinations: [
         {

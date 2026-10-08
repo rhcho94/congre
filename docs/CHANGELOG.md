@@ -4,6 +4,7 @@
 
 ## 2026-10-08
 
+- perf(render): 완성본 화질 quality high → medium. 40초 완성본이 약 137MB(27Mbps)라 앱·공유 페이지 재생이 끊겨서(decisions/rendering.md 2026-10-08).
 - docs: 검증 렌더 통과로 known-issues 2건(makeMediaClip transcode, probe 경로)을 known-issues-resolved로 이동.
 - style(render): 인트로·아웃트로 글자 금색 → 흰색(decisions/rendering.md 2026-10-08).
 - fix(dashboard): 호스트 이벤트 화면의 클립 목록 5초 폴링을 받는 중·편집 중일 때만. 완성·마감 뒤에도 탭이 열려 있으면 계속 돌며 호출마다 Firestore를 1+클립 수만큼 읽던 문제(10/08 Vercel 로그로 발견).
