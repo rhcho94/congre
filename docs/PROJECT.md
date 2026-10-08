@@ -177,16 +177,17 @@ npx firebase emulators:start --only firestore
 
 지금 쓰는 것만:
 - `site.css` — 4페이지 공통
-- `media/` — demo-v2.mp4, poster, ch0~5, final, selfie-m·f, occasion-dol·birth·grad
+- `media/` — demo-v2.mp4, poster, ch0~5, final, occasion-dol·birth·grad
+- `media/hero/` — 첫 화면 무대(finale.mp4·jpg, clip1~5.mp4·jpg)
 - `videos/wedding_2.mp4` — 완성본 예시 재생
 - `images/og-image.png` — 결혼식판
 - `favicon.ico`·`apple-touch-icon.png`
 
-폴더에 남아 있지만 쓰지 않는 것(videos의 demo·wedding_1·wedding_intro·graduation·challenge, images의 png 4개, image-slot.js·.image-slots.state.json, uploads/*.jpg 3개): 미사용, 배포에는 포함(.vercelignore 정리는 별도).
+폴더에 남아 있지만 쓰지 않는 것(videos의 demo·wedding_1·wedding_intro·graduation·challenge, images의 png 4개, image-slot.js·.image-slots.state.json, uploads/*.jpg 3개, media/selfie-m.jpg·selfie-f.jpg): 미사용, 배포에는 포함(.vercelignore 정리는 별도).
 
 ### 6섹션 흐름 (2026-10-07)
 
-소개 / 50초로 보는 하루 / 완성본 예시 / 다른 행사 / 후기 / 시작하기
+소개 / 50초로 보는 사용법 / 완성본 예시 / 다른 행사 / 후기 / 시작하기
 
 (옛 8섹션 흐름·히어로 재구성 내용은 decisions/landing.md에 이력으로 남아 있다.)
 
