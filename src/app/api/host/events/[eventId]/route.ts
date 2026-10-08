@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server";
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { verifyIdToken } from "@/lib/auth-server";
 import { getAdminDb } from "@/lib/firebase-admin";
-import { getVideoPresignedUrl, isKeyInEvent } from "@/lib/s3-server";
+import { deleteS3Object, getVideoPresignedUrl, isKeyInEvent } from "@/lib/s3-server";
 
 function tsToMs(v: unknown): number | null {
   return v instanceof Timestamp ? v.toMillis() : null;
@@ -214,6 +214,24 @@ export async function PATCH(
     }
 
     await db.collection("events").doc(eventId).update(updates);
+
+    // 인트로·아웃트로 파일을 바꾸거나 지웠으면 옛 S3 객체를 지운다. 실패해도 응답은 성공.
+    const prev = snap.data()!;
+    const replaced: string[] = [];
+    if (hasIntroMediaKey && typeof prev.introMediaKey === "string" && prev.introMediaKey !== body.introMediaKey) {
+      replaced.push(prev.introMediaKey);
+    }
+    if (hasOutroMediaKey && typeof prev.outroMediaKey === "string" && prev.outroMediaKey !== body.outroMediaKey) {
+      replaced.push(prev.outroMediaKey);
+    }
+    for (const oldKey of replaced) {
+      if (!isKeyInEvent(oldKey, eventId)) continue;
+      try {
+        await deleteS3Object(oldKey);
+      } catch (e) {
+        console.warn("[host/events/[eventId] PATCH] old media s3 delete failed", { eventId, key: oldKey, error: e });
+      }
+    }
 
     return Response.json({ ok: true });
   } catch (err) {

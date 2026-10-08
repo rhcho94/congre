@@ -4,6 +4,20 @@
 
 > 재렌더 유료화 관련 클립 시계·결제 흐름 결정은 `decisions/market-product.md` 2026-08-16 항목에 있다.
 
+## 2026-10-08 — 자동 정리 보강(썸네일·인트로/아웃트로·재시도·알림 기록 90일)
+
+- **결정** (`src/app/api/cron/cleanup/route.ts`, `src/app/api/host/events/[eventId]/route.ts`):
+  1. 썸네일: 클립을 지울 때 `s3Key`와 함께 `thumbKey`(있으면)도 S3에서 지운다.
+  2. 실패 재시도: 클립의 S3 삭제(`s3Key`·`thumbKey`)가 하나라도 실패하면 그 클립 문서를 남기고, 실패한 클립이 남은 이벤트에는 `clipsDeletedAt`을 찍지 않는다. 다음 날 같은 조건으로 다시 잡힌다. 실패 로그는 이벤트 id·S3 키만 남긴다.
+  3. 인트로·아웃트로 파일: 한 이벤트의 클립이 모두 지워져 `clipsDeletedAt`을 찍을 때 `introMediaKey`·`outroMediaKey`(있으면) S3 객체도 지우고, 성공한 쪽의 키·타입 필드를 `FieldValue.delete()`로 비운다(PATCH의 기존 방식). 실패한 쪽은 필드를 남기고 warn.
+  4. 호스트가 바꾸거나 지울 때: PATCH에서 `introMediaKey`/`outroMediaKey`가 다른 값이나 null로 바뀌면 Firestore 갱신이 성공한 뒤 옛 키의 S3 객체를 지운다. 같은 이벤트 프리픽스(`isKeyInEvent`)일 때만. 실패는 warn만, 응답은 성공 그대로.
+  5. 알림 안 나간 완성 이벤트: D-1 기준 시각을 `notifications.participantNotifiedAt`으로 하되, 그것이 없으면 `renderDoneAt`(없으면 `videos[]`의 가장 늦은 `doneAt`)으로 한다. 48시간이 지나면 클립을 지운다. 둘 다 없으면 건너뛴다.
+  6. 알림 기록 90일(D-4): `notifications` 컬렉션에서 `sentAt`(`lib/notifications/history.ts:18`)이 90일보다 오래된 문서를 지운다. 한 번 실행에 최대 1000건, 배치 500건 단위. `sentAt`이 없는 문서는 범위 조회에 걸리지 않아 건드리지 않는다. 다른 단계와 독립된 try/catch.
+- **근거**: 2026-10-08 정찰 9 B5 "선언과 동작이 어긋나는 곳" 표. 썸네일·인트로/아웃트로 S3 객체를 지우는 코드가 없었고, S3 삭제가 실패해도 클립 문서를 지워 고아 파일이 생겼고, 참가자 알림이 기록되지 않은 done 이벤트의 클립은 영구히 남았고, `notifications`(수신자 이메일·전화번호 포함)에는 만료가 없었다.
+- **인트로·아웃트로를 클립과 같이 지워도 되는 이유**: 클립이 지워지면 재편집 경로가 없다. 필드를 읽는 곳 전부가 비었을 때 깨지지 않음을 확인했다 — og-image(`api/og-image/[eventId]/route.ts:23-25`)는 타입이 image가 아니거나 키가 없으면 `https://app.congre.kr/og-image.png`(로고)로 302 fallback, invite-urls(`:57-63`)는 null이면 URL을 만들지 않음, render/start(`:115-118`·`153-171`)는 없으면 미디어 없이 진행, 호스트 GET(`host/events/[eventId]/route.ts:71-75`)은 `?? null`, 대시보드(`page.tsx:218-223`·`232`)는 `?? null`이고 키가 없으면 미리보기 URL을 받지 않음. 공유 페이지는 이 필드를 읽지 않고 og-image 경로만 건다. 호스트가 인트로·아웃트로를 바꾸는 UI는 `status === "open"`에서만 열려(`page.tsx:866` `isClosed`) 렌더 중 옛 파일이 지워지는 경우는 화면 경로로는 없다.
+- **보류**: 호스트가 마감하지 않은 open 이벤트의 자동 정리(B6). 수집 중이라 보관 목적이 살아 있다. 실고객 사례가 생기면 기한을 정한다(known-issues 등재).
+- **출처**: 2026-10-08 채팅(Ray 승인 16:11), 정찰 9 B.
+
 ## 2026-08-14 — cron 실행 시각·클립 보관 실제 구간 (실측)
 
 **cron 스케줄은 UTC**: Vercel 대시보드 Settings → Cron Jobs 화면에 "All scheduled times use

@@ -15,19 +15,53 @@ export async function GET(request: NextRequest) {
   const cutoffClips = Timestamp.fromMillis(now - 48 * 60 * 60 * 1000);
   const cutoffVideos = Timestamp.fromMillis(now - 7 * 24 * 60 * 60 * 1000);
   const cutoffStalledClips = Timestamp.fromMillis(now - 7 * 24 * 60 * 60 * 1000);
+  const cutoffNotifications = Timestamp.fromMillis(now - 90 * 24 * 60 * 60 * 1000);
 
   const db = getAdminDb();
 
-  // 이벤트의 클립을 전량 삭제하고 clipsDeletedAt을 기록한다. 반환값은 삭제한 클립 수.
+  // 이벤트의 클립(원본·썸네일)을 삭제한다. S3 삭제가 하나라도 실패한 클립은 문서를 남겨
+  // 다음 실행에서 다시 잡히게 하고, 그때는 clipsDeletedAt을 찍지 않는다.
+  // 클립이 모두 지워지면 인트로·아웃트로 파일도 지우고 clipsDeletedAt을 기록한다. 반환값은 삭제한 클립 수.
   async function deleteClipsAndMarkEvent(eventId: string): Promise<number> {
     let deleted = 0;
+    let failed = 0;
     const clipsSnap = await db.collection("clips").where("eventId", "==", eventId).get();
     for (const clip of clipsSnap.docs) {
-      try { await deleteS3Object(clip.data().s3Key as string); } catch (e) { console.warn("S3 delete failed", { eventId, clipId: clip.id, error: e }); }
+      const clipData = clip.data();
+      const keys = [clipData.s3Key, clipData.thumbKey].filter((k): k is string => typeof k === "string" && k.length > 0);
+      let s3Failed = false;
+      for (const key of keys) {
+        try {
+          await deleteS3Object(key);
+        } catch (e) {
+          s3Failed = true;
+          console.warn("[cleanup] clip s3 delete failed", { eventId, key, error: e });
+        }
+      }
+      if (s3Failed) {
+        failed++;
+        continue;
+      }
       await db.collection("clips").doc(clip.id).delete();
       deleted++;
     }
-    await db.collection("events").doc(eventId).update({ clipsDeletedAt: FieldValue.serverTimestamp() });
+    if (failed > 0) return deleted;
+
+    const eventSnap = await db.collection("events").doc(eventId).get();
+    const eventData = eventSnap.data() ?? {};
+    const updates: Record<string, unknown> = { clipsDeletedAt: FieldValue.serverTimestamp() };
+    for (const side of ["intro", "outro"] as const) {
+      const key = eventData[`${side}MediaKey`];
+      if (typeof key !== "string" || !key) continue;
+      try {
+        await deleteS3Object(key);
+        updates[`${side}MediaKey`] = FieldValue.delete();
+        updates[`${side}MediaType`] = FieldValue.delete();
+      } catch (e) {
+        console.warn("[cleanup] host media s3 delete failed", { eventId, key, error: e });
+      }
+    }
+    await db.collection("events").doc(eventId).update(updates);
     return deleted;
   }
 
@@ -41,11 +75,26 @@ export async function GET(request: NextRequest) {
 
     try {
       // D-1: 클립 48h 처리
+      // 참가자 알림이 나갔으면 그 시각, 안 나갔으면 완성 시각(renderDoneAt, 없으면 videos[]의 가장 늦은 doneAt) 기준.
       const participantNotifiedAt = data.notifications?.participantNotifiedAt as Timestamp | undefined;
+      let clipsBaseAt: Timestamp | undefined = participantNotifiedAt ?? undefined;
+      if (clipsBaseAt == null) {
+        const renderDoneAt = data.renderDoneAt as Timestamp | undefined;
+        if (renderDoneAt instanceof Timestamp) {
+          clipsBaseAt = renderDoneAt;
+        } else {
+          const doneAts = ((data.videos ?? []) as Array<{ doneAt?: unknown }>)
+            .map((v) => v.doneAt)
+            .filter((t): t is Timestamp => t instanceof Timestamp);
+          if (doneAts.length > 0) {
+            clipsBaseAt = doneAts.reduce((a, b) => (b.toMillis() > a.toMillis() ? b : a));
+          }
+        }
+      }
       if (
         data.clipsDeletedAt == null &&
-        participantNotifiedAt != null &&
-        participantNotifiedAt.toMillis() < cutoffClips.toMillis()
+        clipsBaseAt != null &&
+        clipsBaseAt.toMillis() < cutoffClips.toMillis()
       ) {
         clipsDeleted += await deleteClipsAndMarkEvent(eventId);
       }
@@ -145,6 +194,25 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  console.log("cleanup done", { clipsDeleted, videosDeleted });
-  return Response.json({ ok: true, clipsDeleted, videosDeleted });
+  // D-4: 알림 발송 기록 90일 후 삭제 (한 번에 최대 1000건, 배치 500건 단위)
+  let notificationsDeleted = 0;
+  try {
+    const oldNotifications = await db
+      .collection("notifications")
+      .where("sentAt", "<", cutoffNotifications)
+      .limit(1000)
+      .get();
+    for (let i = 0; i < oldNotifications.docs.length; i += 500) {
+      const batch = db.batch();
+      const chunk = oldNotifications.docs.slice(i, i + 500);
+      for (const d of chunk) batch.delete(d.ref);
+      await batch.commit();
+      notificationsDeleted += chunk.length;
+    }
+  } catch (err) {
+    console.error("[cleanup] notifications 정리 실패:", err);
+  }
+
+  console.log("cleanup done", { clipsDeleted, videosDeleted, notificationsDeleted });
+  return Response.json({ ok: true, clipsDeleted, videosDeleted, notificationsDeleted });
 }

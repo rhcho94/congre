@@ -4,6 +4,7 @@
 
 ## 2026-10-08
 
+- fix(cleanup): 자동 정리 보강 — 썸네일·인트로/아웃트로 파일 삭제, S3 삭제 실패 시 클립 문서를 남겨 다음 날 재시도, 알림 안 나간 완성 이벤트도 완성 시각 기준 48시간 뒤 클립 삭제, 알림 기록 90일 뒤 삭제. 호스트가 인트로·아웃트로를 바꾸거나 지우면 옛 파일 삭제(decisions/data-flow.md 2026-10-08).
 - perf(render): 완성본 화질 quality high → medium. 40초 완성본이 약 137MB(27Mbps)라 앱·공유 페이지 재생이 끊겨서(decisions/rendering.md 2026-10-08).
 - docs: 검증 렌더 통과로 known-issues 2건(makeMediaClip transcode, probe 경로)을 known-issues-resolved로 이동.
 - style(render): 인트로·아웃트로 글자 금색 → 흰색(decisions/rendering.md 2026-10-08).
