@@ -22,8 +22,8 @@ const baseUrl =
 
 const probeBaseUrl =
   shotstackEnv === "production"
-    ? "https://api.shotstack.io/v1"
-    : "https://api.shotstack.io/stage";
+    ? "https://api.shotstack.io/edit/v1"
+    : "https://api.shotstack.io/edit/stage";
 
 const SHOTSTACK_API_KEY = process.env.SHOTSTACK_API_KEY ?? "";
 

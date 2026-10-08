@@ -38,6 +38,7 @@
 
 ## probe baseUrl이 공식 스펙과 다르다 — 스펙 불일치, 현재 동작함 (2026-09-21 판정)
 
+- **2026-10-08 수정**: C16에서 공식 경로 /edit/{version}/probe로 변경. 검증 렌더에서 BGM 이어 붙기·이름 자막 타이밍 확인 뒤 해소로 옮긴다.
 - **사실**: production `probeBaseUrl`은 `https://api.shotstack.io/v1`이다
   (`src/lib/shotstack.ts:23-26`, stage는 `.../stage`). 공식 스펙의 base URL은
   `https://api.shotstack.io/edit/{version}`(version enum: `v1` | `stage`)이며 경로는
@@ -54,11 +55,11 @@
   성공 시 로그도 없다.
 - **레거시 경로가 닫히면 나타날 증상** — 렌더는 성공하고 화면에는 아무 표시가 없다:
   - 로그에 `[shotstack] probe non-OK:` 출현
-  - BGM이 loop 트랙 대신 `timeline.soundtrack` 폴백(`shotstack.ts:288`, `:319-324`)
+  - BGM이 loop 트랙 대신 `timeline.soundtrack` 폴백(`shotstack.ts:288`, `:320-324`)
     → `0003a1d`(2026-06-14) 이전의 끊김 재발 가능
   - 인트로 영상이 있을 때 참가자 이름 자막이 앞으로 어긋남
-    (`captionStartOffset`이 0으로 남음, `shotstack.ts:186-188`)
-  - BGM loop 개수 과소 계산(`shotstack.ts:269-283`의 `totalDuration`)
+    (`captionStartOffset`이 0으로 남음, `shotstack.ts:187-189`)
+  - BGM loop 개수 과소 계산(`shotstack.ts:268-283`의 `totalDuration`)
   → **BGM 끊김이나 자막 어긋남이 다시 보고되면 이 항목부터 의심한다.**
 - **처리 방침**: 경로를 `/edit/`로 맞추는 수정은 "makeMediaClip에 transcode가 적용되지
   않았다" 항목과 **묶어서** 진행한다. 커밋은 각각 따로 하되 production 검증 렌더 1회를
