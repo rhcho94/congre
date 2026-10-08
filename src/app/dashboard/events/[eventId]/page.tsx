@@ -261,6 +261,8 @@ export default function EventDetailPage() {
     };
   }, [eventId, user]);
 
+  const clipsPolling = event?.status === "open" || event?.status === "rendering";
+
   useEffect(() => {
     if (!eventId || !user) return;
     let cancelled = false;
@@ -280,7 +282,7 @@ export default function EventDetailPage() {
       } catch (err) {
         console.error("[event-detail] fetchClips error:", err);
       } finally {
-        if (!cancelled) {
+        if (!cancelled && clipsPolling) {
           timerId = setTimeout(fetchClips, 5000);
         }
       }
@@ -300,7 +302,7 @@ export default function EventDetailPage() {
       if (timerId) clearTimeout(timerId);
       document.removeEventListener("visibilitychange", onVisibilityClips);
     };
-  }, [eventId, user]);
+  }, [eventId, user, clipsPolling]);
 
   async function handleCopy() {
     if (!shareUrl) return;
