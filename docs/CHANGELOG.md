@@ -4,6 +4,7 @@
 
 ## 2026-10-08
 
+- docs: 렌더 멈춤 비상 복구 절차서 신설(docs/ops/runbook-render-stuck.md). data-flow·known-issues의 Shotstack `exclude` 기재를 코드에 맞게 정정, check-render-deadlines의 환불 100% 시각 주석을 실제 값(결제 + 48시간)으로. known-issues에 open 이벤트 미정리·약관 탈퇴 조건 어긋남 2건 등재.
 - fix(account): 탈퇴 때 썸네일·인트로/아웃트로 파일·알림 기록도 지우고, Firestore 삭제가 중간에 실패하면 users·Auth를 지우기 전에 멈춰 500 PARTIAL_DELETE로 알려 다시 시도하면 이어서 지우게(decisions/auth-model.md 2026-10-08).
 - fix(cleanup): 자동 정리 보강 — 썸네일·인트로/아웃트로 파일 삭제, S3 삭제 실패 시 클립 문서를 남겨 다음 날 재시도, 알림 안 나간 완성 이벤트도 완성 시각 기준 48시간 뒤 클립 삭제, 알림 기록 90일 뒤 삭제. 호스트가 인트로·아웃트로를 바꾸거나 지우면 옛 파일 삭제(decisions/data-flow.md 2026-10-08).
 - perf(render): 완성본 화질 quality high → medium. 40초 완성본이 약 137MB(27Mbps)라 앱·공유 페이지 재생이 끊겨서(decisions/rendering.md 2026-10-08).

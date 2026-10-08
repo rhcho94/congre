@@ -2,6 +2,19 @@
 
 > 진행 중·보류·메모 항목만 둔다. 해결 완료 항목은 known-issues-resolved.md로 이동.
 
+## 호스트가 마감하지 않은 open 이벤트는 자동 마감·자동 정리가 없다
+
+- **현황**: 이벤트 `status`를 `open` → `closed`로 바꾸는 곳은 호스트 수동 마감(`api/events/[eventId]/close/route.ts:38`)과 결제 승인(`api/payment/confirm/route.ts:138`)뿐이다. `open`을 조회하는 cron이 없고(`vercel.json:3-5`), cleanup도 `done`·`closed`·`rendering`만 본다. 호스트가 마감하지 않으면 이벤트와 참가자 클립(이름·전화번호 포함)이 영원히 남는다.
+- **처리**: 보류. 수집 중이라 보관 목적이 살아 있다.
+- **격상 트리거**: 실고객이 마감을 잊은 사례가 생길 때. 그때 기한을 정한다.
+- **출처**: 2026-10-08 정찰 9 B4. decisions/data-flow.md 2026-10-08 항목 "보류".
+
+## 약관 제18조 ②(terms:308)는 마감 상태도 탈퇴 불가라 하나 코드는 open·rendering만 막는다
+
+- **현황**: `src/app/terms/page.tsx:308`은 "진행 중인 이벤트(상태가 "오픈", "마감", "렌더링 중"인 이벤트)"가 있으면 탈퇴할 수 없다고 적는다. 코드(`api/user/delete/route.ts:29`)는 `["open", "rendering"]`만 막는다. 2026-05-21 탈퇴 막힘 수정(closed 제외, decisions/auth-model.md) 때문에 코드를 되돌리지 않는다.
+- **처리**: 법률 상담 때 약관 개정 여부와 함께 본다.
+- **출처**: 2026-10-08 정찰 9 C3. decisions/auth-model.md 2026-10-08 항목.
+
 ## 세로 클립 회전 문제의 원인이 규명되지 않았다
 
 - **현황**: 인트로·아웃트로 텍스트(`rich-text`)가 있으면 세로 클립이 눕고 없으면 정상인
@@ -671,6 +684,7 @@
   - Shotstack 현 플랜: 구독 200 credits/월($39), PRODUCTION. 보유 385.33, 30일 사용 22.63(렌더 크레딧 여유).
   - 진짜 병목 = Shotstack 호스팅 전송 500MB/월·저장 500MB(2026-06-02 저장 392MB=78%). 출시 시 시청 트래픽으로 전송 초과 예상.
   - 해결책 B(권장): 렌더 output에 S3 destination 지정 + Shotstack 호스팅 opt-out(`{"provider":"shotstack","exclude":true}`). 기존 S3(ap-southeast-2) 재사용 → 저장·전송 동시 해결. 임시 URL 24h 주의(반드시 S3 URL 서빙).
+  - 2026-10-08 정정: 현재 코드에는 exclude가 없다(정찰 9 D5). Shotstack 호스팅 사본도 생긴다.
   - 해결책 C: 목적지 Cloudflare R2(egress 무료) — 대규모 시.
   - 추가 점검(불명): cleanup cron이 Shotstack 호스팅분(cdn.shotstack.io)을 실제 삭제하는지. 저장 78% 누적 원인일 수 있음. B 적용 시 소멸.
 

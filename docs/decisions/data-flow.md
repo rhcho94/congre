@@ -193,6 +193,7 @@ events/{eventId}
 
 - render 요청 output에 destinations 추가: provider s3, region ap-southeast-2,
   bucket(env AWS_S3_BUCKET), 그리고 provider shotstack exclude:true 로 Shotstack 호스팅 옵트아웃.
+- 2026-10-08 정정: 현재 코드에는 exclude가 없다(정찰 9 D5). Shotstack 호스팅 사본도 생긴다.
 - Shotstack 대시보드 PRODUCTION 환경에 전용 IAM 사용자(shotstack-s3, 정책 shotstack-s3-write:
   s3:PutObject/GetObject/PutObjectAcl, congre-mvp-videos 한정) 등록 완료 (2026-06-04).
 - 완성본 URL 저장 위치는 현행 유지: events/{eventId}.videoUrl 단일 필드.
