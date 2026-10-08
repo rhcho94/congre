@@ -100,13 +100,13 @@ function makeMediaClip(
   mediaType: "image" | "video",
   start: number | "auto",
 ): {
-  asset: { type: "image" | "video"; src: string };
+  asset: { type: "image" | "video"; src: string; transcode?: true };
   start: number | "auto";
   length: number | "auto";
   fit: "contain";
 } {
   return {
-    asset: { type: mediaType, src },
+    asset: mediaType === "video" ? { type: "video", src, transcode: true } : { type: "image", src },
     start,
     length: mediaType === "image" ? 5 : "auto",
     fit: "contain",
