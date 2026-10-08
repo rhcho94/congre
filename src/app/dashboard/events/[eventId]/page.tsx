@@ -1177,13 +1177,6 @@ export default function EventDetailPage() {
           {event.status === "done" && (
             event.videoUrl ? (
               <div className="glass-panel flex flex-col gap-4">
-                <div className="flex items-center gap-2">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2E7D32" strokeWidth="1.5">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                  <p className="text-sm" style={{ color: "#2E7D32" }}>편집 완료</p>
-                </div>
-
                 {/* 배지 미리보기 */}
                 <div className="flex flex-col items-center gap-2 py-1">
                   <CongreBadge />
@@ -1344,102 +1337,100 @@ export default function EventDetailPage() {
                       추첨
                     </button>
                   )}
-                  <button
-                    type="button"
-                    aria-expanded={clipsOpen}
-                    onClick={() => setClipsOpen((v) => !v)}
-                    className="btn-quiet text-sm"
-                    style={{ color: "var(--accent)" }}
-                  >
-                    {clipsOpen ? "접기" : `${clips.length}개 하나씩 보기`}
-                  </button>
+                  {clips.length > 0 && (
+                    <button
+                      type="button"
+                      aria-expanded={clipsOpen}
+                      onClick={() => setClipsOpen((v) => !v)}
+                      className="btn-quiet text-sm"
+                      style={{ color: "var(--accent)" }}
+                    >
+                      {clipsOpen ? "접기" : `${clips.length}개 하나씩 보기`}
+                    </button>
+                  )}
                 </span>
               </div>
 
-              {clipsOpen && (
-                clips.length === 0 ? (
-                  <p className="text-muted text-sm py-8 text-center">아직 업로드된 클립이 없습니다.</p>
-                ) : (
-                  <div className="flex flex-col gap-0">
-                    {clips.map((clip, i) => {
-                      const isActive = activeClipId === clip.id;
-                      return (
-                        <div key={clip.id} className="flex flex-col py-2 border-b border-[var(--hairline)]" style={clip.excludedAt ? { opacity: 0.45 } : {}}>
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="text-xs text-muted tabular-nums shrink-0">
-                              #{clips.length - i}
+              {clipsOpen && clips.length > 0 && (
+                <div className="flex flex-col gap-0">
+                  {clips.map((clip, i) => {
+                    const isActive = activeClipId === clip.id;
+                    return (
+                      <div key={clip.id} className="flex flex-col py-2 border-b border-[var(--hairline)]" style={clip.excludedAt ? { opacity: 0.45 } : {}}>
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs text-muted tabular-nums shrink-0">
+                            #{clips.length - i}
+                          </span>
+                          <div className="flex flex-col mx-4 flex-1 min-w-0">
+                            <span className="text-sm text-foreground truncate">
+                              {clip.uploaderName ?? <span className="text-muted">(이름 없음)</span>}
                             </span>
-                            <div className="flex flex-col mx-4 flex-1 min-w-0">
-                              <span className="text-sm text-foreground truncate">
-                                {clip.uploaderName ?? <span className="text-muted">(이름 없음)</span>}
-                              </span>
-                            </div>
-                            <button
-                              onClick={() => handleToggleExclusion(clip)}
-                              disabled={event.status === "rendering"}
-                              className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 text-sm transition-all duration-200 mr-2"
-                              style={
-                                clip.excludedAt
-                                  ? { border: "1px solid var(--danger)", color: "var(--danger)", borderRadius: "var(--r-sm)", ...(event.status === "rendering" ? { opacity: 0.4, cursor: "not-allowed" } : {}) }
-                                  : { border: "1px solid var(--hairline-strong)", color: "var(--muted)", borderRadius: "var(--r-sm)", ...(event.status === "rendering" ? { opacity: 0.4, cursor: "not-allowed" } : {}) }
-                              }
-                              aria-label={clip.excludedAt ? "복원" : "제외"}
-                            >
-                              {clip.excludedAt ? (
-                                <EyeOff size={11} strokeWidth={2} />
-                              ) : (
-                                <Eye size={11} strokeWidth={2} />
-                              )}
-                            </button>
-                            <button
-                              onClick={() => handlePlayClip(clip)}
-                              className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 text-sm transition-all duration-200"
-                              style={
-                                isActive
-                                  ? { border: "1px solid var(--accent)", color: "var(--accent)", borderRadius: "var(--r-sm)" }
-                                  : { border: "1px solid var(--hairline-strong)", color: "var(--muted)", borderRadius: "var(--r-sm)" }
-                              }
-                              aria-label={isActive ? "닫기" : "재생"}
-                            >
-                              {isActive ? (
-                                <X size={11} strokeWidth={2} />
-                              ) : (
-                                <Play size={11} strokeWidth={2} />
-                              )}
-                            </button>
                           </div>
-
-                          {/* 인라인 플레이어 */}
-                          {isActive && (
-                            <div className="mt-4">
-                              {playbackLoading && (
-                                <div className="flex items-center gap-2 py-4">
-                                  <Loader2 size={14} className="animate-spin text-accent" />
-                                  <span className="text-xs text-muted">재생 URL 발급 중...</span>
-                                </div>
-                              )}
-                              {playbackError && (
-                                <p className="text-xs py-3" style={{ color: "var(--danger)" }}>
-                                  {playbackError}
-                                </p>
-                              )}
-                              {playbackUrl && (
-                                <video
-                                  src={playbackUrl}
-                                  controls
-                                  playsInline
-                                  autoPlay
-                                  className="w-full max-w-xs mx-auto block"
-                                  style={{ aspectRatio: "9/16", background: "#000" }}
-                                />
-                              )}
-                            </div>
-                          )}
+                          <button
+                            onClick={() => handleToggleExclusion(clip)}
+                            disabled={event.status === "rendering"}
+                            className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 text-sm transition-all duration-200 mr-2"
+                            style={
+                              clip.excludedAt
+                                ? { border: "1px solid var(--danger)", color: "var(--danger)", borderRadius: "var(--r-sm)", ...(event.status === "rendering" ? { opacity: 0.4, cursor: "not-allowed" } : {}) }
+                                : { border: "1px solid var(--hairline-strong)", color: "var(--muted)", borderRadius: "var(--r-sm)", ...(event.status === "rendering" ? { opacity: 0.4, cursor: "not-allowed" } : {}) }
+                            }
+                            aria-label={clip.excludedAt ? "복원" : "제외"}
+                          >
+                            {clip.excludedAt ? (
+                              <EyeOff size={11} strokeWidth={2} />
+                            ) : (
+                              <Eye size={11} strokeWidth={2} />
+                            )}
+                          </button>
+                          <button
+                            onClick={() => handlePlayClip(clip)}
+                            className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 text-sm transition-all duration-200"
+                            style={
+                              isActive
+                                ? { border: "1px solid var(--accent)", color: "var(--accent)", borderRadius: "var(--r-sm)" }
+                                : { border: "1px solid var(--hairline-strong)", color: "var(--muted)", borderRadius: "var(--r-sm)" }
+                            }
+                            aria-label={isActive ? "닫기" : "재생"}
+                          >
+                            {isActive ? (
+                              <X size={11} strokeWidth={2} />
+                            ) : (
+                              <Play size={11} strokeWidth={2} />
+                            )}
+                          </button>
                         </div>
-                      );
-                    })}
-                  </div>
-                )
+
+                        {/* 인라인 플레이어 */}
+                        {isActive && (
+                          <div className="mt-4">
+                            {playbackLoading && (
+                              <div className="flex items-center gap-2 py-4">
+                                <Loader2 size={14} className="animate-spin text-accent" />
+                                <span className="text-xs text-muted">재생 URL 발급 중...</span>
+                              </div>
+                            )}
+                            {playbackError && (
+                              <p className="text-xs py-3" style={{ color: "var(--danger)" }}>
+                                {playbackError}
+                              </p>
+                            )}
+                            {playbackUrl && (
+                              <video
+                                src={playbackUrl}
+                                controls
+                                playsInline
+                                autoPlay
+                                className="w-full max-w-xs mx-auto block"
+                                style={{ aspectRatio: "9/16", background: "#000" }}
+                              />
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               )}
             </section>
           )}
@@ -1509,7 +1500,7 @@ export default function EventDetailPage() {
 
                         <div className="flex flex-col gap-1.5">
                           <span className="text-xs text-muted">미디어 (이미지 또는 영상)</span>
-                          <span className="text-xs text-accent">영상은 15초까지 · 파일 100MB 이하 (사진은 길이 제한 없음)</span>
+                          <span className="text-xs text-accent">영상은 15초까지, 파일 100MB 이하 (사진은 길이 제한 없음)</span>
                           {introUploading ? (
                             <div className="flex items-center gap-2 py-4">
                               <Loader2 size={14} className="animate-spin text-accent" />
@@ -1584,7 +1575,7 @@ export default function EventDetailPage() {
 
                         <div className="flex flex-col gap-1.5">
                           <span className="text-xs text-muted">미디어 (이미지 또는 영상)</span>
-                          <span className="text-xs text-accent">영상은 15초까지 · 파일 100MB 이하 (사진은 길이 제한 없음)</span>
+                          <span className="text-xs text-accent">영상은 15초까지, 파일 100MB 이하 (사진은 길이 제한 없음)</span>
                           <span className="text-xs text-muted">아웃트로 문구를 함께 넣으면 미디어가 끝난 뒤 이어서 나와요</span>
                           {outroUploading ? (
                             <div className="flex items-center gap-2 py-4">

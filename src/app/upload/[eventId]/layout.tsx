@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const truncatedHost = hostName ? truncate(hostName, 12) : null;
 
     const ogTitle = truncatedHost
-      ? `${truncatedHost}님이 초대했어요 · ${truncatedTitle}`
+      ? `${truncatedHost}님이 초대했어요 | ${truncatedTitle}`
       : `${truncatedTitle} 영상에 초대합니다`;
     const ogDescription = "짧은 축하·소감·챌린지 영상을 올려주세요";
 

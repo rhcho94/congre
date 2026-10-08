@@ -227,7 +227,7 @@ events/{eventId}
   1. `events/{eventId}` → `title`, `hostId`
   2. `users/{hostId}` → `name` (hostId가 있을 때만; 실패는 try/catch로 흡수, hostName=null fallback)
 - **문구 규칙**:
-  - 기본: `${hostName}님이 초대했어요 · ${title}`
+  - 기본: `${hostName}님이 초대했어요 | ${title}` (2026-10-08 " · "에서 바꿈, design.md 2026-10-08)
   - hostName 12자 초과 시 12자 + `…`
   - title 20자 초과 시 20자 + `…`
   - hostName 부재 시 fallback: `${title} 영상에 초대합니다`

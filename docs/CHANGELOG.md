@@ -2,6 +2,10 @@
 
 > 기능 단위 작업 이력. 최신이 위.
 
+## 2026-10-08
+
+- fix: 로컬 점검 뒤 다듬기 5건 — 남은 가운뎃점 나열 4곳을 쉼표·세로선으로(이벤트 화면 미디어 안내 2곳, 촬영 화면 "최대 N초, 탭하여 시작", 초대 링크 미리보기 제목 "{호스트}님이 초대했어요 | {행사명}"), 앱 본문 줄바꿈을 단어 단위로(word-break: keep-all + overflow-wrap: anywhere), 완성 카드 안의 중복 "편집 완료" 줄 삭제, 클립 0개일 때 "하나씩 보기" 토글 숨김. 랜딩(git 밖) 자주 묻는 질문의 질문 줄 누르는 높이를 44px로(decisions/design.md 2026-10-08).
+
 ## 2026-10-07
 
 - feat(landing): 랜딩 전면 개편(롤링페이퍼 결혼식안, git 밖 deploy 폴더) — index를 6섹션(소개 / 50초로 보는 하루 / 완성본 예시 / 다른 행사 / 후기 / 시작하기)으로 고쳐 쓰고, 4페이지 공통 site.css를 새로 만들어 about·faq·pricing을 문구 그대로 같은 디자인으로 바꿨다. pricing에 사업자 정보 푸터 추가, 4페이지 meta description 추가, 새 미디어 media/ 14개·favicon·apple-touch-icon·OG 이미지(결혼식판). GSAP·image-slot·인라인 스타일 제거. 생일잔치.jpg·돌찬치.jpg·옛 OG 이미지는 archive로 옮겼다(decisions/landing.md 2026-10-07).
