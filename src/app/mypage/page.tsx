@@ -348,7 +348,7 @@ export default function MyPage() {
                   <span className="text-[13px] text-muted">가입일</span>
                   <span style={{ fontSize: 15 }}>
                     {userDoc?.createdAt
-                      ? userDoc.createdAt.toDate().toLocaleDateString("ko-KR")
+                      ? userDoc.createdAt.toDate().toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" })
                       : "-"}
                   </span>
                 </div>

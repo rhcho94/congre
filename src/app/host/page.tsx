@@ -137,7 +137,7 @@ export default function HostPage() {
 
         <main className="mx-auto max-w-2xl px-5 pt-2 pb-16">
           <div className="w-full max-w-md mx-auto">
-            <h1 className="display mb-6" style={{ fontSize: 28, lineHeight: 1.3, paddingTop: 12 }}>주최자 로그인</h1>
+            <h1 className="display mb-6" style={{ fontSize: 28, lineHeight: 1.3, paddingTop: 12 }}>호스트 로그인</h1>
 
             {!isFirebaseConfigured && (
               <div className="mb-6 notice">
