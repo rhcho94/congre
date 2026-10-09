@@ -58,12 +58,12 @@ export default function GuideHostPage() {
           <section className="flex flex-col gap-2.5" style={SECTION}>
             <span style={STEP_LABEL}>1단계</span>
             <h2 style={H2}>가입하고 로그인하기</h2>
-            <p>Congre는 호스트가 직접 가입합니다. app.congre.kr 우측 상단 "주최자 로그인" 클릭 후 하단 "회원가입" 클릭.</p>
+            <p>Congre는 호스트가 직접 가입합니다. app.congre.kr에 들어가면 바로 로그인 화면이 열리고, 아래 "회원가입"으로 가입합니다.</p>
             <div className="flex flex-col gap-1">
               <h3 style={H3}>가입 입력</h3>
               <ul className="list-disc flex flex-col gap-1" style={LIST}>
                 <li>이메일, 비밀번호 (최소 6자)</li>
-                <li>이름과 전화번호 (10~11자리 숫자)</li>
+                <li>이름과 휴대폰 번호 (010으로 시작하는 11자리)</li>
                 <li>이용약관, 개인정보처리방침 동의</li>
               </ul>
             </div>
@@ -154,7 +154,7 @@ export default function GuideHostPage() {
             <div className="flex flex-col gap-1">
               <h3 style={H3}>마감 전 확인할 것</h3>
               <ul className="list-disc flex flex-col gap-1" style={LIST}>
-                <li>업로드된 클립 목록: 닉네임과 업로드 시각으로 식별</li>
+                <li>업로드된 클립 목록: 순번과 참가자 이름으로 식별</li>
                 <li>각 클립 미리보기: 재생 버튼으로 영상 확인</li>
                 <li>원치 않는 클립 제외: 토글로 영상 포함 여부 선택</li>
               </ul>
@@ -271,7 +271,7 @@ export default function GuideHostPage() {
                   Q. 한 행사에 영상을 여러 편 만들 수 있나요?
                 </h3>
                 <p>
-                  A. 한 이벤트는 한 편의 완성본을 만듭니다. 신랑 측과 신부 측처럼 나누고 싶다면 각각
+                  A. 한 이벤트는 한 번에 한 편의 완성본을 만듭니다(다시 만들면 새 완성본으로 바뀌고, 이전 완성본은 7일간 내려받을 수 있어요). 신랑 측과 신부 측처럼 나누고 싶다면 각각
                   별도의 이벤트로 만드세요.
                 </p>
               </div>

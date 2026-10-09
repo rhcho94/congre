@@ -47,8 +47,9 @@ export default function SignupPage() {
     setError("");
 
     const phoneClean = phone.replace(/[\s-]/g, "");
-    if (!/^[0-9]{10,11}$/.test(phoneClean)) {
-      setError("전화번호는 10~11자리 숫자로 입력해주세요.");
+    // 이벤트 생성·알림 발송과 같은 규칙 (api/events/route.ts: /^010\d{8}$/)
+    if (!/^010[0-9]{8}$/.test(phoneClean)) {
+      setError("휴대폰 번호는 010으로 시작하는 11자리 숫자로 입력해주세요.");
       return;
     }
 
@@ -142,7 +143,7 @@ export default function SignupPage() {
               </label>
 
               <label htmlFor="signup-phone" className="flex flex-col gap-1.5">
-                <span className="text-[15px]">전화번호</span>
+                <span className="text-[15px]">휴대폰 번호</span>
                 <input
                   id="signup-phone"
                   name="phone"
