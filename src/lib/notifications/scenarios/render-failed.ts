@@ -34,4 +34,16 @@ export async function notifyRenderFailed(ctx: RenderFailedCtx): Promise<void> {
       },
     },
   ]);
+
+  // 운영자 알림: 렌더 실패는 환불·수동 복구가 걸리는 사고라 지연·환불과 같은 번호로 보낸다.
+  const internalPhone = process.env.CONGRE_INTERNAL_PHONE;
+  if (internalPhone) {
+    await sendNotification("render_failed_internal", ctx.eventId, [
+      {
+        channel: "sms",
+        to: internalPhone,
+        message: { text: `[Congre 운영] 렌더 실패 '${ctx.title}' eventId=${ctx.eventId}` },
+      },
+    ]);
+  }
 }
