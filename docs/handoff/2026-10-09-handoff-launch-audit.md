@@ -29,11 +29,10 @@
 - `.vercelignore`: 미사용 자산 제외 — `images/*`(og-image.png 제외), `videos/*`(wedding_2.mp4 제외), `uploads/`, `image-slot.js`, `.image-slots.state.json`, `media/selfie-*.jpg`, `_*.tgz`(H5). 파일은 지우지 않았다.
 - 배포 여부는 3절 참조.
 
-## 3. 이 세션에서 못 한 것 (Ray PC가 세션 도중 연결이 끊김 — 16:4x 이후 bridge 미연결)
-- **패치 적용·push**: 15개 커밋은 컨테이너 git에 있고 `patches.tgz`로 묶여 있다. PC가 연결되면 `git am`으로 적용 → `npm run build`(PC 실측) → push. 적용 전엔 origin/main은 `21d5470` 그대로.
-- **랜딩 배포**: 수정본 3개 파일을 PC `deploy/`에 써야 하고, Vercel CLI 로그인은 PC 쪽에 있다.
-- **I2 자동 정리 첫 실행 로그**: Vercel 로그 접근 수단이 PC 브라우저뿐.
-- **라이브 화면 검증**(404·문구): 배포 뒤.
+## 3. 적용·배포 결과 (21:00~21:35, PC 재연결 뒤)
+- **앱**: 16개 커밋을 PC 저장소에 `git am`(core.autocrlf=true로 LF 보존) → 번들 → 컨테이너에서 push `21d5470..e1ce9c6`. Vercel 자동 배포. 라이브 확인: `/login` 한글 404, 가입 "만 14세"·"휴대폰 번호", 가이드 "010으로 시작하는 11자리". PC 실측 `npm run build`는 하지 않았다(VM에는 Windows용 node_modules뿐) — 컨테이너 build 32/32·tsc·독립 검토로 갈음.
+- **랜딩**: Ray가 PowerShell에서 배포. 첫 시도 "Not authorized"(CLI 로그인 풀림, 9/16에 이어 2번째) → `vercel login` 뒤 성공. 라이브 확인: "영상 개수"·"첫 결제 뒤"·"200개 초과"·faq "7일 동안 대시보드", `images/birth.png` 404, og-image·wedding_2.mp4 정상, 첫 화면 정상.
+- **못 한 것**: I2 자동 정리 첫 실행 로그 — 코난이 Vercel 로그에 닿을 수단이 없었다(앱 내 브라우저·Chrome 확장 모두 Vercel 미로그인). Ray가 Vercel → congre → Logs에서 `cleanup done` 숫자를 보거나, 앱 내 브라우저에서 Vercel에 한 번 로그인해 두면 다음부터 코난이 직접 본다.
 
 ## 4. Ray가 해야 하는 것 (코난이 대신 못 함)
 1. 토스 1:1 문의 A5(환불 절차·취소한도) → 답을 `docs/ops/runbook-refund-manual.md` 4절에.
