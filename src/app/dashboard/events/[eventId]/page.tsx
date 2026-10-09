@@ -782,7 +782,7 @@ export default function EventDetailPage() {
       } else if (code === "NOT_CONFIGURED") {
         message = "서버 설정 오류로 영상 생성을 시작하지 못했어요. 운영자에게 문의해주세요.";
       } else if (code === "PAID_NOT_AVAILABLE") {
-        message = "유료 플랜은 현재 준비 중입니다.";
+        message = "결제가 확인되지 않은 유료 이벤트예요. 결제 후 다시 시도해주세요.";
       } else if (code === "REFUND_LOCKED") {
         message = "환불 대상으로 확정된 이벤트라 다시 만들 수 없어요. 카카오톡 @congre로 문의해 주세요.";
       } else {
@@ -817,7 +817,8 @@ export default function EventDetailPage() {
         await callRenderStart(idToken, eventId);
       }
 
-    } catch {
+    } catch (err) {
+      console.error("[dashboard] close failed:", err);
       alert("마감 처리 중 오류가 발생했습니다.");
     } finally {
       setClosing(false);

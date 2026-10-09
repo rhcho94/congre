@@ -364,14 +364,14 @@ function UploadInner() {
         }
         if (msg.startsWith("PLAN_LIMIT_REACHED:")) {
           const parts = msg.split(":");
-          setErrorMsg(`이 이벤트의 플랜 한도에 도달했어요 (현재 ${parts[1]}/${parts[2]}명). 호스트에게 문의해주세요.`);
+          setErrorMsg(`이 이벤트의 영상 정원이 찼어요 (현재 ${parts[1]}/${parts[2]}개). 호스트에게 문의해주세요.`);
           setStage("error");
           return;
         }
         if (attempt === 3) {
           const display = msg.includes("S3_NOT_CONFIGURED")
             ? "S3가 연결되지 않아 업로드할 수 없습니다."
-            : `업로드 실패: ${msg}`;
+            : "업로드에 실패했어요. 네트워크를 확인하고 다시 시도해주세요.";
           setErrorMsg(display);
           setStage("error");
         }

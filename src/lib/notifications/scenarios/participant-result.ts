@@ -11,7 +11,7 @@ export interface ParticipantResultCtx {
   recipientPhone?: string;
 }
 
-// Trigger not connected yet — will be wired in a future PR when participant contact collection is built.
+// 호출처: api/cron/check-rendering (완성 처리 시 참가자 전화번호별 1회).
 export async function notifyParticipantResult(ctx: ParticipantResultCtx): Promise<void> {
   const targets = [];
 
