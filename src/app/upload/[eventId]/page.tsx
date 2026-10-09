@@ -94,7 +94,7 @@ function UploadInner() {
   const urlToken = searchParams.get("token") ?? "";
 
   const [stage, setStage] = useState<Stage>("verifying");
-  const [event, setEvent] = useState<{ id: string; title: string; maxClipSeconds?: number; hostName?: string | null } | null>(null);
+  const [event, setEvent] = useState<{ id: string; title: string; maxClipSeconds?: number; hostName?: string | null; plan?: string } | null>(null);
   const [progress, setProgress] = useState(0);
   const [retryNum, setRetryNum] = useState(0);
   const [errorMsg, setErrorMsg] = useState("");
@@ -125,7 +125,7 @@ function UploadInner() {
           setStage("invalid");
           return;
         }
-        const evt = await res.json() as { id: string; title: string; maxClipSeconds?: number; hostName?: string | null };
+        const evt = await res.json() as { id: string; title: string; maxClipSeconds?: number; hostName?: string | null; plan?: string };
         setEvent(evt);
         setStage("uploader");
       } catch {
@@ -708,13 +708,15 @@ function UploadInner() {
                 </p>
               </div>
 
-              {/* 배지 미리보기 */}
-              <div className="flex flex-col items-center gap-2">
-                <CongreBadge />
-                <p className="text-[13px] text-muted">
-                  곧 Congre 배지가 담긴 편집 영상을 받아보실 수 있어요
-                </p>
-              </div>
+              {/* 배지 미리보기 — 워터마크는 무료 플랜에만 들어간다 */}
+              {event?.plan !== "paid" && (
+                <div className="flex flex-col items-center gap-2">
+                  <CongreBadge />
+                  <p className="text-[13px] text-muted">
+                    곧 Congre 배지가 담긴 편집 영상을 받아보실 수 있어요
+                  </p>
+                </div>
+              )}
 
               <button onClick={reRecord} className="btn btn-secondary">
                 하나 더 올리기

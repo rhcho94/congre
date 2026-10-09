@@ -1179,13 +1179,15 @@ export default function EventDetailPage() {
           {event.status === "done" && (
             event.videoUrl ? (
               <div className="glass-panel flex flex-col gap-4">
-                {/* 배지 미리보기 */}
-                <div className="flex flex-col items-center gap-2 py-1">
-                  <CongreBadge />
-                  <p className="text-[13px] text-muted">
-                    공유 시 이 배지가 함께 표시됩니다
-                  </p>
-                </div>
+                {/* 배지 미리보기 — 워터마크는 무료 플랜에만 들어간다 (shotstack.ts plan === "free") */}
+                {event.plan !== "paid" && (
+                  <div className="flex flex-col items-center gap-2 py-1">
+                    <CongreBadge />
+                    <p className="text-[13px] text-muted">
+                      공유 시 이 배지가 함께 표시됩니다
+                    </p>
+                  </div>
+                )}
 
                 <video
                   src={event.videoUrl}

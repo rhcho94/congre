@@ -46,5 +46,7 @@ export async function GET(
     title: data.title as string,
     maxClipSeconds: data.maxClipSeconds as number | undefined,
     hostName,
+    // 참가자 화면의 워터마크 배지 안내 분기용 (무료만 워터마크)
+    plan: (data.plan as string | undefined) ?? "free",
   });
 }
