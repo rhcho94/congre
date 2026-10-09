@@ -37,7 +37,8 @@ export async function notifyRenderCompleted(ctx: RenderCompletedCtx): Promise<vo
       message: {
         text: renderSms(smsTemplates.render_completed, {
           title: ctx.title,
-          url: ctx.dashboardUrl,
+          // "영상:" 뒤에는 로그인 없이 열리는 공유 페이지를 넣는다 (대시보드는 메일 본문에)
+          url: ctx.videoUrl,
         }),
       },
     },
