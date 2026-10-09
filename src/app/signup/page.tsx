@@ -200,8 +200,8 @@ export default function SignupPage() {
                     style={CHECK_BOX}
                   />
                   <span className="flex flex-col gap-0.5">
-                    <span>만 19세 이상입니다. (필수)</span>
-                    <span className="text-[13px] text-muted">서비스는 성인(만 19세 이상) 대상이에요</span>
+                    <span>만 14세 이상입니다. (필수)</span>
+                    <span className="text-[13px] text-muted">만 14세 미만은 가입할 수 없어요 (이용약관 제5조)</span>
                   </span>
                 </label>
               </div>
