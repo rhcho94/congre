@@ -55,7 +55,8 @@ export async function GET(request: NextRequest) {
       data.notifications?.renderDelayedNotifiedAt == null
     ) {
       try {
-        await notifyRenderDelayed(ctxBase);
+        // refund50At은 토스 결제 확인 때만 기록된다 (payment/confirm). 무료·베타 쿠폰 이벤트는 없음.
+        await notifyRenderDelayed({ ...ctxBase, paid: data.refund50At != null });
         await db.collection("events").doc(eventId).update({
           "notifications.renderDelayedNotifiedAt": FieldValue.serverTimestamp(),
         });

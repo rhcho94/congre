@@ -3,6 +3,8 @@ import { baseEmail, C } from "./layouts/base";
 export interface RenderDelayedEmailCtx {
   title: string;
   dashboardUrl: string;
+  // 토스 결제 건만 환불 안내를 붙인다 (무료·베타 쿠폰 이벤트는 false)
+  paid: boolean;
 }
 
 export function renderRenderDelayedEmail(ctx: RenderDelayedEmailCtx): string {
@@ -23,16 +25,18 @@ export function renderRenderDelayedEmail(ctx: RenderDelayedEmailCtx): string {
     <p style="margin:0 0 16px;font-size:14px;color:${C.text};line-height:1.7;">
       현재 영상 편집이 예상 완료 시각을 초과하였습니다. 저희 팀이 빠르게 확인하고 있으며, 영상은 반드시 완성하여 전달드리겠습니다.
     </p>
-    <p style="margin:0 0 24px;font-size:14px;color:${C.text};line-height:1.7;">
+    ${ctx.paid ? `<p style="margin:0 0 24px;font-size:14px;color:${C.text};line-height:1.7;">
       <strong>결제 후 4시간이 지나도록 완료되지 않을 경우 결제 금액의 50%가 자동으로 환불 확정</strong>됩니다. 별도로 연락드리겠습니다.
-    </p>
+    </p>` : `<p style="margin:0 0 24px;font-size:14px;color:${C.text};line-height:1.7;">
+      완성되는 대로 바로 알려드리겠습니다.
+    </p>`}
     <a href="${ctx.dashboardUrl}"
        style="display:inline-block;padding:12px 28px;background:${C.accent};color:#fff;font-size:13px;font-weight:600;text-decoration:none;border-radius:6px;margin-bottom:20px;">
       대시보드 확인하기
     </a>
     <p style="margin:20px 0 0;font-size:13px;color:${C.muted};line-height:1.7;">
-      환불 절차 문의: 카카오톡 채널 <strong style="color:${C.text};">@congre</strong><br>
-      불편을 드려 진심으로 죄송합니다. — 꽁그레팀 드림
+      ${ctx.paid ? "환불 절차 문의" : "문의"}: 카카오톡 채널 <strong style="color:${C.text};">@congre</strong><br>
+      불편을 드려 진심으로 죄송합니다. — Congre 팀 드림
     </p>
     `
   );

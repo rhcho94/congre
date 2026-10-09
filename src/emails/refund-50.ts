@@ -34,7 +34,7 @@ export function renderRefund50Email(ctx: Refund50EmailCtx): string {
     </a>
     <p style="margin:20px 0 0;font-size:13px;color:${C.muted};line-height:1.7;">
       환불 절차 문의: 카카오톡 채널 <strong style="color:${C.text};">@congre</strong><br>
-      불편을 드려 진심으로 죄송합니다. — 꽁그레팀 드림
+      불편을 드려 진심으로 죄송합니다. — Congre 팀 드림
     </p>
     `
   );

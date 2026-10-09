@@ -14,6 +14,8 @@ export const smsTemplates = {
     "[Congre] '{title}' 편집 완료! 영상: {url}",
   render_delayed:
     "[Congre] '{title}' 편집 지연 중. 결제 4시간 후 50% 환불 확정. 문의: 카카오톡 @congre",
+  render_delayed_free:
+    "[Congre] '{title}' 편집 지연 중. 완성되면 바로 알려드릴게요. 문의: 카카오톡 @congre",
   refund_50:
     "[Congre] '{title}' 편집 지연으로 50% 환불이 확정되었습니다. 환불 절차: 카카오톡 @congre",
   refund_100:
