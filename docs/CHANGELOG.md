@@ -2,6 +2,20 @@
 
 > 기능 단위 작업 이력. 최신이 위.
 
+## 2026-10-09
+
+- fix(notifications): 무료·베타 쿠폰 이벤트에는 환불 문구 없는 지연 알림 — `refund50At`(토스 결제 때만 기록) 기준으로 분기, 새 SMS 템플릿 `render_delayed_free`, 메일 환불 단락 조건부. 메일 서명 "꽁그레팀" → "Congre 팀" 3곳(known-issues "무료 이벤트에도 render_delayed…" 해소).
+- fix(signup): 연령 체크 문구 만 19세 → 만 14세(약관 제5조·제13조, decisions/legal.md와 일치). 휴대폰 번호는 이벤트 생성과 같은 규칙(010 11자리)으로 검증.
+- fix(notifications): 완성 문자의 "영상:" 링크를 대시보드(로그인 필요)에서 공유 페이지로.
+- fix(cron): check-rendering 이벤트 단위 try/catch — 한 건의 Firestore 쓰기 실패가 같은 회차 나머지를 막지 않게(pending-backlog B7).
+- fix(ui): 워터마크 배지 미리보기와 "배지가 담긴 영상" 문구를 무료 플랜에만(호스트 완성 화면·참가자 전달 완료 화면). GET /api/events/[eventId]에 `plan` 추가.
+- fix(copy): 결제 화면 "결제는 이벤트당 1회" → 재결제 80% 안내(모드별), "올라온 영상 수" → "포함된 영상 수"; 이벤트 생성 메일에 유료는 결제 뒤 시작; 기본 제목 "축하영상" → "축하 영상"; 가이드 4곳(없는 "우측 상단 주최자 로그인" 버튼, "업로드 시각", "한 편", 전화번호 규칙); 업로드 실패 문구에서 개발자용 텍스트(CORS·F12) 제거, 정원 단위 명 → 개; PAID_NOT_AVAILABLE 문구; 마이페이지 가입일 "2026. 5. 20." → "2026년 5월 20일"; /host 제목 "주최자 로그인" → "호스트 로그인".
+- refactor(host): host/page.tsx의 도달 불가 mock dashboard·create 뷰 삭제(known-issues 해소).
+- feat(app): 한글 404 화면 `src/app/not-found.tsx`.
+- feat(notifications): 렌더 실패 때 운영자 문자(`CONGRE_INTERNAL_PHONE`, 설정 시).
+- chore(env): `.env.local.example`에 누락 7개(CRON_SECRET, CONGRE_INTERNAL_PHONE, TOSS 2, FIREBASE_ADMIN 3).
+- docs: 2026-09-22~24 라이브 키 전환 결정 4건 백필(decisions/infra.md), 랜딩 리드 문구 결정(landing.md 27), 9/14 핸드오프 `live_sk_` 정정 줄, 랜딩 배포 명령 `vercel@62.7.0` 고정(CLAUDE.md·PROJECT.md), known-issues 7건 해소 이동(cleanup 2건은 10/08 C21, 재렌더 유료화 2건은 8/16 `a1735a0` 시점 정리 누락분) + 약관·처리방침 불일치 묶음 1건 등재, legal/CHANGELOG 낡은 미확정 항목 정리, 환불 수동 처리 절차서 `docs/ops/runbook-refund-manual.md` 신설. 출처: 2026-10-09 문구 감사(앱 src 전체 + 랜딩 4페이지).
+
 ## 2026-10-08
 
 - docs: 렌더 멈춤 비상 복구 절차서 신설(docs/ops/runbook-render-stuck.md). data-flow·known-issues의 Shotstack `exclude` 기재를 코드에 맞게 정정, check-render-deadlines의 환불 100% 시각 주석을 실제 값(결제 + 48시간)으로. known-issues에 open 이벤트 미정리·약관 탈퇴 조건 어긋남 2건 등재.
@@ -40,6 +54,10 @@
   handoff 기록·내부 알림 번호 `CONGRE_INTERNAL_PHONE`·Firestore `betaCoupons` 문서 ID는
   외부에 노출되지 않아 유지했다. 약관·개인정보처리방침 시행일 `2026년 9월 1일`은 그대로.
   SMS 발신번호(`SOLAPI_SENDER`)·토스 가맹점 정보·카카오 채널 프로필은 Ray 작업.
+
+## 2026-09-23
+
+- chore(payment): 토스 라이브 키 전환 — Vercel Production·Preview 모두 `live_gck_`/`live_gsk_`로 교체(환경 분리 없음, Preview도 실결제). 교체 중 공개 변수에 시크릿 키가 들어가 위젯이 거부한 사고 1회 후 정정. 본인 카드 10,000원 실결제 → 렌더 → 워터마크 없는 완성본 → 다운로드까지 검증(이벤트 '첫번째유료영상'). 기록은 2026-10-09 백필(decisions/infra.md 2026-09-22~24).
 
 ## 2026-09-21
 

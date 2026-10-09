@@ -102,6 +102,8 @@ npx firebase emulators:start --only firestore
 
 (Firebase, AWS 관련 환경변수는 Vercel 대시보드 참조)
 
+코드가 읽는 변수 전체 목록(값 없음)은 `.env.local.example`이 기준이다(2026-10-09 7개 추가로 코드와 1:1). 토스 라이브 키는 Production·Preview 공통이라 **Preview 배포도 실결제**다 — 결제 수정은 로컬 테스트 키로 검증(decisions/infra.md 2026-09-22~24).
+
 ## 완료된 기능
 
 - 주최자 로그인/대시보드 (Firebase Auth, 비밀번호 찾기 포함)
@@ -169,7 +171,7 @@ npx firebase emulators:start --only firestore
 - 도메인: `https://congre.kr` (307 → www), `https://www.congre.kr` (메인)
 - Vercel 프로젝트: `congre-landing`
 - 작업 폴더: `C:\Users\PC\Downloads\congre\deploy` (git 외부)
-- 배포 명령: `npx vercel --prod --yes`
+- 배포 명령: `npx --yes vercel@62.7.0 --prod --yes` (CLAUDE.md 「자주 쓰는 명령어 > 랜딩」 참조)
 - 변경 도구: CC 직접 수정 (2026-10-07 전면 개편부터. CD zip 덮어쓰기 금지)
 - 변경 이력: Vercel Deployments 탭 (git 외부)
 

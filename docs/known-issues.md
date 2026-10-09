@@ -2,6 +2,21 @@
 
 > 진행 중·보류·메모 항목만 둔다. 해결 완료 항목은 known-issues-resolved.md로 이동.
 
+## 약관·처리방침 문구와 코드가 어긋나는 곳 묶음 (법률 상담 뒤 일괄 개정)
+
+- **현황** (2026-10-09 전수 문구 감사. 코드가 실제 상태이고 문서가 틀리거나 빠진 쪽):
+  1. 처리방침 수집 항목에 가입 단계 휴대폰 번호가 없다(`privacy/page.tsx:74-82`는 "이벤트 생성 시"라 함). 가입 폼은 번호 필수(`signup/page.tsx`). 약관 제18조③은 가입 정보에 번호를 포함.
+  2. 알림 발송 기록 `notifications`에 수신자(참가자 휴대폰 번호 포함)가 90일 남는데(`history.ts`, `cleanup` D-4) 처리방침 보유 표(`privacy:144`)는 참가자 정보 48시간만 적음.
+  3. 위탁·국외이전 항목이 좁다: Shotstack에 참가자 이름(자막, `shotstack.ts:334-349`)·인트로/아웃트로 영상·완성본, AWS에 완성본·썸네일도 간다. 표는 "클립 영상 콘텐츠, 인트로·아웃트로 텍스트"만.
+  4. 약관 제18조②는 "마감" 상태도 탈퇴 불가라 하나 코드는 open·rendering만 막는다(별도 항목 참조).
+  5. 약관 제1조·처리방침은 계약 주체를 "Congre(이하 회사)"라 하고, 사업자 정보 상호는 레이네(Rayne).
+  6. 처리방침 책임자 연락처 `ray@rayne.co.kr`(privacy:454)와 같은 문서 하단 문의 `cs@rayne.co.kr`가 공존. 약관도 사업자 이메일 ray@ / 문의 cs@.
+  7. 약관 제10조의2① "결제가 완료되면 즉시 제작 개시": 실제 렌더 시작은 결제 성공 페이지가 호출하고, 시작 실패·렌더 실패(`renderFailed`/closed) 시 4시간·48시간 환불 cron이 `rendering`만 봐서 동작하지 않는다 — 수동 처리 구간(docs/ops/runbook-refund-manual.md).
+  8. 환불 메일 `refund-50.ts:29` "절차 안내는 카카오톡 채널로 연락 주시면"은 약관 제10조의3⑧ "회사가 영업일 3일 이내 처리"와 주체가 어긋나 보인다.
+  9. 약관 제21조② 고객 응대 채널 = 카카오톡 @congre. 랜딩·메일 꼬리말은 cs@rayne.co.kr, 가이드는 전화 010-5891-7583. 공식 채널 1순위를 정해야 한다(decisions/notifications.md 2026-06-02 "전화는 수신 없음"과도 충돌).
+- **처리**: 등재만. 약관·처리방침 본문 수정은 고지 절차 판단이 필요해 코난이 임의로 하지 않았다. 1~3은 누락이라 법률 상담(pending-backlog D1·D4·D5)에서 함께 묻고, 5·6·8·9는 Ray 결정이면 개정 때 한 번에 반영.
+- **출처**: 2026-10-09 세션 문구 감사(코난 + 서브에이전트, 앱 src 전체 + 랜딩 4페이지).
+
 ## 호스트가 마감하지 않은 open 이벤트는 자동 마감·자동 정리가 없다
 
 - **현황**: 이벤트 `status`를 `open` → `closed`로 바꾸는 곳은 호스트 수동 마감(`api/events/[eventId]/close/route.ts:38`)과 결제 승인(`api/payment/confirm/route.ts:138`)뿐이다. `open`을 조회하는 cron이 없고(`vercel.json:3-5`), cleanup도 `done`·`closed`·`rendering`만 본다. 호스트가 마감하지 않으면 이벤트와 참가자 클립(이름·전화번호 포함)이 영원히 남는다.
@@ -67,20 +82,6 @@
 - **영향**: 카카오가 SDK를 바꾸면 예고 없이 동작이 달라질 수 있고, 무결성 검증이 없다.
 - **처리**: 등재만.
 - **격상 트리거**: CSP 도입 시 함께 / 공유 기능 장애 발생 시.
-- **출처**: 2026-09-21 세션.
-
-## cleanup이 S3 삭제 실패를 삼키고 썸네일은 아예 지우지 않는다
-
-- **현황**: `cron/cleanup/route.ts:21-32`의 `deleteClipsAndMarkEvent`가 `deleteS3Object`
-  실패를 `console.warn`으로만 남기고 Firestore clips 문서는 그대로 지운다. 문서가 사라지면
-  `s3Key`를 잃어 재시도할 근거가 없다. 그리고 clips 문서의 `thumbKey`(썸네일 S3 키)를
-  삭제하는 코드가 없다.
-- **영향**: S3에 고아 파일이 남는다. 참가자 원본 영상과 썸네일 모두 개인정보 파기와
-  연결된 경로다.
-- **관련**: known-issues "cleanup:36 S3 삭제 실패 시에도 Firestore 문서 삭제 강행"과 같은
-  축이며, 썸네일 누락이 새로 확인된 부분이다.
-- **처리**: 등재만.
-- **격상 트리거**: cleanup을 다시 손댈 때 / 개인정보 파기 점검 시.
 - **출처**: 2026-09-21 세션.
 
 ## 갤럭시 HDR(HLG 10bit) 클립의 완성본 표현이 미확인
@@ -288,46 +289,12 @@
 - **격상 트리거**: 알림 문자 비용이 유의미해지는 시점 / SMS 템플릿을 다시 손대게 될 때.
 - **출처**: 2026-08-17 세션.
 
-## 무료 이벤트에도 render_delayed 알림이 "결제 4시간 후 50% 환불" 문구로 발송된다
+## 재렌더 결제 뒤 두 번째 지연에는 환불 알림이 다시 나가지 않는다
 
-- **현황**: `render_delayed`는 `expectedCompletedAt` 하나만 보고 발송된다
-  (`src/app/api/cron/check-render-deadlines/route.ts:53-58`). 이 필드는 `render/start`에서
-  무료·유료 구분 없이 기록되고(`src/app/api/render/start/route.ts:212`), cron 조회 조건도
-  `status == "rendering"` 하나뿐이어서 plan 필터가 없다
-  (`src/app/api/cron/check-render-deadlines/route.ts:21`). 그래서 결제하지 않은 무료 이벤트
-  호스트도 렌더가 추정 시간을 넘기면 결제·환불 문구를 받는다.
-- **채널 2곳 모두 해당**: SMS는 `src/lib/notifications/sms-templates.ts:15-16`
-  "편집 지연 중. 결제 4시간 후 50% 환불 확정." 이메일도 같다 — plain text
-  `src/lib/notifications/scenarios/render-delayed.ts:26` "결제 후 4시간이 지나도록 완료되지
-  않으면 50% 환불이 확정됩니다", HTML 본문 `src/emails/render-delayed.ts:27` "결제 후 4시간이
-  지나도록 완료되지 않을 경우 결제 금액의 50%가 자동으로 환불 확정". SMS만의 문제가 아니다.
-- **refund 계열과 구조가 다르다**: `refund_50`·`refund_100`은 결제 시에만 기록되는
-  `refund50At`·`refund100At`을 보므로(`cron/check-render-deadlines/route.ts:71`, `:89`) 필드
-  부재 시 비교식이 거짓이 되어 무료가 가드 코드 없이 걸러진다 — known-issues-resolved.md의
-  2026-08-14 `6e18ddd` 기록. `render_delayed`는 그 구조 밖에 있다.
-- **영향**: 결제하지 않은 고객이 환불 안내를 받는다. 문의·혼선을 유발한다.
-- **발동 조건**: 렌더가 `renderEstimateMin`을 넘길 때. 이 값은 최소 15분이다
-  (`src/app/api/render/start/route.ts:203`).
-- **처리**: 등재만.
-- **관련**: 바로 위 "SMS render_delayed 템플릿이 90바이트 제약을 초과" 항목과 같은 템플릿이다.
-  문안을 다시 설계할 때 두 건을 함께 고친다.
-- **격상 트리거**: 위 90바이트 항목과 같다 — SMS 템플릿을 다시 손대게 될 때. 추가로 무료
-  이벤트 호스트에게서 이 문자 관련 문의가 들어올 때.
-- **출처**: 2026-10-01 세션 (SOLAPI_SENDER 교체 전 "결제 없이 SMS가 나가는 경로" 정찰).
-
-## participant-result.ts 주석이 실제 연결 상태와 어긋남
-
-- **현황**: `src/lib/notifications/scenarios/participant-result.ts:14` 주석이 "Trigger not
-  connected yet — will be wired in a future PR when participant contact collection is built."인데,
-  실제로는 `src/app/api/cron/check-rendering/route.ts:146`에서 호출되어 참가자 전화번호로
-  SMS가 나간다. 수신 대상은 제외(`excludedAt`)되지 않은 클립의 `uploaderPhone` distinct
-  집합이다(`cron/check-rendering/route.ts:136-143`).
-- **영향**: 동작 영향 없음. 주석을 믿으면 "참가자에게는 문자가 안 나간다"고 오판할 수 있다.
-  실발송 테스트 시 호스트뿐 아니라 참가자 폰으로도 나간다.
-- **처리**: 등재만. 해당 파일을 다른 이유로 수정할 때 주석도 함께 고친다.
-- **관련**: 같은 유형(주석이 실태와 어긋남)의 랜딩 항목 L16이 있다. 본 항목은 본 앱 파일이라
-  L 번호 체계(랜딩 페이지 영역) 밖이다.
-- **출처**: 2026-10-01 세션.
+- **현황**: `payment/confirm`은 재렌더 결제 때 `refund50At`/`refund100At`을 새로 쓰지만(`:145-147`), `render/start`가 초기화하는 알림 플래그는 `renderStartedNotifiedAt`·`renderCompletedNotifiedAt`·`renderDelayedNotifiedAt` 3개뿐이라(`:214-216`) `refund50NotifiedAt`/`refund100NotifiedAt`은 첫 결제 때 값이 남는다. cron은 플래그가 있으면 건너뛴다.
+- **영향**: 첫 렌더에서 환불 알림이 한 번 나간 이벤트가 재렌더에서 또 지연되면 호스트·운영자 모두 알림이 없다. `refundStatus`도 갱신되지 않는다. 드문 경로.
+- **처리**: 등재만. 고치려면 `render/start` 리셋 목록에 두 플래그를 더하되, 첫 환불이 이미 확정된 이벤트의 `refundStatus`를 어떻게 둘지(바로 아래 항목) 함께 정해야 한다.
+- **출처**: 2026-10-09 정찰. docs/ops/runbook-refund-manual.md 5절.
 
 ## 재렌더 시 refundStatus가 "none"으로 되돌아감
 
@@ -398,13 +365,6 @@
   지금은 바깥 catch가 잡아 나머지 이벤트를 계속 처리한다. 데이터 처리 결과는 동일하고
   차이는 로그·응답 숫자에만 남는다.
 - **처리**: 고치지 않음.
-
-## cleanup:36 S3 삭제 실패 시에도 Firestore 문서 삭제 강행
-
-- **현황**: 클립 S3 삭제가 실패해도 안쪽 catch가 흡수하고 다음 줄에서 Firestore 문서를
-  무조건 삭제한다. orphan S3 파일이 남을 수 있다.
-- **위치**: `src/app/api/cron/cleanup/route.ts` `deleteClipsAndMarkEvent()` 내부
-- **처리**: 기존 동작이며 이번 작업과 독립. 등재만.
 
 ## isKeyInEvent가 경로 상위 이동 표기를 통과시킴 — 영향 미실측
 
@@ -614,13 +574,6 @@
 - **운영 메모**: 프로덕션에서 Shotstack API 스키마 변경/오류 발생 시 Vercel 로그 → Functions 탭 → "non-OK response" 검색으로 바로 확인 가능.
 - **2026-05-19 v2 격상**: 본 룰을 CLAUDE.md 절대 규칙으로 격상. 모든 catch 블록에 `console.error("[context] failed:", err)` 의무. 본 세션 가입 흐름 진단에서 catch console.error 누락이 사고 #3 영역.
 
-## 재렌더 결제 게이트 잔여 — B5 재렌더 유료화 미구현
-
-- **현황**: done 상태 재렌더 버튼 미노출(①)·재렌더 직전 클립 재선택 흐름(②)은 2026-07-10 해소됨 — done·closed 공용 확인 모달로 통일, 클립 재선택은 화면 인라인 목록에서 유지. 남은 갭은 ③ 재렌더 결제 게이트: B5 유료 플랜의 첫 렌더·재렌더 매번 사전 결제(재렌더 1차 80% / 2차 이후 80%)가 아직 미구현. 현재 재렌더는 결제 없이 확인 모달만 거쳐 `/api/render/start`를 호출한다.
-- **위치**: `src/app/dashboard/events/[eventId]/page.tsx` — 재렌더 확인 모달 / `callRenderStart` (`PAID_NOT_AVAILABLE` 가드만 존재)
-- **결정 사항**: DECISIONS 2026-05-09 (D1) + 2026-05-21 B5. ①② 구현 완료, ③만 잔여.
-- **처리 시점**: 결제 트랙(Toss v2)에서 최초 렌더 결제와 함께 처리.
-
 ## 금액 산출이 클라이언트에만 존재 — 결제 연동 시 서버 계산 필수
 
 - **현황**: 결제 연동 시 금액을 서버에서 계산해야 하나 현재는 클라이언트에만 산출
@@ -635,11 +588,6 @@
   천장 표시용이다.
 - **격상 트리거**: 결제 연동 트랙(ⓐ) 착수 시 과금 모델 사양 확정·구현.
 - **출처**: 2026-08-10 세션, 등재는 2026-08-11.
-
-## 랜딩 pricing에 재렌더 80% 재결제가 공개 선언됨 — 코드 없음
-- 현황: deploy/pricing.html 하단에 "결제는 이벤트당 1회. 재편집 시 처음 금액의 80%로 재결제됩니다." 문구가 게시돼 있으나 재렌더 결제 게이트는 미구현이다(B5 잔여분, 기존 known-issue "재렌더 결제 게이트 잔여"와 같은 건).
-- 등급: 8/24 카드사 심사에는 영향 없음(심사는 결제창 흐름만 확인). 유료 오픈 시점에는 공개 선언과 동작 불일치가 된다.
-- 처리 시점: 유료 오픈 전 필수. 결제 트랙 2차에서 처리.
 
 ## 결제 후 클립 제외 시 차액 미정산
 - 현황: 결제·마감 이후에도 호스트가 클립 제외 토글을 쓸 수 있는 경우, 과금된 클립 수보다 실제 렌더 클립 수가 적어질 수 있다. 방향은 한쪽뿐이며(마감 후 업로드는 불가) 호스트 본인 선택이므로 우리 손해는 없다.
@@ -718,12 +666,6 @@
 - **격상 트리거**: 신규 호스트가 "뭘 해야 할지 모르겠다" 보고 발생 시
 - **처리 후보**: 가입 직후 first-time 안내 모달 / 온보딩 페이지 / 대시보드 빈 상태 placeholder에 가이드 링크 강조 등
 - **관련 영역**: S2-03 P3 이메일 인증 차단 흐름 완료 (2026-05-19 v3). onboarding 개선(first-time 안내 모달 등)은 보정 큐 등재.
-
-## host/page.tsx dead code — dashboard·create 뷰 도달 불가
-
-- **현황**: `/host/page.tsx`는 login·signup·forgotPassword 3뷰를 포함하지만 dashboard·create 뷰는 `/dashboard`, `/dashboard/create`로 이동했고 host 파일 내 해당 분기는 도달 불가. `mockEvents` 같은 테스트 픽스처도 잔류.
-- **위치**: `src/app/host/page.tsx` — view 분기 상태 중 "dashboard", "create" 케이스
-- **격상 트리거**: 코드베이스 정리 또는 /host 리팩터 착수 시. 현재 dead code라 사용자 영향 없음.
 
 ## Firebase sendEmailVerification too-many-requests 방어 상태
 

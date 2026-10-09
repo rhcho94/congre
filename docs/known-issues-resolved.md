@@ -3,6 +3,93 @@
 > known-issues.md에서 분리된 해결 완료 이력. 사고 재발 진단 시 grep 대상.
 > 새 RESOLVED 항목 발생 시 known-issues.md에서 이 파일로 이동.
 
+## ✅ cleanup이 S3 삭제 실패를 삼키고 썸네일은 아예 지우지 않는다 (2026-10-08 해소)
+
+- **해소: 2026-10-08** — C21 `e2adc85`. `deleteClipsAndMarkEvent`가 `thumbKey`도 지우고, S3 삭제가 하나라도 실패한 클립은 문서를 남겨 다음 날 재시도한다(`cleanup/route.ts:22-48`). 호스트 인트로·아웃트로 파일도 함께 삭제. 첫 자동 실행(2026-10-09 03:00 KST) 로그 확인은 2026-10-09 세션 기준 아직 — Vercel 로그 `cleanup done` 숫자로 확인한다.
+- **현황**: `cron/cleanup/route.ts:21-32`의 `deleteClipsAndMarkEvent`가 `deleteS3Object`
+  실패를 `console.warn`으로만 남기고 Firestore clips 문서는 그대로 지운다. 문서가 사라지면
+  `s3Key`를 잃어 재시도할 근거가 없다. 그리고 clips 문서의 `thumbKey`(썸네일 S3 키)를
+  삭제하는 코드가 없다.
+- **영향**: S3에 고아 파일이 남는다. 참가자 원본 영상과 썸네일 모두 개인정보 파기와
+  연결된 경로다.
+- **관련**: known-issues "cleanup:36 S3 삭제 실패 시에도 Firestore 문서 삭제 강행"과 같은
+  축이며, 썸네일 누락이 새로 확인된 부분이다.
+- **처리**: 등재만.
+- **격상 트리거**: cleanup을 다시 손댈 때 / 개인정보 파기 점검 시.
+- **출처**: 2026-09-21 세션.
+
+## ✅ cleanup:36 S3 삭제 실패 시에도 Firestore 문서 삭제 강행 (2026-10-08 해소)
+
+- **해소: 2026-10-08** — 위 항목과 같은 커밋 C21 `e2adc85`. 실패 클립은 문서를 남기고 `clipsDeletedAt`을 찍지 않는다.
+- **현황**: 클립 S3 삭제가 실패해도 안쪽 catch가 흡수하고 다음 줄에서 Firestore 문서를
+  무조건 삭제한다. orphan S3 파일이 남을 수 있다.
+- **위치**: `src/app/api/cron/cleanup/route.ts` `deleteClipsAndMarkEvent()` 내부
+- **처리**: 기존 동작이며 이번 작업과 독립. 등재만.
+
+## ✅ 무료 이벤트에도 render_delayed 알림이 "결제 4시간 후 50% 환불" 문구로 발송된다 (2026-10-09 해소)
+
+- **해소: 2026-10-09** — `check-render-deadlines`가 `refund50At != null`(토스 결제 확인 때만 기록)을 `paid`로 넘기고, `notifyRenderDelayed`가 결제 건에만 환불 문구를 쓴다. 무료·베타 쿠폰 이벤트는 새 템플릿 `render_delayed_free`("완성되면 바로 알려드릴게요")와 환불 단락 없는 메일을 받는다. plan만 보면 쿠폰 이벤트(plan=paid, 결제 없음)가 걸러지지 않아 refund50At을 기준으로 삼았다. 90바이트 항목은 그대로 남는다(문안 미변경).
+- **현황**: `render_delayed`는 `expectedCompletedAt` 하나만 보고 발송된다
+  (`src/app/api/cron/check-render-deadlines/route.ts:53-58`). 이 필드는 `render/start`에서
+  무료·유료 구분 없이 기록되고(`src/app/api/render/start/route.ts:212`), cron 조회 조건도
+  `status == "rendering"` 하나뿐이어서 plan 필터가 없다
+  (`src/app/api/cron/check-render-deadlines/route.ts:21`). 그래서 결제하지 않은 무료 이벤트
+  호스트도 렌더가 추정 시간을 넘기면 결제·환불 문구를 받는다.
+- **채널 2곳 모두 해당**: SMS는 `src/lib/notifications/sms-templates.ts:15-16`
+  "편집 지연 중. 결제 4시간 후 50% 환불 확정." 이메일도 같다 — plain text
+  `src/lib/notifications/scenarios/render-delayed.ts:26` "결제 후 4시간이 지나도록 완료되지
+  않으면 50% 환불이 확정됩니다", HTML 본문 `src/emails/render-delayed.ts:27` "결제 후 4시간이
+  지나도록 완료되지 않을 경우 결제 금액의 50%가 자동으로 환불 확정". SMS만의 문제가 아니다.
+- **refund 계열과 구조가 다르다**: `refund_50`·`refund_100`은 결제 시에만 기록되는
+  `refund50At`·`refund100At`을 보므로(`cron/check-render-deadlines/route.ts:71`, `:89`) 필드
+  부재 시 비교식이 거짓이 되어 무료가 가드 코드 없이 걸러진다 — known-issues-resolved.md의
+  2026-08-14 `6e18ddd` 기록. `render_delayed`는 그 구조 밖에 있다.
+- **영향**: 결제하지 않은 고객이 환불 안내를 받는다. 문의·혼선을 유발한다.
+- **발동 조건**: 렌더가 `renderEstimateMin`을 넘길 때. 이 값은 최소 15분이다
+  (`src/app/api/render/start/route.ts:203`).
+- **처리**: 등재만.
+- **관련**: 바로 위 "SMS render_delayed 템플릿이 90바이트 제약을 초과" 항목과 같은 템플릿이다.
+  문안을 다시 설계할 때 두 건을 함께 고친다.
+- **격상 트리거**: 위 90바이트 항목과 같다 — SMS 템플릿을 다시 손대게 될 때. 추가로 무료
+  이벤트 호스트에게서 이 문자 관련 문의가 들어올 때.
+- **출처**: 2026-10-01 세션 (SOLAPI_SENDER 교체 전 "결제 없이 SMS가 나가는 경로" 정찰).
+
+## ✅ participant-result.ts 주석이 실제 연결 상태와 어긋남 (2026-10-09 해소)
+
+- **해소: 2026-10-09** — 주석을 "호출처: api/cron/check-rendering"으로 교체.
+- **현황**: `src/lib/notifications/scenarios/participant-result.ts:14` 주석이 "Trigger not
+  connected yet — will be wired in a future PR when participant contact collection is built."인데,
+  실제로는 `src/app/api/cron/check-rendering/route.ts:146`에서 호출되어 참가자 전화번호로
+  SMS가 나간다. 수신 대상은 제외(`excludedAt`)되지 않은 클립의 `uploaderPhone` distinct
+  집합이다(`cron/check-rendering/route.ts:136-143`).
+- **영향**: 동작 영향 없음. 주석을 믿으면 "참가자에게는 문자가 안 나간다"고 오판할 수 있다.
+  실발송 테스트 시 호스트뿐 아니라 참가자 폰으로도 나간다.
+- **처리**: 등재만. 해당 파일을 다른 이유로 수정할 때 주석도 함께 고친다.
+- **관련**: 같은 유형(주석이 실태와 어긋남)의 랜딩 항목 L16이 있다. 본 항목은 본 앱 파일이라
+  L 번호 체계(랜딩 페이지 영역) 밖이다.
+- **출처**: 2026-10-01 세션.
+
+## ✅ host/page.tsx dead code — dashboard·create 뷰 도달 불가 (2026-10-09 해소)
+
+- **해소: 2026-10-09** — dashboard·create 뷰, mockEvents, handleCreate, view 상태 삭제. 로그인 마크업은 그대로(중첩만 풀림).
+- **현황**: `/host/page.tsx`는 login·signup·forgotPassword 3뷰를 포함하지만 dashboard·create 뷰는 `/dashboard`, `/dashboard/create`로 이동했고 host 파일 내 해당 분기는 도달 불가. `mockEvents` 같은 테스트 픽스처도 잔류.
+- **위치**: `src/app/host/page.tsx` — view 분기 상태 중 "dashboard", "create" 케이스
+- **격상 트리거**: 코드베이스 정리 또는 /host 리팩터 착수 시. 현재 dead code라 사용자 영향 없음.
+
+## ✅ 재렌더 결제 게이트 잔여 — B5 재렌더 유료화 미구현 (2026-08-16 해소)
+
+- **해소: 2026-08-16** (등재 정리는 2026-10-09) — 재렌더 유료화가 그날 구현·실결제 검증됐다(CHANGELOG 2026-08-16 verify(rerender): 최초 10,000원 → 재렌더 8,000원). 대시보드 모달이 유료 이벤트를 `/payment`(mode=rerender)로 보내고 `payment/prepare`가 80%를 산출한다. 이 항목은 이월 때 정리되지 않고 남아 있었다. 서버 강제 미구현은 별도 항목 "재렌더 결제가 서버에서 강제되지 않는다"로 계속 관리.
+- **현황**: done 상태 재렌더 버튼 미노출(①)·재렌더 직전 클립 재선택 흐름(②)은 2026-07-10 해소됨 — done·closed 공용 확인 모달로 통일, 클립 재선택은 화면 인라인 목록에서 유지. 남은 갭은 ③ 재렌더 결제 게이트: B5 유료 플랜의 첫 렌더·재렌더 매번 사전 결제(재렌더 1차 80% / 2차 이후 80%)가 아직 미구현. 현재 재렌더는 결제 없이 확인 모달만 거쳐 `/api/render/start`를 호출한다.
+- **위치**: `src/app/dashboard/events/[eventId]/page.tsx` — 재렌더 확인 모달 / `callRenderStart` (`PAID_NOT_AVAILABLE` 가드만 존재)
+- **결정 사항**: DECISIONS 2026-05-09 (D1) + 2026-05-21 B5. ①② 구현 완료, ③만 잔여.
+- **처리 시점**: 결제 트랙(Toss v2)에서 최초 렌더 결제와 함께 처리.
+
+## ✅ 랜딩 pricing에 재렌더 80% 재결제가 공개 선언됨 — 코드 없음 (2026-08-16 해소)
+- 현황: deploy/pricing.html 하단에 "결제는 이벤트당 1회. 재편집 시 처음 금액의 80%로 재결제됩니다." 문구가 게시돼 있으나 재렌더 결제 게이트는 미구현이다(B5 잔여분, 기존 known-issue "재렌더 결제 게이트 잔여"와 같은 건).
+- **해소: 2026-08-16** (등재 정리는 2026-10-09) — 위 항목과 같은 근거. 코드가 선언을 따라잡았다. 같은 문장의 "결제는 이벤트당 1회"가 80% 재결제와 자기모순이라 2026-10-09 랜딩 문구를 고쳤다.
+- 등급: 8/24 카드사 심사에는 영향 없음(심사는 결제창 흐름만 확인). 유료 오픈 시점에는 공개 선언과 동작 불일치가 된다.
+- 처리 시점: 유료 오픈 전 필수. 결제 트랙 2차에서 처리.
+
 ## ✅ probe baseUrl이 공식 스펙과 다르다 — 스펙 불일치, 현재 동작함 (2026-09-21 판정) (2026-10-08 해소)
 
 - **해소: 2026-10-08** — C16 `b0eca5d`에서 공식 경로 `/edit/{version}/probe`로 변경. 배포 뒤 무료 검증 렌더(이벤트 `iVQj8wgUPYsB6eTrC04q`, 인트로 영상 + 참가자 클립 3개 + 아웃트로 텍스트, 40.5초)에서 확인: 이름 자막이 클립 시작과 맞음(조래1 7.6초, 조래2 17.2~17.6초, 조래3 27.2~27.6초, 37.6초에 사라짐) → 인트로 영상 길이 측정 성공. BGM은 끝까지 이어지고 무음 구간 없음(0.25초 단위 음량). 12초 간격 작아지는 구간 3곳은 Ray 청취로 곡 자체 흐름으로 판정. 옛 경로가 실제로 실패했었는지는 모른다(10/08 Vercel 로그 `probe` 검색 0건 — 실패할 때만 로그가 남음).
