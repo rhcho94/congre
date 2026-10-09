@@ -114,7 +114,7 @@ export default function CreateEventPage() {
           if (userDoc) {
             setForm((f) => ({
               ...f,
-              ...(userDoc.name ? { title: `${userDoc.name}씨의 축하영상입니다` } : {}),
+              ...(userDoc.name ? { title: `${userDoc.name}씨의 축하 영상입니다` } : {}),
               ...(userDoc.phone ? { organizerPhone: userDoc.phone } : {}),
             }));
           }
