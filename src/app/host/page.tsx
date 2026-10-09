@@ -9,30 +9,6 @@ import { useRouter } from "next/navigation";
 import { loginWithEmail, logout, resetPassword, subscribeToAuthChanges, type User } from "@/lib/auth";
 import { isFirebaseConfigured } from "@/lib/firebase";
 
-type View = "login" | "dashboard" | "create";
-type EventStatus = "수집중" | "마감" | "편집중" | "완성";
-
-interface CongreEvent {
-  id: string;
-  title: string;
-  date: string;
-  participants: number;
-  status: EventStatus;
-}
-
-const mockEvents: CongreEvent[] = [
-  { id: "evt_01", title: "2025 팀 워크샵", date: "2025-05-10", participants: 24, status: "수집중" },
-  { id: "evt_02", title: "신입 환영회", date: "2025-04-20", participants: 31, status: "완성" },
-  { id: "evt_03", title: "창립 10주년 파티", date: "2025-03-15", participants: 87, status: "완성" },
-];
-
-const statusBadgeClass: Record<EventStatus, string> = {
-  수집중: "badge-live",
-  마감: "badge-draft",
-  편집중: "badge-draft",
-  완성: "badge-done",
-};
-
 function getAuthErrorMessage(code: string): string {
   switch (code) {
     case "auth/invalid-email":
@@ -54,12 +30,9 @@ function getAuthErrorMessage(code: string): string {
 
 export default function HostPage() {
   const router = useRouter();
-  const [view, setView] = useState<View>("login");
   const [user, setUser] = useState<User | null>(null);
   const [authChecking, setAuthChecking] = useState(isFirebaseConfigured);
 
-  const [events, setEvents] = useState<CongreEvent[]>(mockEvents);
-  const [form, setForm] = useState({ title: "", date: "", deadline: "" });
 
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
@@ -80,8 +53,6 @@ export default function HostPage() {
       setAuthChecking(false);
       if (firebaseUser) {
         router.push("/dashboard");
-      } else {
-        setView("login");
       }
     });
 
@@ -135,20 +106,6 @@ export default function HostPage() {
     }
   }
 
-  function handleCreate(e: React.FormEvent) {
-    e.preventDefault();
-    const created: CongreEvent = {
-      id: `evt_${Date.now()}`,
-      title: form.title || "새 이벤트",
-      date: form.date,
-      participants: 0,
-      status: "수집중",
-    };
-    setEvents([created, ...events]);
-    setForm({ title: "", date: "", deadline: "" });
-    setView("dashboard");
-  }
-
   if (authChecking) {
     return (
       <>
@@ -179,217 +136,127 @@ export default function HostPage() {
         </nav>
 
         <main className="mx-auto max-w-2xl px-5 pt-2 pb-16">
-          {view === "login" && (
-            <>
-              <div className="w-full max-w-md mx-auto">
-                <h1 className="display mb-6" style={{ fontSize: 28, lineHeight: 1.3, paddingTop: 12 }}>주최자 로그인</h1>
+          <div className="w-full max-w-md mx-auto">
+            <h1 className="display mb-6" style={{ fontSize: 28, lineHeight: 1.3, paddingTop: 12 }}>주최자 로그인</h1>
 
-                {!isFirebaseConfigured && (
-                  <div className="mb-6 notice">
-                    <p className="text-xs text-accent mb-1 font-medium">Firebase 미연결</p>
-                    <p className="text-xs text-muted leading-relaxed">
-                      .env.local에 Firebase 설정값을 추가하면 실제 로그인이 가능합니다.
-                    </p>
-                  </div>
-                )}
-
-                <form onSubmit={handleLogin} className="flex flex-col gap-4">
-                  <label className="flex flex-col gap-1.5">
-                    <span className="text-[15px]">이메일</span>
-                    <input
-                      type="email"
-                      placeholder="host@congre.io"
-                      value={loginEmail}
-                      onChange={(e) => setLoginEmail(e.target.value)}
-                      required
-                      disabled={loginLoading}
-                      className="input"
-                    />
-                  </label>
-
-                  <label className="flex flex-col gap-1.5">
-                    <span className="text-[15px]">비밀번호</span>
-                    <input
-                      type="password"
-                      placeholder="••••••••"
-                      value={loginPassword}
-                      onChange={(e) => setLoginPassword(e.target.value)}
-                      required
-                      disabled={loginLoading}
-                      className="input"
-                    />
-                  </label>
-
-                  {loginError && (
-                    <p className="text-[13px]" style={{ color: "var(--danger)" }}>{loginError}</p>
-                  )}
-
-                  <button type="submit" disabled={loginLoading} className="btn btn-primary mt-2" style={{ height: 54, fontSize: 17 }}>
-                    {loginLoading ? "로그인 중..." : "로그인"}
-                  </button>
-                </form>
-
-                <div className="mt-4 text-center flex items-center justify-center gap-3">
-                  <button type="button" onClick={openResetModal} className="btn-quiet text-sm">
-                    비밀번호를 잊으셨나요?
-                  </button>
-                  <span className="text-xs text-muted">·</span>
-                  <Link href="/signup" className="btn-quiet text-sm" style={{ color: "var(--accent)" }}>
-                    회원가입
-                  </Link>
-                </div>
+            {!isFirebaseConfigured && (
+              <div className="mb-6 notice">
+                <p className="text-xs text-accent mb-1 font-medium">Firebase 미연결</p>
+                <p className="text-xs text-muted leading-relaxed">
+                  .env.local에 Firebase 설정값을 추가하면 실제 로그인이 가능합니다.
+                </p>
               </div>
+            )}
 
-              {resetOpen && (
-                <div
-                  className="fixed inset-0 z-50 flex items-center justify-center px-6"
-                  style={{ background: "rgba(12,11,9,0.8)" }}
-                  onClick={() => setResetOpen(false)}
-                >
-                  <div
-                    className="glass-panel w-full max-w-sm p-8 flex flex-col gap-5"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <div className="flex items-center justify-between">
-                      <p className="display" style={{ fontSize: 18 }}>비밀번호 재설정</p>
-                      <button onClick={() => setResetOpen(false)} className="text-muted hover:text-foreground transition-colors" aria-label="닫기">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                          <line x1="18" y1="6" x2="6" y2="18" />
-                          <line x1="6" y1="6" x2="18" y2="18" />
-                        </svg>
-                      </button>
-                    </div>
+            <form onSubmit={handleLogin} className="flex flex-col gap-4">
+              <label className="flex flex-col gap-1.5">
+                <span className="text-[15px]">이메일</span>
+                <input
+                  type="email"
+                  placeholder="host@congre.io"
+                  value={loginEmail}
+                  onChange={(e) => setLoginEmail(e.target.value)}
+                  required
+                  disabled={loginLoading}
+                  className="input"
+                />
+              </label>
 
-                    {resetSent ? (
-                      <div className="flex flex-col gap-3">
-                        <div className="flex items-center gap-2">
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2E7D32" strokeWidth="1.5">
-                            <polyline points="20 6 9 17 4 12" />
-                          </svg>
-                          <p className="text-sm" style={{ color: "#2E7D32" }}>재설정 메일을 보냈습니다</p>
-                        </div>
-                        <p className="text-xs text-muted leading-relaxed">
-                          {resetEmail} 로 전송됐습니다. 메일함을 확인해주세요.
-                        </p>
-                        <button onClick={() => setResetOpen(false)} className="btn btn-secondary mt-1">
-                          닫기
-                        </button>
-                      </div>
-                    ) : (
-                      <form onSubmit={handlePasswordReset} className="flex flex-col gap-4">
-                        <p className="text-xs text-muted leading-relaxed">
-                          가입한 이메일을 입력하면 비밀번호 재설정 링크를 보내드립니다.
-                        </p>
-                        <label className="flex flex-col gap-1.5">
-                          <span className="text-[15px]">이메일</span>
-                          <input
-                            type="email"
-                            placeholder="host@congre.io"
-                            value={resetEmail}
-                            onChange={(e) => setResetEmail(e.target.value)}
-                            required
-                            disabled={resetLoading}
-                            autoFocus
-                            className="input"
-                          />
-                        </label>
-                        {resetError && (
-                          <p className="text-[13px]" style={{ color: "var(--danger)" }}>{resetError}</p>
-                        )}
-                        <button type="submit" disabled={resetLoading} className="btn btn-primary">
-                          {resetLoading ? "발송 중..." : "재설정 메일 보내기"}
-                        </button>
-                      </form>
-                    )}
-                  </div>
-                </div>
+              <label className="flex flex-col gap-1.5">
+                <span className="text-[15px]">비밀번호</span>
+                <input
+                  type="password"
+                  placeholder="••••••••"
+                  value={loginPassword}
+                  onChange={(e) => setLoginPassword(e.target.value)}
+                  required
+                  disabled={loginLoading}
+                  className="input"
+                />
+              </label>
+
+              {loginError && (
+                <p className="text-[13px]" style={{ color: "var(--danger)" }}>{loginError}</p>
               )}
-            </>
-          )}
 
-          {view === "dashboard" && (
-            <div>
-              <div className="flex items-end justify-between mb-10">
-                <div>
-                  <p className="eyebrow mb-2">Dashboard</p>
-                  <h1 className="display text-3xl">내 이벤트</h1>
-                </div>
-                <button onClick={() => setView("create")} className="btn btn-secondary">
-                  + 새 이벤트
-                </button>
-              </div>
-
-              <div className="hr mb-8" />
-
-              {events.length === 0 ? (
-                <p className="text-center text-muted text-sm py-16">아직 이벤트가 없습니다.</p>
-              ) : (
-                <div className="flex flex-col gap-3">
-                  {events.map((event) => (
-                    <div key={event.id} className="row flex items-center justify-between">
-                      <div className="flex flex-col gap-1 min-w-0 flex-1">
-                        <span className="text-sm text-foreground font-medium truncate">{event.title}</span>
-                        <span className="text-xs text-muted">
-                          {event.date} · 참가자 {event.participants}명
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-5 shrink-0 ml-4">
-                        <span className={`badge ${statusBadgeClass[event.status]}`}>{event.status}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {view === "create" && (
-            <div>
-              <button onClick={() => setView("dashboard")} className="btn-quiet text-sm mb-8 inline-block">
-                ← 목록으로
+              <button type="submit" disabled={loginLoading} className="btn btn-primary mt-2" style={{ height: 54, fontSize: 17 }}>
+                {loginLoading ? "로그인 중..." : "로그인"}
               </button>
+            </form>
 
-              <p className="eyebrow mb-4">New Event</p>
-              <h1 className="display text-3xl mb-10">새 이벤트 만들기</h1>
+            <div className="mt-4 text-center flex items-center justify-center gap-3">
+              <button type="button" onClick={openResetModal} className="btn-quiet text-sm">
+                비밀번호를 잊으셨나요?
+              </button>
+              <span className="text-xs text-muted">·</span>
+              <Link href="/signup" className="btn-quiet text-sm" style={{ color: "var(--accent)" }}>
+                회원가입
+              </Link>
+            </div>
+          </div>
 
-              <form onSubmit={handleCreate} className="flex flex-col gap-6">
-                <label className="flex flex-col gap-1.5">
-                  <span className="eyebrow">이벤트 이름</span>
-                  <input
-                    type="text"
-                    placeholder="팀 워크샵 2025"
-                    value={form.title}
-                    onChange={(e) => setForm({ ...form, title: e.target.value })}
-                    required
-                    className="input"
-                  />
-                </label>
+          {resetOpen && (
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center px-6"
+              style={{ background: "rgba(12,11,9,0.8)" }}
+              onClick={() => setResetOpen(false)}
+            >
+              <div
+                className="glass-panel w-full max-w-sm p-8 flex flex-col gap-5"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between">
+                  <p className="display" style={{ fontSize: 18 }}>비밀번호 재설정</p>
+                  <button onClick={() => setResetOpen(false)} className="text-muted hover:text-foreground transition-colors" aria-label="닫기">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
+                </div>
 
-                <label className="flex flex-col gap-1.5">
-                  <span className="eyebrow">이벤트 날짜</span>
-                  <input
-                    type="date"
-                    value={form.date}
-                    onChange={(e) => setForm({ ...form, date: e.target.value })}
-                    required
-                    className="input"
-                    style={{ colorScheme: "dark" }}
-                  />
-                </label>
-
-                <label className="flex flex-col gap-1.5">
-                  <span className="eyebrow">업로드 마감</span>
-                  <input
-                    type="datetime-local"
-                    value={form.deadline}
-                    onChange={(e) => setForm({ ...form, deadline: e.target.value })}
-                    className="input"
-                    style={{ colorScheme: "dark" }}
-                  />
-                </label>
-
-                <button type="submit" className="btn btn-primary mt-2">이벤트 만들기</button>
-              </form>
+                {resetSent ? (
+                  <div className="flex flex-col gap-3">
+                    <div className="flex items-center gap-2">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2E7D32" strokeWidth="1.5">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                      <p className="text-sm" style={{ color: "#2E7D32" }}>재설정 메일을 보냈습니다</p>
+                    </div>
+                    <p className="text-xs text-muted leading-relaxed">
+                      {resetEmail} 로 전송됐습니다. 메일함을 확인해주세요.
+                    </p>
+                    <button onClick={() => setResetOpen(false)} className="btn btn-secondary mt-1">
+                      닫기
+                    </button>
+                  </div>
+                ) : (
+                  <form onSubmit={handlePasswordReset} className="flex flex-col gap-4">
+                    <p className="text-xs text-muted leading-relaxed">
+                      가입한 이메일을 입력하면 비밀번호 재설정 링크를 보내드립니다.
+                    </p>
+                    <label className="flex flex-col gap-1.5">
+                      <span className="text-[15px]">이메일</span>
+                      <input
+                        type="email"
+                        placeholder="host@congre.io"
+                        value={resetEmail}
+                        onChange={(e) => setResetEmail(e.target.value)}
+                        required
+                        disabled={resetLoading}
+                        autoFocus
+                        className="input"
+                      />
+                    </label>
+                    {resetError && (
+                      <p className="text-[13px]" style={{ color: "var(--danger)" }}>{resetError}</p>
+                    )}
+                    <button type="submit" disabled={resetLoading} className="btn btn-primary">
+                      {resetLoading ? "발송 중..." : "재설정 메일 보내기"}
+                    </button>
+                  </form>
+                )}
+              </div>
             </div>
           )}
         </main>
