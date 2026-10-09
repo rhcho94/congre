@@ -58,123 +58,129 @@ export async function GET(request: NextRequest) {
 
     const { status, url } = renderResult;
 
-    if (status === "done" && url) {
-      const videoS3Key = `${data.renderId}.mp4`;
-      let s3Ready = false;
-      try {
-        await s3.send(new HeadObjectCommand({ Bucket: awsBucket, Key: videoS3Key }));
-        s3Ready = true;
-      } catch (err) {
-        const errObj = err as { name?: string; $metadata?: { httpStatusCode?: number } };
-        if (errObj?.name === "NotFound" || errObj?.$metadata?.httpStatusCode === 404) {
-          console.log(`[cron/check-rendering] eventId=${eventId} s3 not ready yet (404), retry next tick`);
-        } else {
-          console.error("[cron/check-rendering] s3 head failed:", err);
-        }
-      }
-      if (!s3Ready) continue;
-
-      const newEntry = {
-        renderId: data.renderId as string,
-        s3Key: videoS3Key,
-        doneAt: Timestamp.now(),
-      };
-
-      const existingS3Key = data.videoS3Key as string | undefined | null;
-      const existingVideos = (data.videos ?? []) as Array<{ s3Key: string }>;
-      const needsBackfill =
-        existingS3Key != null &&
-        existingS3Key !== videoS3Key &&
-        !existingVideos.some((v) => v.s3Key === existingS3Key);
-
-      const backfillEntry = needsBackfill
-        ? {
-            renderId: existingS3Key.replace(/\.mp4$/, ""),
-            s3Key: existingS3Key,
-            doneAt:
-              data.renderDoneAt instanceof Timestamp
-                ? data.renderDoneAt
-                : Timestamp.now(),
+    // 한 이벤트의 Firestore 쓰기 실패가 같은 회차의 나머지 이벤트를 막지 않도록 감싼다.
+    // 실패한 이벤트는 상태가 그대로라 다음 회차(5분 뒤)에 다시 처리된다.
+    try {
+      if (status === "done" && url) {
+        const videoS3Key = `${data.renderId}.mp4`;
+        let s3Ready = false;
+        try {
+          await s3.send(new HeadObjectCommand({ Bucket: awsBucket, Key: videoS3Key }));
+          s3Ready = true;
+        } catch (err) {
+          const errObj = err as { name?: string; $metadata?: { httpStatusCode?: number } };
+          if (errObj?.name === "NotFound" || errObj?.$metadata?.httpStatusCode === 404) {
+            console.log(`[cron/check-rendering] eventId=${eventId} s3 not ready yet (404), retry next tick`);
+          } else {
+            console.error("[cron/check-rendering] s3 head failed:", err);
           }
-        : null;
+        }
+        if (!s3Ready) continue;
 
-      await db.collection("events").doc(eventId).update({
-        status: "done",
-        videoS3Key,
-        renderDoneAt: FieldValue.serverTimestamp(),
-        videos: backfillEntry
-          ? FieldValue.arrayUnion(backfillEntry, newEntry)
-          : FieldValue.arrayUnion(newEntry),
-      });
-      processedCount++;
+        const newEntry = {
+          renderId: data.renderId as string,
+          s3Key: videoS3Key,
+          doneAt: Timestamp.now(),
+        };
 
-      const shareLink = `${baseUrl}/share/${eventId}`;
+        const existingS3Key = data.videoS3Key as string | undefined | null;
+        const existingVideos = (data.videos ?? []) as Array<{ s3Key: string }>;
+        const needsBackfill =
+          existingS3Key != null &&
+          existingS3Key !== videoS3Key &&
+          !existingVideos.some((v) => v.s3Key === existingS3Key);
 
-      if (data.organizerEmail && data.organizerPhone) {
-        const dashboardUrl = `${baseUrl}/dashboard/events/${eventId}`;
-        await notifyRenderCompleted({
-          eventId,
-          title: (data.title as string) ?? eventId,
-          videoUrl: shareLink,
-          organizerEmail: data.organizerEmail as string,
-          organizerPhone: data.organizerPhone as string,
-          dashboardUrl,
-          refundStatus: data.refundStatus as "none" | "50" | "100" | undefined,
-        }).catch((err) =>
-          console.error(`[cron/check-rendering] notifyRenderCompleted failed for eventId=${eventId}:`, err)
-        );
+        const backfillEntry = needsBackfill
+          ? {
+              renderId: existingS3Key.replace(/\.mp4$/, ""),
+              s3Key: existingS3Key,
+              doneAt:
+                data.renderDoneAt instanceof Timestamp
+                  ? data.renderDoneAt
+                  : Timestamp.now(),
+            }
+          : null;
+
         await db.collection("events").doc(eventId).update({
-          "notifications.renderCompletedNotifiedAt": FieldValue.serverTimestamp(),
+          status: "done",
+          videoS3Key,
+          renderDoneAt: FieldValue.serverTimestamp(),
+          videos: backfillEntry
+            ? FieldValue.arrayUnion(backfillEntry, newEntry)
+            : FieldValue.arrayUnion(newEntry),
         });
-      }
+        processedCount++;
 
-      if (data.notifications?.participantNotifiedAt == null) {
-        const clipsSnap = await db.collection("clips")
-          .where("eventId", "==", eventId).get();
+        const shareLink = `${baseUrl}/share/${eventId}`;
 
-        // JS 필터: excludedAt 없는 클립만 (DECISIONS 2026-05-08)
-        const includedClips = clipsSnap.docs.filter((d) => !d.data().excludedAt);
-
-        // distinct uploaderPhone (친구 폰 돌려쓰기 케이스 1건만)
-        const phones = [...new Set(
-          includedClips
-            .map((d) => d.data().uploaderPhone as string | undefined)
-            .filter((p): p is string => !!p)
-        )];
-
-        for (const phone of phones) {
-          await notifyParticipantResult({
+        if (data.organizerEmail && data.organizerPhone) {
+          const dashboardUrl = `${baseUrl}/dashboard/events/${eventId}`;
+          await notifyRenderCompleted({
             eventId,
             title: (data.title as string) ?? eventId,
             videoUrl: shareLink,
-            recipientPhone: phone,
+            organizerEmail: data.organizerEmail as string,
+            organizerPhone: data.organizerPhone as string,
+            dashboardUrl,
+            refundStatus: data.refundStatus as "none" | "50" | "100" | undefined,
           }).catch((err) =>
-            console.error(`[cron/check-rendering] notifyParticipantResult failed for eventId=${eventId} phone=${phone}:`, err)
+            console.error(`[cron/check-rendering] notifyRenderCompleted failed for eventId=${eventId}:`, err)
           );
+          await db.collection("events").doc(eventId).update({
+            "notifications.renderCompletedNotifiedAt": FieldValue.serverTimestamp(),
+          });
         }
 
-        await db.collection("events").doc(eventId).update({
-          "notifications.participantNotifiedAt": FieldValue.serverTimestamp(),
-        });
-      }
-    } else if (status === "failed") {
-      await db.collection("events").doc(eventId).update({ status: "closed" });
-      processedCount++;
+        if (data.notifications?.participantNotifiedAt == null) {
+          const clipsSnap = await db.collection("clips")
+            .where("eventId", "==", eventId).get();
 
-      if (data.organizerEmail && data.organizerPhone) {
-        const dashboardUrl = `${baseUrl}/dashboard/events/${eventId}`;
-        await notifyRenderFailed({
-          eventId,
-          title: (data.title as string) ?? eventId,
-          organizerEmail: data.organizerEmail as string,
-          organizerPhone: data.organizerPhone as string,
-          dashboardUrl,
-        }).catch((err) =>
-          console.error(`[cron/check-rendering] notifyRenderFailed failed for eventId=${eventId}:`, err)
-        );
+          // JS 필터: excludedAt 없는 클립만 (DECISIONS 2026-05-08)
+          const includedClips = clipsSnap.docs.filter((d) => !d.data().excludedAt);
+
+          // distinct uploaderPhone (친구 폰 돌려쓰기 케이스 1건만)
+          const phones = [...new Set(
+            includedClips
+              .map((d) => d.data().uploaderPhone as string | undefined)
+              .filter((p): p is string => !!p)
+          )];
+
+          for (const phone of phones) {
+            await notifyParticipantResult({
+              eventId,
+              title: (data.title as string) ?? eventId,
+              videoUrl: shareLink,
+              recipientPhone: phone,
+            }).catch((err) =>
+              console.error(`[cron/check-rendering] notifyParticipantResult failed for eventId=${eventId} phone=${phone}:`, err)
+            );
+          }
+
+          await db.collection("events").doc(eventId).update({
+            "notifications.participantNotifiedAt": FieldValue.serverTimestamp(),
+          });
+        }
+      } else if (status === "failed") {
+        await db.collection("events").doc(eventId).update({ status: "closed" });
+        processedCount++;
+
+        if (data.organizerEmail && data.organizerPhone) {
+          const dashboardUrl = `${baseUrl}/dashboard/events/${eventId}`;
+          await notifyRenderFailed({
+            eventId,
+            title: (data.title as string) ?? eventId,
+            organizerEmail: data.organizerEmail as string,
+            organizerPhone: data.organizerPhone as string,
+            dashboardUrl,
+          }).catch((err) =>
+            console.error(`[cron/check-rendering] notifyRenderFailed failed for eventId=${eventId}:`, err)
+          );
+        }
       }
+      // queued | fetching | rendering → 다음 tick에서 재확인
+    } catch (err) {
+      console.error(`[cron/check-rendering] event processing failed for eventId=${eventId}:`, err);
     }
-    // queued | fetching | rendering → 다음 tick에서 재확인
   }
 
   return Response.json({ checked: snapshot.docs.length, processed: processedCount });
