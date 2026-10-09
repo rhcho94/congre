@@ -5,7 +5,7 @@
 
 ## ✅ cleanup이 S3 삭제 실패를 삼키고 썸네일은 아예 지우지 않는다 (2026-10-08 해소)
 
-- **해소: 2026-10-08** — C21 `e2adc85`. `deleteClipsAndMarkEvent`가 `thumbKey`도 지우고, S3 삭제가 하나라도 실패한 클립은 문서를 남겨 다음 날 재시도한다(`cleanup/route.ts:22-48`). 호스트 인트로·아웃트로 파일도 함께 삭제. 첫 자동 실행(2026-10-09 03:00 KST) 로그 확인은 2026-10-09 세션 기준 아직 — Vercel 로그 `cleanup done` 숫자로 확인한다.
+- **해소: 2026-10-08** — C21 `e2adc85`. `deleteClipsAndMarkEvent`가 `thumbKey`도 지우고, S3 삭제가 하나라도 실패한 클립은 문서를 남겨 다음 날 재시도한다(`cleanup/route.ts:22-48`). 호스트 인트로·아웃트로 파일도 함께 삭제. 첫 자동 실행 확인(2026-10-09 21:39, Ray가 Vercel 로그 캡처): `OCT 09 03:00:15 GET 200 /api/cron/cleanup` → `cleanup done { clipsDeleted: 0, videosDeleted: 1, notificationsDeleted: … }`. 새 키 `notificationsDeleted`가 찍혀 C21 코드로 돌았음이 확인됨(10/07·10/08 로그에는 그 키가 없음). clipsDeleted 0은 지울 클립이 이미 없었다는 뜻(예상했던 "옛 테스트 클립 몰아서 삭제"는 일어나지 않음). notificationsDeleted 값은 캡처에서 잘려 미확인.
 - **현황**: `cron/cleanup/route.ts:21-32`의 `deleteClipsAndMarkEvent`가 `deleteS3Object`
   실패를 `console.warn`으로만 남기고 Firestore clips 문서는 그대로 지운다. 문서가 사라지면
   `s3Key`를 잃어 재시도할 근거가 없다. 그리고 clips 문서의 `thumbKey`(썸네일 S3 키)를
