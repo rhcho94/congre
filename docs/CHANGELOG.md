@@ -2,6 +2,11 @@
 
 > 기능 단위 작업 이력. 최신이 위.
 
+## 2026-10-10
+
+- verify(account): 탈퇴 보강(C22 `2dd4b96`) 실동작 확인 — 토스 심사용 계정 `rhcho94+tosstest@gmail.com` 탈퇴. 진행 중이던 유료·클립 0개 이벤트(`qO3KQ5U0dQBTAs6SoJhW`)는 화면에서 마감할 방법이 없어(마감 → 결제 화면 → 클립 0개 결제 차단) Firebase 콘솔에서 status open→closed로 바꾼 뒤 진행. Vercel 로그 19:07:01 `POST 200 /api/user/delete` → `[user/delete] success: { eventsDeleted: 14 }`, `[user/delete] … failed` 0건. 마이페이지는 진행 0 · 완료 9였는데 14개인 것은 마감(closed) 이벤트가 마이페이지 숫자에 안 잡히기 때문(코드 `mypage/page.tsx:105-107`). 결제 기록(payments)은 의도대로 남음.
+- docs(ops): 환불 절차서에 토스 취소 규칙(FAQ) 반영 `63801ac`.
+
 ## 2026-10-09
 
 - fix(notifications): 무료·베타 쿠폰 이벤트에는 환불 문구 없는 지연 알림 — `refund50At`(토스 결제 때만 기록) 기준으로 분기, 새 SMS 템플릿 `render_delayed_free`, 메일 환불 단락 조건부. 메일 서명 "꽁그레팀" → "Congre 팀" 3곳(known-issues "무료 이벤트에도 render_delayed…" 해소).
