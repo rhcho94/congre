@@ -6,6 +6,9 @@
 
 - verify(account): 탈퇴 보강(C22 `2dd4b96`) 실동작 확인 — 토스 심사용 계정 `rhcho94+tosstest@gmail.com` 탈퇴. 진행 중이던 유료·클립 0개 이벤트(`qO3KQ5U0dQBTAs6SoJhW`)는 화면에서 마감할 방법이 없어(마감 → 결제 화면 → 클립 0개 결제 차단) Firebase 콘솔에서 status open→closed로 바꾼 뒤 진행. Vercel 로그 19:07:01 `POST 200 /api/user/delete` → `[user/delete] success: { eventsDeleted: 14 }`, `[user/delete] … failed` 0건. 마이페이지는 진행 0 · 완료 9였는데 14개인 것은 마감(closed) 이벤트가 마이페이지 숫자에 안 잡히기 때문(코드 `mypage/page.tsx:105-107`). 결제 기록(payments)은 의도대로 남음.
 - docs(ops): 환불 절차서에 토스 취소 규칙(FAQ) 반영 `63801ac`.
+- fix(notifications): 메일 꼬리말·렌더 실패 메일/문자의 문의처 cs@ → "카카오톡 채널 @congre, 전화 010-5891-7583" `01e28df`.
+- feat(landing): 4페이지 문의처를 카카오톡 채팅 링크 + 전화 링크로, cs@ 이메일 제거(git 밖, Ray PowerShell 배포. decisions/landing.md 28).
+- docs: 랜딩 배포는 Ray PowerShell에서(CC 실행 시 Vercel 로그인 미인식), 빌드 기준값 33/33 정정.
 
 ## 2026-10-09
 

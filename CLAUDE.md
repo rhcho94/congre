@@ -50,7 +50,9 @@
 - 랜딩 프로덕션 배포 — PowerShell에서 `&&`가 동작하지 않으므로 한 줄씩 실행:
   - `cd C:\Users\PC\Downloads\congre\deploy`
   - `npx --yes vercel@62.7.0 --prod --yes` (2026-10-08부터. 이 PC npx 캐시에 vercel이 없어 `npx vercel`은 설치 질문에서 멈춘다. 버전을 고정해 출력 형식이 바뀌지 않게 한다)
-  - 배포 확인: CLI 62.x는 "Ready"·"Aliased" 줄 대신 JSON을 찍는다. `"readyState": "READY"`와 `"alias"` 배열에 `www.congre.kr`가 있으면 성공. 그 뒤 사이트에서 바뀐 문구로 실측.
+  - **Ray가 PowerShell을 직접 열어 실행한다.** CC가 실행하면 같은 PC여도 Vercel 로그인 정보를 못 봐 `Not authorized`로 실패한다(2026-10-10 실측: CC 실패 직후 Ray PowerShell에서 같은 명령 성공). 진짜로 로그인이 풀렸을 때만 `npx --yes vercel@62.7.0 login`.
+  - 배포 확인: PowerShell(대화형)에서는 `▲ Aliased https://www.congre.kr`과 `✓ Ready` 줄이 나온다. 화면 없이 돌리면(CC 등) 같은 내용이 JSON(`"readyState": "READY"`, `"alias"`)으로 나온다. 둘 중 하나를 확인한 뒤 사이트에서 바뀐 문구로 실측.
+  - 출력 끝의 "Deployment Protection is on" 안내는 `*.vercel.app` 주소에만 해당한다. `www.congre.kr`은 영향 없음.
 
 ## 작업 트랙 (두 트랙 분리)
 
@@ -257,10 +259,11 @@ docs/
 - **같은 파일로 변수 하나만 바꾼 실험이 결정적이다**: 회전 문제는 정상 이벤트의 S3 원본을 내려받아 재업로드하고 인트로 텍스트 유무만 바꿔 두 번 렌더해서 갈렸다. 소스가 다르면 어떤 비교도 판정이 안 된다.
 - **필드 이름으로 추측하기 전에 실제 값을 본다**: 2026-09-20 `useDualTrack`을 "인트로/아웃트로 텍스트 유무로 갈린다"고 읽었으나 실제는 **미디어** 기준이었다(`shotstack.ts:144-146`). `videoFilter` 차이도 마찬가지로 필드 자체가 없었다. 보고서 문장을 코드 확인 없이 해석하면 틀린 가설이 쌓인다.
 - **자체 구현 전에 벤더 공식 스펙 원문을 먼저 훑는다**: 회전 문제의 해법이 Shotstack 공식 스키마 `videoasset.yaml`의 `transcode` 필드 설명에 "fix rotation problems"로 직접 적혀 있었다. `transform.rotate` 수동 회전·Ingest `fixRotation` 신설 경로를 설계하느라 돈 뒤에 찾았다.
+- **랜딩 배포는 Ray의 PowerShell에서**: 2026-10-10 CC가 돌린 배포가 `Not authorized`로 실패해 로그인이 풀린 줄 알았으나, Ray가 PowerShell에서 같은 명령을 치자 바로 성공했다. CC 실행 환경은 Ray 계정의 Vercel 로그인을 못 본다. "인증 없음"이면 먼저 실행 주체를 의심한다.
 - **랜딩 배포 후 실측 전에 CLI 출력의 성공 표시부터 확인**: 2026-09-16 로그인이 풀린 채 배포가 에러로 멈췄는데 실측부터 해서, 예전 배포본을 보고 제외 규칙이 뚫렸다고 오판할 뻔했다. 배포 출력 확인이 실측의 선행 게이트다. 표시는 CLI 버전에 따라 다르다 — 옛 CLI는 `Aliased`·`Ready` 줄, 62.x(2026-10-08~)는 JSON의 `"readyState": "READY"`.
 - **로컬 deploy 편집 = 배포본으로 가정하지 않는다**: Vercel CLI 로그인·설치는 이 PC에서 사라질 수 있다(2026-09-16 `vercel` 패키지 재설치 요구 + 자격 증명 없음). 반영 여부는 사이트의 바뀐 문구로 확인한다.
-- **빌드 게이트 지표 이름 정정**: `npm run build`의 기준값은 "정적 페이지 32/32"다
-  (`Generating static pages (32/32)`). 이는 라우트 수가 아니다.
+- **빌드 게이트 지표 이름 정정**: `npm run build`의 기준값은 "정적 페이지 33/33"이다
+  (`Generating static pages (33/33)`, 2026-10-10 실측. 이전 값 32는 `apple-icon.png` 추가 전). 이는 라우트 수가 아니다.
   Route (app) 표에 나열되는 라우트는 42개이며 별개 지표다.
   과거 문서의 "빌드 32라우트"는 잘못된 이름이다.
 - **동적 라우트 파일 git add는 literal 지정자 필요**: 경로에 대괄호가 있는 파일
