@@ -23,7 +23,7 @@ export async function notifyRenderFailed(ctx: RenderFailedCtx): Promise<void> {
       message: {
         subject: `[Congre] '${ctx.title}' 영상 편집 실패 안내`,
         html,
-        text: `'${ctx.title}' 영상 편집에 실패했습니다.\n\n대시보드: ${ctx.dashboardUrl}\n문의: cs@rayne.co.kr`,
+        text: `'${ctx.title}' 영상 편집에 실패했습니다.\n\n대시보드: ${ctx.dashboardUrl}\n문의: 카카오톡 채널 @congre, 전화 010-5891-7583`,
       },
     },
     {
