@@ -2,6 +2,12 @@
 
 > 기능 단위 작업 이력. 최신이 위.
 
+## 2026-10-11
+
+- feat(landing): 가독성 개선 — 단락 3개를 흰 카드로 끊고 제목 앞 빨간 손글씨 번호(1. 2. 3.), FAQ 묶음 제목 20px + 남색 선. 실제 후기가 아니었던 후기 6개 단락 삭제(decisions/landing.md 29). git 밖, Ray PowerShell 배포(로그인 만료로 `login` 뒤).
+- chore(ops): 카카오톡 채널 정비(Ray, 파트너센터) — 비즈니스 심사 신청, 고객센터 연락처, 채널홈 소개 문구, 첫인사 메시지(가이드·요금·FAQ 링크), 채팅 알림, 채팅방 커스텀 메뉴 6개(서비스소개·이용가이드·요금보기·FAQ·시작하기·전화하기).
+- docs: CLAUDE.md 랜딩 배포 `Not authorized` 원인 정정(실행 주체 + 로그인 만료 둘 다).
+
 ## 2026-10-10
 
 - verify(account): 탈퇴 보강(C22 `2dd4b96`) 실동작 확인 — 토스 심사용 계정 `rhcho94+tosstest@gmail.com` 탈퇴. 진행 중이던 유료·클립 0개 이벤트(`qO3KQ5U0dQBTAs6SoJhW`)는 화면에서 마감할 방법이 없어(마감 → 결제 화면 → 클립 0개 결제 차단) Firebase 콘솔에서 status open→closed로 바꾼 뒤 진행. Vercel 로그 19:07:01 `POST 200 /api/user/delete` → `[user/delete] success: { eventsDeleted: 14 }`, `[user/delete] … failed` 0건. 마이페이지는 진행 0 · 완료 9였는데 14개인 것은 마감(closed) 이벤트가 마이페이지 숫자에 안 잡히기 때문(코드 `mypage/page.tsx:105-107`). 결제 기록(payments)은 의도대로 남음.

@@ -187,9 +187,9 @@ npx firebase emulators:start --only firestore
 
 폴더에 남아 있지만 쓰지 않는 것(videos의 demo·wedding_1·wedding_intro·graduation·challenge, images의 png 4개, image-slot.js·.image-slots.state.json, uploads/*.jpg 3개, media/selfie-m.jpg·selfie-f.jpg): 미사용, 배포에는 포함(.vercelignore 정리는 별도).
 
-### 6섹션 흐름 (2026-10-07)
+### 단락 흐름 (2026-10-07, 10-11 개정)
 
-소개 / 50초로 보는 사용법 / 완성본 예시 / 다른 행사 / 후기 / 시작하기
+소개 / 1. 50초로 보는 사용법 / 2. 완성본은 이렇게 나와요 / 3. 다른 행사 / 시작하기 (후기 단락은 2026-10-11 삭제 — 실제 후기가 아니었음. 1~3은 흰 카드 + 빨간 손글씨 번호)
 
 (옛 8섹션 흐름·히어로 재구성 내용은 decisions/landing.md에 이력으로 남아 있다.)
 
