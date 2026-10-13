@@ -5,8 +5,7 @@
 
 ## ✅ L16. 로고 이미지 자산이 아직 옛 파란 로고 (2026-10-13 해소)
 
-- **해소: 2026-10-13** — 새 색으로 다시 만들어 교체했다: `public/email-logo.png`(250×80) · `public/logo.png`(1080×630) · `public/og-image.png`(1200×630) · `src/app/apple-icon.png`(180×180) · `src/app/favicon.ico`(16·32·48 세 장 묶음).
-- **남은 것**: 랜딩(`congre.kr`)의 `apple-touch-icon.png`·`favicon.ico` 2개는 git 밖 deploy 폴더라 이 커밋에 없다. 랜딩 트랙에서 바꾼다.
+- **해소: 2026-10-13** — 새 색으로 다시 만들어 교체했다: `public/email-logo.png`(250×80) · `public/logo.png`(1080×630) · `public/og-image.png`(1200×630) · `src/app/apple-icon.png`(180×180) · `src/app/favicon.ico`(16·32·48 세 장 묶음). 랜딩 `apple-touch-icon.png`·`favicon.ico`도 같은 날 배포(`4sgqlmfi3`).
 - **현황**: 앱 `public/email-logo.png`·`public/logo.png`·`public/og-image.png`·`src/app/apple-icon.png`·`src/app/favicon.ico` 5개와 랜딩 `apple-touch-icon.png`·`favicon.ico`가 색 체계 C 적용 전 파란 로고(#1F3C9C)다. 코드가 아니라 이미지라 토큰 교체로 안 바뀐다.
 - **출처**: 2026-10-13 색 체계 C 앱 적용 사양(이미지 자산은 범위 밖으로 분리).
 
