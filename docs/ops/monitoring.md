@@ -56,7 +56,7 @@ console.firebase.google.com → congre-mvp
 |---|---|---|---|---|---|
 | Firebase Auth 메일 | Blaze | ✅ GCP 예산(아래 동일) | Blaze 메일 일일 한도 정책 확인 필요 | (확인필요) | Console → Authentication |
 | Firestore | Blaze | ✅ GCP 예산 월 ₩50,000(50/90/100% 이메일) | 폭주 시 과금(읽기 1.1천/주, 미미) | 비용 | Console 사용량 |
-| AWS S3 | 무료플랜+크레딧 | ✅ Budget 월 $100(실제85/100·예상100% → 운영자 Gmail) | 전송 비용($0). 리전=시드니 | 비용 | AWS Billing → 예산 |
+| AWS S3 | 무료플랜+크레딧 | ✅ Budget 월 $100(실제85/100·예상100% → 운영자 Gmail) | 전송 비용($0). 리전=서울(2026-10-13 이전, 옛 시드니 버킷은 정리 대기) | 비용 | AWS Billing → 예산 |
 | **Shotstack** | **구독 200크레딧/월 ($39), PRODUCTION** | (분당 과금) | ⚠️ **전송 500MB/월·저장 500MB(현 392MB=78%)**가 진짜 병목. 렌더 크레딧은 여유(385 보유, 22.63/30일 사용) | 멈춤+비용 | Shotstack Dashboard / Usage |
 | Vercel(본앱 congre) | Pro | Spend "Alerts only" | cron 제약 해소. 대역폭/함수 비용 | 비용 | Vercel → Usage |
 | Resend(메일) | Free | (무료 한도) | ⚠️ 월 3,000 / 일 100(현재 184/3,000). 일 100 초과 시 메일 실패. Pro($20)는 무제한 | 멈춤 | Resend → Settings → Usage |

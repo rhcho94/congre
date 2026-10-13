@@ -19,8 +19,9 @@
 - GitHub: `rhcho94/congre`
 - 배포: Vercel 프로젝트 `congre`, 커스텀 도메인 `https://app.congre.kr`
 - DB: Firebase 프로젝트 `congre-mvp` (Firestore + Auth)
-- 스토리지: AWS S3 버킷 `congre-mvp-videos`
-- 영상 편집: Shotstack (production 키)
+- 스토리지: AWS S3 버킷 `congre-videos-kr` (서울 ap-northeast-2, 2026-10-13 이전. 옛 `congre-mvp-videos`(시드니)는 Shotstack 정리 때 삭제)
+- 영상 편집: Shotstack (production 키) — 서울 자체 엔진으로 교체 예정(docs/decisions/infra.md 2026-10-13)
+- Vercel 함수 실행 지역: 서울 `icn1` (`vercel.json` `regions`, 2026-10-13)
 
 ### 랜딩 페이지 (정적 HTML)
 - 로컬 경로: `C:\Users\PC\Downloads\congre\deploy`

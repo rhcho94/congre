@@ -35,7 +35,7 @@ npx firebase emulators:start --only firestore
 
 - Next.js (TypeScript, App Router)
 - Firebase Auth + Firestore (project: congre-mvp, Blaze 요금제)
-- AWS S3 (bucket: congre-mvp-videos, region: ap-southeast-2)
+- AWS S3 (bucket: congre-videos-kr, region: ap-northeast-2 서울 — 2026-10-13 시드니 `congre-mvp-videos`에서 이전)
 - Shotstack (AI 영상 편집) — production 키 적용. rich-text asset으로 한글 인트로/아웃트로 렌더.
 - `public/fonts/NotoSansKR-Regular.ttf` — 한글 렌더링용 커스텀 TTF (SIL OFL). Shotstack `timeline.fonts` 소스.
 - `public/fonts/NanumPenScript-Regular.ttf` — Shotstack 워터마크용 Nanum Pen TTF (라틴 부분 글꼴, 파일 안 family 이름 "Nanum Pen", SIL OFL — `public/fonts/OFL-NanumPenScript.txt`). 무료 플랜 워터마크 `timeline.fonts` 소스.
