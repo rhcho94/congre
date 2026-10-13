@@ -3,6 +3,13 @@
 > known-issues.md에서 분리된 해결 완료 이력. 사고 재발 진단 시 grep 대상.
 > 새 RESOLVED 항목 발생 시 known-issues.md에서 이 파일로 이동.
 
+## ✅ L16. 로고 이미지 자산이 아직 옛 파란 로고 (2026-10-13 해소)
+
+- **해소: 2026-10-13** — 새 색으로 다시 만들어 교체했다: `public/email-logo.png`(250×80) · `public/logo.png`(1080×630) · `public/og-image.png`(1200×630) · `src/app/apple-icon.png`(180×180) · `src/app/favicon.ico`(16·32·48 세 장 묶음).
+- **남은 것**: 랜딩(`congre.kr`)의 `apple-touch-icon.png`·`favicon.ico` 2개는 git 밖 deploy 폴더라 이 커밋에 없다. 랜딩 트랙에서 바꾼다.
+- **현황**: 앱 `public/email-logo.png`·`public/logo.png`·`public/og-image.png`·`src/app/apple-icon.png`·`src/app/favicon.ico` 5개와 랜딩 `apple-touch-icon.png`·`favicon.ico`가 색 체계 C 적용 전 파란 로고(#1F3C9C)다. 코드가 아니라 이미지라 토큰 교체로 안 바뀐다.
+- **출처**: 2026-10-13 색 체계 C 앱 적용 사양(이미지 자산은 범위 밖으로 분리).
+
 ## ✅ cleanup이 S3 삭제 실패를 삼키고 썸네일은 아예 지우지 않는다 (2026-10-08 해소)
 
 - **해소: 2026-10-08** — C21 `e2adc85`. `deleteClipsAndMarkEvent`가 `thumbKey`도 지우고, S3 삭제가 하나라도 실패한 클립은 문서를 남겨 다음 날 재시도한다(`cleanup/route.ts:22-48`). 호스트 인트로·아웃트로 파일도 함께 삭제. 첫 자동 실행 확인(2026-10-09 21:39, Ray가 Vercel 로그 캡처): `OCT 09 03:00:15 GET 200 /api/cron/cleanup` → `cleanup done { clipsDeleted: 0, videosDeleted: 1, notificationsDeleted: … }`. 새 키 `notificationsDeleted`가 찍혀 C21 코드로 돌았음이 확인됨(10/07·10/08 로그에는 그 키가 없음). clipsDeleted 0은 지울 클립이 이미 없었다는 뜻(예상했던 "옛 테스트 클립 몰아서 삭제"는 일어나지 않음). notificationsDeleted 값은 캡처에서 잘려 미확인.

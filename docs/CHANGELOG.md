@@ -4,6 +4,7 @@
 
 ## 2026-10-13
 
+- chore(assets): 로고 이미지 5개 새 색으로 교체 (og·logo·email·apple-icon·favicon). 랜딩 `apple-touch-icon.png`·`favicon.ico` 2개는 git 밖이라 랜딩 트랙에서 별도 교체.
 - style(theme): 앱 색 체계 C 적용 (globals.css 토큰·BrandName·공유 로고·QR·성공 안내·메일 팔레트)
 - infra(storage): S3 서울 이전 — 새 버킷 `congre-videos-kr`(ap-northeast-2, 글로벌 네임스페이스). 설정: 모든 퍼블릭 액세스 차단 활성(옛 버킷은 2026-06-04 public-read 실험 뒤 꺼진 채였음), ACL 비활성(버킷 소유자 적용), CORS는 옛 버킷과 같음(GET·PUT, 모든 출처), 버전 관리 끔, SSE-S3·버킷 키, 수명 주기 규칙 없음. 옛 버킷 `audio/` 23곡(calm 7·epic 6·lively 10) 복사. IAM 정책 `shotstack-s3-write`의 Shotstack 두 문단에 새 버킷 추가(옛 버킷 줄·필드샷 문단은 그대로, 정책 버전 5/5 꽉 참). 앱 사용자 `congre-s3-user`는 `AmazonS3FullAccess`라 변경 없음. Vercel `AWS_REGION`·`AWS_S3_BUCKET`(Production·Preview) 교체 후 재배포. 옛 데이터는 옮기지 않음(Ray: 지금까지 데이터 전부 삭제 가능) — 옛 행사의 클립·완성본은 재생 안 됨. 옛 버킷 `congre-mvp-videos`는 Shotstack 정리 단계까지 보존.
 - fix(ops): 환경변수 `AWS_REGION` 값 앞에 공백이 들어가(`" ap-northeast-2"`) 업로드 주소 서명이 `PRESIGN_FAILED` 500(`Region not accepted … is not a valid hostname component`)으로 실패. 값을 직접 타이핑해 다시 저장·재배포로 해소. 업로드 → 새 버킷 `events/` 저장 → 대시보드 재생 확인(Ray). 화면 목록에선 앞뒤 공백이 안 보인다 — 원인은 Vercel 로그의 `[presign] getSignedUrl failed` 줄로 찾음.
