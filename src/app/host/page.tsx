@@ -217,10 +217,10 @@ export default function HostPage() {
                 {resetSent ? (
                   <div className="flex flex-col gap-3">
                     <div className="flex items-center gap-2">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2E7D32" strokeWidth="1.5">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4E7A5B" strokeWidth="1.5">
                         <polyline points="20 6 9 17 4 12" />
                       </svg>
-                      <p className="text-sm" style={{ color: "#2E7D32" }}>재설정 메일을 보냈습니다</p>
+                      <p className="text-sm" style={{ color: "#4E7A5B" }}>재설정 메일을 보냈습니다</p>
                     </div>
                     <p className="text-xs text-muted leading-relaxed">
                       {resetEmail} 로 전송됐습니다. 메일함을 확인해주세요.

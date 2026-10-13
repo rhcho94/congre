@@ -46,26 +46,27 @@ npx firebase emulators:start --only firestore
 
 ## 디자인 시스템
 
-라이트 단일 테마(`:root`). 정의 위치: `src/app/globals.css`. 기준: `docs/decisions/design.md`.
+라이트 단일 테마(`:root`). 색 체계 C(2026-10-13). 정의 위치: `src/app/globals.css`. 기준: `docs/decisions/design.md`.
 
 | 토큰 | 값 | 용도 |
 |---|---|---|
-| `--bg` | #EEF4FB | 바탕 (단색, 움직이는 배경 없음) |
+| `--bg` | #FFF8F0 | 바탕 (단색, 움직이는 배경 없음) |
 | `--surface-1` | #FFFFFF | 표면 |
-| `--surface-2` | #F5F8FC | 표면 |
-| `--surface-3` | #E6EDF7 | 표면 |
+| `--surface-2` | #FAF3EA | 표면 |
+| `--surface-3` | #F3E7D6 | 표면 |
 | `--paper` | #FFFFFF | 종이 |
-| `--accent` | #1F3C9C | 잉크(액센트) |
-| `--accent-hi` | #152B73 | 잉크(액센트) hover |
-| `--accent-soft` | rgba(31,60,156,0.10) | 잉크(액센트) 약 |
-| `--text` | #222222 | 글자 |
-| `--text-dim` | #333333 | 글자 |
-| `--muted` | #4A5468 | 보조 글자 |
-| `--hairline` / `--line` | #C9D6EA | 선 |
-| `--hairline-strong` / `--field` | #7F92B8 | 입력 테두리 |
+| `--accent` | #0E2B5C | 잉크(액센트) |
+| `--accent-hi` | #081D40 | 잉크(액센트) hover |
+| `--accent-soft` | rgba(14,43,92,0.10) | 잉크(액센트) 약 |
+| `--cta` / `--cta-hi` | #C9401F / #A93317 | 주 버튼(행동) |
+| `--text` | #1F1A14 | 글자 |
+| `--text-dim` | #2A241C | 글자 |
+| `--muted` | #5B5245 | 보조 글자 |
+| `--hairline` / `--line` | #E3D6C3 | 선 |
+| `--hairline-strong` / `--field` | #A8977F | 입력 테두리 |
 | `--danger` | #A61B1B | 위험 |
-| `--pen-red` · `--pen-green` · `--pen-purple` · `--pen-brown` | #C62828 · #2E7D32 · #6A1B9A · #8D4E00 | 펜 |
-| `--tape` | rgba(255,214,102,0.6) | 테이프 |
+| `--pen-red` · `--pen-green` · `--pen-purple` · `--pen-brown` | #C9401F · #4E7A5B · #0E2B5C · #6B4F2A | 펜 |
+| `--tape` | rgba(255,217,204,0.9) | 테이프 |
 | `--font-body` = `--font-display` | Gowun Dodum 400 | 글꼴: UI 전부 |
 | `--font-pen` | Nanum Pen Script | 글꼴: 펜 글씨 (로고는 글꼴이 아니라 SVG(BrandName)) |
 

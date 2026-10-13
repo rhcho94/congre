@@ -32,10 +32,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 function LogoMark() {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width={56} height={56} role="img" aria-label="Congre">
-      <path d="M18 22h52l12 12v44H18z" fill="#FFFFFF" stroke="#1F3C9C" strokeWidth="4" strokeLinejoin="round" />
-      <path d="M70 22v12h12" fill="none" stroke="#1F3C9C" strokeWidth="4" strokeLinejoin="round" />
-      <path d="M43 33l18 11-18 11z" fill="#1F3C9C" stroke="#1F3C9C" strokeWidth="2" strokeLinejoin="round" />
-      <path d="M30 66c4-3 8-3 12 0s8 3 12 0 8-3 12 0" fill="none" stroke="#C62828" strokeWidth="3.5" strokeLinecap="round" />
+      <path d="M18 22h52l12 12v44H18z" fill="#FFFFFF" stroke="#0E2B5C" strokeWidth="4" strokeLinejoin="round" />
+      <path d="M70 22v12h12" fill="none" stroke="#0E2B5C" strokeWidth="4" strokeLinejoin="round" />
+      <path d="M43 33l18 11-18 11z" fill="#C9401F" stroke="#C9401F" strokeWidth="2" strokeLinejoin="round" />
+      <path d="M30 66c4-3 8-3 12 0s8 3 12 0 8-3 12 0" fill="none" stroke="#C9401F" strokeWidth="3.5" strokeLinecap="round" />
     </svg>
   );
 }

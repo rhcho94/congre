@@ -1,39 +1,41 @@
 @import "tailwindcss";
 
 :root {
-  /* ───────── 베이스 & 표면 (롤링페이퍼안, 2026-10-07. 기준: docs/decisions/design.md) ───────── */
-  --bg: #EEF4FB;
+  /* ───────── 베이스 & 표면 (롤링페이퍼안, 2026-10-07. 기준: docs/decisions/design.md) · 색 체계 C 2026-10-13 ───────── */
+  --bg: #FFF8F0;
   --surface-1: #FFFFFF;
-  --surface-2: #F5F8FC;
-  --surface-3: #E6EDF7;
+  --surface-2: #FAF3EA;
+  --surface-3: #F3E7D6;
   --paper: #FFFFFF;
 
   /* ───────── 잉크 (액센트) ───────── */
-  --accent: #1F3C9C;
-  --accent-hi: #152B73;
-  --accent-soft: rgba(31,60,156,0.10);
-  --warm: #C62828;
-  --warm-soft: rgba(198,40,40,0.10);
+  --accent: #0E2B5C;
+  --accent-hi: #081D40;
+  --accent-soft: rgba(14,43,92,0.10);
+  --warm: #C9401F;
+  --warm-soft: rgba(201,64,31,0.10);
+  --cta: #C9401F;
+  --cta-hi: #A93317;
 
   /* ───────── 텍스트 ───────── */
-  --text: #222222;
-  --text-dim: #333333;
-  --muted: #4A5468;
+  --text: #1F1A14;
+  --text-dim: #2A241C;
+  --muted: #5B5245;
 
   /* ───────── 선 ───────── */
-  --hairline: #C9D6EA;
-  --hairline-strong: #7F92B8;
-  --line: #C9D6EA;
-  --field: #7F92B8;
+  --hairline: #E3D6C3;
+  --hairline-strong: #A8977F;
+  --line: #E3D6C3;
+  --field: #A8977F;
 
   /* ───────── 위험·펜·장식 ───────── */
   --danger: #A61B1B;
-  --pen-red: #C62828;
-  --pen-green: #2E7D32;
-  --pen-purple: #6A1B9A;
-  --pen-brown: #8D4E00;
-  --tape: rgba(255,214,102,0.6);
-  --dot-gray: #8A93A6;
+  --pen-red: #C9401F;
+  --pen-green: #4E7A5B;
+  --pen-purple: #0E2B5C;
+  --pen-brown: #6B4F2A;
+  --tape: rgba(255,217,204,0.9);
+  --dot-gray: #9A9084;
 
   /* ───────── 카카오 ───────── */
   --kakao: #fee500;
@@ -166,10 +168,10 @@ body {
 
 /* Primary — 채운 잉크 = 주 동작 */
 .btn-primary {
-  background: var(--accent);
+  background: var(--cta);
   color: #fff;
 }
-.btn-primary:hover { background: var(--accent-hi); }
+.btn-primary:hover { background: var(--cta-hi); }
 
 /* Secondary — 흰 바탕 + 잉크 테두리 = 보조 동작 */
 .btn-secondary {
@@ -224,7 +226,7 @@ body {
   font-size: 16px;
   transition: border-color .15s, box-shadow .15s;
 }
-.input::placeholder { color: #6B7385; }
+.input::placeholder { color: #7D7467; }
 .input:focus {
   outline: 0;
   border-color: var(--accent);
@@ -288,7 +290,7 @@ body {
   flex-shrink: 0;
 }
 .badge-live::before { background: var(--accent); }
-.badge-done::before { background: #2E7D32; }
+.badge-done::before { background: #4E7A5B; }
 .badge-draft::before { background: var(--dot-gray); }
 
 /* 펜 글씨 */

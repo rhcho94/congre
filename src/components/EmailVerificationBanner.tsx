@@ -80,7 +80,7 @@ export function EmailVerificationBanner() {
       {message && (
         <p
           className="text-xs mb-3"
-          style={{ color: isError ? "var(--danger)" : "#2E7D32" }}
+          style={{ color: isError ? "var(--danger)" : "#4E7A5B" }}
         >
           {message}
         </p>

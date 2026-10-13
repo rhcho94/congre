@@ -1118,7 +1118,7 @@ export default function EventDetailPage() {
           {event.status === "open" && shareUrl && (
             <section aria-label="하객 초대" className="notice flex flex-col" style={{ padding: 12, gap: 10 }}>
               <div className="flex items-center" style={{ gap: 14 }}>
-                <QRCodeSVG value={shareUrl} size={104} fgColor="#1F3C9C" bgColor="#FFFFFF" level="M" className="shrink-0" />
+                <QRCodeSVG value={shareUrl} size={104} fgColor="#0E2B5C" bgColor="#FFFFFF" level="M" className="shrink-0" />
                 <div className="flex-1 min-w-0 flex flex-col gap-2">
                   <button
                     type="button"
@@ -1254,10 +1254,10 @@ export default function EventDetailPage() {
               </div>
             ) : (
               <div className="notice flex items-center gap-3">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2E7D32" strokeWidth="1.5">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4E7A5B" strokeWidth="1.5">
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
-                <p className="text-sm" style={{ color: "#2E7D32" }}>편집이 완료되었습니다</p>
+                <p className="text-sm" style={{ color: "#4E7A5B" }}>편집이 완료되었습니다</p>
               </div>
             )
           )}

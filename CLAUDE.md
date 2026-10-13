@@ -169,14 +169,15 @@ CD 자체 학습 자료: https://support.claude.com/en/articles/14604416-get-sta
 
 ## 디자인 토큰 (CSS 변수)
 
-라이트 단일 테마(`:root`). 다크 테마 폐지(2026-10-07). 정의 위치: `src/app/globals.css`. 기준: `docs/decisions/design.md`.
+라이트 단일 테마(`:root`). 다크 테마 폐지(2026-10-07). 색 체계 C(2026-10-13). 정의 위치: `src/app/globals.css`. 기준: `docs/decisions/design.md`.
 
-- 바탕 `--bg` #EEF4FB (단색, 움직이는 배경 없음)
-- 표면 `--surface-1` #FFFFFF, `--surface-2` #F5F8FC, `--surface-3` #E6EDF7, 종이 `--paper` #FFFFFF
-- 잉크(액센트) `--accent` #1F3C9C, `--accent-hi` #152B73, `--accent-soft` rgba(31,60,156,0.10)
-- 글자 `--text` #222222, `--text-dim` #333333, 보조 `--muted` #4A5468
-- 선 `--hairline`/`--line` #C9D6EA, 입력 테두리 `--hairline-strong`/`--field` #7F92B8
-- 위험 `--danger` #A61B1B. 펜 `--pen-red` #C62828 · `--pen-green` #2E7D32 · `--pen-purple` #6A1B9A · `--pen-brown` #8D4E00. 테이프 `--tape` rgba(255,214,102,0.6)
+- 바탕 `--bg` #FFF8F0 (단색, 움직이는 배경 없음)
+- 표면 `--surface-1` #FFFFFF, `--surface-2` #FAF3EA, `--surface-3` #F3E7D6, 종이 `--paper` #FFFFFF
+- 잉크(액센트) `--accent` #0E2B5C, `--accent-hi` #081D40, `--accent-soft` rgba(14,43,92,0.10)
+- 주 버튼(행동) `--cta` #C9401F, `--cta-hi` #A93317
+- 글자 `--text` #1F1A14, `--text-dim` #2A241C, 보조 `--muted` #5B5245
+- 선 `--hairline`/`--line` #E3D6C3, 입력 테두리 `--hairline-strong`/`--field` #A8977F
+- 위험 `--danger` #A61B1B. 펜 `--pen-red` #C9401F · `--pen-green` #4E7A5B · `--pen-purple` #0E2B5C · `--pen-brown` #6B4F2A. 테이프 `--tape` rgba(255,217,204,0.9)
 - 글꼴: UI 전부 Gowun Dodum 400(`--font-body`=`--font-display`), 펜 글씨 Nanum Pen Script(`--font-pen`). 로고는 글꼴이 아니라 SVG(BrandName)
 - 모양: 버튼 6px, 입력칸 6px·높이 50px, 카드 직각 1px 선, 상태는 점 + 글자
 - 공통 클래스: `.btn`/`.btn-primary`/`.btn-secondary`/`.btn-danger`/`.btn-quiet`/`.btn-kakao`, `.input`, `.panel`·`.notice`·`.glass-panel`(셋 다 같은 종이 카드. glass는 이름만 남음), `.badge`(점 + 글자), `.pen`

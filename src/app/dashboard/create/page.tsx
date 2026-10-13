@@ -481,7 +481,7 @@ export default function CreateEventPage() {
 
               <div className="card flex flex-col items-center gap-6 mb-8">
                 <div className="flex flex-col items-center gap-3">
-                  <QRCodeSVG value={shareUrl} size={180} bgColor="#FFFFFF" fgColor="#1F3C9C" level="M" />
+                  <QRCodeSVG value={shareUrl} size={180} bgColor="#FFFFFF" fgColor="#0E2B5C" level="M" />
                   <button onClick={handleQRDownload} className="btn btn-secondary" style={{ height: 44, padding: "0 16px", fontSize: 15 }}>
                     QR 이미지 저장
                   </button>

@@ -1,10 +1,10 @@
 const C = {
-  bg: "#EEF4FB",
+  bg: "#FFF8F0",
   surface: "#ffffff",
-  text: "#222222",
-  muted: "#4A5468",
-  accent: "#1F3C9C",
-  border: "#C9D6EA",
+  text: "#1F1A14",
+  muted: "#5B5245",
+  accent: "#0E2B5C",
+  border: "#E3D6C3",
   dangerBg: "#fff5f5",
   dangerText: "#A61B1B",
 };
