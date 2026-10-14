@@ -21,6 +21,7 @@
 - DB: Firebase 프로젝트 `congre-mvp` (Firestore + Auth)
 - 스토리지: AWS S3 버킷 `congre-videos-kr` (서울 ap-northeast-2, 2026-10-13 이전. 옛 `congre-mvp-videos`(시드니)는 Shotstack 정리 때 삭제)
 - 영상 편집: Shotstack (production 키) — 서울 자체 엔진으로 교체 예정(docs/decisions/infra.md 2026-10-13)
+- 자체 렌더 엔진(교체 중, 앱 미연결): 레포 `rhcho94/congre-engine`(비공개), 로컬 `C:\projects\congre-engine`, AWS 스택 `congre-engine`(서울), 배포 사용자 `congre-engine-deployer`·PC 프로필 `congre-engine`, ECR `congre-engine`. 배포는 `sam.cmd deploy --no-execute-changeset` → 바뀔 목록 검토 → 실행 (docs/decisions/infra.md 2026-10-14)
 - Vercel 함수 실행 지역: 서울 `icn1` (`vercel.json` `regions`, 2026-10-13)
 
 ### 랜딩 페이지 (정적 HTML)

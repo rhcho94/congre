@@ -2,6 +2,10 @@
 
 > 기능 단위 작업 이력. 최신이 위.
 
+## 2026-10-14
+
+- infra(engine): 자체 렌더 엔진 레포 `rhcho94/congre-engine` 생성(필드샷 엔진 복사 → 골프 제거·콩그레 모양·이름 교체 4커밋) + 서울 첫 배포(스택 `congre-engine` 12개 자원, 점검 함수 ok). 앱 연결은 아직 — Shotstack이 계속 렌더한다. 상세 decisions/infra.md 2026-10-14.
+
 ## 2026-10-13
 
 - chore(assets): 로고 이미지 5개 새 색으로 교체 (og·logo·email·apple-icon·favicon). 랜딩 `apple-touch-icon.png`·`favicon.ico` 2개는 git 밖이라 랜딩 트랙에서 별도 교체.

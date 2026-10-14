@@ -9,7 +9,7 @@
 - [auth-model](decisions/auth-model.md) — 호스트 인증·이벤트-바운드 (7개)
 - [legal](decisions/legal.md) — 약관·개인정보·미성년자 (15개)
 - [market-product](decisions/market-product.md) — 시장 정의·BM·서비스 모델 (24개)
-- [infra](decisions/infra.md) — Vercel·Firebase·도메인·무료 티어 정책 (8개)
+- [infra](decisions/infra.md) — Vercel·Firebase·도메인·무료 티어·자체 엔진 (10개)
 - [data-flow](decisions/data-flow.md) — Firestore·S3·Admin SDK·서버 이전 (23개)
 - [landing](decisions/landing.md) — 랜딩 페이지 디자인·자산·배포 (30개)
 - [design](decisions/design.md) — 룩앤필·디자인 토큰·로고·화면 규칙 (7개)
