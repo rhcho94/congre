@@ -1,21 +1,14 @@
-import { GetObjectCommand, ListObjectsV2Command, S3Client } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { ListObjectsV2Command, S3Client } from "@aws-sdk/client-s3";
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
-import { createRender, probeDurationSec } from "@/lib/shotstack";
+import { isEngineConfigured, pickTransitions, startEngineRender, type EngineSegment } from "@/lib/engine";
 import { getAdminDb } from "@/lib/firebase-admin";
 import { verifyIdToken } from "@/lib/auth-server";
 import { notifyRenderStarted } from "@/lib/notifications/scenarios/render-started";
 import { MAX_TOTAL_CLIP_SECONDS, type PlanId } from "@/lib/plans";
 import type { NextRequest } from "next/server";
 
-const isConfigured = Boolean(
-  process.env.AWS_ACCESS_KEY_ID &&
-  process.env.AWS_S3_BUCKET &&
-  process.env.SHOTSTACK_API_KEY
-);
-
 export async function POST(request: NextRequest) {
-  if (!isConfigured) {
+  if (!isEngineConfigured()) {
     return Response.json({ error: "NOT_CONFIGURED" }, { status: 503 });
   }
 
@@ -79,34 +72,24 @@ export async function POST(request: NextRequest) {
 
   const maxClipSeconds = (eventData.maxClipSeconds as number | undefined) ?? 15;
 
-  const s3 = new S3Client({
-    region: process.env.AWS_REGION!,
-    credentials: {
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-    },
-  });
-
-  // Presigned GET URLs valid 24 h — Shotstack downloads them during render
-  const clipsWithLength = await Promise.all(
-    includedDocs.map(async (doc) => {
+  let clipsWithLength: Array<{ key: string; length: number; name?: string }>;
+  try {
+    clipsWithLength = includedDocs.map((doc) => {
       const data = doc.data();
       const duration = data.duration as number | undefined;
       if (typeof duration !== "number" || !Number.isFinite(duration) || duration <= 0) {
         throw new Error(`MISSING_DURATION:${doc.id}`);
       }
-      const src = await getSignedUrl(
-        s3,
-        new GetObjectCommand({ Bucket: process.env.AWS_S3_BUCKET!, Key: data.s3Key as string }),
-        { expiresIn: 86400 }
-      );
       return {
-        src,
+        key: data.s3Key as string,
         length: Math.min(duration, maxClipSeconds),
         name: data.uploaderName as string | undefined,
       };
-    })
-  );
+    });
+  } catch (err) {
+    console.error("[render/start] clip duration check failed:", { eventId, error: err });
+    return Response.json({ error: "MISSING_DURATION" }, { status: 400 });
+  }
 
   const totalSeconds = clipsWithLength.reduce((sum, c) => sum + c.length, 0);
   if (totalSeconds > MAX_TOTAL_CLIP_SECONDS) {
@@ -116,10 +99,8 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  console.log("[render/start] clipsWithLength:", clipsWithLength.map((c) => ({ length: c.length, src: c.src.slice(0, 80) })));
-
-  const introText      = eventData.introText      as string | undefined;
-  const outroText      = eventData.outroText      as string | undefined;
+  const introText      = (eventData.introText      as string | undefined)?.trim() || undefined;
+  const outroText      = (eventData.outroText      as string | undefined)?.trim() || undefined;
   const introMediaKey  = eventData.introMediaKey  as string | undefined;
   const introMediaType = eventData.introMediaType as "image" | "video" | undefined;
   const outroMediaKey  = eventData.outroMediaKey  as string | undefined;
@@ -129,6 +110,60 @@ export async function POST(request: NextRequest) {
   const showNames       = eventData.showNames       as boolean | undefined;
   const bgmMoodRaw      = eventData.bgmMood         as string | undefined;
   const bgmMood = (bgmMoodRaw === "calm" || bgmMoodRaw === "lively" || bgmMoodRaw === "epic") ? bgmMoodRaw : "lively";
+
+  const jobId = `${eventId}-${Date.now()}`;
+  const outKey = `renders/${jobId}.mp4`;
+
+  const hasIntroMedia = !!(introMediaKey && introMediaType);
+  const hasOutroMedia = !!(outroMediaKey && outroMediaType);
+
+  const { transitionsIn, transitionsOut } = pickTransitions(
+    clipsWithLength.length,
+    videoTransition === "soft" || videoTransition === "dynamic" ? videoTransition : "default"
+  );
+
+  const segments: EngineSegment[] = [];
+
+  if (hasIntroMedia) {
+    segments.push({
+      type: introMediaType!,
+      key: introMediaKey!,
+      ...(introText ? { text: introText } : {}),
+      plan,
+    });
+  } else if (introText) {
+    segments.push({ type: "card", text: introText, plan });
+  }
+
+  clipsWithLength.forEach((clip, i) => {
+    const name = (clip.name ?? "").trim();
+    segments.push({
+      type: "clip",
+      key: clip.key,
+      length: clip.length,
+      max_sec: maxClipSeconds,
+      in: transitionsIn[i],
+      out: transitionsOut[i],
+      ...(showNames === true && name.length > 0 ? { name } : {}),
+      ...(videoFilter === "muted" || videoFilter === "boost" ? { filter: videoFilter } : {}),
+      plan,
+    });
+  });
+
+  if (hasOutroMedia) {
+    segments.push({ type: outroMediaType!, key: outroMediaKey!, plan });
+    if (outroText) segments.push({ type: "card", text: outroText, plan });
+  } else if (outroText) {
+    segments.push({ type: "card", text: outroText, plan });
+  }
+
+  const s3 = new S3Client({
+    region: process.env.AWS_REGION!,
+    credentials: {
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+    },
+  });
 
   async function listMp3Keys(mood: string): Promise<string[]> {
     const res = await s3.send(new ListObjectsV2Command({
@@ -140,68 +175,33 @@ export async function POST(request: NextRequest) {
       .filter((k): k is string => !!k && k.toLowerCase().endsWith(".mp3"));
   }
 
-  let bgmSrc: string | undefined;
-  try {
-    let keys = await listMp3Keys(bgmMood);
-    if (keys.length === 0 && bgmMood !== "lively") {
-      keys = await listMp3Keys("lively");
+  let bgmKey: string | undefined;
+  const existingBgmKey = eventData.bgmKey as string | undefined;
+  if (existingBgmKey && existingBgmKey.startsWith(`audio/${bgmMood}/`)) {
+    bgmKey = existingBgmKey;
+  } else {
+    try {
+      let keys = await listMp3Keys(bgmMood);
+      if (keys.length === 0 && bgmMood !== "lively") {
+        keys = await listMp3Keys("lively");
+      }
+      if (keys.length > 0) {
+        bgmKey = keys[Math.floor(Math.random() * keys.length)];
+      }
+    } catch (err) {
+      console.error("[render/start] bgm pick failed:", err);
     }
-    if (keys.length > 0) {
-      const pickedKey = keys[Math.floor(Math.random() * keys.length)];
-      bgmSrc = await getSignedUrl(
-        s3,
-        new GetObjectCommand({ Bucket: process.env.AWS_S3_BUCKET!, Key: pickedKey }),
-        { expiresIn: 86400 }
-      );
-    }
-  } catch (err) {
-    console.error("[render/start] bgm pick failed:", err);
   }
 
-  const introMediaUrl = introMediaKey
-    ? await getSignedUrl(
-        s3,
-        new GetObjectCommand({ Bucket: process.env.AWS_S3_BUCKET!, Key: introMediaKey }),
-        { expiresIn: 86400 }
-      )
-    : undefined;
-  const outroMediaUrl = outroMediaKey
-    ? await getSignedUrl(
-        s3,
-        new GetObjectCommand({ Bucket: process.env.AWS_S3_BUCKET!, Key: outroMediaKey }),
-        { expiresIn: 86400 }
-      )
-    : undefined;
-
-  const [bgmDurationSec, introMediaDurationSec, outroMediaDurationSec] = await Promise.all([
-    bgmSrc ? probeDurationSec(bgmSrc) : Promise.resolve(null),
-    introMediaUrl && introMediaType === "video" ? probeDurationSec(introMediaUrl) : Promise.resolve(null),
-    outroMediaUrl && outroMediaType === "video" ? probeDurationSec(outroMediaUrl) : Promise.resolve(null),
-  ]);
-
-  let renderId: string;
+  let executionArn: string;
   try {
-    renderId = await createRender(
-      clipsWithLength,
-      (introText || introMediaUrl)
-        ? { text: introText, mediaUrl: introMediaUrl, mediaType: introMediaType, mediaDurationSec: introMediaDurationSec ?? undefined }
-        : undefined,
-      (outroText || outroMediaUrl)
-        ? { text: outroText, mediaUrl: outroMediaUrl, mediaType: outroMediaType, mediaDurationSec: outroMediaDurationSec ?? undefined }
-        : undefined,
-      plan,
-      (() => {
-        const style: { filter?: string; transition?: "soft" | "dynamic"; showNames?: boolean; bgmSrc?: string; bgmDurationSec?: number } = {};
-        if (videoFilter) style.filter = videoFilter;
-        if (videoTransition === "soft" || videoTransition === "dynamic") {
-          style.transition = videoTransition;
-        }
-        if (showNames === true) style.showNames = true;
-        if (bgmSrc) style.bgmSrc = bgmSrc;
-        if (bgmDurationSec) style.bgmDurationSec = bgmDurationSec;
-        return Object.keys(style).length > 0 ? style : undefined;
-      })(),
-    );
+    const started = await startEngineRender({
+      jobId,
+      segments,
+      bgm: bgmKey ? { key: bgmKey, mode: "once" } : null,
+      outKey,
+    });
+    executionArn = started.executionArn;
   } catch (err) {
     console.error("[render/start] failed:", { eventId, error: err });
     const msg = err instanceof Error ? err.message : "render_failed";
@@ -213,7 +213,11 @@ export async function POST(request: NextRequest) {
 
   await db.collection("events").doc(eventId).update({
     status: "rendering",
-    renderId,
+    renderId: jobId,
+    renderExecutionArn: executionArn,
+    renderOutKey: outKey,
+    bgmKey: bgmKey ?? FieldValue.delete(),
+    renderSkipped: FieldValue.delete(),
     deadlineAt: FieldValue.serverTimestamp(),
     renderStartedAt: Timestamp.fromMillis(now),
     renderEstimateMin,
@@ -241,5 +245,5 @@ export async function POST(request: NextRequest) {
     });
   }
 
-  return Response.json({ renderId });
+  return Response.json({ renderId: jobId });
 }

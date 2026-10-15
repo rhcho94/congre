@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server";
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { HeadObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getAdminDb } from "@/lib/firebase-admin";
-import { getRenderStatus } from "@/lib/shotstack";
+import { getEngineRenderStatus } from "@/lib/engine";
 import { notifyRenderCompleted } from "@/lib/notifications/scenarios/render-completed";
 import { notifyRenderFailed } from "@/lib/notifications/scenarios/render-failed";
 import { notifyParticipantResult } from "@/lib/notifications/scenarios/participant-result";
@@ -48,21 +48,26 @@ export async function GET(request: NextRequest) {
       continue;
     }
 
-    let renderResult: { status: string; url?: string };
-    try {
-      renderResult = await getRenderStatus(data.renderId as string);
-    } catch (err) {
-      console.error(`[cron/check-rendering] getRenderStatus failed for eventId=${eventId}:`, err);
+    if (!data.renderExecutionArn) {
+      console.warn(`[cron/check-rendering] eventId=${eventId} skipped: no renderExecutionArn (pre-engine event)`);
       continue;
     }
 
-    const { status, url } = renderResult;
+    let renderResult: Awaited<ReturnType<typeof getEngineRenderStatus>>;
+    try {
+      renderResult = await getEngineRenderStatus(data.renderExecutionArn as string);
+    } catch (err) {
+      console.error(`[cron/check-rendering] getEngineRenderStatus failed for eventId=${eventId}:`, err);
+      continue;
+    }
+
+    const { status, skipped, errorCode } = renderResult;
 
     // 한 이벤트의 Firestore 쓰기 실패가 같은 회차의 나머지 이벤트를 막지 않도록 감싼다.
     // 실패한 이벤트는 상태가 그대로라 다음 회차(5분 뒤)에 다시 처리된다.
     try {
-      if (status === "done" && url) {
-        const videoS3Key = `${data.renderId}.mp4`;
+      if (status === "succeeded") {
+        const videoS3Key = (data.renderOutKey as string | undefined) ?? `renders/${data.renderId}.mp4`;
         let s3Ready = false;
         try {
           await s3.send(new HeadObjectCommand({ Bucket: awsBucket, Key: videoS3Key }));
@@ -92,7 +97,7 @@ export async function GET(request: NextRequest) {
 
         const backfillEntry = needsBackfill
           ? {
-              renderId: existingS3Key.replace(/\.mp4$/, ""),
+              renderId: existingS3Key.replace(/^renders\//, "").replace(/\.mp4$/, ""),
               s3Key: existingS3Key,
               doneAt:
                 data.renderDoneAt instanceof Timestamp
@@ -104,6 +109,7 @@ export async function GET(request: NextRequest) {
         await db.collection("events").doc(eventId).update({
           status: "done",
           videoS3Key,
+          ...(skipped && skipped.length > 0 ? { renderSkipped: skipped } : {}),
           renderDoneAt: FieldValue.serverTimestamp(),
           videos: backfillEntry
             ? FieldValue.arrayUnion(backfillEntry, newEntry)
@@ -161,6 +167,9 @@ export async function GET(request: NextRequest) {
           });
         }
       } else if (status === "failed") {
+        if (errorCode) {
+          console.error(`[cron/check-rendering] render failed for eventId=${eventId} errorCode=${errorCode}`);
+        }
         await db.collection("events").doc(eventId).update({ status: "closed" });
         processedCount++;
 
@@ -177,7 +186,7 @@ export async function GET(request: NextRequest) {
           );
         }
       }
-      // queued | fetching | rendering → 다음 tick에서 재확인
+      // running → 다음 tick에서 재확인
     } catch (err) {
       console.error(`[cron/check-rendering] event processing failed for eventId=${eventId}:`, err);
     }

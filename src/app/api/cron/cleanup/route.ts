@@ -2,7 +2,6 @@ import type { NextRequest } from "next/server";
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { getAdminDb } from "@/lib/firebase-admin";
 import { deleteS3Object } from "@/lib/s3-server";
-import { deleteShotstackAssetsByRenderId } from "@/lib/shotstack";
 
 export async function GET(request: NextRequest) {
   const cronSecret = process.env.CRON_SECRET;
@@ -111,12 +110,6 @@ export async function GET(request: NextRequest) {
         let videoS3KeyNulled = false;
 
         for (const entry of expiredEntries) {
-          try {
-            await deleteShotstackAssetsByRenderId(entry.renderId);
-          } catch (e) {
-            console.warn("[cleanup] Shotstack delete failed", { eventId, renderId: entry.renderId, error: e });
-          }
-
           let s3Deleted = false;
           try {
             await deleteS3Object(entry.s3Key);
@@ -149,7 +142,6 @@ export async function GET(request: NextRequest) {
           renderDoneAt != null &&
           renderDoneAt.toMillis() < cutoffVideos.toMillis()
         ) {
-          try { await deleteShotstackAssetsByRenderId(data.renderId as string); } catch (e) { console.warn("Shotstack delete failed", { eventId, error: e }); }
           let s3Deleted = false;
           try { await deleteS3Object(data.videoS3Key as string); s3Deleted = true; } catch (err) { console.error("[cleanup] video s3 delete failed:", err); }
           if (s3Deleted) {

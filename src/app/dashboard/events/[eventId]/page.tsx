@@ -1183,7 +1183,7 @@ export default function EventDetailPage() {
           {event.status === "done" && (
             event.videoUrl ? (
               <div className="glass-panel flex flex-col gap-4">
-                {/* 배지 미리보기 — 워터마크는 무료 플랜에만 들어간다 (shotstack.ts plan === "free") */}
+                {/* 배지 미리보기 — 워터마크는 무료 플랜에만 들어간다 (엔진 레포 bake.py, plan === "free") */}
                 {event.plan !== "paid" && (
                   <div className="flex flex-col items-center gap-2 py-1">
                     <CongreBadge />
