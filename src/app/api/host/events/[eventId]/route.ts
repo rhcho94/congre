@@ -190,10 +190,10 @@ export async function PATCH(
       updates.outroMediaType = body.outroMediaType ?? FieldValue.delete();
     }
     if (hasVideoFilter) {
+      // "contrast"(또렷하게)는 2026-10-15 제거 — 보내면 필드를 지워 기본 톤으로 간다 (decisions/rendering.md)
       const allowed =
         body.videoFilter === "muted" ||
-        body.videoFilter === "boost" ||
-        body.videoFilter === "contrast";
+        body.videoFilter === "boost";
       updates.videoFilter = allowed ? body.videoFilter : FieldValue.delete();
     }
     if (hasVideoTransition) {

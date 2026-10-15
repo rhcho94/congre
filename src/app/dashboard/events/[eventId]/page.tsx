@@ -1645,7 +1645,6 @@ export default function EventDetailPage() {
                           <option value="">없음</option>
                           <option value="muted">시네마틱</option>
                           <option value="boost">화사하게</option>
-                          <option value="contrast">또렷하게</option>
                         </select>
                         {(videoFilter !== "" || savedVideoFilter !== "") && !isClosed ? (
                           <span className="self-end text-xs text-muted">
