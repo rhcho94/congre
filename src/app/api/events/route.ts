@@ -3,7 +3,7 @@ import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { verifyIdToken } from "@/lib/auth-server";
 import { getAdminDb } from "@/lib/firebase-admin";
 import { notifyEventCreated } from "@/lib/notifications/scenarios/event-created";
-import { getPlanMaxClipSeconds, type PlanId } from "@/lib/plans";
+import { getPlanMaxClipSeconds, MAX_TOTAL_CLIP_SECONDS, type PlanId } from "@/lib/plans";
 
 function tsToMs(v: unknown): number | null {
   return v instanceof Timestamp ? v.toMillis() : null;
@@ -105,6 +105,16 @@ export async function POST(request: NextRequest) {
     )
   ) {
     return Response.json({ error: "INVALID_CLIP_SECONDS", plan, maxAllowed }, { status: 400 });
+  }
+
+  if (plan === "paid" && !(couponPhone ? couponPhone.replace(/\D/g, "") : "")) {
+    const total = (maxClips as number) * (maxClipSeconds ?? 15);
+    if (total > MAX_TOTAL_CLIP_SECONDS) {
+      return Response.json(
+        { error: "TOTAL_TOO_LONG", maxTotalSeconds: MAX_TOTAL_CLIP_SECONDS },
+        { status: 400 }
+      );
+    }
   }
 
   if (!/^010\d{8}$/.test(organizerPhone)) {

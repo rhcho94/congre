@@ -10,7 +10,7 @@ import { subscribeToAuthChanges, type User } from "@/lib/auth";
 import { type EventPlan } from "@/lib/events";
 import { isFirebaseConfigured, getFirebaseAuth } from "@/lib/firebase";
 import { getUserDoc } from "@/lib/users";
-import { calcPrice } from "@/lib/plans";
+import { calcPrice, formatMinSec, MAX_TOTAL_CLIP_SECONDS } from "@/lib/plans";
 
 function Stepper({
   value, min, max, step, onChange, suffix, disabled,
@@ -152,9 +152,21 @@ export default function CreateEventPage() {
       });
 
       if (!res.ok) {
-        const errBody = await res.json().catch(() => ({})) as { error?: string };
+        const errBody = await res.json().catch(() => ({})) as { error?: string; plan?: string; maxAllowed?: number };
+        if (errBody.error === "TOTAL_TOO_LONG") {
+          alert("완성본은 최대 30분(1,800초)까지 만들 수 있어요. 영상 개수나 길이를 줄여 주세요.");
+          return;
+        }
+        if (errBody.error === "INVALID_MAX_CLIPS") {
+          alert("영상 개수는 10개부터 200개까지 고를 수 있어요.");
+          return;
+        }
         if (errBody.error === "INVALID_CLIP_SECONDS") {
-          alert("무료 플랜은 최대 10초까지 가능해요. 더 긴 영상이 필요하면 유료 플랜을 선택해주세요.");
+          if (errBody.plan === "free") {
+            alert("무료 플랜은 최대 10초까지 가능해요. 더 긴 영상이 필요하면 유료 플랜을 선택해주세요.");
+          } else {
+            alert(`영상 길이는 10초부터 ${errBody.maxAllowed ?? 100}초까지 5초 단위로 고를 수 있어요.`);
+          }
           return;
         }
         if (errBody.error === "INVALID_COUPON") {
@@ -204,6 +216,8 @@ export default function CreateEventPage() {
   }
 
   const couponEntered = form.couponPhone.trim().length > 0;
+  const totalClipSeconds = form.maxClips * form.maxClipSeconds;
+  const totalTooLong = form.plan === "paid" && !couponEntered && totalClipSeconds > MAX_TOTAL_CLIP_SECONDS;
 
   if (!isFirebaseConfigured) {
     return (
@@ -420,6 +434,15 @@ export default function CreateEventPage() {
                         </span>
                         , 실제 결제는 마감 시 올라온 영상 수로 계산돼요 (최소 10,000원).
                       </p>
+                      {totalTooLong ? (
+                        <p className="text-xs leading-relaxed" style={{ color: "var(--danger)" }}>
+                          완성본은 최대 30분(1,800초)까지 만들 수 있어요. 지금 설정은 {formatMinSec(totalClipSeconds)}이에요. 영상 길이가 {form.maxClipSeconds}초라면 영상 개수는 최대 {Math.floor(MAX_TOTAL_CLIP_SECONDS / form.maxClipSeconds)}개예요.
+                        </p>
+                      ) : (
+                        <p className="text-xs text-muted">
+                          완성본 최대 {formatMinSec(totalClipSeconds)}
+                        </p>
+                      )}
                       <p className="text-xs text-muted">
                         결제는 이벤트를 마감할 때 진행돼요. 지금은 결제하지 않습니다.
                       </p>
@@ -457,7 +480,7 @@ export default function CreateEventPage() {
                   </div>
                 </div>
 
-                <button type="submit" disabled={submitting} className="btn btn-primary mt-2" style={{ height: 54, fontSize: 17 }}>
+                <button type="submit" disabled={submitting || totalTooLong} className="btn btn-primary mt-2" style={{ height: 54, fontSize: 17 }}>
                   {submitting ? "생성 중..." : "이벤트 시작하기"}
                 </button>
               </form>

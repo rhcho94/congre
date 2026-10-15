@@ -5,7 +5,7 @@ import { createRender, probeDurationSec } from "@/lib/shotstack";
 import { getAdminDb } from "@/lib/firebase-admin";
 import { verifyIdToken } from "@/lib/auth-server";
 import { notifyRenderStarted } from "@/lib/notifications/scenarios/render-started";
-import { type PlanId } from "@/lib/plans";
+import { MAX_TOTAL_CLIP_SECONDS, type PlanId } from "@/lib/plans";
 import type { NextRequest } from "next/server";
 
 const isConfigured = Boolean(
@@ -107,6 +107,14 @@ export async function POST(request: NextRequest) {
       };
     })
   );
+
+  const totalSeconds = clipsWithLength.reduce((sum, c) => sum + c.length, 0);
+  if (totalSeconds > MAX_TOTAL_CLIP_SECONDS) {
+    return Response.json(
+      { error: "TOTAL_TOO_LONG", totalSeconds: Math.round(totalSeconds), maxTotalSeconds: MAX_TOTAL_CLIP_SECONDS },
+      { status: 400 }
+    );
+  }
 
   console.log("[render/start] clipsWithLength:", clipsWithLength.map((c) => ({ length: c.length, src: c.src.slice(0, 80) })));
 

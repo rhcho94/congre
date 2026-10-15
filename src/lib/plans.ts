@@ -20,6 +20,17 @@ export function getPlanMaxClipSeconds(plan: PlanId): number {
 
 export const MIN_PRICE = 10000;
 
+// 누적 초(개수×길이) 상한 = 완성본 하객 영상 최대 30분. 엔진 TOO_LONG 기준과 같음
+export const MAX_TOTAL_CLIP_SECONDS = 1800;
+
+export function formatMinSec(totalSeconds: number): string {
+  const m = Math.floor(totalSeconds / 60);
+  const s = totalSeconds % 60;
+  if (m === 0) return `${s}초`;
+  if (s === 0) return `${m}분`;
+  return `${m}분 ${s}초`;
+}
+
 export function calcRawPrice(maxClipSeconds: number, clipCount: number): number {
   return maxClipSeconds * clipCount * 100;
 }

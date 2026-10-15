@@ -12,7 +12,7 @@ import { getClipPlaybackUrl, toggleClipExclusion } from "@/lib/clip-playback";
 import { getPresignedUrl, uploadToS3 } from "@/lib/s3";
 import CongreBadge from "@/components/CongreBadge";
 import AppHeader from "@/components/AppHeader";
-import { PLAN_CLIP_LIMITS } from "@/lib/plans";
+import { PLAN_CLIP_LIMITS, formatMinSec } from "@/lib/plans";
 import PageBackdrop from "@/components/PageBackdrop";
 
 const statusLabels: Record<string, string> = {
@@ -771,7 +771,7 @@ export default function EventDetailPage() {
     });
 
     if (!renderRes.ok) {
-      const body = await renderRes.json().catch(() => ({})) as { error?: string };
+      const body = await renderRes.json().catch(() => ({})) as { error?: string; totalSeconds?: number };
       const code = body.error;
 
       let message: string;
@@ -785,6 +785,9 @@ export default function EventDetailPage() {
         message = "결제가 확인되지 않은 유료 이벤트예요. 결제 후 다시 시도해주세요.";
       } else if (code === "REFUND_LOCKED") {
         message = "환불 대상으로 확정된 이벤트라 다시 만들 수 없어요. 카카오톡 @congre로 문의해 주세요.";
+      } else if (code === "TOTAL_TOO_LONG") {
+        const current = typeof body.totalSeconds === "number" ? ` (현재 ${formatMinSec(body.totalSeconds)})` : "";
+        message = `영상 합계가 30분을 넘어요${current}. 영상 일부를 제외한 뒤 [영상 생성 다시 시작] 버튼을 눌러주세요.`;
       } else {
         message = `영상 생성 시작에 실패했습니다 (${code ?? renderRes.status}). 운영자에게 문의해주세요.`;
       }
