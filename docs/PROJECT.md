@@ -36,9 +36,9 @@ npx firebase emulators:start --only firestore
 - Next.js (TypeScript, App Router)
 - Firebase Auth + Firestore (project: congre-mvp, Blaze 요금제)
 - AWS S3 (bucket: congre-videos-kr, region: ap-northeast-2 서울 — 2026-10-13 시드니 `congre-mvp-videos`에서 이전)
-- Shotstack (AI 영상 편집) — production 키 적용. rich-text asset으로 한글 인트로/아웃트로 렌더.
-- `public/fonts/NotoSansKR-Regular.ttf` — 한글 렌더링용 커스텀 TTF (SIL OFL). Shotstack `timeline.fonts` 소스.
-- `public/fonts/NanumPenScript-Regular.ttf` — Shotstack 워터마크용 Nanum Pen TTF (라틴 부분 글꼴, 파일 안 family 이름 "Nanum Pen", SIL OFL — `public/fonts/OFL-NanumPenScript.txt`). 무료 플랜 워터마크 `timeline.fonts` 소스.
+- 렌더링: 자체 엔진 congre-engine (AWS Step Functions + Lambda, 서울). 앱은 StartExecution으로 시작, cron이 DescribeExecution으로 완료 확인. 2026-10-15 Shotstack에서 교체.
+- `public/fonts/NotoSansKR-Regular.ttf` — 한글 렌더링용 커스텀 TTF (SIL OFL). (Shotstack 렌더용이었음, 지금 렌더는 엔진 자체 폰트)
+- `public/fonts/NanumPenScript-Regular.ttf` — Nanum Pen TTF (라틴 부분 글꼴, 파일 안 family 이름 "Nanum Pen", SIL OFL — `public/fonts/OFL-NanumPenScript.txt`). (Shotstack 렌더용이었음, 지금 렌더는 엔진 자체 폰트)
 - Vercel 배포
 - Tailwind v4 (config 파일 없이 @import 방식)
 
@@ -97,8 +97,7 @@ npx firebase emulators:start --only firestore
 
 | 변수 | Production | Preview/Development |
 |---|---|---|
-| SHOTSTACK_API_KEY | production 키 | stage 키 |
-| SHOTSTACK_ENV | production | stage |
+| ENGINE_STATE_MACHINE_ARN | arn:...:stateMachine:congre-engine-render-job | 같음 |
 | NEXT_PUBLIC_APP_URL | https://app.congre.kr | 확인 필요 |
 
 (Firebase, AWS 관련 환경변수는 Vercel 대시보드 참조)
@@ -118,7 +117,6 @@ npx firebase emulators:start --only firestore
 - S3 업로드 (presigned URL)
 - 카메라 전/후면 전환 (standby에서만)
 - 마감 기능 (세션 토큰 만료)
-- Shotstack 환경 분기 (stage/production 자동)
 - 한글 자막
 - SNS 공유 버튼 (카카오·링크 복사)
 - Congre 배지 (BrandName 컴포넌트)
@@ -145,7 +143,7 @@ npx firebase emulators:start --only firestore
   (`source: "/:path*"`)에 `X-Content-Type-Options: nosniff` 부착. og-image 라우트는
   응답에서 자체적으로도 부착. CSP·Content-Disposition은 미도입(known-issues 등재).
   `middleware.ts` 없음.
-- 한글 인트로/아웃트로 (이벤트 생성 폼 입력 → Firestore 저장 → Shotstack rich-text 클립 삽입, NotoSansKR TTF 호스팅)
+- 한글 인트로/아웃트로 (이벤트 생성 폼 입력 → Firestore 저장 → 엔진 글자 카드(card) 또는 미디어 위 글자)
 - 자동 삭제 cron (`/api/cron/cleanup`, `vercel.json` 기준 `0 18 * * *` = UTC 18:00, KST 익일 03:00 1회) — 원본 클립은 `participantNotifiedAt` + **48시간**(`status: "done"` 이벤트 한정), 완성본은 배열 원소별 `doneAt` + 7일, 마감 후 정체(`closed`·`rendering`)는 `closedAt` + 7일. 세 시계가 서로 다른 필드를 기산점으로 쓴다. 멱등성 마커: clipsDeletedAt, videoDeletedAt. 완성본 S3 객체 실제 삭제는 2026-07-12(33430b6)에 복구됨 — Track ⑦ 저장 위치 이전 시 누락됐던 드리프트.
 - 이용약관 / 개인정보처리방침 페이지 (`/terms`, `/privacy`) — v0.1 시행. 푸터 링크. 변경 이력은 `docs/legal/CHANGELOG.md`.
 - **마이페이지 P1·P2·P3·P4** (`/mypage` — 이벤트 요약 + 프로필 표시 + name·phone 수정 + 비밀번호 변경 + 회원 탈퇴. dashboard nav 링크. 2026-05-20)
@@ -160,9 +158,9 @@ npx firebase emulators:start --only firestore
 - **게스트 초대 링크 동적 OG 카드** (`src/app/upload/[eventId]/layout.tsx` server-side `generateMetadata` — events.title + users.name Admin 2회 조회, `${hostName}님이 초대했어요 | ${title}` 형식. hostName 12자/title 20자 초과 시 절단, hostName 없으면 `${title} 영상에 초대합니다` fallback. 카카오·SNS 미리보기 카드 동적화. PII 미노출(텍스트만). 2026-06-01. decisions/data-flow.md 2026-06-01 OG 항목 참조) (2026-10-08 구분자 " | "로 변경)
 - **초대장 OG 미리보기 이미지** (`/api/og-image/[eventId]` 프록시 라우트 — events.introMediaType==="image"일 때만 S3 객체 바이트 직접 서빙(비공개 버킷 유지), 영상/미설정/실패 시 `/logo.png` 302 fallback. openGraph.images + twitter.summary_large_image. OG URL은 정식 도메인 하드코딩(known-issues 참조). 2026-06-03)
 - **가격 표시 UI 4장 라이브 반영** (`www.congre.kr/pricing` — 무료·소형·중형·라지. Pricing Section.html로 deploy/pricing.html 교체. 2026-05-30. decisions/landing.md 2026-05-30 (11))
-- **이벤트별 영상 색감(필터) 옵션** (대시보드에서 선택: 시네마틱(muted) / 화사하게(boost). 또렷하게(contrast)는 2026-10-15 제거(제품 원칙). 저장 시 events.videoFilter, render/start가 읽어 createRender style 인자로 전달, 참가자 video clip 각각에 Shotstack filter 적용. 미선택 시 미적용(현재와 동일). 2026-06-06. decisions/rendering.md 2026-06-06 참조)
-- **이벤트별 전환(transition) 스타일 옵션** (대시보드 "영상 스타일" 카드 select 2번째: 기본(현행 4종 혼합) / 부드럽게(soft=fade·fadeSlow) / 역동적으로(dynamic=slideLeft·slideRight·zoom). 저장 시 events.videoTransition, render/start가 createRender style.transition으로 전달, pickSequence 풀이 바뀜. 미선택 시 default 풀(현행). 2026-06-06. decisions/rendering.md 2026-06-06 (2) 참조)
-- **이벤트별 참가자 이름 자막** (대시보드 "영상 스타일" 카드 체크박스. 켜면 각 참가자 영상 하단에 uploaderName이 rich-text(NotoSansKR 36px white + stroke)로 표시. 캡션 clip은 별도 텍스트 트랙(또는 [A]에서 textClips 트랙 공유, 겹침 시 새 트랙)에 numeric start/length로 push해 영상과 동기. createRender clips 항목에 name 추가, style.showNames=true 전달. 디폴트 꺼짐. 알려진 한계: intro 미디어가 비디오일 때 길이 미상으로 캡션 미세 어긋남. 2026-06-06. decisions/rendering.md 2026-06-06 (3) 참조)
+- **이벤트별 영상 색감(필터) 옵션** (대시보드에서 선택: 시네마틱(muted) / 화사하게(boost). 또렷하게(contrast)는 2026-10-15 제거(제품 원칙). 저장 시 events.videoFilter, render/start가 읽어 엔진 조각 filter로 전달(muted·boost만). 미선택 시 엔진 기본 톤(2026-10-15). 2026-06-06. decisions/rendering.md 2026-06-06 참조)
+- **이벤트별 전환(transition) 스타일 옵션** (대시보드 "영상 스타일" 카드 select 2번째: 기본(현행 4종 혼합) / 부드럽게(soft=fade·fadeSlow) / 역동적으로(dynamic=slideLeft·slideRight·zoom). 저장 시 events.videoTransition, render/start가 createRender style.transition으로 전달, pickSequence 풀이 바뀜. 미선택 시 default 풀(현행). 2026-06-06. decisions/rendering.md 2026-06-06 (2) 참조 — 2026-10-15부터 render/start가 엔진 조각 in/out으로 전달)
+- **이벤트별 참가자 이름 자막** (대시보드 "영상 스타일" 카드 체크박스. 켜면 각 참가자 영상 하단에 uploaderName이 rich-text(NotoSansKR 36px white + stroke)로 표시. 캡션 clip은 별도 텍스트 트랙(또는 [A]에서 textClips 트랙 공유, 겹침 시 새 트랙)에 numeric start/length로 push해 영상과 동기. createRender clips 항목에 name 추가, style.showNames=true 전달. 디폴트 꺼짐. 알려진 한계: intro 미디어가 비디오일 때 길이 미상으로 캡션 미세 어긋남. 2026-06-06. decisions/rendering.md 2026-06-06 (3) 참조 — 2026-10-15부터 엔진 이름 자막(크기 64, 바닥 위)으로 대체, 위 rich-text·트랙 설명은 교체 전 기록)
 - **완성본 이력 보존 + 이전 완성본 노출** (`events.videos[]` 배열에 완성본 이력 누적. 재렌더해도 이전 완성본이 소실되지 않고 done 화면 "이전 완성본" 섹션에서 다운로드 가능. 원소별 `doneAt` 기준 7일 자동 만료. 저장 구조는 배열 필드 채택 — 서브컬렉션 대비 Firestore 규칙 콘솔 게시 단계 제거. 2026-07-12. decisions/data-flow.md 2026-07-12 참조)
 
 ## 랜딩 페이지 (별도 트랙)

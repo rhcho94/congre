@@ -57,7 +57,8 @@ console.firebase.google.com → congre-mvp
 | Firebase Auth 메일 | Blaze | ✅ GCP 예산(아래 동일) | Blaze 메일 일일 한도 정책 확인 필요 | (확인필요) | Console → Authentication |
 | Firestore | Blaze | ✅ GCP 예산 월 ₩50,000(50/90/100% 이메일) | 폭주 시 과금(읽기 1.1천/주, 미미) | 비용 | Console 사용량 |
 | AWS S3 | 무료플랜+크레딧 | ✅ Budget 월 $100(실제85/100·예상100% → 운영자 Gmail) | 전송 비용($0). 리전=서울(2026-10-13 이전, 옛 시드니 버킷은 정리 대기) | 비용 | AWS Billing → 예산 |
-| **Shotstack** | **구독 200크레딧/월 ($39), PRODUCTION** | (분당 과금) | ⚠️ **전송 500MB/월·저장 500MB(현 392MB=78%)**가 진짜 병목. 렌더 크레딧은 여유(385 보유, 22.63/30일 사용) | 멈춤+비용 | Shotstack Dashboard / Usage |
+| **congre-engine** | AWS Lambda 동시 실행 1,000, 메모리 3,008MB 미증액 | AWS 사용량 과금 | 실행 1시간 한도, 1,800초 상한 | 멈춤+비용 | Step Functions 콘솔 실행 기록 / AWS Billing |
+| **Shotstack** (2026-10-15 렌더 중단, ⑦ 해지 전까지 구독 비용만) | **구독 200크레딧/월 ($39), PRODUCTION** | (분당 과금) | ⚠️ **전송 500MB/월·저장 500MB(현 392MB=78%)**가 진짜 병목. 렌더 크레딧은 여유(385 보유, 22.63/30일 사용) | 멈춤+비용 | Shotstack Dashboard / Usage |
 | Vercel(본앱 congre) | Pro | Spend "Alerts only" | cron 제약 해소. 대역폭/함수 비용 | 비용 | Vercel → Usage |
 | Resend(메일) | Free | (무료 한도) | ⚠️ 월 3,000 / 일 100(현재 184/3,000). 일 100 초과 시 메일 실패. Pro($20)는 무제한 | 멈춤 | Resend → Settings → Usage |
 | SOLAPI(SMS) | 개인 계정 | 자동충전 OFF / 잔액소진경고 ON(임계 200) / 잔액 45,123원 | 일일 한도 **50→500 상향 완료**. 500 초과는 사업자 계정 | 멈춤 | SOLAPI 대시보드 |
@@ -71,14 +72,14 @@ console.firebase.google.com → congre-mvp
 - CRON_SECRET 등록 확인됨 ✅(200=인증 통과). cron은 Production만. Vercel cron 실패 알림 내장 없음(→§5 C). 로그: Vercel→congre→Logs→`requestPath:/api/cron/<경로>`.
 
 ### 2-3. 조용히 실패하는 것
-- SOLAPI 일일 한도(500) 초과 → 그룹 접수실패·재발송 불가 / SOLAPI 잔액 소진(자동충전 OFF, 경고 ON) → SMS 실패 / **Resend 일 100건 초과 → 메일 미발송** / **Shotstack 전송·저장 500MB 초과 → 영상 호스팅 실패/추가과금** / Firebase Auth 메일 한도(확인 필요) / cron 실패(현재 정상).
+- SOLAPI 일일 한도(500) 초과 → 그룹 접수실패·재발송 불가 / SOLAPI 잔액 소진(자동충전 OFF, 경고 ON) → SMS 실패 / **Resend 일 100건 초과 → 메일 미발송** / **Shotstack 전송·저장 500MB 초과 → 영상 호스팅 실패/추가과금 (⑦ 해지 전까지)** / Firebase Auth 메일 한도(확인 필요) / cron 실패(현재 정상).
 
 ---
 
 ## 3. 운영자 정기 점검 루틴
 - 수시: Firestore events status=rendering 지연·closed+renderId(실패) / Authentication 미인증 신규
-- 주 1회: AWS Billing / SOLAPI 잔액·일일량 / Resend Usage(월·일) / **Shotstack 전송·저장(500MB)** / Vercel Logs cron 200
-- 사고 신호: "영상 안 나와요"→cron·Shotstack(전송·저장 포함) / "문자 안 와요"→SOLAPI 한도·잔액 / "메일 안 와요"→Resend 일100·Firebase
+- 주 1회: AWS Billing / SOLAPI 잔액·일일량 / Resend Usage(월·일) / **Shotstack 전송·저장(500MB)** (⑦ 해지 전까지) / Vercel Logs cron 200
+- 사고 신호: "영상 안 나와요"→cron·엔진 실행 기록(Step Functions) / "문자 안 와요"→SOLAPI 한도·잔액 / "메일 안 와요"→Resend 일100·Firebase
 - 비용 알림(이메일): AWS $100·Firebase ₩50,000 임계 시 운영자 Gmail 자동 수신.
 
 ---
@@ -91,7 +92,7 @@ console.firebase.google.com → congre-mvp
 - [x] Firebase(GCP) 예산 알림 (월 ₩50,000)
 - [x] SOLAPI 일일 한도 상향 (50→500). 500 초과는 사업자 등록
 - [~] SOLAPI 잔액소진 경고 ON (자동충전 OFF / 임계 200 낮음→상향 검토)
-- [ ] **Shotstack 전송·저장 500MB 대책** — 출시 시 시청 트래픽으로 전송 초과 예상. 상위 플랜 또는 영상 CDN 이전(R2 등, known-issues 항목) / 저장 78% 점검 ★
+- [ ] **Shotstack 전송·저장 500MB 대책 (⑦ 해지 전까지)** — 출시 시 시청 트래픽으로 전송 초과 예상. 상위 플랜 또는 영상 CDN 이전(R2 등, known-issues 항목) / 저장 78% 점검 ★
 - [ ] (출시 규모 시) Resend Free→Pro 검토 (일 100건 cliff). 현재 여유
 - [ ] Firestore composite index 미리 생성(clips: eventId+uploaderPhone+uploaderName)
 - [ ] (확인 필요) Blaze에서 Firebase Auth 메일 일일 한도 정책
@@ -126,7 +127,7 @@ CC: A 운영자화면 없음→§5 / B 데이터모델→§1-3 / C 알림→§5 
 Firebase 클라이언트: NEXT_PUBLIC_FIREBASE_{API_KEY,AUTH_DOMAIN,PROJECT_ID,STORAGE_BUCKET,MESSAGING_SENDER_ID,APP_ID}
 Firebase Admin: FIREBASE_ADMIN_{PROJECT_ID,CLIENT_EMAIL,PRIVATE_KEY}
 AWS: AWS_REGION,AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY,AWS_S3_BUCKET
-Shotstack: SHOTSTACK_API_KEY,SHOTSTACK_ENV / Vercel: VERCEL_ENV
+Shotstack: SHOTSTACK_API_KEY,SHOTSTACK_ENV / Engine: ENGINE_STATE_MACHINE_ARN / Vercel: VERCEL_ENV
 카카오: NEXT_PUBLIC_KAKAO_APP_KEY / 앱 URL: NEXT_PUBLIC_APP_URL
 Resend: RESEND_API_KEY,EMAIL_FROM,EMAIL_FROM_NAME
 SOLAPI: SOLAPI_API_KEY,SOLAPI_API_SECRET,SOLAPI_SENDER

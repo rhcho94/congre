@@ -1,72 +1,75 @@
 # 렌더 멈춤 비상 복구 절차서
 
-> 근거: 2026-10-08 정찰 9 D1~D5(HEAD `694cf88`). 줄 번호는 같은 날 C21·C22 반영 뒤 코드로 다시 대조했다. 코드로 확인한 것만 적었다. 모르는 곳은 "모른다"로 남겼다.
-> 각 조치의 **검증됨** = 코드로 동작을 확인함, **미검증** = 실제로 해 본 적 없음 또는 외부 조건에 달림.
+> 근거: 2026-10-16, 앱 `d63da17`(렌더링 엔진 교체) + 엔진 `rhcho94/congre-engine` `44ceabe`. 이전판(Shotstack 기준)은 git 기록 `d63da17` 이전 판에 있다.
+> **검증됨(코드)** = 코드로 동작 확인, **검증됨(실측)** = 실제로 해 봄, **미검증** = 해 본 적 없음.
 
 ## 1. 언제 쓰나
 
 - 이벤트가 `status: "rendering"`에 오래 머문다.
 - 신호: 예상 완료 시각 `expectedCompletedAt`(렌더 시작 + `renderEstimateMin`분, 최소 15분)이 지났고, 지연 알림이 발송됨(`notifications.renderDelayedNotifiedAt`이 찍힘).
-- 지연 알림은 `cron/check-render-deadlines`가 5분마다 보낸다. 이 cron은 알림과 `refundStatus`만 쓰고 `status`는 바꾸지 않는다. 시간이 지나도 저절로 실패 처리되지 않는다.
+- 지연 알림은 `cron/check-render-deadlines`가 5분마다 보낸다. 이 cron은 알림과 `refundStatus`만 쓰고 `status`는 바꾸지 않는다.
 
-## 2. 렌더가 끝나는 흐름 (참고)
+## 2. 렌더가 끝나는 흐름
 
-1. `render/start`: Shotstack 렌더 생성 성공 뒤 이벤트 문서에 `status: "rendering"`, `renderId`, `renderStartedAt`, `renderEstimateMin`, `expectedCompletedAt`, `refundStatus: "none"`을 쓴다(`render/start/route.ts:206-217`).
-2. `cron/check-rendering`(5분마다): `status == "rendering"`인 이벤트마다
-   - Shotstack 상태 API `GET /edit/v1/render/{renderId}`를 부른다(`check-rendering:53`, `shotstack.ts:406-424`).
-   - Shotstack이 `done` + `url`을 돌려주면(`:61`) S3 버킷 루트의 `{renderId}.mp4`를 `HeadObject`로 확인한다(`:62-65`).
-   - 파일이 있으면 `status: "done"`, `videoS3Key`, `renderDoneAt`, `videos[]`에 `{renderId, s3Key, doneAt}` 추가(`:101-108`) → 호스트·참가자 알림.
-   - Shotstack이 `failed`면 `status: "closed"`만 쓴다(`:161`) → 실패 알림.
-   - 그 밖의 상태(queued 등)는 다음 실행까지 기다린다.
+1. `render/start`: 작업 이름 `jobId = {eventId}-{시작 시각 밀리초}`로 엔진 작업 지휘(AWS Step Functions `congre-engine-render-job`, 서울 ap-northeast-2)를 시작한다(StartExecution). 성공하면 이벤트 문서에 `status: "rendering"`, `renderId`(= jobId), `renderExecutionArn`, `renderOutKey`(= `renders/{jobId}.mp4`), `bgmKey`, `renderStartedAt`, `renderEstimateMin`, `expectedCompletedAt`, `refundStatus: "none"`을 쓴다.
+2. 엔진: 조각(인트로·하객 클립·아웃트로·글자 카드)마다 Lambda가 따로 굽고(`engine-jobs/{jobId}/seg/`, 하루 뒤 자동 삭제), merge Lambda가 이어 붙여 배경음악을 얹고 `renders/{jobId}.mp4`에 쓴다.
+   - 하객 클립 하나가 실패하면 그 클립만 빼고 계속한다(`skipped`). 인트로·아웃트로·글자 카드가 실패하면 전체 실패.
+   - 실행 전체 한도 1시간(넘으면 TIMED_OUT).
+3. `cron/check-rendering`(5분마다): `status == "rendering"`인 이벤트마다 `renderExecutionArn`으로 실행 상태를 묻는다(DescribeExecution).
+   - RUNNING → 다음 회차.
+   - SUCCEEDED → `renderOutKey` 파일을 HeadObject로 확인. 있으면 `status: "done"`, `videoS3Key`, `renderDoneAt`, `videos[]`, 빠진 클립이 있으면 `renderSkipped` → 호스트·참가자 알림. 파일이 없으면(404) 다음 회차.
+   - FAILED · TIMED_OUT · ABORTED → `status: "closed"` → 실패 알림. Vercel 로그에 `errorCode=` 남김.
+   - `renderExecutionArn`이 없는 이벤트(엔진 교체 전 Shotstack 렌더)는 건너뛴다(로그 `pre-engine event`).
+- 실측: 2026-10-16 무료 시험 행사(클립 5개) 시작 08:20 → 완성 문자 08:25. 검증됨(실측).
 
 ## 3. 확인 순서
 
-1. **Firestore 이벤트 문서** (`events/{eventId}`): `status`, `renderId`, `renderStartedAt`, `expectedCompletedAt`.
-   - `renderId`가 없으면 → 아래 표 5번.
-2. **Shotstack 대시보드**에서 그 `renderId`의 상태: queued / rendering / done / failed, 그리고 결과 URL이 있는지.
-3. **S3 버킷 루트**의 `{renderId}.mp4`: 있는지, **크기가 0보다 큰지**.
-   - check-rendering은 존재만 보고 크기는 보지 않는다. 0바이트 파일도 done으로 넘어간다.
+1. **Firestore** `events/{eventId}`: `status`, `renderId`, `renderExecutionArn`, `renderOutKey`, `renderStartedAt`.
+2. **AWS 콘솔**(오른쪽 위 리전 = 서울) → Step Functions → 상태 머신 `congre-engine-render-job` → 실행 목록에서 **이름 = renderId**인 실행.
+   - 상태: 실행 중 / 성공 / 실패 / 시간 초과 / 중단.
+   - 실패면 실행 화면의 그래프에서 빨간 단계를 누르고 오류·원인을 본다. merge 단계 출력의 `code`가 원인이다(아래 표 아래 목록).
+3. **S3** `congre-videos-kr` → `renders/{renderId}.mp4`: 있는지, **크기가 0보다 큰지**(check-rendering은 존재만 본다).
+4. **Vercel → Logs**: `[render/start]`, `[cron/check-rendering]` 검색.
 
 ## 4. 멈춤 지점과 조치
 
-| # | 지점 | 이벤트 문서에 남는 상태 | 코드상 빠져나오는 길 | 조치 | 상태 |
+| # | 지점 | 이벤트 문서 상태 | 코드상 빠져나오는 길 | 조치 | 상태 |
 |---|---|---|---|---|---|
-| 1 | Shotstack은 done인데 S3에 `{renderId}.mp4`가 없음(복사 실패·0바이트 등) | `rendering`, `renderId` 있음, `videoS3Key` 없음 | 없음. 5분마다 무한 재시도 | 5장 "S3에 직접 올려 복구" | 미검증 |
-| 2 | Shotstack 상태 조회가 예외(키·네트워크·비정상 응답) | `rendering` | 다음 실행 재시도만, 한도 없음 | Vercel 로그에서 `[cron/check-rendering] getRenderStatus failed` 확인 → 원인(키·Shotstack 장애) 해소 후 다음 cron 대기 | 미검증 |
-| 3 | Shotstack이 done인데 `url`이 비어 있음 | `rendering` | 없음(어느 분기에도 안 걸림) | 모른다. Shotstack 쪽 결과를 먼저 확인 | 미검증 |
-| 4 | Shotstack이 queued/rendering에 계속 머묾 | `rendering` | 시간 한도 없음, 알림만 | Shotstack 대시보드·지원 문의. 실패로 끝나면 6장 | 미검증 |
-| 5 | 이벤트에 `renderId`가 없음 | `rendering`, `renderId` 없음 | 없음(건너뛰는 로그만) | 모른다. 어느 렌더인지 Shotstack 대시보드에서 찾아야 함 | 미검증 |
-| 6 | 렌더 생성은 성공했는데 그 뒤 Firestore 갱신(`render/start:206-217`) 실패 | 이전 상태 그대로, `renderId` 기록 안 됨. Shotstack에는 렌더가 생김 | 없음 | 호스트가 다시 렌더 시작(크레딧 추가 소모). 고아 렌더는 Shotstack에 남음 | 미검증 |
-| 7 | Shotstack failed → `closed`로 되돌아감 | `closed`, `renderId` 남음, `refundStatus`는 그대로 | 있음: 호스트가 다시 편집·렌더 가능 | 6장 | 검증됨(코드) |
-| 8 | 연락처 없는 이벤트 | `rendering` | check-render-deadlines가 통째로 건너뜀(알림 없음). done 전환은 정상 | 지연을 알림으로 알 수 없으니 Firestore에서 `rendering` 이벤트를 직접 조회 | 검증됨(코드) |
+| 1 | 실행은 성공인데 `renderOutKey` 파일이 없음 | `rendering` | 없음. 5분마다 무한 재시도 | 실행 출력(merge 결과)의 `out_key` 확인. 다른 키에 있으면 그 파일을 `renderOutKey` 위치로 복사 → 다음 cron | 미검증 |
+| 2 | 실행 상태 조회가 예외(권한·리전·ARN) | `rendering` | 재시도만, 한도 없음 | Vercel 로그 `getEngineRenderStatus failed` → IAM `congre-s3-user`의 `congre-engine-run` 정책, Vercel `AWS_REGION`(ap-northeast-2) 확인 | 미검증 |
+| 3 | 실행이 계속 RUNNING | `rendering` | 1시간 뒤 TIMED_OUT → 다음 cron이 `closed` | 콘솔에서 멈춘 단계 확인. 필요하면 실행 화면 **실행 중지** → ABORTED → 다음 cron이 `closed` | 미검증 |
+| 4 | `renderExecutionArn`이 없음 | `rendering` | 건너뜀(로그만) | 교체 전 Shotstack 렌더. 2026-10-15 22:47 교체 직전 확인 0건. 생기면 Firestore에서 `status`를 `closed`로 → 호스트가 다시 시작 | 검증됨(코드) |
+| 5 | 실행 시작은 성공했는데 그 뒤 Firestore 갱신 실패 | 이전 상태 그대로 | 없음 | 엔진은 완성본을 만들지만 앱이 모른다. 호스트가 다시 시작하면 새 실행. 고아 완성본은 `renders/`에 남음 → 대청소 때 정리 | 미검증 |
+| 6 | 실행 시작 자체가 실패 | 이전 상태 그대로 | 화면 "영상 생성 시작에 실패" | Vercel 로그 `[render/start] failed` → AccessDenied(권한) · ARN 값 · 같은 이름 실행 중복 | 미검증 |
+| 7 | 실행 실패 → `closed`로 되돌아감 | `closed`, `renderId` 남음 | 있음: 호스트가 다시 시작 가능 | 6장 | 검증됨(코드) |
+| 8 | 연락처 없는 이벤트 | `rendering` | check-render-deadlines가 건너뜀(알림 없음). done 전환은 정상 | Firestore에서 `rendering` 이벤트를 직접 조회 | 검증됨(코드) |
 
-## 5. S3에 직접 올려 복구하는 길 (지점 1)
+**실패 원인 code (merge 결과)**
+- `REQUIRED_SEGMENT_FAILED`: 인트로·아웃트로·글자 카드 실패. `detail`에 하위 원인 — `UNSUPPORTED_HDR_PQ`(PQ HDR 영상), `NO_TEXT`, `PROBE_FAILED` 등
+- `NO_CLIPS_LEFT`: 하객 클립이 전부 실패
+- `TOO_LONG`: 하객 클립 사용 시간 합 1,800초 초과(앱이 이벤트 생성·렌더 시작에서 먼저 막는다)
+- `BGM_*`: 배경음악 파일 문제(삭제·손상·너무 짧음). `bgmKey`에 저장된 곡이 버킷에서 지워졌을 때도 여기
+- merge Lambda 자체 예외는 MergeOk를 거치지 않고 실행이 실패한다 — 이때는 콘솔의 오류·원인 칸을 본다
 
-Shotstack 대시보드에서 완성본을 받아 S3 버킷 루트에 `{renderId}.mp4`로 올리면, 다음 check-rendering이 done으로 넘길 수 **있다**. 아래 네 조건이 모두 맞아야 한다.
+## 5. 직접 복구 (지점 1)
 
-1. 이벤트 `status == "rendering"` (`check-rendering:37`)
-2. 이벤트 문서에 `renderId`가 있음 (`:46`)
-3. **Shotstack 상태 API가 그 renderId에 대해 `status: "done"`과 `url`을 계속 돌려줌** (`:61`). S3 파일만으로는 안 된다. Shotstack이 `failed`를 돌려주면 `closed`로 간다.
-   - **미검증**: Shotstack이 렌더 기록을 얼마나 오래 보존하는지 모른다. 기록이 사라지면 이 길은 막힌다.
-4. 키가 정확히 버킷 루트의 `{renderId}.mp4` (접두사 없음) (`:62`)
-
-- 올린 뒤 **파일 크기를 반드시 확인한다.** 0바이트도 통과해 빈 영상이 완성본으로 나간다.
-- 원래 판정: 2026-10-01 핸드오프 §4는 "S3 파일 존재만 본다"고 적었으나, 코드는 조건 3을 먼저 본다. 정찰 9 D4 판정 = 조건부 맞음.
-- Shotstack 결과 URL의 임시 보관: S3 destination만 쓰고 Shotstack 호스팅을 끄면 24시간만 보관된다(Shotstack 공식 문서). 지금 코드에는 Shotstack 호스팅을 끄는 설정(`exclude`)이 없다(`shotstack.ts:334-342`). 그래서 Shotstack 호스팅 사본도 생긴다. 그 사본의 보존 기간은 모른다.
+- check-rendering은 **실행 상태가 SUCCEEDED일 때만** 파일을 본다. 실행이 실패했으면 파일을 올려도 done으로 가지 않는다(이미 `closed`).
+- 파일을 옮기거나 올린 뒤 **크기를 반드시 확인한다.** 0바이트도 통과해 빈 영상이 완성본으로 나간다.
 
 ## 6. 실패(`closed`로 돌아감)일 때
 
-- 호스트가 다시 편집·렌더할 수 있다(`render/start`에 status 가드 없음).
-- 단, 유료 + `status: "closed"` + `refundStatus: "100"`이면 다시 렌더할 수 없다(403 `REFUND_LOCKED`, `render/start:57-60`).
-- 환불을 실행하는 코드는 없다. `refundStatus`("50"/"100")와 알림만 남는다(`check-render-deadlines:70-103`). 환불은 토스 콘솔에서 수동으로 한다.
-- 환불 시각: `refund50At` = 결제 + 4시간, `refund100At` = 결제 + 48시간(`payment/confirm/route.ts:127-132`).
+- 호스트가 다시 시작할 수 있다(`render/start`에 status 가드 없음).
+- 단, 유료 + `status: "closed"` + `refundStatus: "100"`이면 다시 렌더할 수 없다(403 `REFUND_LOCKED`).
+- 환불을 실행하는 코드는 없다. `refundStatus`("50"/"100")와 알림만 남는다. 환불은 토스 콘솔에서 수동(docs/ops/runbook-refund-manual.md).
+- 환불 시각: `refund50At` = 결제 + 4시간, `refund100At` = 결제 + 48시간.
 
 ## 7. Firestore 필드를 손으로 바꿀 때 주의
 
-자동 정리(`cron/cleanup`, 매일 1회)가 아래 필드를 읽는다. 손으로 고치면 삭제 시점이 바뀌거나 영상이 지워지지 않을 수 있다.
+자동 정리(`cron/cleanup`, 매일 1회)가 아래 필드를 읽는다.
 
 - `videos[]` (`{renderId, s3Key, doneAt}`): 완성본 7일 삭제 기준. `doneAt`이 없거나 형식이 다르면 지워지지 않는다.
 - `renderDoneAt`: `videos[]`가 없는 옛 문서의 완성본 삭제 기준. 참가자 알림이 안 나간 완성 이벤트의 클립 48시간 삭제 기준이기도 하다.
 - `notifications.participantNotifiedAt`: 클립 48시간 삭제 기준.
-- 공유 페이지는 `status === "done"`이고 `videoS3Key`가 있어야 영상을 보여 준다(`share/[eventId]/page.tsx:58`).
+- `bgmKey`: 다시 만들 때 같은 곡을 재사용한다(분위기 폴더가 같을 때). **그 곡 파일을 버킷에서 지웠으면 이 필드를 지워야 다시 만들기가 성공한다**(코드 대비 없음, known-issues).
+- 공유 페이지는 `status === "done"`이고 `videoS3Key`가 있어야 영상을 보여 준다.
 - `status`를 손으로 `done`으로 바꾸면 check-rendering을 거치지 않으므로 `videos[]`·`renderDoneAt`·알림이 모두 빠진다. 권하지 않는다(미검증).

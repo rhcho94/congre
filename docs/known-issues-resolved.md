@@ -3,6 +3,51 @@
 > known-issues.md에서 분리된 해결 완료 이력. 사고 재발 진단 시 grep 대상.
 > 새 RESOLVED 항목 발생 시 known-issues.md에서 이 파일로 이동.
 
+## ✅ Vercel Preview 환경에 SHOTSTACK_API_KEY가 없다 (2026-10-15 해소)
+
+- **해소: 2026-10-15** — `d63da17`(엔진 교체)로 전제 소멸. Shotstack 코드가 제거돼 이 키가 필요한 경로가 없다.
+- **현황**: Production 스코프에만 있고 Preview에는 없다. `resolveShotstackEnv`
+  (`shotstack.ts:5-14`)는 `VERCEL_ENV`가 production이 아니면 stage로 떨어지므로, Preview
+  배포는 stage 엔드포인트로 가되 키가 없어 `assertApiKey`가 던진다.
+- **영향**: 브랜치 push만으로 테스트 렌더를 돌릴 수 없다. 렌더 경로를 바꿀 때마다
+  프로덕션 환경변수를 직접 바꿨다 되돌리거나 프로덕션에서 바로 시험해야 한다.
+- **참고**: API 키 변수는 `SHOTSTACK_API_KEY` 하나뿐인데 Shotstack은 stage와 production
+  키가 다르다. Preview 스코프에 stage 키를 넣으면 해소된다.
+- **처리**: 등재만.
+- **격상 트리거**: 렌더 경로를 다시 손댈 때.
+- **출처**: 2026-09-20~21 세션.
+
+## ✅ Shotstack 자산 삭제 실패가 조용하다 (2026-10-15 해소)
+
+- **해소: 2026-10-15** — `d63da17`(엔진 교체)로 전제 소멸. Shotstack 자산 삭제 함수가 제거됐다.
+- **현황**: `src/lib/shotstack.ts:379-404` 삭제 함수의 실패 경로 3개가 조용하다. 목록 조회
+  실패와 빈 목록은 로그가 없고, DELETE는 `res.ok`를 확인하지 않는다.
+- **확인**: 2026-09-18 Shotstack 대시보드 대조로 현재는 정상 삭제됨(`Deleted` 배지).
+- **영향**: 실패해도 알 방법이 없다. 개인정보 파기와 연결된 경로다.
+- **처리**: 등재만.
+- **격상 트리거**: 삭제 경로 수정 시 / 정기 점검 시.
+- **출처**: 2026-09-18 세션.
+
+## ✅ render/start가 presigned URL 일부를 로그에 남긴다 (2026-10-15 해소)
+
+- **해소: 2026-10-15** — `d63da17`(엔진 교체)로 전제 소멸. 현재 render/start에 서명 URL 생성·로그가 없음을 grep으로 확인(2026-10-16).
+- **현황**: `render/start/route.ts`(2026-09-18 기준 :106)가 presigned URL 앞 80자를 콘솔에
+  출력한다. `shotstack.ts:346-347` 주석은 서명 URL을 절대 기록하지 않는다고 명시해 서로
+  어긋난다.
+- **미확인**: 앞 80자에 서명 값이 포함되는지.
+- **처리**: 등재만.
+- **격상 트리거**: render/start 수정 시.
+- **출처**: 2026-09-18 세션.
+
+## ✅ Shotstack console.error 디버그 로그 영구 보존 (메모) (2026-10-15 해소)
+
+- **해소: 2026-10-15** — `d63da17`(엔진 교체)로 전제 소멸. `shotstack.ts`가 제거됐다. 모든 catch에 console.error를 넣는 CLAUDE.md 절대 규칙은 그대로 유효.
+- **현황**: `shotstack.ts` createRender의 non-OK 분기에 `console.error("[shotstack] non-OK response:", res.status, text)` 영구 보존 확정 (DECISIONS 2026-05-08).
+- **위치**: `src/lib/shotstack.ts` — `if (!res.ok)` 블록
+- **이유**: Vercel 서버 로그가 유일한 원격 디버깅 채널. throw 전 전체 응답 본문 출력이 진단에 결정적이었음 (width/height 오류 발견).
+- **운영 메모**: 프로덕션에서 Shotstack API 스키마 변경/오류 발생 시 Vercel 로그 → Functions 탭 → "non-OK response" 검색으로 바로 확인 가능.
+- **2026-05-19 v2 격상**: 본 룰을 CLAUDE.md 절대 규칙으로 격상. 모든 catch 블록에 `console.error("[context] failed:", err)` 의무. 본 세션 가입 흐름 진단에서 catch console.error 누락이 사고 #3 영역.
+
 ## ✅ L16. 로고 이미지 자산이 아직 옛 파란 로고 (2026-10-13 해소)
 
 - **해소: 2026-10-13** — 새 색으로 다시 만들어 교체했다: `public/email-logo.png`(250×80) · `public/logo.png`(1080×630) · `public/og-image.png`(1200×630) · `src/app/apple-icon.png`(180×180) · `src/app/favicon.ico`(16·32·48 세 장 묶음). 랜딩 `apple-touch-icon.png`·`favicon.ico`도 같은 날 배포(`4sgqlmfi3`).

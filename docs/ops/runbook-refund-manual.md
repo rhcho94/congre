@@ -9,7 +9,7 @@
 |---|---|---|---|---|
 | 지연 50% | 결제 완료(`paidAt`) + 4시간이 지나도록 `rendering` | 결제 금액의 50% | cron `check-render-deadlines`가 `refundStatus: "50"` 기록 + 호스트 메일·문자(refund_50) + 운영자 문자(CONGRE_INTERNAL_PHONE 설정 시) | 토스 취소 |
 | 지연 100% | 결제 완료 + 48시간 | 전액 | 같은 cron이 `refundStatus: "100"` + refund_100 알림. 영상은 끝까지 완성해 전달 | 토스 취소 |
-| 렌더 실패 | Shotstack `failed` → 이벤트 `closed` | 약관 제10조의3 ④ 회사 귀책 | `check-rendering`이 호스트에게 render_failed 알림 + 운영자 문자(2026-10-09~) | 재시도 또는 토스 취소. **cron의 4시간·48시간 환불은 `rendering` 상태만 보므로 실패 뒤에는 자동 확정이 없다** — 운영자가 판단 |
+| 렌더 실패 | 엔진 실행 실패(FAILED·TIMED_OUT·ABORTED) → 이벤트 `closed` | 약관 제10조의3 ④ 회사 귀책 | `check-rendering`이 호스트에게 render_failed 알림 + 운영자 문자(2026-10-09~) | 재시도 또는 토스 취소. **cron의 4시간·48시간 환불은 `rendering` 상태만 보므로 실패 뒤에는 자동 확정이 없다** — 운영자가 판단 |
 | 결제 후 렌더 시작 실패 | 결제 성공 페이지의 `render/start` 호출 실패(`renderFailed`) | 위와 같음 | 없음(호스트가 직접 재시작) | 위와 같음 |
 | 호스트 변심 | — | 없음 | — | 환불 없음(취소한도 0원이 정책, decisions/infra.md 2026-09-22~24 결정 4) |
 

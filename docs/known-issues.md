@@ -2,12 +2,31 @@
 
 > 진행 중·보류·메모 항목만 둔다. 해결 완료 항목은 known-issues-resolved.md로 이동.
 
+## 빠진 하객 클립(renderSkipped)이 화면에 보이지 않는다
+
+- **현황**: 엔진이 PQ HDR 등으로 하객 클립을 빼면 이벤트 문서 `renderSkipped`[{index, code}]에만 남고 호스트 화면·알림에는 없다. index는 엔진 조각 순서(인트로 포함)라 클립 순서와 1 차이 날 수 있다.
+- **처리**: 등재만. "제 영상이 없어요" 문의 시 Firestore에서 확인.
+- **출처**: 2026-10-15 C2.
+
+## 출시 후 배경음악 곡을 지우면 그 곡을 쓴 행사의 다시 만들기가 실패한다
+
+- **현황**: render/start는 저장된 `bgmKey`가 같은 분위기 폴더면 재사용하고 파일 존재는 확인하지 않는다 → 엔진 BGM_* 오류로 실패. 2026-10-16 짧은 곡 1개 삭제는 출시 전 대청소 대상 행사뿐이라 대비 없이 진행(Ray).
+- **처리 후보**: 재사용 전 HeadObject, 없으면 새로 고름.
+- **격상 트리거**: 출시 후 곡 목록 정리 전.
+- **출처**: 2026-10-16 채팅.
+
+## 엔진 완성본 파일 크기
+
+- **현황**: 엔진 x264 crf 18. 2026-10-16 44.6초 완성본 47.7MB(약 8.6Mbps). 30분이면 약 1.9GB(비례 추정).
+- **처리**: ⑥ 유료 시험 뒤 판단.
+- **출처**: 2026-10-16 실측.
+
 ## 약관·처리방침 문구와 코드가 어긋나는 곳 묶음 (법률 상담 뒤 일괄 개정)
 
 - **현황** (2026-10-09 전수 문구 감사. 코드가 실제 상태이고 문서가 틀리거나 빠진 쪽):
   1. 처리방침 수집 항목에 가입 단계 휴대폰 번호가 없다(`privacy/page.tsx:74-82`는 "이벤트 생성 시"라 함). 가입 폼은 번호 필수(`signup/page.tsx`). 약관 제18조③은 가입 정보에 번호를 포함.
   2. 알림 발송 기록 `notifications`에 수신자(참가자 휴대폰 번호 포함)가 90일 남는데(`history.ts`, `cleanup` D-4) 처리방침 보유 표(`privacy:144`)는 참가자 정보 48시간만 적음.
-  3. 위탁·국외이전 항목이 좁다: Shotstack에 참가자 이름(자막, `shotstack.ts:334-349`)·인트로/아웃트로 영상·완성본, AWS에 완성본·썸네일도 간다. 표는 "클립 영상 콘텐츠, 인트로·아웃트로 텍스트"만.
+  3. 위탁·국외이전 항목이 좁다: Shotstack에 참가자 이름(자막, `shotstack.ts:334-349`)·인트로/아웃트로 영상·완성본, AWS에 완성본·썸네일도 간다. 표는 "클립 영상 콘텐츠, 인트로·아웃트로 텍스트"만. (2026-10-15 렌더링이 AWS 서울 엔진으로 바뀜 — 위탁·국외이전 대상 변경, ⑧ Ray)
   4. 약관 제18조②는 "마감" 상태도 탈퇴 불가라 하나 코드는 open·rendering만 막는다(별도 항목 참조).
   5. 약관 제1조·처리방침은 계약 주체를 "Congre(이하 회사)"라 하고, 사업자 정보 상호는 레이네(Rayne).
   6. 처리방침 책임자 연락처 `ray@rayne.co.kr`(privacy:454)와 같은 문서 하단 문의 `cs@rayne.co.kr`가 공존. 약관도 사업자 이메일 ray@ / 문의 cs@.
@@ -44,23 +63,10 @@
 - **주의**: 워터마크는 `length: "end"`라 영상과 시간축이 겹치지만 인트로 텍스트(0~3초)는
   겹치지 않는다. "겹침 여부"가 제3의 변수라면 이 판정은 무효다.
 - **영향**: 현재 `transcode: true`가 증상을 덮고 있다. Shotstack이 근본 동작을 고쳐도 우리는
-  재인코딩 비용을 계속 낸다. 되돌릴 근거가 없다.
+  재인코딩 비용을 계속 낸다. 되돌릴 근거가 없다. 엔진은 회전 태그를 읽어 처리(bake.py). 2026-10-16 실사이트 세로 클립 정상
 - **처리**: 등재만.
 - **격상 트리거**: 렌더 비용·시간이 문제가 될 때 / 렌더 경로를 다시 손댈 때.
 - **출처**: 2026-09-21 세션. decisions/rendering.md 2026-09-21 항목.
-
-## Vercel Preview 환경에 SHOTSTACK_API_KEY가 없다
-
-- **현황**: Production 스코프에만 있고 Preview에는 없다. `resolveShotstackEnv`
-  (`shotstack.ts:5-14`)는 `VERCEL_ENV`가 production이 아니면 stage로 떨어지므로, Preview
-  배포는 stage 엔드포인트로 가되 키가 없어 `assertApiKey`가 던진다.
-- **영향**: 브랜치 push만으로 테스트 렌더를 돌릴 수 없다. 렌더 경로를 바꿀 때마다
-  프로덕션 환경변수를 직접 바꿨다 되돌리거나 프로덕션에서 바로 시험해야 한다.
-- **참고**: API 키 변수는 `SHOTSTACK_API_KEY` 하나뿐인데 Shotstack은 stage와 production
-  키가 다르다. Preview 스코프에 stage 키를 넣으면 해소된다.
-- **처리**: 등재만.
-- **격상 트리거**: 렌더 경로를 다시 손댈 때.
-- **출처**: 2026-09-20~21 세션.
 
 ## NEXT_PUBLIC_APP_URL이 비면 카카오 공유 imageUrl이 상대 경로가 된다
 
@@ -87,8 +93,7 @@
 ## 갤럭시 HDR(HLG 10bit) 클립의 완성본 표현이 미확인
 
 - **현황**: Galaxy S26 Ultra / Android 16이 `.mp4` HEVC **10bit HLG**로 저장한다(MediaInfo
-  실측). 완성본은 `format: "mp4"`, `quality: "high"`(`shotstack.ts:329-333`)로 나간다.
-  HDR 소스가 SDR 출력으로 변환될 때 색이 어떻게 표현되는지 확인하지 않았다.
+  실측). 엔진은 HLG를 hable 톤매핑으로 SDR 변환(bake.py), PQ HDR은 하객 클립이면 빼고(skipped) 인트로·아웃트로면 렌더 전체 실패(`REQUIRED_SEGMENT_FAILED`). 실사이트 HLG 미확인. **처리 후보**: 인트로·아웃트로 업로드 때 PQ 검사 또는 엔진에서 PQ 톤매핑 — 지금은 등재만 (2026-10-16 갱신)
 - **추가 변수**: 2026-09-21부터 `transcode: true`가 걸려 재인코딩을 한 번 더 거친다.
 - **영향**: 색이 바래거나 어둡게 나올 수 있다. 실제 증상 보고는 없다.
 - **처리**: 등재만.
@@ -160,7 +165,7 @@
 - **규칙과의 관계**: CLAUDE.md:155는 "catch 블록"만 명시한다. 위 6곳은 catch가 아니라
   조건문 분기라 규칙의 글자에서 빠져 있다.
 - **이미 메운 곳**: `e523b29`로 세 곳을 채웠다 — `confirm`의 토스 거절 분기
-  (`confirm/route.ts:110`), `render/start`의 `createRender` catch
+  (`confirm/route.ts:110`), `render/start`의 `startEngineRender` catch
   (`render/start/route.ts:198`), 대시보드 재렌더 버튼 catch
   (`dashboard/events/[eventId]/page.tsx:812`).
 - **우선순위 메모**: `render/start:65`의 `NO_CLIPS`는 2026-09-21 10:49 사고의 실제 원인이었고
@@ -203,8 +208,7 @@
 - **현황**: `check-rendering`은 S3 HeadObject 실패 시 건너뛰고 재시도 카운터가 없어 5분마다
   무한 재시도한다. `check-render-deadlines`(`vercel.json:3`)는 알림·환불 표시만 하고
   `status`를 바꾸지 않는다.
-- **영향**: Shotstack이 약관상 24시간 뒤 렌더 자산을 지우면 영상은 영구 손실되고 이벤트는
-  `rendering`에 남는다. 주최자는 재시작 버튼도 받지 못한다.
+- **영향**: 엔진은 merge가 S3에 직접 쓴다. 실행 성공인데 파일이 없으면 5분마다 무한 재시도(절차서 4장 1번). 주최자는 재시작 버튼도 받지 못한다. (2026-10-16 갱신)
 - **처리**: 등재만.
 - **격상 트리거**: 라이브 키 전환 전 검토 권장 / 실제 고착 사례 관측 시.
 - **출처**: 2026-09-18 세션.
@@ -215,32 +219,12 @@
   `closedAt`이 7일 이전이고 `clipsDeletedAt`이 없으면 클립을 지운다. 렌더 진행 여부를
   보지 않는다.
 - **영향**: 7일 전에 마감된 이벤트가 재렌더를 시작해 `rendering`이 되면 다음 cleanup(1일
-  1회)에 클립이 삭제될 수 있다. Shotstack이 그 전에 소스를 받아갔는지는 코드로 판정 불가.
+  1회)에 클립이 삭제될 수 있다. 엔진이 그 전에 소스를 받아갔는지는 코드로 판정 불가.
 - **추정**: done 이벤트의 클립은 참가자 알림 후 48시간에 지워지므로 실제로 겹치는 경우는
   드물다.
 - **처리**: 등재만.
 - **격상 트리거**: cleanup 또는 재렌더 흐름을 다시 손댈 때.
 - **출처**: 2026-09-19 세션.
-
-## Shotstack 자산 삭제 실패가 조용하다
-
-- **현황**: `src/lib/shotstack.ts:379-404` 삭제 함수의 실패 경로 3개가 조용하다. 목록 조회
-  실패와 빈 목록은 로그가 없고, DELETE는 `res.ok`를 확인하지 않는다.
-- **확인**: 2026-09-18 Shotstack 대시보드 대조로 현재는 정상 삭제됨(`Deleted` 배지).
-- **영향**: 실패해도 알 방법이 없다. 개인정보 파기와 연결된 경로다.
-- **처리**: 등재만.
-- **격상 트리거**: 삭제 경로 수정 시 / 정기 점검 시.
-- **출처**: 2026-09-18 세션.
-
-## render/start가 presigned URL 일부를 로그에 남긴다
-
-- **현황**: `render/start/route.ts`(2026-09-18 기준 :106)가 presigned URL 앞 80자를 콘솔에
-  출력한다. `shotstack.ts:346-347` 주석은 서명 URL을 절대 기록하지 않는다고 명시해 서로
-  어긋난다.
-- **미확인**: 앞 80자에 서명 값이 포함되는지.
-- **처리**: 등재만.
-- **격상 트리거**: render/start 수정 시.
-- **출처**: 2026-09-18 세션.
 
 ## 쿠폰 이벤트는 완성 후 재렌더를 할 수 없다
 
@@ -399,7 +383,7 @@
   대기라 외부 도메인 목록이 확정되지 않았고, 지금 넣으면 승인 직후 재작업이 된다.
 - **H-1 방어에는 불필요**: presign 화이트리스트 + og-image 응답 타입 고정 2중으로
   차단되며 nosniff가 안전망. CSP는 추가 층이지 필수 층이 아니다.
-- **선행 작업**: 허용 도메인 전수 조사(Firebase·S3·Shotstack·Toss·폰트 CDN·SOLAPI 등).
+- **선행 작업**: 허용 도메인 전수 조사(Firebase·S3·Toss·폰트 CDN·SOLAPI 등).
 - **격상 트리거**: Toss PG 연동 완료 시 / 외부 스크립트·위젯을 새로 붙이게 될 때.
 
 ## 인트로/아웃트로 길이 측정 헬퍼에 타임아웃 없음 — 무응답 시 업로드 무반응
@@ -493,16 +477,16 @@
 - `GET /api/render/status` 완전 미인증 — `route.ts:4-13`. 토큰 검증 코드 부재.
   임의 renderId를 Shotstack에 프록시해 `{status, url}` 반환. renderId가 Shotstack
   발급 UUID라 추측 난이도 높아 LOW. **미확인**: 현재 프론트가 이 라우트를 호출하는지,
-  인증 추가 시 호출부 동반 수정 필요 여부.
+  인증 추가 시 호출부 동반 수정 필요 여부. → 2026-10-15 해당 코드 삭제로 소멸
 - 원본 예외 메시지 클라이언트 반환 4곳 — clips/[clipId]/playback:65-67,
   clips/[clipId]:53-55, render/status:15-16, render/start:193-194. render/start는
   shotstack.ts:360의 벤더 응답 본문 200자가 그대로 노출. 나머지 16개 라우트는
-  INTERNAL_ERROR로 차단됨.
+  INTERNAL_ERROR로 차단됨. → 2026-10-15 해당 코드 삭제로 소멸
 - 참가자 전화번호 로그 기록 — `cron/check-rendering/route.ts:152`가 게스트 실번호를
   `phone=${phone}`로 기록. `lib/notifications/channels/sms.ts:31`도 SOLAPI 거부 시
   `(to: ${m.to})` 기록(프로덕션 실행됨). PIPA 대상 PII가 서드파티 로그에 축적.
 - Shotstack 페치용 서명 URL 만료 24시간 — render/start:96,141,152,159 전부
-  `expiresIn: 86400`. 실제 다운로드는 렌더 시작 직후 수 분 내이므로 노출 창 과도.
+  `expiresIn: 86400`. 실제 다운로드는 렌더 시작 직후 수 분 내이므로 노출 창 과도. → 2026-10-15 해당 코드 삭제로 소멸
 - presign PUT 크기·횟수 제한 없음 — presign:116-123에 ContentLength 미서명. 정원은
   업로드 완료 후 clips:57-62에서만 검사하고, 409여도 S3 객체는 고아로 남음(삭제 로직 없음).
   미결제 `plan:"paid"` 이벤트는 렌더는 막히나 업로드 정원 200개×120초는 그대로 수용.
@@ -566,14 +550,6 @@
 - **현재 처리**: 미정. 결정 시 DECISIONS.md에 추가 예정.
 - 2026-06-04: ⑦ 완성본 서빙을 presigned(1시간 만료) 채택. 초기 public-read 결정을 같은 세션 내 폐기(Shotstack ACL 무시 + 미성년자 통제력 재고). URL 통제력 회복. 영업 진입 전 만료 시간 단축·로그인 게이트·다운로드 차단 등 법무 검토 묶음 (decisions/data-flow.md 2026-06-04 결정 (나) + 이력 섹션).
 
-## Shotstack console.error 디버그 로그 영구 보존 (메모)
-
-- **현황**: `shotstack.ts` createRender의 non-OK 분기에 `console.error("[shotstack] non-OK response:", res.status, text)` 영구 보존 확정 (DECISIONS 2026-05-08).
-- **위치**: `src/lib/shotstack.ts` — `if (!res.ok)` 블록
-- **이유**: Vercel 서버 로그가 유일한 원격 디버깅 채널. throw 전 전체 응답 본문 출력이 진단에 결정적이었음 (width/height 오류 발견).
-- **운영 메모**: 프로덕션에서 Shotstack API 스키마 변경/오류 발생 시 Vercel 로그 → Functions 탭 → "non-OK response" 검색으로 바로 확인 가능.
-- **2026-05-19 v2 격상**: 본 룰을 CLAUDE.md 절대 규칙으로 격상. 모든 catch 블록에 `console.error("[context] failed:", err)` 의무. 본 세션 가입 흐름 진단에서 catch console.error 누락이 사고 #3 영역.
-
 ## 금액 산출이 클라이언트에만 존재 — 결제 연동 시 서버 계산 필수
 
 - **현황**: 결제 연동 시 금액을 서버에서 계산해야 하나 현재는 클라이언트에만 산출
@@ -618,7 +594,8 @@
 
 ## 영상 호스팅 CDN 이전 — 비용 검토 보류 (메모)
 
-- **현황**: 영상 호스팅이 Shotstack CDN (cdn.shotstack.io) 경유. bandwidth 비용은 Shotstack 마진 포함 추정.
+- **현황**: 완성본은 S3 서명 URL(1시간)로 직접 서빙. Shotstack 호스팅 경유 없음(2026-10-15~). S3 전송 비용은 첫 회차 뒤 재평가 (2026-10-16 갱신)
+- **참고**: 아래 비용 비교·Shotstack 수치·해결책은 2026-10-15 교체 전 기록이다.
 - **비용 비교** (영상 1편 3GB + 300명 시청 1회 기준):
   - Cloudflare R2: 약 60원 (egress $0/GB, 저장 $0.015/GB·월)
   - Bunny CDN: 약 3.6만 원
@@ -718,7 +695,7 @@
   - `react-hooks/set-state-in-effect` 9건 (dashboard/events/[eventId] 3, upload/[eventId] 2, dashboard 1, mypage 1, share/[eventId]/ShareActions 1, verify-email 1)
   - `react-hooks/refs` 2건 (upload/[eventId] 2)
 - **2026-05-31 사이클 6 처리**: `react/no-unescaped-entities` 규칙을 `eslint.config.mjs`에서 `"off"`로 비활성화 (커밋 `69639d2`). 따옴표/아포스트로피 HTML entity 강제 규칙으로 화면 영향 없음, 자동수정 불가 + 92건 대량이라 일괄 비활성화 채택.
-- **현재 baseline**: 12 errors + 3 warnings. (2026-08-15 상향, Ray 승인)
+- **현재 baseline**: 12 errors + 2 warnings. (2026-08-15 상향, Ray 승인. 2026-10-15 C2에서 render/complete 삭제로 경고 1개 소멸)
   - `react-hooks/set-state-in-effect` 10건 — 별도 트랙
   - `react-hooks/refs` 2건 — 별도 트랙
   - 둘 다 메타상 `fixable: "code"`이나 실제 동작 영향 가능성 있어 자동수정 안전성 미검증 → 수동 점검 트랙
@@ -747,7 +724,7 @@
 ## 클립 길이 미강제 — maxClipSeconds 초과분 S3 원본 누적 가능
 
 - **현황**: 게스트가 이벤트의 maxClipSeconds를 초과해 촬영해도 클라이언트·서버 모두 막지 않음. 120초 초과만 차단(measureDuration `src/app/upload/[eventId]/page.tsx:225-230`, POST /api/clips `src/app/api/clips/route.ts:23-24`). maxClipSeconds 자체 비교 없음.
-- **동작**: S3에는 원본 전체가 업로드됨. 최종 렌더에서만 처음 maxClipSeconds초로 trim (`length: Math.min(duration, maxClipSeconds)`, `src/app/api/render/start/route.ts:93` → `src/lib/shotstack.ts:142`). 비디오 데이터 손실은 없고, 렌더에서 미사용일 뿐.
+- **동작**: S3에는 원본 전체가 업로드됨. 최종 렌더에서만 처음 maxClipSeconds초로 trim (`length: Math.min(duration, maxClipSeconds)`, `src/app/api/render/start/route.ts:93` → 엔진 clip max_sec). 비디오 데이터 손실은 없고, 렌더에서 미사용일 뿐.
 - **잠재 리스크**: (1) S3에 불필요하게 긴 원본 누적 → 저장 비용·정리 부담. (2) 게스트가 "내가 찍은 뒷부분이 완성본에 안 나온다"고 혼란 가능성.
 - **격상 트리거**: S3 용량/비용 부담 관측 시 / 게스트 혼란 신고 발생 시.
 - **처리 후보**: 클라이언트 measureDuration에서 maxClipSeconds 초과 시 경고·재촬영 유도, 또는 업로드 전 클라이언트 trim. 현 단계 안내 문구(촬영 전 "최대 N초")로 충분 판단, YAGNI 보류.
@@ -836,18 +813,18 @@
 - **현황**: 운영자 보고로 약 5일 전 별도 계정이 호스트로 이벤트 생성·업로드 후 rendering 고착 추정. 계정 ID 미확보. 현 rendering 갇힌 6건은 전부 hostId=rhcho(bPG65…)라 이 6건에 그 "남의 이벤트"는 없음 — 다른 status거나 24h cleanup으로 소멸했을 수 있음.
 - **선행 확인**: 계정 확보 후 hostId≠rhcho 전수(status 무관) 정찰로 존재·현 status·클립 생존 확정.
 - **복구 경로**: 버튼 불가(대시보드 where hostId==uid + render/start hostId!==uid→403). Admin SDK 스크립트만 길(hostId 무관).
-- **스크립트 골격(정찰 확정, 미실행)**: 렌더 생성은 src/lib/shotstack.ts createRender(clips,intro,outro,plan,style) 공유 함수 직접 호출(인증 가드와 분리). 성공 후 events 문서 필드셋은 render/start/route.ts:187-203 미러. videoS3Key+done은 이후 check-rendering cron 세팅.
+- **스크립트 골격(정찰 확정, 미실행)**: 렌더 생성은 startEngineRender(src/lib/engine.ts) 공유 함수 직접 호출(인증 가드와 분리). 성공 후 events 문서 필드셋은 render/start 문서 갱신 블록 미러. videoS3Key+done은 이후 check-rendering cron 세팅.
 - **미결정**: route 핵심을 공유 함수로 추출 vs 스크립트 복제(후자 drift 위험).
 - **격상 트리거**: 졸업식 시즌 진입 / 실고객 멀티호스트 운영 시작.
 - **출처**: 2026-06-11 prod 100클립 용량 검증 세션.
 
 ## 호스트 인트로/아웃트로 영상 비표준 코덱 시 완성본 화면 누락
 
-- **현황**: 곰믹스 등 편집툴로 만든 MPEG-4 Part 2(codec_tag mp4v) 등 비-H.264 코덱 영상을 호스트가 인트로/아웃트로 미디어로 올리면, 브라우저·Shotstack이 비디오 스트림을 디코딩 못 해 화면이 누락됨. 오디오(AAC)는 정상이라 "소리만 나옴" / "완성본에서 아웃트로 영상 빠지고 자막만 남음" 증상.
+- **현황**: 곰믹스 등 편집툴로 만든 MPEG-4 Part 2(codec_tag mp4v) 등 비-H.264 코덱 영상을 호스트가 인트로/아웃트로 미디어로 올리면, 브라우저·엔진(FFmpeg)이 비디오 스트림을 디코딩 못 해 화면이 누락됨. 오디오(AAC)는 정상이라 "소리만 나옴" / "완성본에서 아웃트로 영상 빠지고 자막만 남음" 증상.
 - **발견 경위**: 2026-06-13. 호스트가 아웃트로에 곰믹스 프로(GOMMixPro) 제작 영상 (640×480, 17초) 업로드 → 완성본에서 아웃트로 영상 화면 통째 누락. ffprobe로 codec_name=mpeg4 (MPEG-4 Part 2) 확인. 코드 버그 아님 — 입력 영상 코덱 문제.
 - **참가자 본 클립 영향**: 낮음. 참가자는 폰 native capture(H.264)라 정상.
 - **우회**: 개별 영상 H.264 변환 후 재업로드. 2026-06-13 케이스 변환본 제공, 재렌더 검증은 운영자 진행 중.
-- **격상 트리거**: 비표준 코덱 업로드 반복 / 영업 진입 전. 처리 후보 (a) 업로드 시 코덱 검증 + 경고 UI, (b) 서버 또는 Shotstack ingest 자동 트랜스코딩. 현재 YAGNI 보류.
+- **격상 트리거**: 비표준 코덱 업로드 반복 / 영업 진입 전. 처리 후보 (a) 업로드 시 코덱 검증 + 경고 UI, (b) 서버 또는 Shotstack ingest 자동 트랜스코딩. 현재 YAGNI 보류. 엔진은 FFmpeg로 디코딩해 해결됐을 수 있음 — 미확인
 
 ## L10 OG 이미지 프록시 — scout 실측 확정 3건 + fallback 문서 드리프트
 

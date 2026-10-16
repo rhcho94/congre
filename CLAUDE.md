@@ -22,8 +22,8 @@
 - 배포: Vercel 프로젝트 `congre`, 커스텀 도메인 `https://app.congre.kr`
 - DB: Firebase 프로젝트 `congre-mvp` (Firestore + Auth)
 - 스토리지: AWS S3 버킷 `congre-videos-kr` (서울 ap-northeast-2, 2026-10-13 이전. 옛 `congre-mvp-videos`(시드니)는 Shotstack 정리 때 삭제)
-- 영상 편집: Shotstack (production 키) — 서울 자체 엔진으로 교체 예정(docs/decisions/infra.md 2026-10-13)
-- 자체 렌더 엔진(교체 중, 앱 미연결): 레포 `rhcho94/congre-engine`(비공개), 로컬 `C:\projects\congre-engine`, AWS 스택 `congre-engine`(서울), 배포 사용자 `congre-engine-deployer`·PC 프로필 `congre-engine`, ECR `congre-engine`. 배포는 `sam.cmd deploy --no-execute-changeset` → 바뀔 목록 검토 → 실행 (docs/decisions/infra.md 2026-10-14)
+- 영상 편집: 자체 엔진 `rhcho94/congre-engine` (AWS Step Functions + Lambda, 서울, 2026-10-15 교체). 앱의 Shotstack 코드는 제거, Shotstack 계정·키 정리는 남음
+- 자체 렌더 엔진(2026-10-15 앱 연결, 실사이트 렌더 중): 레포 `rhcho94/congre-engine`(비공개), 로컬 `C:\projects\congre-engine`, AWS 스택 `congre-engine`(서울), 배포 사용자 `congre-engine-deployer`·PC 프로필 `congre-engine`, ECR `congre-engine`. 배포는 `sam.cmd deploy --no-execute-changeset` → 바뀔 목록 검토 → 실행 (docs/decisions/infra.md 2026-10-14)
 - Vercel 함수 실행 지역: 서울 `icn1` (`vercel.json` `regions`, 2026-10-13)
 
 ### 랜딩 페이지 (정적 HTML)
@@ -34,7 +34,7 @@
 
 ## 기술 스택
 
-본 앱: Next.js (App Router) + TypeScript, Tailwind v4 (config 없음, @import 방식), Firebase, AWS S3, Shotstack, Vercel.
+본 앱: Next.js (App Router) + TypeScript, Tailwind v4 (config 없음, @import 방식), Firebase, AWS S3, congre-engine(AWS Step Functions), Vercel.
 
 랜딩: 정적 HTML 4페이지(index·about·faq·pricing) + 공통 site.css + 짧은 인라인 스크립트. 정적 호스팅.
 
@@ -267,9 +267,9 @@ docs/
 - **랜딩 배포 `Not authorized`는 두 원인이 섞여 있다**: 2026-10-10 CC 실행은 실패하고 바로 뒤 Ray PowerShell은 성공했다(실행 주체 문제). 2026-10-11에는 Ray PowerShell에서도 실패했고 `login` 뒤 성공했다(로그인 만료). 한 번의 관찰로 "원인은 X"라고 문서에 박지 말고, 다음 관찰로 깨질 수 있다는 단서를 함께 적는다.
 - **랜딩 배포 후 실측 전에 CLI 출력의 성공 표시부터 확인**: 2026-09-16 로그인이 풀린 채 배포가 에러로 멈췄는데 실측부터 해서, 예전 배포본을 보고 제외 규칙이 뚫렸다고 오판할 뻔했다. 배포 출력 확인이 실측의 선행 게이트다. 표시는 CLI 버전에 따라 다르다 — 옛 CLI는 `Aliased`·`Ready` 줄, 62.x(2026-10-08~)는 JSON의 `"readyState": "READY"`.
 - **로컬 deploy 편집 = 배포본으로 가정하지 않는다**: Vercel CLI 로그인·설치는 이 PC에서 사라질 수 있다(2026-09-16 `vercel` 패키지 재설치 요구 + 자격 증명 없음). 반영 여부는 사이트의 바뀐 문구로 확인한다.
-- **빌드 게이트 지표 이름 정정**: `npm run build`의 기준값은 "정적 페이지 33/33"이다
-  (`Generating static pages (33/33)`, 2026-10-10 실측. 이전 값 32는 `apple-icon.png` 추가 전). 이는 라우트 수가 아니다.
-  Route (app) 표에 나열되는 라우트는 42개이며 별개 지표다.
+- **빌드 게이트 지표 이름 정정**: `npm run build`의 기준값은 "정적 페이지 31/31"이다
+  (`Generating static pages (31/31)`, 2026-10-15 C2 뒤 실측. 이전 값 33은 API 2개 삭제 전). 이는 라우트 수가 아니다.
+  Route (app) 표에 나열되는 라우트는 41개이며 별개 지표다(이전 문서값 42는 잘못 센 값, C2 직전 실측 43).
   과거 문서의 "빌드 32라우트"는 잘못된 이름이다.
 - **동적 라우트 파일 git add는 literal 지정자 필요**: 경로에 대괄호가 있는 파일
   (`src/app/payment/[eventId]/page.tsx` 등)은 git이 대괄호를 문자 클래스 패턴으로
@@ -338,3 +338,6 @@ docs/
 - **CD 안에서 결정·실행·기록 섞임 사고**: CD turn 한도 도달 시 다 휘발됨. 결정은 채팅 클로드에 알려 docs에 박고, 실행은 CC에 위임.
 - **"써본 적 있어?" 질문의 범위 모호**: "도구 자체로 처음" vs "본 프로젝트에서 처음"이 다름. 시간·범위 명시한 질문으로 물을 것.
 - **검증 안 된 사고 보고는 가설로 표시**: revert 결정의 근거가 다른 오진과 묶여 있는지 점검.
+- **한글 문서는 python `\u` 이스케이프로 편집하지 않는다**: Edit 도구로 한다. (2026-10-13 "교체"가 "교좴"로 깨졌다가 되돌림)
+- **랜딩 배포 전 `npx --yes vercel@62.7.0 whoami`로 로그인부터 확인한다**: (CLI 로그인 풀림 2회: 9/16, 10/09)
+- **grep·cat 범위에서 `.env*`는 항상 뺀다**: (2026-10-15 정찰에서 `.env.local`의 키 값이 화면에 찍힘)

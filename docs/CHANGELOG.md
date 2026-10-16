@@ -2,8 +2,14 @@
 
 > 기능 단위 작업 이력. 최신이 위.
 
+## 2026-10-16
+
+- ops: 엔진 첫 실사이트 렌더 성공(무료 시험 행사, 약 5분). 짧은 배경음악 1개 삭제(Ray). 문서를 엔진 기준으로 정리(렌더 멈춤 절차서 재작성, 기준값 빌드 31/41·lint 12/2).
+
 ## 2026-10-15
 
+- feat(events): 완성본 하객 영상 최대 30분 — 영상 개수 × 길이 1,800초 초과 시 이벤트 생성 차단(화면·서버), 렌더 시작 최종 검사, 호스트 가이드 한 줄. `cc56594`. 상세 decisions/rendering.md 2026-10-15~16.
+- feat(render): 렌더링을 Shotstack에서 congre-engine으로 교체 — StartExecution/DescribeExecution, 배경음악 곡 저장·재사용, Shotstack 코드·render/status·render/complete 삭제. IAM 정책 congre-engine-run·Vercel ENGINE_STATE_MACHINE_ARN 추가(Ray 콘솔). `d63da17`.
 - feat(rendering): 색감 "또렷하게" 선택지 제거(행사 화면·서버 허용 목록). 제품 원칙 "얼굴은 부드럽고 밝게"를 CLAUDE.md에 추가. 엔진 `44ceabe` 시네마틱 재조정·기본 톤·자막 64·글자 카드 92 배포(앱 연결 전). 상세 decisions/rendering.md 2026-10-15.
 
 ## 2026-10-14

@@ -22,7 +22,7 @@ model: sonnet
    여러 무관한 변경을 한꺼번에 섞지 않는다.
 4. 자체 게이트(커밋 아님): 코드(src) 변경 후 npm run build 와
    npm run lint 를 돌려 결과를 확인한다. build 실패 또는 lint errors가
-   현 baseline(errors 11 / warnings 3)을 초과하면, 자기 변경 범위 안에서
+   현 baseline(errors 12 / warnings 2)을 초과하면, 자기 변경 범위 안에서
    한 번 고쳐본다. 한 번 고쳐도 안 되면 그 상태를 그대로 보고하고
    멈춘다. 깨진 채로 "다 됐다"고 보고하지 않는다. 고치는 과정에서
    사양 밖으로 번지지 않는다(원칙 1 유지).
@@ -39,7 +39,7 @@ model: sonnet
 - 변경한 파일 목록 (파일경로 + 무엇을 바꿨는지 한 줄씩).
 - 사양 대비: 사양 각 항목을 반영했는지 + 위치(파일:줄).
 - 자체 게이트 결과: build 통과 여부 + lint errors/warnings 개수 +
-  baseline(11/3) 대비 delta.
+  baseline(12/2) 대비 delta.
 - git status 요약: 의도한 파일만 바뀌었는지.
 - 커밋은 하지 않았음을 명시하고, 작업 트리에 변경이 남은 상태로
   끝낸다.
