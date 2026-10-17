@@ -40,6 +40,11 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "FORBIDDEN" }, { status: 403 });
   }
 
+  if (eventData.status === "rendering") {
+    console.warn("[render/start] blocked: already rendering", { eventId });
+    return Response.json({ error: "RENDER_IN_PROGRESS" }, { status: 409 });
+  }
+
   const plan = (eventData.plan as string | undefined ?? "free") as PlanId;
   const unlocked = eventData.unlocked === true;
   if (plan === "paid" && !unlocked) {
@@ -193,6 +198,31 @@ export async function POST(request: NextRequest) {
     }
   }
 
+  const eventRef = db.collection("events").doc(eventId);
+  let prevStatus: string | undefined;
+  let alreadyRendering = false;
+  try {
+    await db.runTransaction(async (tx) => {
+      alreadyRendering = false;
+      prevStatus = undefined;
+      const snap = await tx.get(eventRef);
+      const current = snap.data()?.status as string | undefined;
+      if (current === "rendering") {
+        alreadyRendering = true;
+        return;
+      }
+      prevStatus = current;
+      tx.update(eventRef, { status: "rendering" });
+    });
+  } catch (err) {
+    console.error("[render/start] claim failed", { eventId, error: err });
+    return Response.json({ error: "CLAIM_FAILED" }, { status: 500 });
+  }
+  if (alreadyRendering) {
+    console.warn("[render/start] blocked: already rendering", { eventId });
+    return Response.json({ error: "RENDER_IN_PROGRESS" }, { status: 409 });
+  }
+
   let executionArn: string;
   try {
     const started = await startEngineRender({
@@ -204,14 +234,18 @@ export async function POST(request: NextRequest) {
     executionArn = started.executionArn;
   } catch (err) {
     console.error("[render/start] failed:", { eventId, error: err });
-    const msg = err instanceof Error ? err.message : "render_failed";
-    return Response.json({ error: msg }, { status: 500 });
+    try {
+      await eventRef.update({ status: prevStatus ?? FieldValue.delete() });
+    } catch (revertErr) {
+      console.error("[render/start] revert after engine failure failed", { eventId, prevStatus, error: revertErr });
+    }
+    return Response.json({ error: "ENGINE_START_FAILED" }, { status: 500 });
   }
 
   const renderEstimateMin = Math.max(15, Math.round(clipsWithLength.length * 0.5 + 10));
   const now = Date.now();
 
-  await db.collection("events").doc(eventId).update({
+  const saveFields = {
     status: "rendering",
     renderId: jobId,
     renderExecutionArn: executionArn,
@@ -226,7 +260,18 @@ export async function POST(request: NextRequest) {
     "notifications.renderStartedNotifiedAt": null,
     "notifications.renderCompletedNotifiedAt": null,
     "notifications.renderDelayedNotifiedAt": null,
-  });
+  };
+  try {
+    await eventRef.update(saveFields);
+  } catch (firstErr) {
+    console.error("[render/start] save after engine start failed, retrying:", { eventId, error: firstErr });
+    try {
+      await eventRef.update(saveFields);
+    } catch (err) {
+      console.error("[render/start] save after engine start failed", { eventId, jobId, executionArn, outKey, error: err });
+      return Response.json({ error: "SAVE_AFTER_START_FAILED" }, { status: 500 });
+    }
+  }
 
   if (eventData.organizerEmail && eventData.organizerPhone) {
     const origin = request.headers.get("origin") ?? "";
@@ -240,9 +285,13 @@ export async function POST(request: NextRequest) {
       organizerPhone: eventData.organizerPhone,
       dashboardUrl,
     }).catch((err) => console.error("[render/start] notifyRenderStarted error:", err));
-    await db.collection("events").doc(eventId).update({
-      "notifications.renderStartedNotifiedAt": FieldValue.serverTimestamp(),
-    });
+    try {
+      await db.collection("events").doc(eventId).update({
+        "notifications.renderStartedNotifiedAt": FieldValue.serverTimestamp(),
+      });
+    } catch (err) {
+      console.error("[render/start] mark notified failed", { eventId, error: err });
+    }
   }
 
   return Response.json({ renderId: jobId });

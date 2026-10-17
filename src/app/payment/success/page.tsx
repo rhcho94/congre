@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { getFirebaseAuth } from "@/lib/firebase";
 import PageBackdrop from "@/components/PageBackdrop";
+import { renderStartErrorMessage } from "@/lib/render-start-errors";
 
 type Status =
   | "processing"
@@ -122,6 +123,15 @@ function PaymentSuccessContent() {
         });
 
         if (!renderRes.ok) {
+          const renderBody = await renderRes.json().catch(() => ({})) as { error?: string; totalSeconds?: number };
+          const renderCode = renderBody.error;
+          if (renderRes.status === 409 && renderCode === "RENDER_IN_PROGRESS") {
+            setStatus("success");
+            setTimeout(() => router.push(`/dashboard/events/${confirmedEventId}`), 2000);
+            return;
+          }
+          setErrorCode(renderCode ?? String(renderRes.status));
+          setErrorMsg(renderStartErrorMessage(renderCode, renderBody, renderRes.status));
           setStatus("renderFailed");
           return;
         }
@@ -169,7 +179,9 @@ function PaymentSuccessContent() {
             <>
               <p className="text-sm text-foreground mb-2">결제는 완료됐습니다</p>
               <p className="text-xs text-muted mb-6 leading-relaxed">
-                다만 영상 생성 시작에는 실패했습니다. 이벤트 페이지의 [영상 생성 다시 시작] 버튼으로 다시 시도해 주세요.
+                {errorMsg ?? "다만 영상 생성 시작에는 실패했습니다. 이벤트 페이지의 [영상 생성 다시 시작] 버튼으로 다시 시도해 주세요."}
+                <br />
+                <span className="text-muted">오류 코드: {errorCode ?? "UNKNOWN"}</span>
               </p>
               <Link href={`/dashboard/events/${eventId}`} className="btn btn-primary">
                 이벤트로 이동
