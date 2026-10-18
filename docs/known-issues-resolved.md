@@ -3,6 +3,13 @@
 > known-issues.md에서 분리된 해결 완료 이력. 사고 재발 진단 시 grep 대상.
 > 새 RESOLVED 항목 발생 시 known-issues.md에서 이 파일로 이동.
 
+## ✅ render/start의 MISSING_DURATION 오류가 try/catch 밖이었다 (2026-10-15 해소)
+
+- **해소: 2026-10-15** — `d63da17`(엔진 교체). 클립 길이 검사의 throw(`src/app/api/render/start/route.ts:86`)가 try(`:81`) 안으로 들어갔고, catch(`:94-97`)가 400 `{ error: "MISSING_DURATION" }`을 돌려준다. 엔진 교체 작업에 함께 들어간 변경이며, 의도한 수정이었는지는 확인하지 않았다.
+- **현황(해소 전)**: `1d6b5c8`(2026-05-16)부터 throw가 try/catch 밖(2026-08-14 기준 `:91`)에 있어 JSON 오류 응답이 나가지 않았다. 클라이언트가 오류 코드를 읽을 수 없었다.
+- **확인**: 2026-10-18 정찰(HEAD `db4fde6`) — 현재 코드와 `git log -S` 이력 대조. 라이브 재현은 하지 않음.
+- **출처**: 2026-08-14 등재(`cb5411e`). 2026-10-18 정찰에서 항목 내용이 현재 코드와 반대임을 발견.
+
 ## ✅ render/start가 두 번 시작될 수 있다 (2026-10-17 해소)
 
 - **해소: 2026-10-17** — `d8f64e8`. 행사가 `rendering`이면 409 `RENDER_IN_PROGRESS`. 사전 검사(`src/app/api/render/start/route.ts:43-46`)와 엔진 시작 직전 트랜잭션 선점(`:205-224`) 두 겹.

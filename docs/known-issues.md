@@ -332,13 +332,6 @@
 - **위치**: `src/app/api/render/start/route.ts:48`
 - **처리**: 등재만.
 
-## render/start:91의 MISSING_DURATION throw가 try/catch 밖
-
-- **현황**: `MISSING_DURATION` throw가 try/catch 밖에 있어 JSON 에러 응답이 나가지 않는다.
-  클라이언트가 에러 코드를 읽을 수 없다.
-- **위치**: `src/app/api/render/start/route.ts:91`
-- **처리**: 등재만.
-
 ## deadlineAt이 closedAt보다 뒤에 찍힘 — 관계 미확인 (메모)
 
 - **현황**: 2026-08-15 테스트 결제 실측에서 `closedAt` 16:46:30, `deadlineAt` 16:46:34로

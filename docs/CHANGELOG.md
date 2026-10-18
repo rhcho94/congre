@@ -5,6 +5,7 @@
 ## 2026-10-18
 
 - docs: known-issues에 위험 4건 해소 기록(resolved 파일)·신규 2건(엔진 시작 뒤 저장 실패, 결제 저장 실패 뒤 stale), 옛 줄 번호 교체. 렌더 멈춤 절차서에 저장 실패 복구(8장, 항상 `closed`로 되돌림). 환불 절차서 2절에 결제 확인 이상 로그.
+- docs: known-issues의 "render/start:91 MISSING_DURATION throw가 try/catch 밖" 항목을 resolved로 이동(`d63da17`에서 이미 해소, 2026-10-18 정찰로 확인).
 
 ## 2026-10-17
 
