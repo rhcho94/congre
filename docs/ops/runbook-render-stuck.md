@@ -11,7 +11,7 @@
 
 ## 2. 렌더가 끝나는 흐름
 
-1. `render/start`: 작업 이름 `jobId = {eventId}-{시작 시각 밀리초}`로 엔진 작업 지휘(AWS Step Functions `congre-engine-render-job`, 서울 ap-northeast-2)를 시작한다(StartExecution). 성공하면 이벤트 문서에 `status: "rendering"`, `renderId`(= jobId), `renderExecutionArn`, `renderOutKey`(= `renders/{jobId}.mp4`), `bgmKey`, `renderStartedAt`, `renderEstimateMin`, `expectedCompletedAt`, `refundStatus: "none"`을 쓴다.
+1. `render/start`: 엔진 시작 직전에 트랜잭션으로 `status: "rendering"`만 먼저 써 둔다(선점, `render/start:205-216`). 이미 `rendering`이면 409 `RENDER_IN_PROGRESS`. 작업 이름 `jobId = {eventId}-{시작 시각 밀리초}`로 엔진 작업 지휘(AWS Step Functions `congre-engine-render-job`, 서울 ap-northeast-2)를 시작한다(StartExecution). 성공하면 이벤트 문서에 `status: "rendering"`, `renderId`(= jobId), `renderExecutionArn`, `renderOutKey`(= `renders/{jobId}.mp4`), `bgmKey`, `renderStartedAt`, `renderEstimateMin`, `expectedCompletedAt`, `refundStatus: "none"`을 쓴다.
 2. 엔진: 조각(인트로·하객 클립·아웃트로·글자 카드)마다 Lambda가 따로 굽고(`engine-jobs/{jobId}/seg/`, 하루 뒤 자동 삭제), merge Lambda가 이어 붙여 배경음악을 얹고 `renders/{jobId}.mp4`에 쓴다.
    - 하객 클립 하나가 실패하면 그 클립만 빼고 계속한다(`skipped`). 인트로·아웃트로·글자 카드가 실패하면 전체 실패.
    - 실행 전체 한도 1시간(넘으면 TIMED_OUT).
@@ -39,8 +39,8 @@
 | 2 | 실행 상태 조회가 예외(권한·리전·ARN) | `rendering` | 재시도만, 한도 없음 | Vercel 로그 `getEngineRenderStatus failed` → IAM `congre-s3-user`의 `congre-engine-run` 정책, Vercel `AWS_REGION`(ap-northeast-2) 확인 | 미검증 |
 | 3 | 실행이 계속 RUNNING | `rendering` | 1시간 뒤 TIMED_OUT → 다음 cron이 `closed` | 콘솔에서 멈춘 단계 확인. 필요하면 실행 화면 **실행 중지** → ABORTED → 다음 cron이 `closed` | 미검증 |
 | 4 | `renderExecutionArn`이 없음 | `rendering` | 건너뜀(로그만) | 교체 전 Shotstack 렌더. 2026-10-15 22:47 교체 직전 확인 0건. 생기면 Firestore에서 `status`를 `closed`로 → 호스트가 다시 시작 | 검증됨(코드) |
-| 5 | 실행 시작은 성공했는데 그 뒤 Firestore 갱신 실패 | 이전 상태 그대로 | 없음 | 엔진은 완성본을 만들지만 앱이 모른다. 호스트가 다시 시작하면 새 실행. 고아 완성본은 `renders/`에 남음 → 대청소 때 정리 | 미검증 |
-| 6 | 실행 시작 자체가 실패 | 이전 상태 그대로 | 화면 "영상 생성 시작에 실패" | Vercel 로그 `[render/start] failed` → AccessDenied(권한) · ARN 값 · 같은 이름 실행 중복 | 미검증 |
+| 5 | 실행 시작은 성공했는데 그 뒤 Firestore 저장이 재시도까지 실패 | `rendering`(선점만 됨. `renderId`·`renderExecutionArn` 없음) | 건너뜀(로그만, 운영자 문자 없음) | 8장 | 검증됨(코드) |
+| 6 | 실행 시작 자체가 실패 | 선점 뒤 이전 상태로 되돌림(`:238`). 되돌림이 실패하면 `rendering`에 남고 로그 `[render/start] revert after engine failure failed`(`:240`) | 화면 "영상 생성 시작에 실패" | Vercel 로그 `[render/start] failed` → AccessDenied(권한) · ARN 값 · 같은 이름 실행 중복 | 미검증 |
 | 7 | 실행 실패 → `closed`로 되돌아감 | `closed`, `renderId` 남음 | 있음: 호스트가 다시 시작 가능 | 6장 | 검증됨(코드) |
 | 8 | 연락처 없는 이벤트 | `rendering` | check-render-deadlines가 건너뜀(알림 없음). done 전환은 정상 | Firestore에서 `rendering` 이벤트를 직접 조회 | 검증됨(코드) |
 
@@ -58,7 +58,7 @@
 
 ## 6. 실패(`closed`로 돌아감)일 때
 
-- 호스트가 다시 시작할 수 있다(`render/start`에 status 가드 없음).
+- 호스트가 다시 시작할 수 있다(`render/start`는 `rendering`만 막는다 — `:43-46`, `:210-224`. `closed`에서는 다시 시작된다).
 - 단, 유료 + `status: "closed"` + `refundStatus: "100"`이면 다시 렌더할 수 없다(403 `REFUND_LOCKED`).
 - 환불을 실행하는 코드는 없다. `refundStatus`("50"/"100")와 알림만 남는다. 환불은 토스 콘솔에서 수동(docs/ops/runbook-refund-manual.md).
 - 환불 시각: `refund50At` = 결제 + 4시간, `refund100At` = 결제 + 48시간.
@@ -73,3 +73,13 @@
 - `bgmKey`: 다시 만들 때 같은 곡을 재사용한다(분위기 폴더가 같을 때). **그 곡 파일을 버킷에서 지웠으면 이 필드를 지워야 다시 만들기가 성공한다**(코드 대비 없음, known-issues).
 - 공유 페이지는 `status === "done"`이고 `videoS3Key`가 있어야 영상을 보여 준다.
 - `status`를 손으로 `done`으로 바꾸면 check-rendering을 거치지 않으므로 `videos[]`·`renderDoneAt`·알림이 모두 빠진다. 권하지 않는다(미검증).
+
+## 8. 엔진 시작 뒤 저장 실패 복구 (표 5번)
+
+1. Vercel 로그에서 `[render/start] save after engine start failed`를 찾아 eventId·jobId를 적어 둔다.
+2. Firestore `events/{eventId}`에서 `status`가 `rendering`이고 `renderId`가 없는지 본다. `renderId`가 있으면 이 절차가 아니다(4장 표로).
+3. `status`를 `closed`로 바꾼다. **이전 값이 `done`이었어도 `closed`로 바꾼다.** `done`으로 두면 유료 행사는 재렌더 결제를 다시 요구한다. `closed` + `unlocked: true`면 결제 없이 다시 시작된다(대시보드 `isFreeRestart`). 무료 행사도 결제 없이 다시 시작된다.
+4. 호스트에게 바로 연락한다: 행사 화면 "영상 생성 다시 시작" → "다시 만들기". 다시 시작하기 전까지 공유 페이지에 완성본이 안 보인다.
+5. 고아 완성본: 첫 실행이 끝난 뒤(보통 수 분) S3 `renders/{jobId}.mp4`를 직접 삭제한다. cleanup은 이 파일을 지우지 않는다. 새 실행은 jobId가 달라 이름이 겹치지 않으니, 행사의 새 `renderOutKey`와 헷갈리지 않게 한다.
+6. 환불: 멈춰 있는 동안 check-render-deadlines가 이 행사를 건너뛰었다. 다시 시작하면 결제 시각 기준 `refund50At`·`refund100At`으로 판정하므로, 이미 지났다면 다시 시작 직후 환불 알림이 나갈 수 있다(미검증).
+- 검증 상태: 미검증(코드 대조, 2026-10-18).

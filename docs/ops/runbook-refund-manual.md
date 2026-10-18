@@ -21,6 +21,9 @@
 2. Vercel 로그: `[cron] refund_50`, `[cron] refund_100`, `[cron/check-rendering] ... failed`.
 3. Firestore `events/{eventId}`: `refundStatus`, `notifications.refund50NotifiedAt`, `notifications.refund100NotifiedAt`.
 4. 호스트 문의(카카오톡 @congre / cs@rayne.co.kr).
+5. 결제 확인 이상(Vercel 로그):
+   - `[payment/confirm] failed to save paid status` — 토스 결제는 끝났는데 주문·행사 저장 실패(500 `SAVE_FAILED`). 주문은 `pending`. 호스트가 새로고침하면 재시도로 저장된다(코드 경로, 라이브 미확인). 그 사이 클립 수가 바뀌었으면 `stale`(known-issues "결제 저장 실패 뒤 클립 수가 바뀌면…").
+   - `[payment/confirm] payment status unknown after request failure`, `[payment/confirm] already processed but not confirmed DONE` — 토스 결제 상태를 확정하지 못함(502 `PAYMENT_STATUS_UNKNOWN`). 주문은 `pending`. 토스 상점관리자에서 orderId로 결제 여부를 확인한다.
 
 ## 3. 처리 순서
 

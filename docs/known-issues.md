@@ -2,6 +2,22 @@
 
 > 진행 중·보류·메모 항목만 둔다. 해결 완료 항목은 known-issues-resolved.md로 이동.
 
+## 엔진 시작 뒤 저장이 실패하면 행사가 rendering에 멈추고 알림이 없다
+
+- **현황**: `render/start`가 엔진 시작 뒤 저장을 재시도까지 실패하면(`route.ts:264-274`, 500 `SAVE_AFTER_START_FAILED`) 행사에는 선점된 `status: "rendering"`만 있고 `renderId`·`renderExecutionArn`·`expectedCompletedAt` 등 `:248-263` 필드가 없다. check-rendering은 `:46`(renderId 없음)에서, check-render-deadlines는 `:33-35`(expectedCompletedAt 없음)에서 건너뛴다. 완성·실패 판정, 지연·환불 알림, 운영자 문자가 모두 안 나간다. 엔진은 완성본 `renders/{jobId}.mp4`를 만들지만 앱은 모르고 cleanup도 지우지 않는다. 호스트가 다시 시작하면 409 `RENDER_IN_PROGRESS`.
+- **알아채는 법**: Vercel 로그 `[render/start] save after engine start failed`(`:271`, jobId·executionArn·outKey 포함). cron 로그 `skipped: no renderId`(check-rendering `:47`), `skipped: legacy event without expectedCompletedAt`(check-render-deadlines `:34` — 문구가 legacy라 다른 경우와 구분 안 됨). 호스트 문의.
+- **처리**: 등재만. 복구는 `docs/ops/runbook-render-stuck.md` 8장.
+- **격상 트리거**: 실제로 1번 발생 시(운영자 문자 추가 검토).
+- **출처**: 2026-10-16 정찰 P1(c), 2026-10-18 정찰.
+
+## 결제 저장 실패 뒤 클립 수가 바뀌면 돈은 나갔는데 결제 미완료로 보인다
+
+- **현황**: `payment/confirm`에서 토스 승인 뒤 저장이 실패하면(`route.ts:221` 로그, 500 `SAVE_FAILED`) 주문은 `pending`으로 남는다. 클립 수가 그대로면 새로고침 재시도가 토스 "이미 처리됨" → 주문 조회 경로로 저장된다. 그 사이 하객이 클립을 올리거나 빼면, 재시도가 토스 호출 전 클립 수 검사(`:101-117`, 첫 결제만)에 걸려 주문을 `stale`로 바꾸고 409 `CLIP_COUNT_CHANGED`를 낸다. 토스에서는 결제 완료 상태다.
+- **알아채는 법**: Vercel 로그 `[payment/confirm] failed to save paid status`(`:221`). 호스트 문의.
+- **처리**: 등재만(창이 몇 초, Ray 2026-10-17). 발견 시 토스 상점관리자에서 orderId로 결제 여부 확인 후 Ray 판단.
+- **격상 트리거**: 실제로 1번 발생 시.
+- **출처**: 2026-10-17 커밋 B(`594fc23`) 검토.
+
 ## 빠진 하객 클립(renderSkipped)이 화면에 보이지 않는다
 
 - **현황**: 엔진이 PQ HDR 등으로 하객 클립을 빼면 이벤트 문서 `renderSkipped`[{index, code}]에만 남고 호스트 화면·알림에는 없다. index는 엔진 조각 순서(인트로 포함)라 클립 순서와 1 차이 날 수 있다.
@@ -38,7 +54,7 @@
 
 ## 호스트가 마감하지 않은 open 이벤트는 자동 마감·자동 정리가 없다
 
-- **현황**: 이벤트 `status`를 `open` → `closed`로 바꾸는 곳은 호스트 수동 마감(`api/events/[eventId]/close/route.ts:38`)과 결제 승인(`api/payment/confirm/route.ts:138`)뿐이다. `open`을 조회하는 cron이 없고(`vercel.json:3-5`), cleanup도 `done`·`closed`·`rendering`만 본다. 호스트가 마감하지 않으면 이벤트와 참가자 클립(이름·전화번호 포함)이 영원히 남는다.
+- **현황**: 이벤트 `status`를 `open` → `closed`로 바꾸는 곳은 호스트 수동 마감(`api/events/[eventId]/close/route.ts:38`)과 결제 승인(`api/payment/confirm/route.ts:208`)뿐이다. `open`을 조회하는 cron이 없고(`vercel.json:3-5`), cleanup도 `done`·`closed`·`rendering`만 본다. 호스트가 마감하지 않으면 이벤트와 참가자 클립(이름·전화번호 포함)이 영원히 남는다.
 - **처리**: 보류. 수집 중이라 보관 목적이 살아 있다.
 - **격상 트리거**: 실고객이 마감을 잊은 사례가 생길 때. 그때 기한을 정한다.
 - **출처**: 2026-10-08 정찰 9 B4. decisions/data-flow.md 2026-10-08 항목 "보류".
@@ -122,12 +138,12 @@
 - **현황**: `src/app/payment/success/page.tsx:130`이 결제 성공 후 이벤트 페이지로 갈 때
   `router.push`를 쓴다(`replace`가 아니다). success 페이지가 히스토리에 남고, 뒤로가기로
   다시 열리면 `confirm`이 재호출된다. 주문은 이미 `paid`이므로
-  `api/payment/confirm/route.ts:37-39`가 400 `ORDER_NOT_PENDING`을 주고,
+  `api/payment/confirm/route.ts:77-79`가 400 `ORDER_NOT_PENDING`을 주고,
   success 페이지의 `:96-99` 분기가 "이미 처리된 결제입니다" 화면을 띄운다.
   중복 호출 방어인 `called.current`(`:26`, `:35-36`)는 같은 마운트 안에서만 유효해
   페이지를 다시 열면 초기화된다.
 - **안전성**: 결제가 중복되지는 않는다. `ORDER_NOT_PENDING` 가드가 토스 승인 호출
-  (`:90`)보다 앞에 있어 두 번째 승인 요청 자체가 나가지 않는다. 고객이 낯선 화면을
+  (`:132`)보다 앞에 있어 두 번째 승인 요청 자체가 나가지 않는다. 고객이 낯선 화면을
   보는 문제다.
 - **실화면 확인**: 2026-09-21 발생 확인.
 - **보류 이유**: `replace`로 바꾸면 뒤로가기 목적지가 결제 페이지나 토스 쪽 페이지로
@@ -156,17 +172,17 @@
 
 - **현황**: 아래 6곳이 4xx를 반환하면서 `console.error`를 남기지 않는다. Vercel 로그에
   흔적이 없어 사후 진단이 안 된다.
-  - `src/app/api/payment/confirm/route.ts:20` — 400 `INVALID_REQUEST`
-  - `src/app/api/payment/confirm/route.ts:38` — 400 `ORDER_NOT_PENDING`
-  - `src/app/api/payment/confirm/route.ts:42` — 400 `AMOUNT_MISMATCH`
-  - `src/app/api/payment/confirm/route.ts:56` — 400 `INVALID_EVENT_DATA`
-  - `src/app/api/render/start/route.ts:65` — 400 `NO_CLIPS`
-  - `src/app/api/render/start/route.ts:77` — 400 `NO_CLIPS_AFTER_EXCLUSION`
+  - `src/app/api/payment/confirm/route.ts:60` — 400 `INVALID_REQUEST`
+  - `src/app/api/payment/confirm/route.ts:78` — 400 `ORDER_NOT_PENDING`
+  - `src/app/api/payment/confirm/route.ts:82` — 400 `AMOUNT_MISMATCH`
+  - `src/app/api/payment/confirm/route.ts:96` — 400 `INVALID_EVENT_DATA`
+  - `src/app/api/render/start/route.ts:63` — 400 `NO_CLIPS`
+  - `src/app/api/render/start/route.ts:75` — 400 `NO_CLIPS_AFTER_EXCLUSION`
 - **규칙과의 관계**: CLAUDE.md:155는 "catch 블록"만 명시한다. 위 6곳은 catch가 아니라
   조건문 분기라 규칙의 글자에서 빠져 있다.
 - **이미 메운 곳**: `e523b29`로 세 곳을 채웠다 — `confirm`의 토스 거절 분기
-  (`confirm/route.ts:110`), `render/start`의 `startEngineRender` catch
-  (`render/start/route.ts:198`), 대시보드 재렌더 버튼 catch
+  (`confirm/route.ts:156`), `render/start`의 `startEngineRender` catch
+  (`render/start/route.ts:236`), 대시보드 재렌더 버튼 catch
   (`dashboard/events/[eventId]/page.tsx:812`).
 - **우선순위 메모**: `render/start:65`의 `NO_CLIPS`는 2026-09-21 10:49 사고의 실제 원인이었고
   로그가 없어 원인 규명에 시간이 걸렸다. 다만 `987e5d5`로 `prepare` 단계에서 막히게 돼
@@ -309,11 +325,11 @@
   청구된다. 구조는 같으나 재렌더는 금액이 실제로 부과되는 축이라 성격이 다르다.
 - **격상 트리거**: 실고객 유입 후 중복 청구 문의 발생 시.
 
-## render/start:50의 plan ?? "free"
+## render/start:48의 plan ?? "free"
 
 - **현황**: `plan` 필드가 결손되면 유료 이벤트가 무료로 통과한다. 청구 누락 방향의
   조용한 실패다.
-- **위치**: `src/app/api/render/start/route.ts:50`
+- **위치**: `src/app/api/render/start/route.ts:48`
 - **처리**: 등재만.
 
 ## render/start:91의 MISSING_DURATION throw가 try/catch 밖
