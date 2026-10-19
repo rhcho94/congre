@@ -177,6 +177,10 @@ export default function CreateEventPage() {
           alert("이미 사용된 번호예요. 이벤트는 번호당 한 번만 만들 수 있어요.");
           return;
         }
+        if (errBody.error === "INVALID_PHONE") {
+          alert("휴대폰 번호는 010으로 시작하는 11자리 숫자로 입력해주세요.");
+          return;
+        }
         throw new Error(`HTTP ${res.status}`);
       }
       const { eventId, sessionToken } = await res.json() as {

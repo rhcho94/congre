@@ -117,7 +117,8 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  if (!/^010\d{8}$/.test(organizerPhone)) {
+  const organizerPhoneClean = typeof organizerPhone === "string" ? organizerPhone.replace(/\D/g, "") : "";
+  if (!/^010\d{8}$/.test(organizerPhoneClean)) {
     return Response.json({ error: "INVALID_PHONE" }, { status: 400 });
   }
 
@@ -147,7 +148,7 @@ export async function POST(request: NextRequest) {
     uploadToken: sessionToken,
     createdAt: FieldValue.serverTimestamp(),
     organizerEmail,
-    organizerPhone,
+    organizerPhone: organizerPhoneClean,
     ...(body.introText !== undefined ? { introText: body.introText } : {}),
     ...(body.outroText !== undefined ? { outroText: body.outroText } : {}),
     ...(normalizedCouponPhone
