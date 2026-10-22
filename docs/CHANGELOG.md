@@ -2,6 +2,14 @@
 
 > 기능 단위 작업 이력. 최신이 위.
 
+## 2026-10-21
+
+- docs(ops): 렌더 멈춤 절차서 리허설 반영 — 실행 중지(4장 3·7번)·저장 실패 복구(8장) 실측, 실패 알림 받는 사람, cron 정각 주기, 다시 시작 화면 문구, 시작 때 쓰는 필드 보충
+
+## 2026-10-20
+
+- chore(data): 출시 전 데이터 대청소(Ray, 콘솔) — Firestore `events`·`clips`·`notifications`·`betaCoupons`·`videos` 컬렉션 삭제(`payments`·`users` 유지), S3 `events/`·`renders/`와 버킷 맨 위 Shotstack 시절 mp4 2개 삭제(`audio/`·`engine-jobs/` 유지)
+
 ## 2026-10-19
 
 - fix: 이벤트 생성 휴대폰 번호 — 서버가 숫자 외 문자(하이픈·공백)를 지운 뒤 검사·저장(하객 API와 같은 방식), 문자열이 아닌 입력은 INVALID_PHONE. 생성 화면에 INVALID_PHONE 안내 문구 추가. 이전엔 틀린 번호에 일반 오류만 뜨고 하이픈 번호도 거부.
