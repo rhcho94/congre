@@ -368,9 +368,19 @@ function UploadInner() {
           setStage("error");
           return;
         }
+        if (msg === "EVENT_CLOSED") {
+          setErrorMsg("이미 마감된 이벤트라 영상을 올릴 수 없어요.");
+          setStage("error");
+          return;
+        }
         if (attempt === 3) {
-          const display = msg.includes("S3_NOT_CONFIGURED")
-            ? "S3가 연결되지 않아 업로드할 수 없습니다."
+          const isServerError =
+            msg === "PRESIGN_FAILED" ||
+            msg === "INTERNAL_ERROR" ||
+            msg === "S3_NOT_CONFIGURED" ||
+            msg.startsWith("presign_failed:5");
+          const display = isServerError
+            ? "지금 서비스에 문제가 있어 업로드하지 못했어요. 잠시 뒤 다시 시도해주세요."
             : "업로드에 실패했어요. 네트워크를 확인하고 다시 시도해주세요.";
           setErrorMsg(display);
           setStage("error");
