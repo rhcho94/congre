@@ -63,6 +63,7 @@ export async function GET(
       maxClipSeconds: (data.maxClipSeconds ?? null) as number | null,
       hostId: data.hostId as string,
       unlocked: (data.unlocked ?? false) as boolean,
+      viaCoupon: typeof data.unlockedBy === "string" && data.unlockedBy.length > 0,
       refundStatus: (data.refundStatus ?? null) as string | null,
       uploadToken: (data.uploadToken ?? undefined) as string | undefined,
       videoUrl,

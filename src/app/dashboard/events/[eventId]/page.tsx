@@ -50,6 +50,7 @@ interface ApiEvent {
   plan: string | null;
   hostId: string;
   unlocked?: boolean;
+  viaCoupon?: boolean;
   refundStatus?: string | null;
   uploadToken?: string;
   videoUrl?: string;
@@ -1220,18 +1221,24 @@ export default function EventDetailPage() {
                 </div>
 
                 {clips.length > 0 && (
-                  <>
+                  event.viaCoupon === true ? (
                     <p className="text-sm text-muted" style={{ marginTop: 4 }}>
-                      참가자 영상은 완성본이 나온 뒤 48시간까지 보관돼요. 그 뒤에는 다시 만들 수 없어요.
+                      쿠폰으로 만든 이벤트는 완성본을 다시 만들 수 없어요.
                     </p>
-                    <button
-                      onClick={() => setShowRerenderModal(true)}
-                      disabled={closing}
-                      className="btn btn-secondary w-full"
-                    >
-                      영상 다시 만들기
-                    </button>
-                  </>
+                  ) : (
+                    <>
+                      <p className="text-sm text-muted" style={{ marginTop: 4 }}>
+                        참가자 영상은 완성본이 나온 뒤 48시간까지 보관돼요. 그 뒤에는 다시 만들 수 없어요.
+                      </p>
+                      <button
+                        onClick={() => setShowRerenderModal(true)}
+                        disabled={closing}
+                        className="btn btn-secondary w-full"
+                      >
+                        영상 다시 만들기
+                      </button>
+                    </>
+                  )
                 )}
               </div>
             ) : event.videoDeletedAt ? (

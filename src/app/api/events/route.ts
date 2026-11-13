@@ -70,9 +70,9 @@ export async function POST(request: NextRequest) {
     outroText?: string;
     maxClipSeconds?: number;
     maxClips?: number;
-    couponPhone?: string;
+    couponCode?: string;
   };
-  const { title, date, plan, organizerEmail, organizerPhone, maxClipSeconds, maxClips, couponPhone } = body;
+  const { title, date, plan, organizerEmail, organizerPhone, maxClipSeconds, maxClips, couponCode } = body;
 
   if (!title || !date || !plan || !organizerEmail || !organizerPhone) {
     return Response.json({ error: "MISSING_FIELDS" }, { status: 400 });
@@ -107,7 +107,8 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "INVALID_CLIP_SECONDS", plan, maxAllowed }, { status: 400 });
   }
 
-  if (plan === "paid" && !(couponPhone ? couponPhone.replace(/\D/g, "") : "")) {
+  const normalizedCouponCode = typeof couponCode === "string" ? couponCode.toUpperCase().replace(/[^A-Z0-9]/g, "") : "";
+  if (plan === "paid" && !normalizedCouponCode) {
     const total = (maxClips as number) * (maxClipSeconds ?? 15);
     if (total > MAX_TOTAL_CLIP_SECONDS) {
       return Response.json(
@@ -124,15 +125,21 @@ export async function POST(request: NextRequest) {
 
   const db = getAdminDb();
 
-  // 베타 쿠폰 검증 — couponPhone이 있을 때만 진입, 없으면 기존 free/paid 생성 경로 그대로
-  const normalizedCouponPhone = couponPhone ? couponPhone.replace(/\D/g, "") : "";
-  if (normalizedCouponPhone) {
-    const couponSnap = await db.collection("betaCoupons").doc(normalizedCouponPhone).get();
+  // 쿠폰 검증 — couponCode가 있을 때만 진입, 없으면 기존 free/paid 생성 경로 그대로
+  if (normalizedCouponCode) {
+    const couponSnap = await db.collection("betaCoupons").doc(normalizedCouponCode).get();
     if (!couponSnap.exists) {
       return Response.json({ error: "INVALID_COUPON" }, { status: 400 });
     }
     if (couponSnap.data()?.used === true) {
       return Response.json({ error: "COUPON_ALREADY_USED" }, { status: 400 });
+    }
+    const expiresAt = couponSnap.data()?.expiresAt;
+    if (!(expiresAt instanceof Timestamp)) {
+      return Response.json({ error: "INVALID_COUPON" }, { status: 400 });
+    }
+    if (expiresAt.toMillis() < Date.now()) {
+      return Response.json({ error: "COUPON_EXPIRED" }, { status: 400 });
     }
   }
 
@@ -141,7 +148,7 @@ export async function POST(request: NextRequest) {
   const ref = await db.collection("events").add({
     title,
     date: Timestamp.fromDate(new Date(date + "T00:00:00")),
-    plan: normalizedCouponPhone ? "paid" : plan,
+    plan: normalizedCouponCode ? "paid" : plan,
     hostId: uid,
     status: "open",
     sessionToken,
@@ -151,20 +158,20 @@ export async function POST(request: NextRequest) {
     organizerPhone: organizerPhoneClean,
     ...(body.introText !== undefined ? { introText: body.introText } : {}),
     ...(body.outroText !== undefined ? { outroText: body.outroText } : {}),
-    ...(normalizedCouponPhone
-      ? { maxClipSeconds: 30 }
+    ...(normalizedCouponCode
+      ? { maxClipSeconds: 15 }
       : maxClipSeconds !== undefined ? { maxClipSeconds } : {}),
-    ...(normalizedCouponPhone
-      ? { maxClips: 20 }
+    ...(normalizedCouponCode
+      ? { maxClips: 30 }
       : plan === "paid" ? { maxClips } : {}),
-    ...(normalizedCouponPhone ? { unlocked: true, unlockedBy: normalizedCouponPhone } : {}),
+    ...(normalizedCouponCode ? { unlocked: true, unlockedBy: normalizedCouponCode } : {}),
   });
 
   const eventId = ref.id;
 
-  if (normalizedCouponPhone) {
-    await db.collection("betaCoupons").doc(normalizedCouponPhone).set(
-      { used: true, eventId },
+  if (normalizedCouponCode) {
+    await db.collection("betaCoupons").doc(normalizedCouponCode).set(
+      { used: true, eventId, usedAt: FieldValue.serverTimestamp() },
       { merge: true }
     ).catch((err) => console.error("[api/events] betaCoupons mark-used error:", err));
   }
@@ -179,8 +186,8 @@ export async function POST(request: NextRequest) {
   return Response.json({
     eventId,
     sessionToken,
-    ...(normalizedCouponPhone
-      ? { maxClips: 20 }
+    ...(normalizedCouponCode
+      ? { maxClips: 30 }
       : plan === "paid" ? { maxClips } : {}),
   });
 }

@@ -77,7 +77,7 @@ export default function CreateEventPage() {
     maxClips: 30,          // 유료 스텝퍼 기본값(첫 paid 선택 시 표시).
     organizerEmail: "",
     organizerPhone: "",
-    couponPhone: "",
+    couponCode: "",
   });
   const [submitting, setSubmitting] = useState(false);
   const [createdEventId, setCreatedEventId] = useState("");
@@ -147,7 +147,7 @@ export default function CreateEventPage() {
           organizerEmail: form.organizerEmail,
           organizerPhone: form.organizerPhone,
           ...(form.plan === "paid" ? { maxClips: form.maxClips } : {}),
-          ...(form.couponPhone.trim() ? { couponPhone: form.couponPhone.trim() } : {}),
+          ...(form.couponCode.trim() ? { couponCode: form.couponCode.trim() } : {}),
         }),
       });
 
@@ -170,11 +170,15 @@ export default function CreateEventPage() {
           return;
         }
         if (errBody.error === "INVALID_COUPON") {
-          alert("등록되지 않은 번호예요. 번호를 확인해주세요.");
+          alert("등록되지 않은 쿠폰 코드예요. 코드를 다시 확인해 주세요.");
           return;
         }
         if (errBody.error === "COUPON_ALREADY_USED") {
-          alert("이미 사용된 번호예요. 이벤트는 번호당 한 번만 만들 수 있어요.");
+          alert("이미 사용된 쿠폰이에요. 쿠폰 하나로 이벤트는 한 번만 만들 수 있어요.");
+          return;
+        }
+        if (errBody.error === "COUPON_EXPIRED") {
+          alert("사용 기간이 지난 쿠폰이에요.");
           return;
         }
         if (errBody.error === "INVALID_PHONE") {
@@ -219,7 +223,7 @@ export default function CreateEventPage() {
     }
   }
 
-  const couponEntered = form.couponPhone.trim().length > 0;
+  const couponEntered = form.couponCode.trim().length > 0;
   const totalClipSeconds = form.maxClips * form.maxClipSeconds;
   const totalTooLong = form.plan === "paid" && !couponEntered && totalClipSeconds > MAX_TOTAL_CLIP_SECONDS;
 
@@ -364,17 +368,19 @@ export default function CreateEventPage() {
                 )}
 
                 <label className="flex flex-col gap-1.5">
-                  <span className="text-[15px]">베타 쿠폰 (전화번호)</span>
+                  <span className="text-[15px]">쿠폰 코드</span>
                   <input
-                    type="tel"
-                    placeholder="쿠폰 발급받은 전화번호"
-                    value={form.couponPhone}
-                    onChange={(e) => setForm({ ...form, couponPhone: e.target.value })}
+                    type="text"
+                    autoCapitalize="characters"
+                    autoComplete="off"
+                    placeholder="예: PPD-7K3Q-M9XA"
+                    value={form.couponCode}
+                    onChange={(e) => setForm({ ...form, couponCode: e.target.value })}
                     disabled={submitting}
                     className="input"
                   />
                   {couponEntered && (
-                    <span className="text-xs text-muted">베타: 클립 20개 × 30초 상한이 적용돼요.</span>
+                    <span className="text-xs text-muted">쿠폰: 클립 30개 × 15초 상한이 적용돼요.</span>
                   )}
                 </label>
 
@@ -383,10 +389,10 @@ export default function CreateEventPage() {
                     <span className="text-[15px]">개수와 길이</span>
                     <div className="notice flex flex-col gap-1.5" style={{ padding: 16 }}>
                       <p className="text-sm text-foreground">
-                        <strong>20개</strong> × <strong>30초</strong> 고정
+                        <strong>30개</strong> × <strong>15초</strong> 고정
                       </p>
                       <p className="text-xs text-muted leading-relaxed">
-                        베타 쿠폰은 클립 20개, 각 30초까지 받을 수 있어요.
+                        쿠폰은 클립 30개, 각 15초까지 받을 수 있어요.
                       </p>
                     </div>
                   </div>

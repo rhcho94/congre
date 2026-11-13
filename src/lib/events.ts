@@ -29,7 +29,7 @@ export interface CongreEvent {
   outroMediaType?: "image" | "video";
   maxClips?: number;             // 유료 정원 — 호스트 설정, 클립 업로드 차단 기준
   unlocked?: boolean;            // 결제/쿠폰으로 paid 플랜 렌더 게이트 해제 여부
-  unlockedBy?: string;           // 해제 근거 (베타 쿠폰 정규화 전화번호 등)
+  unlockedBy?: string;           // 해제 근거 (쿠폰 코드 등)
   closedAt?: Timestamp;          // 마감 시각 — close, payment/confirm에서 저장, 무료 플랜 7일 클립 보관 기산점
   firstPaidAmount?: number;      // 최초 유료 결제 금액 — 재렌더 가격 산출 기준
 }
