@@ -121,6 +121,8 @@ export async function POST(request: NextRequest) {
 
   const hasIntroMedia = !!(introMediaKey && introMediaType);
   const hasOutroMedia = !!(outroMediaKey && outroMediaType);
+  // 아웃트로가 없으면 마지막 클립의 나가는 전환이 영상의 끝이다 — 밀기·줌 대신 페이드로 끝낸다
+  const endsWithClip = !hasOutroMedia && !outroText;
 
   const { transitionsIn, transitionsOut } = pickTransitions(
     clipsWithLength.length,
@@ -148,7 +150,7 @@ export async function POST(request: NextRequest) {
       length: clip.length,
       max_sec: maxClipSeconds,
       in: transitionsIn[i],
-      out: transitionsOut[i],
+      out: endsWithClip && i === clipsWithLength.length - 1 ? "fade" : transitionsOut[i],
       ...(showNames === true && name.length > 0 ? { name } : {}),
       ...(videoFilter === "muted" || videoFilter === "boost" ? { filter: videoFilter } : {}),
       plan,
