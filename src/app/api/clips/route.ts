@@ -3,6 +3,7 @@ import { FieldValue } from "firebase-admin/firestore";
 import { getAdminDb } from "@/lib/firebase-admin";
 import { PLAN_CLIP_LIMITS, type PlanId } from "@/lib/plans";
 import { isKeyInEvent } from "@/lib/s3-server";
+import { isPhotoAllowed, PHOTO_SECONDS } from "@/lib/photo";
 
 export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => null);
@@ -13,15 +14,20 @@ export async function POST(request: NextRequest) {
     typeof body.s3Key !== "string" ||
     typeof body.token !== "string" ||
     typeof body.uploaderName !== "string" ||
-    typeof body.uploaderPhone !== "string" ||
-    typeof body.duration !== "number"
+    typeof body.uploaderPhone !== "string"
   ) {
+    return Response.json({ error: "BAD_REQUEST" }, { status: 400 });
+  }
+
+  const isPhoto = body.kind === "photo";
+
+  if (!isPhoto && typeof body.duration !== "number") {
     return Response.json({ error: "BAD_REQUEST" }, { status: 400 });
   }
 
   const thumbKey = typeof body.thumbKey === "string" ? body.thumbKey : undefined;
 
-  if (!Number.isFinite(body.duration) || body.duration <= 0 || body.duration > 120) {
+  if (!isPhoto && (!Number.isFinite(body.duration) || body.duration <= 0 || body.duration > 120)) {
     return Response.json({ error: "INVALID_DURATION" }, { status: 400 });
   }
 
@@ -58,6 +64,18 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "INVALID_KEY" }, { status: 400 });
   }
 
+  const photoPrefix = `events/${eventId}/photo/`;
+  if (isPhoto) {
+    if (!isPhotoAllowed(data)) {
+      return Response.json({ error: "PHOTO_NOT_ALLOWED" }, { status: 403 });
+    }
+    if (!s3Key.startsWith(photoPrefix) || !s3Key.endsWith(".jpg")) {
+      return Response.json({ error: "INVALID_KEY" }, { status: 400 });
+    }
+  } else if (s3Key.startsWith(photoPrefix)) {
+    return Response.json({ error: "INVALID_KEY" }, { status: 400 });
+  }
+
   const plan = (data.plan as string | undefined ?? "free") as PlanId;
   const cap = plan === "free" ? PLAN_CLIP_LIMITS.free : ((data.maxClips as number | undefined) ?? 0);
   const countSnap = await db.collection("clips").where("eventId", "==", eventId).count().get();
@@ -82,7 +100,8 @@ export async function POST(request: NextRequest) {
     s3Key,
     uploaderName,
     uploaderPhone: phoneClean,
-    duration: body.duration,
+    duration: isPhoto ? PHOTO_SECONDS : body.duration,
+    ...(isPhoto ? { kind: "photo" } : {}),
     uploadedAt: FieldValue.serverTimestamp(),
     ...(thumbKey ? { thumbKey } : {}),
   });

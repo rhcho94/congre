@@ -3,6 +3,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import type { NextRequest } from "next/server";
 import { verifyIdToken } from "@/lib/auth-server";
 import { getAdminDb } from "@/lib/firebase-admin";
+import { isPhotoAllowed } from "@/lib/photo";
 
 const isS3Configured = Boolean(process.env.AWS_ACCESS_KEY_ID && process.env.AWS_S3_BUCKET);
 
@@ -15,6 +16,7 @@ const FILENAME_RE = /^[A-Za-z0-9._-]+$/;
 // - intro/outro: <input accept="image/*,video/*"> — 실제 형식 미확정이라 ext 제한 생략
 const EXT_WHITELIST: Record<string, string[] | null> = {
   clip: ["mp4", "mov", "webm"],
+  photo: ["jpg"],
   thumb: ["jpg"],
   intro: null,
   outro: null,
@@ -48,7 +50,7 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "BAD_REQUEST" }, { status: 400 });
   }
 
-  if (kind !== "clip" && kind !== "intro" && kind !== "outro" && kind !== "thumb") {
+  if (kind !== "clip" && kind !== "photo" && kind !== "intro" && kind !== "outro" && kind !== "thumb") {
     return Response.json({ error: "INVALID_KIND" }, { status: 400 });
   }
 
@@ -81,7 +83,7 @@ export async function POST(request: NextRequest) {
   const isValidContentType =
     kind === "clip"
       ? CLIP_MIME_WHITELIST.includes(normalizedContentType)
-      : kind === "thumb"
+      : kind === "thumb" || kind === "photo"
         ? THUMB_MIME_WHITELIST.includes(normalizedContentType)
         : normalizedContentType !== "image/svg+xml" &&
           (normalizedContentType.startsWith("image/") || normalizedContentType.startsWith("video/"));
@@ -103,7 +105,7 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "INTERNAL_ERROR" }, { status: 500 });
   }
 
-  if (kind === "clip" || kind === "thumb") {
+  if (kind === "clip" || kind === "photo" || kind === "thumb") {
     // 참가자 업로드: sessionToken + status=open 검증
     if (typeof token !== "string" || !token) {
       return Response.json({ error: "UNAUTHORIZED" }, { status: 401 });
@@ -113,6 +115,9 @@ export async function POST(request: NextRequest) {
     }
     if (eventData.status !== "open") {
       return Response.json({ error: "EVENT_CLOSED" }, { status: 409 });
+    }
+    if (kind === "photo" && !isPhotoAllowed(eventData)) {
+      return Response.json({ error: "PHOTO_NOT_ALLOWED" }, { status: 403 });
     }
   } else {
     // intro/outro: 호스트 Firebase ID 토큰 + hostId 일치 검증

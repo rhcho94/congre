@@ -4,6 +4,7 @@ import { isEngineConfigured, pickTransitions, startEngineRender, type EngineSegm
 import { getAdminDb } from "@/lib/firebase-admin";
 import { verifyIdToken } from "@/lib/auth-server";
 import { notifyRenderStarted } from "@/lib/notifications/scenarios/render-started";
+import { PHOTO_SECONDS } from "@/lib/photo";
 import { MAX_TOTAL_CLIP_SECONDS, type PlanId } from "@/lib/plans";
 import type { NextRequest } from "next/server";
 
@@ -77,10 +78,18 @@ export async function POST(request: NextRequest) {
 
   const maxClipSeconds = (eventData.maxClipSeconds as number | undefined) ?? 15;
 
-  let clipsWithLength: Array<{ key: string; length: number; name?: string }>;
+  let clipsWithLength: Array<{ key: string; length: number; name?: string; isPhoto: boolean }>;
   try {
     clipsWithLength = includedDocs.map((doc) => {
       const data = doc.data();
+      if (data.kind === "photo") {
+        return {
+          key: data.s3Key as string,
+          length: PHOTO_SECONDS,
+          name: data.uploaderName as string | undefined,
+          isPhoto: true,
+        };
+      }
       const duration = data.duration as number | undefined;
       if (typeof duration !== "number" || !Number.isFinite(duration) || duration <= 0) {
         throw new Error(`MISSING_DURATION:${doc.id}`);
@@ -89,6 +98,7 @@ export async function POST(request: NextRequest) {
         key: data.s3Key as string,
         length: Math.min(duration, maxClipSeconds),
         name: data.uploaderName as string | undefined,
+        isPhoto: false,
       };
     });
   } catch (err) {
@@ -142,19 +152,23 @@ export async function POST(request: NextRequest) {
     segments.push({ type: "card", text: introText, plan });
   }
 
+  let photoIndex = 0;
   clipsWithLength.forEach((clip, i) => {
     const name = (clip.name ?? "").trim();
-    segments.push({
-      type: "clip",
+    const common = {
       key: clip.key,
-      length: clip.length,
-      max_sec: maxClipSeconds,
       in: transitionsIn[i],
       out: endsWithClip && i === clipsWithLength.length - 1 ? "fade" : transitionsOut[i],
       ...(showNames === true && name.length > 0 ? { name } : {}),
       ...(videoFilter === "muted" || videoFilter === "boost" ? { filter: videoFilter } : {}),
       plan,
-    });
+    };
+    if (clip.isPhoto) {
+      segments.push({ type: "photo", ...common, variant: photoIndex });
+      photoIndex++;
+    } else {
+      segments.push({ type: "clip", ...common, length: clip.length, max_sec: maxClipSeconds });
+    }
   });
 
   if (hasOutroMedia) {

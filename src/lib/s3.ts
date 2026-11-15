@@ -18,7 +18,7 @@ export async function getPresignedUrl(
   eventId: string,
   fileName: string,
   fileType: string,
-  kind: "clip" | "invite" | "intro" | "outro" | "thumb",
+  kind: "clip" | "photo" | "invite" | "intro" | "outro" | "thumb",
   auth: { sessionToken?: string; idToken?: string } = {}
 ): Promise<{ url: string; key: string }> {
   const headers: Record<string, string> = { "Content-Type": "application/json" };

@@ -41,6 +41,7 @@ export async function GET(request: NextRequest) {
           uploaderName: data.uploaderName as string | undefined,
           uploaderPhone: data.uploaderPhone as string | undefined,
           thumbKey: data.thumbKey as string | undefined,
+          kind: data.kind === "photo" ? ("photo" as const) : ("clip" as const),
           uploadedAt: tsToMs(data.uploadedAt),
           excludedAt: tsToMs(data.excludedAt),
         };

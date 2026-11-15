@@ -67,6 +67,44 @@ async function captureThumbnail(blob: Blob): Promise<Blob | null> {
   });
 }
 
+// 사진을 <img>로 읽어(브라우저 기본 동작으로 EXIF 회전 반영) 캔버스에 다시 그려 JPEG로 만든다.
+// scaleFor는 원본 크기를 받아 배율을 돌려준다.
+async function imageToJpeg(blob: Blob, scaleFor: (w: number, h: number) => number, quality: number): Promise<Blob> {
+  const url = URL.createObjectURL(blob);
+  try {
+    const img = new Image();
+    img.src = url;
+    await img.decode();
+    const w = img.naturalWidth;
+    const h = img.naturalHeight;
+    if (!w || !h) throw new Error("IMAGE_EMPTY");
+    const scale = scaleFor(w, h);
+    const cw = Math.max(1, Math.round(w * scale));
+    const ch = Math.max(1, Math.round(h * scale));
+    const canvas = document.createElement("canvas");
+    canvas.width = cw;
+    canvas.height = ch;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("NO_CANVAS_CONTEXT");
+    ctx.drawImage(img, 0, 0, cw, ch);
+    return await new Promise<Blob>((resolve, reject) => {
+      canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("TO_BLOB_FAILED"))), "image/jpeg", quality);
+    });
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
+// 긴 변 최대 2560px(키우지 않음), JPEG 품질 0.9
+function convertPhoto(file: File): Promise<Blob> {
+  return imageToJpeg(file, (w, h) => Math.min(1, 2560 / Math.max(w, h)), 0.9);
+}
+
+// 썸네일: 폭 640px(넓을 때만 줄임), JPEG 품질 0.8 — 영상 썸네일과 같은 기준
+function photoThumbnail(photo: Blob): Promise<Blob> {
+  return imageToJpeg(photo, (w) => (w > 640 ? 640 / w : 1), 0.8);
+}
+
 async function measureDuration(file: File): Promise<number> {
   return new Promise((resolve, reject) => {
     const video = document.createElement("video");
@@ -94,7 +132,7 @@ function UploadInner() {
   const urlToken = searchParams.get("token") ?? "";
 
   const [stage, setStage] = useState<Stage>("verifying");
-  const [event, setEvent] = useState<{ id: string; title: string; maxClipSeconds?: number; hostName?: string | null; plan?: string } | null>(null);
+  const [event, setEvent] = useState<{ id: string; title: string; maxClipSeconds?: number; hostName?: string | null; plan?: string; photoAllowed?: boolean } | null>(null);
   const [progress, setProgress] = useState(0);
   const [retryNum, setRetryNum] = useState(0);
   const [errorMsg, setErrorMsg] = useState("");
@@ -105,6 +143,11 @@ function UploadInner() {
   const [agreed, setAgreed] = useState(false);
   const [s3Ready, setS3Ready] = useState<boolean | null>(null);
   const [iosDevice, setIosDevice] = useState(false);
+  const [mediaKind, setMediaKind] = useState<"video" | "photo">("video");
+  const [photoPreviewUrl, setPhotoPreviewUrl] = useState("");
+  const [photoError, setPhotoError] = useState("");
+  const isPhotoFlow = mediaKind === "photo";
+  const itemWord = isPhotoFlow ? "사진" : "영상";
 
   const previewRef = useRef<HTMLVideoElement>(null);
   const blobRef = useRef<Blob | null>(null);
@@ -125,7 +168,7 @@ function UploadInner() {
           setStage("invalid");
           return;
         }
-        const evt = await res.json() as { id: string; title: string; maxClipSeconds?: number; hostName?: string | null; plan?: string };
+        const evt = await res.json() as { id: string; title: string; maxClipSeconds?: number; hostName?: string | null; plan?: string; photoAllowed?: boolean };
         setEvent(evt);
         setStage("uploader");
       } catch {
@@ -230,10 +273,34 @@ function UploadInner() {
       blobRef.current = file;
       if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
       previewUrlRef.current = URL.createObjectURL(file);
+      setMediaKind("video");
+      setPhotoPreviewUrl("");
       setStage("preview");
     } catch {
       setErrorMsg("영상을 읽을 수 없습니다. 다시 촬영해주세요.");
       setStage("error");
+    } finally {
+      e.target.value = "";
+    }
+  }
+
+  async function handlePhotoSelected(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setErrorMsg("");
+    setPhotoError("");
+    try {
+      const jpeg = await convertPhoto(file);
+      console.log(`[upload] photo converted: srcType="${file.type}" srcSize=${file.size} jpegSize=${jpeg.size}`);
+      blobRef.current = jpeg;
+      if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+      previewUrlRef.current = URL.createObjectURL(jpeg);
+      setPhotoPreviewUrl(previewUrlRef.current);
+      setMediaKind("photo");
+      setStage("preview");
+    } catch (err) {
+      console.error("[upload] photo convert failed:", err);
+      setPhotoError("이 사진은 읽을 수 없어요. 다른 사진을 골라주세요.");
     } finally {
       e.target.value = "";
     }
@@ -244,6 +311,9 @@ function UploadInner() {
       URL.revokeObjectURL(previewUrlRef.current);
       previewUrlRef.current = "";
     }
+    setPhotoPreviewUrl("");
+    setPhotoError("");
+    setMediaKind("video");
     blobRef.current = null;
     setProgress(0);
     setRetryNum(0);
@@ -252,7 +322,77 @@ function UploadInner() {
     setStage("uploader");
   }
 
+  async function doPhotoUpload(attempt: number): Promise<void> {
+    const blob = blobRef.current!;
+    const mimeType = "image/jpeg";
+    const fileName = `photo-${Date.now()}.jpg`;
+
+    console.log(`[upload] photo attempt=${attempt} size=${blob.size}`);
+
+    const { url, key } = await getPresignedUrl(eventId, fileName, mimeType, "photo", { sessionToken: urlToken });
+    console.log(`[upload] photo presign ok → key=${key}`);
+
+    await uploadToS3(url, blob, mimeType, setProgress);
+    console.log(`[upload] photo S3 PUT success`);
+
+    let thumbKey: string | undefined;
+    try {
+      const thumbBlob = await photoThumbnail(blob);
+      const thumbFileName = `thumb-${Date.now()}.jpg`;
+      const presignRes = await fetch("/api/upload/presign", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ eventId, fileName: thumbFileName, fileType: "image/jpeg", kind: "thumb", token: urlToken }),
+      });
+      if (!presignRes.ok) throw new Error(`thumb_presign:${presignRes.status}`);
+      const { url: thumbUrl, key: tKey } = await presignRes.json() as { url: string; key: string };
+      await uploadToS3(thumbUrl, thumbBlob, "image/jpeg", () => {});
+      thumbKey = tKey;
+      console.log(`[upload] photo thumb PUT success → key=${tKey}`);
+    } catch (err) {
+      console.warn("[upload] photo thumb skipped:", err instanceof Error ? err.message : String(err));
+    }
+
+    const clipSave = fetch("/api/clips", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        eventId,
+        s3Key: key,
+        token: urlToken,
+        uploaderName: name,
+        uploaderPhone: phone.replace(/\D/g, ""),
+        kind: "photo",
+        ...(thumbKey ? { thumbKey } : {}),
+      }),
+    });
+    const clipTimeout = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("clip_save_timeout")), 5000)
+    );
+    try {
+      const clipRes = await Promise.race([clipSave, clipTimeout]);
+      if (!clipRes.ok) {
+        const body = await clipRes.json().catch(() => ({})) as { error?: string; code?: string; limit?: number; current?: number };
+        if (body.error === "DUPLICATE_UPLOADER") throw new Error("DUPLICATE_UPLOADER");
+        if (body.error === "PHOTO_NOT_ALLOWED") throw new Error("PHOTO_NOT_ALLOWED");
+        if (body.code === "PLAN_LIMIT_REACHED") {
+          throw new Error(`PLAN_LIMIT_REACHED:${body.current ?? 0}:${body.limit ?? 0}`);
+        }
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg === "DUPLICATE_UPLOADER") throw err;
+      if (msg === "PHOTO_NOT_ALLOWED") throw err;
+      if (msg.startsWith("PLAN_LIMIT_REACHED:")) throw err;
+      console.error("[clip] photo save skipped:", msg);
+    }
+  }
+
   async function doUpload(attempt: number): Promise<void> {
+    if (mediaKind === "photo") {
+      await doPhotoUpload(attempt);
+      return;
+    }
     const blob = blobRef.current!;
     const rawType = blob.type.split(";")[0] || "video/mp4";
 
@@ -362,14 +502,19 @@ function UploadInner() {
           setStage("uploader");
           return;
         }
+        if (msg === "PHOTO_NOT_ALLOWED") {
+          setErrorMsg("이 이벤트는 사진을 받을 수 없어요.");
+          setStage("error");
+          return;
+        }
         if (msg.startsWith("PLAN_LIMIT_REACHED:")) {
           const parts = msg.split(":");
-          setErrorMsg(`이 이벤트의 영상 정원이 찼어요 (현재 ${parts[1]}/${parts[2]}개). 호스트에게 문의해주세요.`);
+          setErrorMsg(`이 이벤트의 ${itemWord} 정원이 찼어요 (현재 ${parts[1]}/${parts[2]}개). 호스트에게 문의해주세요.`);
           setStage("error");
           return;
         }
         if (msg === "EVENT_CLOSED") {
-          setErrorMsg("이미 마감된 이벤트라 영상을 올릴 수 없어요.");
+          setErrorMsg(`이미 마감된 이벤트라 ${itemWord}을 올릴 수 없어요.`);
           setStage("error");
           return;
         }
@@ -655,6 +800,19 @@ function UploadInner() {
                 </>
               )}
 
+              {event?.photoAllowed === true && (
+                <div className="flex flex-col items-center gap-1.5">
+                  <label className="btn btn-secondary w-full cursor-pointer">
+                    <input type="file" accept="image/*" className="sr-only" onChange={handlePhotoSelected} />
+                    사진 올리기
+                  </label>
+                  <p className="text-[13px] text-muted">사진은 5초 동안 나와요</p>
+                  {photoError && (
+                    <p className="text-[13px] text-center" style={{ color: "var(--danger)" }}>{photoError}</p>
+                  )}
+                </div>
+              )}
+
               <p className="text-[13px] text-center text-muted leading-relaxed">
                 모든 순간을 모아 자동으로 한 편의 영상으로 편집해 드려요.
               </p>
@@ -672,7 +830,12 @@ function UploadInner() {
                 <span className="absolute top-3 right-3 w-5 h-5 border-t border-r z-10" style={{ borderColor: "var(--hairline-strong)" }} />
                 <span className="absolute bottom-3 left-3 w-5 h-5 border-b border-l z-10" style={{ borderColor: "var(--hairline-strong)" }} />
                 <span className="absolute bottom-3 right-3 w-5 h-5 border-b border-r z-10" style={{ borderColor: "var(--hairline-strong)" }} />
-                <video ref={previewRef} playsInline controls className="w-full h-full object-cover" />
+                {isPhotoFlow ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={photoPreviewUrl} alt="올릴 사진 미리보기" className="w-full h-full object-contain" />
+                ) : (
+                  <video ref={previewRef} playsInline controls className="w-full h-full object-cover" />
+                )}
               </div>
 
               <button onClick={handleUpload} disabled={s3Ready === false} className="btn btn-primary w-full">
@@ -680,7 +843,7 @@ function UploadInner() {
               </button>
 
               <button onClick={reRecord} className="btn-quiet text-sm self-center">
-                다시 촬영
+                {isPhotoFlow ? "다시 선택" : "다시 촬영"}
               </button>
             </div>
           )}
@@ -712,7 +875,7 @@ function UploadInner() {
               <div>
                 <p className="display text-2xl mb-3">전달됐어요!</p>
                 <p className="text-sm text-muted leading-relaxed">
-                  영상이 전달됐어요!
+                  {itemWord}이 전달됐어요!
                   <br />
                   곧 편집된 영상을 받아보실 수 있어요.
                 </p>
@@ -754,7 +917,7 @@ function UploadInner() {
                   </button>
                 )}
                 <button onClick={reRecord} className="btn btn-secondary" style={{ height: 44, padding: "0 20px", fontSize: 15 }}>
-                  다시 촬영
+                  {isPhotoFlow ? "다시 선택" : "다시 촬영"}
                 </button>
               </div>
             </div>

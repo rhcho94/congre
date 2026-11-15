@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
 import { getAdminDb } from "@/lib/firebase-admin";
+import { isPhotoAllowed } from "@/lib/photo";
 
 export async function GET(
   request: NextRequest,
@@ -48,5 +49,6 @@ export async function GET(
     hostName,
     // 참가자 화면의 워터마크 배지 안내 분기용 (무료만 워터마크)
     plan: (data.plan as string | undefined) ?? "free",
+    photoAllowed: isPhotoAllowed(data),
   });
 }

@@ -77,6 +77,7 @@ interface ApiClip {
   uploaderName?: string;
   uploaderPhone?: string;
   thumbKey?: string;
+  kind?: "clip" | "photo";
   uploadedAt: number | null;
   excludedAt?: number | null;
 }
@@ -1363,6 +1364,9 @@ export default function EventDetailPage() {
                           <div className="flex flex-col mx-4 flex-1 min-w-0">
                             <span className="text-sm text-foreground truncate">
                               {clip.uploaderName ?? <span className="text-muted">(이름 없음)</span>}
+                              {clip.kind === "photo" && (
+                                <span className="text-xs text-muted ml-1.5">사진</span>
+                              )}
                             </span>
                           </div>
                           <button
@@ -1414,7 +1418,15 @@ export default function EventDetailPage() {
                                 {playbackError}
                               </p>
                             )}
-                            {playbackUrl && (
+                            {playbackUrl && clip.kind === "photo" && (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                src={playbackUrl}
+                                alt={clip.uploaderName ?? "사진"}
+                                className="w-full max-w-xs mx-auto block"
+                              />
+                            )}
+                            {playbackUrl && clip.kind !== "photo" && (
                               <video
                                 src={playbackUrl}
                                 controls

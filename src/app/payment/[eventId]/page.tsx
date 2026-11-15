@@ -246,7 +246,7 @@ ${prepared.mode === "rerender"
               ) : (
                 <>
                   <p className="text-xs text-muted mb-2">
-                    영상 길이 {prepared.maxClipSeconds}초 × 영상 {prepared.clipCount}개 × 100원 = {prepared.rawAmount.toLocaleString("ko-KR")}원
+                    영상 길이 {prepared.maxClipSeconds}초 × 영상·사진 {prepared.clipCount}개 × 100원 = {prepared.rawAmount.toLocaleString("ko-KR")}원
                   </p>
                   {prepared.rawAmount !== prepared.amount && (
                     <p className="text-xs text-muted mb-2">

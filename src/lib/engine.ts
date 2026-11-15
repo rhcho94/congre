@@ -57,7 +57,7 @@ export function pickTransitions(
   };
 }
 
-export type EngineSegment = { type: "clip" | "card" | "image" | "video"; plan: string } & Record<string, unknown>;
+export type EngineSegment = { type: "clip" | "photo" | "card" | "image" | "video"; plan: string } & Record<string, unknown>;
 
 export async function startEngineRender(input: {
   jobId: string;
