@@ -442,7 +442,7 @@ export default function CreateEventPage() {
                         <span style={{ color: "var(--accent)" }}>
                           {calcPrice(form.maxClipSeconds, form.maxClips).toLocaleString("ko-KR")}원
                         </span>
-                        , 실제 결제는 마감 시 올라온 영상 수로 계산돼요 (최소 10,000원).
+                        , 실제 결제는 마감 시 올라온 영상·사진 수로 계산돼요 (최소 10,000원). 사진 한 장도 영상 한 개와 같은 요금이에요.
                       </p>
                       {totalTooLong ? (
                         <p className="text-xs leading-relaxed" style={{ color: "var(--danger)" }}>

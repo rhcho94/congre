@@ -119,6 +119,13 @@ export default function GuideGuestPage() {
               </p>
             </div>
             <div className="flex flex-col gap-1">
+              <h3 style={H3}>사진 올리기</h3>
+              <p>
+                영상 대신 사진 한 장을 올릴 수도 있어요. "사진 올리기"를 눌러 사진을 고르면
+                완성본에 5초 동안 나옵니다. 이벤트에 따라 사진 버튼이 없을 수 있어요.
+              </p>
+            </div>
+            <div className="flex flex-col gap-1">
               <h3 style={H3}>촬영이 끝나면</h3>
               <ul className="list-disc flex flex-col gap-1" style={LIST}>
                 <li>재생 버튼으로 미리보기 확인</li>
