@@ -2,6 +2,14 @@
 
 > Vercel·Firebase·GitHub Actions·도메인·무료 티어 정책 관련 결정. 새 결정은 맨 위에 추가 (최신이 위).
 
+## 2026-11-14 — 엔진 Lambda를 매일 깨운다
+
+- **결정 (Ray)**: "매일 깨우기 + 재시도 늘리기"를 배포한다. 약 3주 미사용으로 Lambda가 잠들어(Inactive) 첫 렌더가 실패했기 때문(known-issues-resolved 2026-11-14).
+- **내용**: 조각 굽기·합치기 두 함수에 EventBridge Scheduler 매일 04:00(Asia/Seoul), 입력 `{"warmup": true}`면 함수가 바로 반환. Step Functions 재시도 맨 앞에 `Lambda.AWSLambdaException` 20초 간격·6회·1.5배. 엔진 `793a60f`.
+- **권한**: 배포용 IAM 사용자 `congre-engine-deployer`에 인라인 정책 `congre-engine-scheduler-warmup`(스케줄 Create/Get/Update/Delete, 깨우기 역할 PassRole). 목록 조회 권한은 주지 않음 — 스케줄은 콘솔에서 본다.
+- **확인**: 2026-11-18 Lambda 콘솔 최근 1주 그래프 — 렌더 없는 날에도 하루 한 번씩 호출, 오류 0.
+- **출처**: 2026-11-14 채팅(코난), 핸드오프 2026-11-14.
+
 ## 2026-10-14 — 자체 렌더 엔진 `congre-engine` 구축·서울 첫 배포
 
 - **실행 1: 레포** `rhcho94/congre-engine`(비공개). 필드샷 엔진 `ac008d1`을 커밋 기록째 복사(30커밋) → `893f067` 골프 전용 기능 제거 → `50e75c6` 콩그레 모양 → `55abedd` 이름 교체. 코난이 패치·트리 지문을 만들고 CC가 지문 대조 후 커밋하는 방식.
