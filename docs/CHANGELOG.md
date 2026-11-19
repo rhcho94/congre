@@ -2,8 +2,14 @@
 
 > 기능 단위 작업 이력. 최신이 위.
 
+## 2026-11-19
+
+- feat(landing): 랜딩 첫 화면 교체(git 밖, Ray PowerShell 배포 congre-landing-1f1qeeyok) — 신부·절친 타깃 스와이프 영상 3편(Kling AI 제작, 소리 없음, 예고편식 자막 3줄씩, 반투명 화살표·넘김 표시), 영상 아래 "AI로 만든 예시" 한 줄, 제목 "신부 친구 모두가 촬영감독 / 결혼식 2부에서 바로 상영". 기존 첫 화면은 한 칸 아래. 영상 media/friends/f1~f3.mp4(540×958), 원본 media/friends/src/는 .vercelignore로 제외. 실사이트 확인(코난).
+- docs: 핸드오프 2026-11-19.
+
 ## 2026-11-18
 
+- feat(landing): 랜딩 요금 페이지·FAQ에 사진 요금 안내(git 밖, Ray PowerShell 배포 congre-landing-6r04ph1cl) — "영상·사진 수로 계산", "사진 한 장도 영상 한 개와 같은 요금". 실사이트 확인(코난).
 - fix(copy): 요금·가이드 문구에 하객 사진 반영 — 이벤트 만들기 화면과 주최자 가이드 2곳의 "영상 수"를 "영상·사진 수"로, "사진 한 장도 영상 한 개와 같은 요금" 안내 추가. 하객 가이드에 "사진 올리기" 안내 추가. (`52f0a01`)
 - chore(test): 쿠폰 실사이트 확인(Ray) — 이미 쓴 코드·기간 지난 코드·없는 코드의 오류 문구 3종, 쿠폰 행사 하객 화면에 사진 버튼 없음, 쿠폰 행사 완성 화면의 다시 만들기 안내 문구, `betaCoupons` 사용 기록(`used`·`eventId`·`usedAt`).
 - chore(data): 시험 데이터 정리(Ray 지시, 코난이 콘솔에서 실행) — Firestore `events` 문서 7개(진행 중인 실제 행사 1개만 남김), `clips` 문서 3개, `betaCoupons` 컬렉션(시험 쿠폰 3개) 삭제. S3 `events/` 시험 행사 폴더 1개(객체 5개, 37.5MB)와 `renders/` 시험 완성본 3개 삭제. `notifications`·`payments`·`users`, S3 `audio/`·`engine-jobs/`는 그대로.
