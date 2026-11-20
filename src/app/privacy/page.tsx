@@ -30,7 +30,7 @@ export default function PrivacyPage() {
         <main className="mx-auto max-w-3xl px-6 py-16">
           <div className="mb-10">
             <h1 className="display text-3xl">Congre 개인정보처리방침</h1>
-            <p className="text-xs text-muted mt-3">시행일: 2026년 9월 1일</p>
+            <p className="text-xs text-muted mt-3">시행일: 2026년 9월 1일 · 2026년 11월 20일 보완(광고 성과 측정)</p>
           </div>
 
           <div className="hr mb-10" />
@@ -52,6 +52,7 @@ export default function PrivacyPage() {
               <li><strong className="text-foreground">서비스 제공</strong>: 이벤트 생성·운영, 영상 클립 수집 및 완성본 영상 제작, 결과 영상 공유</li>
               <li><strong className="text-foreground">알림 발송</strong>: 이벤트 진행 상태(렌더 시작·완료·지연·실패) 알림, 참가자 결과 영상 알림</li>
               <li><strong className="text-foreground">고객 응대</strong>: 문의·민원 사항의 확인, 처리 결과 통보</li>
+              <li><strong className="text-foreground">광고 성과 측정</strong>: 광고를 보고 방문·가입한 경로 확인, 광고 효과 분석 (참가자 업로드 화면·공유 화면·참가자 안내 화면 제외)</li>
             </ol>
           </section>
 
@@ -111,11 +112,24 @@ export default function PrivacyPage() {
                     <td className="border border-border px-3 py-2 align-top">결제대행사를 통하여 수집</td>
                     <td className="border border-border px-3 py-2 align-top">유료 이벤트 마감·결제 시</td>
                   </tr>
+                  <tr>
+                    <td className="border border-border px-3 py-2 align-top">호스트 (회원)</td>
+                    <td className="border border-border px-3 py-2 align-top">가입 경로 정보(처음 방문한 주소에 붙은 광고 유입 값 — utm_source·utm_medium·utm_campaign·utm_content·utm_term, 광고 클릭 식별값 fbclid — 와 처음 방문한 화면 주소·시각)</td>
+                    <td className="border border-border px-3 py-2 align-top">처음 방문 시 브라우저 쿠키에 자동 저장, 회원가입 시 회원정보에 연결</td>
+                    <td className="border border-border px-3 py-2 align-top">회원가입 시 (광고 유입 값이 있을 때만)</td>
+                  </tr>
+                  <tr>
+                    <td className="border border-border px-3 py-2 align-top">호스트·방문자 (참가자 화면 제외)</td>
+                    <td className="border border-border px-3 py-2 align-top">접속 IP, 브라우저 정보, 메타 쿠키(_fbp·_fbc), 방문한 화면 주소, 회원가입·이벤트 생성·결제 사실과 결제 금액</td>
+                    <td className="border border-border px-3 py-2 align-top">메타 픽셀·메타 전환 API를 통한 자동 수집</td>
+                    <td className="border border-border px-3 py-2 align-top">서비스 소개 페이지·서비스 화면 방문 시, 회원가입·이벤트 생성·결제 시</td>
+                  </tr>
                 </tbody>
               </table>
             </div>
             <p>② 회사는 「개인정보 보호법」 제23조에 따른 민감정보(인종, 사상·신념, 정치적 견해, 건강 정보 등) 및 제24조에 따른 고유식별정보(주민등록번호, 운전면허번호 등)를 수집하지 아니합니다.</p>
             <p>③ 회원의 카드번호, 계좌번호 등 결제수단의 상세 정보는 결제대행사가 수집·보관하며, 회사는 이를 수집하거나 보관하지 아니합니다.</p>
+            <p>④ 참가자 업로드 화면·공유 화면·참가자 안내 화면에서는 ①의 가입 경로 정보와 메타 픽셀·메타 전환 API 수집 항목을 수집하지 아니하며, 회사는 이름·이메일·휴대전화번호를 메타에 보내지 아니합니다.</p>
           </section>
 
           <section className="flex flex-col gap-2">
@@ -134,6 +148,10 @@ export default function PrivacyPage() {
                   <tr>
                     <td className="border border-border px-3 py-2 align-top">호스트 회원정보 (이메일, 비밀번호, 이름)</td>
                     <td className="border border-border px-3 py-2 align-top">회원 탈퇴 시까지</td>
+                  </tr>
+                  <tr>
+                    <td className="border border-border px-3 py-2 align-top">가입 경로 정보 (광고 유입 값, 처음 방문한 화면 주소·시각)</td>
+                    <td className="border border-border px-3 py-2 align-top">회원 탈퇴 시까지 (브라우저 쿠키는 저장 시점으로부터 최대 90일)</td>
                   </tr>
                   <tr>
                     <td className="border border-border px-3 py-2 align-top">이벤트 정보 (제목, 인트로·아웃트로 텍스트, 호스트 휴대전화번호 등)</td>
@@ -243,7 +261,7 @@ export default function PrivacyPage() {
 
           <section className="flex flex-col gap-2">
             <h2 className="text-sm font-medium text-foreground">제5조의2 (개인정보의 국외 이전)</h2>
-            <p>① 회사는 서비스 제공을 위하여 다음과 같이 개인정보를 국외로 이전합니다.</p>
+            <p>① 회사는 서비스 제공과 광고 성과 측정을 위하여 다음과 같이 개인정보를 국외로 이전합니다.</p>
             {/* 640px 미만: 수탁자마다 카드 한 장 (글자는 아래 표와 같음) */}
             <div className="flex flex-col gap-3 sm:hidden">
               <div className="flex flex-col gap-1.5" style={TRANSFER_CARD}>
@@ -311,6 +329,19 @@ export default function PrivacyPage() {
                   <dd>제3조에 따른 보유 기간</dd>
                 </dl>
               </div>
+              <div className="flex flex-col gap-1.5" style={TRANSFER_CARD}>
+                <h3 style={{ fontSize: 17, color: "var(--text)" }}>Meta Platforms, Inc. — 광고 성과 측정 (제8조 ④)</h3>
+                <dl style={TRANSFER_DL}>
+                  <dt className="text-muted">이전 국가·리전</dt>
+                  <dd>미국</dd>
+                  <dt className="text-muted">이전 일시 및 방법</dt>
+                  <dd>서비스 소개 페이지(www.congre.kr)와 서비스 화면(참가자 업로드 화면·공유 화면·참가자 안내 화면 제외) 방문, 회원가입·이벤트 생성·결제 시 암호화된 네트워크로 전송 (메타 픽셀·메타 전환 API)</dd>
+                  <dt className="text-muted">이전 항목</dt>
+                  <dd>접속 IP, 브라우저 정보, 메타 쿠키(_fbp·_fbc), 방문한 화면 주소, 회원가입·이벤트 생성·결제 사실과 결제 금액</dd>
+                  <dt className="text-muted">보유 기간</dt>
+                  <dd>받는 자의 정책에 따라 보관하며 광고 성과 측정과 광고 전달에 이용</dd>
+                </dl>
+              </div>
             </div>
             <div className="hidden sm:block overflow-x-auto">
               <table className="w-full border-collapse border border-border text-xs">
@@ -359,10 +390,17 @@ export default function PrivacyPage() {
                     <td className="border border-border px-3 py-2 align-top">서비스 이용 기록, 접속 IP, 접속 로그</td>
                     <td className="border border-border px-3 py-2 align-top">제3조에 따른 보유 기간</td>
                   </tr>
+                  <tr>
+                    <td className="border border-border px-3 py-2 align-top">Meta Platforms, Inc. — 광고 성과 측정 (제8조 ④)</td>
+                    <td className="border border-border px-3 py-2 align-top">미국</td>
+                    <td className="border border-border px-3 py-2 align-top">서비스 소개 페이지(www.congre.kr)와 서비스 화면(참가자 업로드 화면·공유 화면·참가자 안내 화면 제외) 방문, 회원가입·이벤트 생성·결제 시 암호화된 네트워크로 전송 (메타 픽셀·메타 전환 API)</td>
+                    <td className="border border-border px-3 py-2 align-top">접속 IP, 브라우저 정보, 메타 쿠키(_fbp·_fbc), 방문한 화면 주소, 회원가입·이벤트 생성·결제 사실과 결제 금액</td>
+                    <td className="border border-border px-3 py-2 align-top">받는 자의 정책에 따라 보관하며 광고 성과 측정과 광고 전달에 이용</td>
+                  </tr>
                 </tbody>
               </table>
             </div>
-            <p>② 정보주체는 「개인정보 보호법」 제28조의8에 따라 회사에 개인정보의 국외 이전을 거부할 수 있습니다. 다만, 거부 시 서비스의 일부 또는 전부를 이용하지 못할 수 있습니다.</p>
+            <p>② 정보주체는 「개인정보 보호법」 제28조의8에 따라 회사에 개인정보의 국외 이전을 거부할 수 있습니다. 다만, 거부 시 서비스의 일부 또는 전부를 이용하지 못할 수 있습니다. Meta Platforms, Inc.로의 이전은 제8조 ⑤의 방법으로 거부할 수 있으며, 거부하여도 서비스 이용은 제한되지 아니합니다.</p>
           </section>
 
           <section className="flex flex-col gap-2">
@@ -436,6 +474,9 @@ export default function PrivacyPage() {
               <li>인터넷 브라우저의 사이트 데이터 삭제 기능을 통해 LocalStorage 데이터를 삭제할 수 있습니다.</li>
               <li>다만, LocalStorage 데이터를 삭제하는 경우 회원 로그인이 해제되며, 다시 서비스를 이용하기 위해서는 재로그인이 필요합니다.</li>
             </ol>
+            <p>③ 회사는 광고 유입 경로를 확인하기 위하여, 처음 방문한 주소에 광고 유입 값이 있을 때 이를 쿠키(cg_attr)로 브라우저에 최대 90일 동안 저장합니다. 회원가입 시 이 값을 회원정보에 연결합니다.</p>
+            <p>④ 회사는 광고 성과 측정을 위하여 Meta Platforms, Inc.의 메타 픽셀을 설치하여, Meta가 서비스 소개 페이지(www.congre.kr)와 서비스 화면(참가자 업로드 화면·공유 화면·참가자 안내 화면 제외)에서 쿠키(_fbp·_fbc) 등으로 방문·이용 기록(행태정보)을 수집하도록 허용합니다. 수집 항목은 제2조 ①과 같으며, Meta는 이를 광고 성과 측정과 광고 전달에 이용합니다.</p>
+            <p>⑤ 정보주체는 인터넷 브라우저의 사이트 데이터 삭제·쿠키 차단 기능으로 위 쿠키를 삭제하거나 거부할 수 있으며, Meta 계정의 광고 설정에서 맞춤형 광고를 거부할 수 있습니다. 거부하여도 서비스 이용은 제한되지 아니합니다.</p>
           </section>
 
           <section className="flex flex-col gap-2">
@@ -552,6 +593,7 @@ export default function PrivacyPage() {
           <section className="flex flex-col gap-2">
             <h2 className="text-sm font-medium text-foreground">부칙</h2>
             <p>이 개인정보 처리방침은 2026년 9월 1일부터 시행합니다.</p>
+            <p>2026년 11월 20일 보완: 광고 성과 측정(메타 픽셀·메타 전환 API, 가입 경로 정보)에 관한 사항을 제1조·제2조·제3조·제5조의2·제8조에 추가하였으며, 같은 날부터 적용합니다.</p>
           </section>
         </div>
 
