@@ -4,6 +4,7 @@ import { verifyIdToken } from "@/lib/auth-server";
 import { getAdminDb } from "@/lib/firebase-admin";
 import { notifyEventCreated } from "@/lib/notifications/scenarios/event-created";
 import { getPlanMaxClipSeconds, MAX_TOTAL_CLIP_SECONDS, type PlanId } from "@/lib/plans";
+import { trackMetaEvent } from "@/lib/meta-capi";
 
 function tsToMs(v: unknown): number | null {
   return v instanceof Timestamp ? v.toMillis() : null;
@@ -168,6 +169,8 @@ export async function POST(request: NextRequest) {
   });
 
   const eventId = ref.id;
+
+  trackMetaEvent(request, { eventName: "EventCreated", eventId: `event_${eventId}` });
 
   if (normalizedCouponCode) {
     await db.collection("betaCoupons").doc(normalizedCouponCode).set(

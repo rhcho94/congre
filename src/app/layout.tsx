@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Gowun_Dodum, Nanum_Pen_Script } from "next/font/google";
 import "./globals.css";
+import MarketingTracker from "@/components/MarketingTracker";
 
 const gowun = Gowun_Dodum({
   variable: "--font-gowun",
@@ -27,7 +28,10 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ko" className={`${gowun.variable} ${nanumPen.variable}`}>
-      <body className="min-h-screen">{children}</body>
+      <body className="min-h-screen">
+        {children}
+        <MarketingTracker />
+      </body>
     </html>
   );
 }

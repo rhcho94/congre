@@ -99,6 +99,11 @@ npx firebase emulators:start --only firestore
 |---|---|---|
 | ENGINE_STATE_MACHINE_ARN | arn:...:stateMachine:congre-engine-render-job | 같음 |
 | NEXT_PUBLIC_APP_URL | https://app.congre.kr | 확인 필요 |
+| NEXT_PUBLIC_META_PIXEL_ID | (2026-11-20 현재 비어 있음) 메타 데이터 세트 ID — 공개 값, Config 타입 | 넣지 않는다 |
+| META_CAPI_ACCESS_TOKEN | (비어 있음) 전환 API 토큰 — 서버 전용, 문서·채팅에 남기지 않는다 | 넣지 않는다 |
+| META_TEST_EVENT_CODE | 이벤트 테스트 때만 잠깐 넣고 확인 뒤 지운다 | 넣지 않는다 |
+
+메타 광고 추적(decisions/infra.md 2026-11-20): 픽셀 ID가 없으면 픽셀·유입 쿠키(`cg_attr`)·서버 전송이 전부 꺼진다. 토큰만 없으면 서버 전송만 꺼진다. 랜딩은 환경변수가 아니라 `deploy/visit.js`의 `PIXEL_ID`.
 
 (Firebase, AWS 관련 환경변수는 Vercel 대시보드 참조)
 

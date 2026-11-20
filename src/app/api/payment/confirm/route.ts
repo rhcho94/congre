@@ -3,6 +3,7 @@ import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { verifyIdToken } from "@/lib/auth-server";
 import { getAdminDb } from "@/lib/firebase-admin";
 import { calcPrice } from "@/lib/plans";
+import { trackMetaEvent } from "@/lib/meta-capi";
 
 const STATUS_UNKNOWN_MESSAGE =
   "결제 결과를 확인하지 못했어요. 이 화면을 새로고침해 주세요. 결제가 두 번 되지는 않아요. 계속 안 되면 카카오톡 @congre로 문의해 주세요.";
@@ -227,6 +228,8 @@ export async function POST(request: NextRequest) {
 
   if (alreadySaved) {
     console.warn("[payment/confirm] order already paid; skipping save", { orderId });
+  } else {
+    trackMetaEvent(request, { eventName: "Purchase", eventId: `purchase_${orderId}`, value: amount });
   }
 
   return Response.json({ ok: true, eventId });

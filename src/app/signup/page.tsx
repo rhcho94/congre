@@ -55,7 +55,17 @@ export default function SignupPage() {
 
     setLoading(true);
     try {
-      await signUpWithEmail({ email, password, name, phone: phoneClean });
+      const user = await signUpWithEmail({ email, password, name, phone: phoneClean });
+      // 광고 유입 정보 연결 + 가입 완료 알림(메타). 실패해도 가입은 그대로 진행한다.
+      try {
+        const idToken = await user.getIdToken();
+        await fetch("/api/user/signup-complete", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${idToken}` },
+        });
+      } catch (trackErr) {
+        console.error("[signup] signup-complete failed:", trackErr);
+      }
       router.push("/dashboard");
     } catch (err) {
       console.error("[signup] error:", err);

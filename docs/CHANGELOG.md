@@ -2,6 +2,13 @@
 
 > 기능 단위 작업 이력. 최신이 위.
 
+## 2026-11-20
+
+- feat: 메타 광고 추적 추가(꺼진 채) — 픽셀(페이지 조회만, 참가자 화면 제외)·서버 전환 API(가입 완료·이벤트 생성·결제 확정)·광고 유입 정보 저장(`users.attribution`, 쿠키 `cg_attr`를 랜딩·앱이 함께 씀). 환경변수 3개가 비어 있어 아직 아무것도 수집하지 않는다. decisions/infra.md 2026-11-20.
+- docs(legal): 개인정보처리방침 v1.0 보완 — 메타 광고 성과 측정(`f6f4d7d`). docs/legal/CHANGELOG.md.
+- feat(landing): 랜딩 4페이지 `<head>`에 `/visit.js` 연결 + `visit.js` 신설(git 밖, **배포 전**, `PIXEL_ID` 비어 있음). 백업 `*_pre_meta_backup.html` 4개.
+- docs: 핸드오프 2026-11-20.
+
 ## 2026-11-19
 
 - feat(landing): 랜딩 첫 화면 교체(git 밖, Ray PowerShell 배포 congre-landing-1f1qeeyok) — 신부·절친 타깃 스와이프 영상 3편(Kling AI 제작, 소리 없음, 예고편식 자막 3줄씩, 반투명 화살표·넘김 표시), 영상 아래 "AI로 만든 예시" 한 줄, 제목 "신부 친구 모두가 촬영감독 / 결혼식 2부에서 바로 상영". 기존 첫 화면은 한 칸 아래. 영상 media/friends/f1~f3.mp4(540×958), 원본 media/friends/src/는 .vercelignore로 제외. 실사이트 확인(코난).
