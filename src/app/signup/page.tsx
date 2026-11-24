@@ -7,6 +7,7 @@ import { LANDING_URL } from "@/lib/constants";
 import PageBackdrop from "@/components/PageBackdrop";
 import { useRouter } from "next/navigation";
 import { signUpWithEmail } from "@/lib/auth";
+import KakaoLoginButton from "@/components/KakaoLoginButton";
 import { isFirebaseConfigured } from "@/lib/firebase";
 
 function getSignupErrorMessage(code: string): string {
@@ -102,6 +103,14 @@ export default function SignupPage() {
                 </p>
               </div>
             )}
+
+            <KakaoLoginButton />
+
+            <div className="flex items-center gap-3 my-5" aria-hidden="true">
+              <span className="flex-1" style={{ borderTop: "1px solid var(--line)" }} />
+              <span className="text-[13px] text-muted">또는 이메일로</span>
+              <span className="flex-1" style={{ borderTop: "1px solid var(--line)" }} />
+            </div>
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <label htmlFor="signup-email" className="flex flex-col gap-1.5">

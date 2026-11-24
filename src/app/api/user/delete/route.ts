@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import { getAdminAuth, getAdminDb } from "@/lib/firebase-admin";
 import { deleteS3Object } from "@/lib/s3-server";
+import { isKakaoUid, KAKAO_REAUTH_MAX_SEC, KAKAO_UID_PREFIX } from "@/lib/kakao-auth";
 
 export async function POST(request: NextRequest) {
   // 1. 인증
@@ -14,6 +15,10 @@ export async function POST(request: NextRequest) {
   try {
     const decoded = await getAdminAuth().verifyIdToken(token);
     uid = decoded.uid;
+    // 카카오 회원은 비밀번호가 없다 — 카카오로 다시 로그인한 직후에만 탈퇴를 받는다 (이메일 회원의 비밀번호 재확인 대신)
+    if (isKakaoUid(uid) && Date.now() / 1000 - decoded.auth_time > KAKAO_REAUTH_MAX_SEC) {
+      return Response.json({ code: "REAUTH_REQUIRED", message: "카카오로 다시 로그인한 뒤 탈퇴해 주세요" }, { status: 401 });
+    }
   } catch (err) {
     console.error("[user/delete] verifyIdToken failed:", err);
     return Response.json({ code: "INVALID_TOKEN", message: "토큰 검증 실패" }, { status: 401 });
@@ -124,6 +129,25 @@ export async function POST(request: NextRequest) {
       { code: "AUTH_DELETE_FAILED", message: "계정 삭제 중 오류" },
       { status: 500 }
     );
+  }
+
+  // 6. 카카오 회원 — 카카오 쪽 앱 연결도 끊는다 (실패해도 탈퇴는 끝난 것으로 본다. 다시 가입하면 동의 화면이 한 번 덜 뜰 뿐)
+  if (isKakaoUid(uid)) {
+    const adminKey = process.env.KAKAO_ADMIN_KEY;
+    if (!adminKey) {
+      console.error("[user/delete] KAKAO_ADMIN_KEY missing — kakao unlink skipped:", { uid });
+    } else {
+      try {
+        const res = await fetch("https://kapi.kakao.com/v1/user/unlink", {
+          method: "POST",
+          headers: { Authorization: `KakaoAK ${adminKey}`, "Content-Type": "application/x-www-form-urlencoded;charset=utf-8" },
+          body: new URLSearchParams({ target_id_type: "user_id", target_id: uid.slice(KAKAO_UID_PREFIX.length) }),
+        });
+        if (!res.ok) console.error("[user/delete] kakao unlink failed:", { uid, status: res.status });
+      } catch (err) {
+        console.error("[user/delete] kakao unlink error:", { uid, err });
+      }
+    }
   }
 
   console.log("[user/delete] success:", { uid, eventsDeleted: allEventsSnap.size });

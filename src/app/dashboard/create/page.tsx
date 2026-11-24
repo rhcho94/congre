@@ -6,7 +6,7 @@ import AppHeader from "@/components/AppHeader";
 import PageBackdrop from "@/components/PageBackdrop";
 import { useRouter } from "next/navigation";
 import { QRCodeSVG, QRCodeCanvas } from "qrcode.react";
-import { subscribeToAuthChanges, type User } from "@/lib/auth";
+import { subscribeToAuthChanges, isVerifiedHost, isKakaoUser, type User } from "@/lib/auth";
 import { type EventPlan } from "@/lib/events";
 import { isFirebaseConfigured, getFirebaseAuth } from "@/lib/firebase";
 import { getUserDoc } from "@/lib/users";
@@ -92,9 +92,9 @@ export default function CreateEventPage() {
       setAuthChecking(false);
       if (!firebaseUser) {
         router.push("/host");
-      } else if (!firebaseUser.emailVerified) {
+      } else if (!isVerifiedHost(firebaseUser)) {
         router.push("/dashboard");
-      } else if (firebaseUser.email) {
+      } else {
         const todayKST = new Date(
           new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" })
         );
@@ -105,7 +105,8 @@ export default function CreateEventPage() {
 
         setForm((f) => ({
           ...f,
-          organizerEmail: firebaseUser.email!,
+          // 카카오 회원은 이메일이 없다 — 빈 칸으로 두고 직접 적게 한다
+          organizerEmail: firebaseUser.email ?? "",
           date: todayStr,
         }));
 
@@ -117,6 +118,9 @@ export default function CreateEventPage() {
               ...(userDoc.name ? { title: `${userDoc.name}씨의 축하 영상입니다` } : {}),
               ...(userDoc.phone ? { organizerPhone: userDoc.phone } : {}),
             }));
+          } else if (isKakaoUser(firebaseUser)) {
+            // 카카오로 로그인만 하고 가입(이름 · 휴대폰 · 동의)을 마치지 않은 경우 — 가입 마무리 화면으로 돌려보낸다
+            window.location.assign("/api/auth/kakao/start?next=create");
           }
         } catch (err) {
           console.error("[create] user profile prefetch failed:", err);
@@ -474,6 +478,9 @@ export default function CreateEventPage() {
                         disabled={submitting}
                         className="input"
                       />
+                      {isKakaoUser(user) && (
+                        <p className="text-[13px] text-muted">완성본 링크와 결제·환불 안내를 이 주소로 보내드려요</p>
+                      )}
                     </label>
                     <label className="flex flex-col gap-1.5">
                       <span className="text-[15px]">휴대폰 번호</span>

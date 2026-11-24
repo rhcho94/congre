@@ -30,7 +30,7 @@ export default function PrivacyPage() {
         <main className="mx-auto max-w-3xl px-6 py-16">
           <div className="mb-10">
             <h1 className="display text-3xl">Congre 개인정보처리방침</h1>
-            <p className="text-xs text-muted mt-3">시행일: 2026년 9월 1일 · 2026년 11월 20일 보완(광고 성과 측정) · 2026년 11월 24일 보완(처리 위탁·국외 이전 현황)</p>
+            <p className="text-xs text-muted mt-3">시행일: 2026년 9월 1일 · 2026년 11월 20일 보완(광고 성과 측정) · 2026년 11월 24일 보완(처리 위탁·국외 이전 현황, 카카오 로그인)</p>
           </div>
 
           <div className="hr mb-10" />
@@ -75,6 +75,12 @@ export default function PrivacyPage() {
                     <td className="border border-border px-3 py-2 align-top">이메일 주소, 비밀번호, 이름</td>
                     <td className="border border-border px-3 py-2 align-top">회원가입 폼 입력</td>
                     <td className="border border-border px-3 py-2 align-top">회원가입 시</td>
+                  </tr>
+                  <tr>
+                    <td className="border border-border px-3 py-2 align-top">호스트 (카카오로 가입한 회원)</td>
+                    <td className="border border-border px-3 py-2 align-top">카카오 회원번호, 카카오 닉네임, 이름, 휴대전화번호</td>
+                    <td className="border border-border px-3 py-2 align-top">카카오 로그인 시 카카오로부터 제공(회원번호·닉네임), 가입 마무리 화면 입력(이름·휴대전화번호)</td>
+                    <td className="border border-border px-3 py-2 align-top">카카오로 처음 로그인할 때</td>
                   </tr>
                   <tr>
                     <td className="border border-border px-3 py-2 align-top">호스트 (회원)</td>
@@ -146,7 +152,7 @@ export default function PrivacyPage() {
                 </thead>
                 <tbody>
                   <tr>
-                    <td className="border border-border px-3 py-2 align-top">호스트 회원정보 (이메일, 비밀번호, 이름)</td>
+                    <td className="border border-border px-3 py-2 align-top">호스트 회원정보 (이메일, 비밀번호, 이름, 카카오 회원번호)</td>
                     <td className="border border-border px-3 py-2 align-top">회원 탈퇴 시까지</td>
                   </tr>
                   <tr>
@@ -220,7 +226,7 @@ export default function PrivacyPage() {
                   <tr>
                     <td className="border border-border px-3 py-2 align-top">Google LLC</td>
                     <td className="border border-border px-3 py-2 align-top">회원 인증 및 데이터베이스 (Firebase Authentication, Cloud Firestore)</td>
-                    <td className="border border-border px-3 py-2 align-top">호스트 이메일, 비밀번호 해시, 이름, 이벤트 정보</td>
+                    <td className="border border-border px-3 py-2 align-top">호스트 이메일, 비밀번호 해시, 카카오 회원번호, 이름, 이벤트 정보</td>
                   </tr>
                   <tr>
                     <td className="border border-border px-3 py-2 align-top">Amazon Web Services, Inc.</td>
@@ -267,7 +273,7 @@ export default function PrivacyPage() {
                   <dt className="text-muted">이전 일시 및 방법</dt>
                   <dd>서비스 이용 시점에 네트워크를 통한 전송</dd>
                   <dt className="text-muted">이전 항목</dt>
-                  <dd>호스트 이메일, 비밀번호 해시</dd>
+                  <dd>호스트 이메일, 비밀번호 해시, 카카오 회원번호(카카오로 가입한 경우)</dd>
                   <dt className="text-muted">보유 기간</dt>
                   <dd>제3조에 따른 보유 기간</dd>
                 </dl>
@@ -328,7 +334,7 @@ export default function PrivacyPage() {
                     <td className="border border-border px-3 py-2 align-top">Google LLC</td>
                     <td className="border border-border px-3 py-2 align-top">미국 (Firebase Authentication)</td>
                     <td className="border border-border px-3 py-2 align-top">서비스 이용 시점에 네트워크를 통한 전송</td>
-                    <td className="border border-border px-3 py-2 align-top">호스트 이메일, 비밀번호 해시</td>
+                    <td className="border border-border px-3 py-2 align-top">호스트 이메일, 비밀번호 해시, 카카오 회원번호(카카오로 가입한 경우)</td>
                     <td className="border border-border px-3 py-2 align-top">제3조에 따른 보유 기간</td>
                   </tr>
                   <tr>
@@ -550,6 +556,7 @@ export default function PrivacyPage() {
             <p>이 개인정보 처리방침은 2026년 9월 1일부터 시행합니다.</p>
             <p>2026년 11월 20일 보완: 광고 성과 측정(메타 픽셀·메타 전환 API, 가입 경로 정보)에 관한 사항을 제1조·제2조·제3조·제5조의2·제8조에 추가하였으며, 같은 날부터 적용합니다.</p>
             <p>2026년 11월 24일 보완: 영상 저장·편집을 국내(서울) 리전에서 처리하도록 바꾼 데 따라 제5조의 영상 자동 편집 수탁자를 Amazon Web Services, Inc.로 고치고, 제5조의2에서 Amazon Web Services, Inc.·Shotstack Pty Ltd를 삭제하였으며 Google LLC의 이전 항목을 바로잡았습니다. 같은 날부터 적용합니다.</p>
+            <p>2026년 11월 24일 보완: 카카오 로그인으로 가입할 수 있게 함에 따라 제2조·제3조·제5조·제5조의2에 카카오 회원번호·닉네임에 관한 사항을 추가하였으며, 같은 날부터 적용합니다.</p>
           </section>
         </div>
 

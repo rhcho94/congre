@@ -7,6 +7,7 @@ import { LANDING_URL } from "@/lib/constants";
 import PageBackdrop from "@/components/PageBackdrop";
 import { useRouter } from "next/navigation";
 import { loginWithEmail, logout, resetPassword, subscribeToAuthChanges, type User } from "@/lib/auth";
+import KakaoLoginButton from "@/components/KakaoLoginButton";
 import { isFirebaseConfigured } from "@/lib/firebase";
 
 function getAuthErrorMessage(code: string): string {
@@ -146,6 +147,14 @@ export default function HostPage() {
                 </p>
               </div>
             )}
+
+            <KakaoLoginButton />
+
+            <div className="flex items-center gap-3 my-5" aria-hidden="true">
+              <span className="flex-1" style={{ borderTop: "1px solid var(--line)" }} />
+              <span className="text-[13px] text-muted">또는 이메일로</span>
+              <span className="flex-1" style={{ borderTop: "1px solid var(--line)" }} />
+            </div>
 
             <form onSubmit={handleLogin} className="flex flex-col gap-4">
               <label className="flex flex-col gap-1.5">

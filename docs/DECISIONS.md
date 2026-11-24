@@ -6,7 +6,7 @@
 
 - [rendering](decisions/rendering.md) — 영상 편집·엔진·클립 (48개)
 - [notifications](decisions/notifications.md) — 이메일·SMS·알림 시나리오 (10개)
-- [auth-model](decisions/auth-model.md) — 호스트 인증·이벤트-바운드 (7개)
+- [auth-model](decisions/auth-model.md) — 호스트 인증·이벤트-바운드·카카오 로그인 (8개)
 - [legal](decisions/legal.md) — 약관·개인정보·미성년자 (15개)
 - [market-product](decisions/market-product.md) — 시장 정의·BM·서비스 모델 (24개)
 - [infra](decisions/infra.md) — Vercel·Firebase·도메인·무료 티어·자체 엔진·광고 추적 (12개)

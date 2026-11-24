@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { sendEmailVerification } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebase";
+import { isVerifiedHost } from "@/lib/auth";
 
 export function EmailVerificationBanner() {
   const auth = getFirebaseAuth();
@@ -27,7 +28,7 @@ export function EmailVerificationBanner() {
     return () => clearInterval(timer);
   }, [resendCooldown]);
 
-  if (!user || user.emailVerified) return null;
+  if (!user || isVerifiedHost(user)) return null;
 
   async function handleResend() {
     if (!user) return;

@@ -1,6 +1,7 @@
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  signInWithCustomToken,
   sendEmailVerification,
   signOut,
   onAuthStateChanged,
@@ -13,8 +14,23 @@ import {
 } from "firebase/auth";
 import { getFirebaseAuth } from "./firebase";
 import { createUserDoc } from "./users";
+import { isKakaoUid } from "./kakao-auth";
 
 export type { User };
+
+// 카카오 로그인 (2026-11-24) — 서버가 만든 Firebase 커스텀 토큰으로 로그인
+export async function loginWithKakaoToken(token: string) {
+  return signInWithCustomToken(getFirebaseAuth(), token);
+}
+
+// 이벤트를 만들 수 있는 호스트인가 — 이메일 회원은 이메일 인증, 카카오 회원은 카카오가 본인 계정을 확인했으므로 통과
+export function isVerifiedHost(user: User | null | undefined): boolean {
+  return Boolean(user && (user.emailVerified || isKakaoUid(user.uid)));
+}
+
+export function isKakaoUser(user: User | null | undefined): boolean {
+  return Boolean(user && isKakaoUid(user.uid));
+}
 
 export async function loginWithEmail(email: string, password: string) {
   return signInWithEmailAndPassword(getFirebaseAuth(), email, password);
@@ -78,13 +94,17 @@ export function subscribeToAuthChanges(callback: NextOrObserver<User>) {
   return onAuthStateChanged(getFirebaseAuth(), callback);
 }
 
+// 카카오 회원은 비밀번호 대신 "카카오로 다시 로그인한 직후"를 서버가 확인한다 — 오래됐으면 code REAUTH_REQUIRED
 export async function deleteAccount(currentPassword: string): Promise<void> {
   const auth = getFirebaseAuth();
   const user = auth.currentUser;
-  if (!user || !user.email) throw new Error("로그인 상태가 아닙니다");
+  if (!user) throw new Error("로그인 상태가 아닙니다");
 
-  const credential = EmailAuthProvider.credential(user.email, currentPassword);
-  await reauthenticateWithCredential(user, credential);
+  if (!isKakaoUid(user.uid)) {
+    if (!user.email) throw new Error("로그인 상태가 아닙니다");
+    const credential = EmailAuthProvider.credential(user.email, currentPassword);
+    await reauthenticateWithCredential(user, credential);
+  }
 
   const idToken = await user.getIdToken(true);
   const res = await fetch("/api/user/delete", {

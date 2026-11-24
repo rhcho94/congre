@@ -6,7 +6,7 @@ import AppHeader from "@/components/AppHeader";
 import PageBackdrop from "@/components/PageBackdrop";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
-import { subscribeToAuthChanges, logout, changePassword, deleteAccount, type User } from "@/lib/auth";
+import { subscribeToAuthChanges, logout, changePassword, deleteAccount, isVerifiedHost, isKakaoUser, type User } from "@/lib/auth";
 import { EmailVerificationBanner } from "@/components/EmailVerificationBanner";
 import { type EventStatus } from "@/lib/events";
 import { isFirebaseConfigured, getFirebaseAuth } from "@/lib/firebase";
@@ -42,11 +42,15 @@ export default function MyPage() {
   const [delPw, setDelPw] = useState("");
   const [showDelPw, setShowDelPw] = useState(false);
   const [delSaving, setDelSaving] = useState(false);
+  // 카카오 회원이 탈퇴 확인을 위해 카카오 로그인을 다시 거쳐 돌아온 경우 (/mypage?withdraw=1)
+  const [kakaoReauthed, setKakaoReauthed] = useState(
+    () => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("withdraw") === "1"
+  );
 
   useEffect(() => {
     if (!isFirebaseConfigured) return;
     return subscribeToAuthChanges(async (firebaseUser) => {
-      if (firebaseUser && !firebaseUser.emailVerified) {
+      if (firebaseUser && !isVerifiedHost(firebaseUser)) {
         try {
           await firebaseUser.reload();
         } catch (e) {
@@ -185,10 +189,11 @@ export default function MyPage() {
 
   function handleDelCancel() {
     setDelMode(false);
+    setKakaoReauthed(false);
   }
 
   async function handleDelSubmit() {
-    if (delPw.trim() === "") {
+    if (!isKakaoUser(user) && delPw.trim() === "") {
       alert("현재 비밀번호를 입력해주세요");
       return;
     }
@@ -207,7 +212,11 @@ export default function MyPage() {
       const code = err instanceof Error && "code" in err
         ? (err as { code: string }).code
         : "";
-      if (code === "auth/wrong-password" || code === "auth/invalid-credential") {
+      if (code === "REAUTH_REQUIRED") {
+        // 카카오 회원 — 카카오로 다시 로그인한 뒤 돌아와 탈퇴 (페이지가 아니라 카카오로 보내는 API 주소라 전체 이동)
+        window.location.assign("/api/auth/kakao/start?next=withdraw");
+        return;
+      } else if (code === "auth/wrong-password" || code === "auth/invalid-credential") {
         alert("현재 비밀번호가 올바르지 않습니다");
       } else if (code === "INCOMPLETE_EVENTS") {
         alert(err instanceof Error ? err.message : "진행 중 이벤트를 먼저 마감해주세요");
@@ -268,7 +277,7 @@ export default function MyPage() {
         <main className="mx-auto max-w-3xl px-5 pt-2 pb-16 flex flex-col gap-4">
           <h1 className="display" style={{ fontSize: 28, lineHeight: 1.3, paddingTop: 12 }}>내 계정</h1>
 
-          {user && !user.emailVerified && <EmailVerificationBanner />}
+          {user && !isVerifiedHost(user) && <EmailVerificationBanner />}
 
           {/* 이벤트 요약 */}
           {eventsLoading ? (
@@ -276,7 +285,7 @@ export default function MyPage() {
           ) : events.length === 0 ? (
             <div className="notice text-center">
               <p className="text-muted text-sm mb-4">아직 이벤트가 없습니다.</p>
-              {user?.emailVerified ? (
+              {isVerifiedHost(user) ? (
                 <Link href="/dashboard/create" className="text-sm text-accent hover:brightness-110 transition-all">
                   첫 이벤트 만들기
                 </Link>
@@ -304,8 +313,8 @@ export default function MyPage() {
             ) : (
               <div className="flex flex-col gap-4">
                 <div className="flex flex-col gap-0.5">
-                  <span className="text-[13px] text-muted">이메일</span>
-                  <span style={{ fontSize: 15 }}>{user?.email ?? "—"}</span>
+                  <span className="text-[13px] text-muted">{isKakaoUser(user) ? "로그인" : "이메일"}</span>
+                  <span style={{ fontSize: 15 }}>{isKakaoUser(user) ? "카카오 계정" : user?.email ?? "—"}</span>
                 </div>
 
                 {editMode ? (
@@ -373,7 +382,8 @@ export default function MyPage() {
             )}
           </section>
 
-          {/* 비밀번호 */}
+          {/* 비밀번호 — 카카오 회원은 비밀번호가 없다 */}
+          {!isKakaoUser(user) && (
           <section className="notice flex flex-col gap-4" style={{ padding: 16 }}>
             <h2 style={{ fontSize: 17 }}>비밀번호</h2>
             {pwMode ? (
@@ -433,6 +443,7 @@ export default function MyPage() {
               </button>
             )}
           </section>
+          )}
 
           {/* 회원 탈퇴 — 맨 아래, 위 카드와 떨어뜨림 */}
           <section className="flex flex-col gap-2" style={{ marginTop: 32 }}>
@@ -441,13 +452,20 @@ export default function MyPage() {
               <p className="text-sm text-muted leading-relaxed">
                 진행 중 이벤트가 {inProgress}개 있습니다. 모든 이벤트를 마감한 후 탈퇴할 수 있습니다.
               </p>
-            ) : delMode ? (
+            ) : delMode || kakaoReauthed ? (
               <div className="flex flex-col gap-5">
                 <div className="notice" style={{ padding: 16 }}>
                   <p className="text-sm text-foreground leading-relaxed">
                     회원 탈퇴 시 회원 정보, 모든 이벤트, 업로드된 클립, 완성본 영상이 즉시 삭제되며 복구할 수 없습니다.
                   </p>
                 </div>
+                {isKakaoUser(user) ? (
+                  <p className="text-sm text-muted leading-relaxed">
+                    {kakaoReauthed
+                      ? "카카오 확인이 끝났어요. 10분 안에 아래 [탈퇴]를 눌러 주세요."
+                      : "[탈퇴]를 누르면 본인 확인을 위해 카카오 로그인을 한 번 더 거쳐요."}
+                  </p>
+                ) : (
                 <div className="flex flex-col gap-1.5">
                   <span className="text-[15px]">현재 비밀번호</span>
                   <div className="relative">
@@ -468,6 +486,7 @@ export default function MyPage() {
                     </button>
                   </div>
                 </div>
+                )}
                 <div className="flex gap-3 pt-2">
                   <button
                     onClick={handleDelSubmit}

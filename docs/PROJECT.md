@@ -101,6 +101,9 @@ npx firebase emulators:start --only firestore
 | NEXT_PUBLIC_APP_URL | https://app.congre.kr | 확인 필요 |
 | NEXT_PUBLIC_META_PIXEL_ID | `1137167305747518` (2026-11-24부터. 메타 데이터 세트 `Congre`, 레이네 포트폴리오 소유) — 공개 값, Config 타입 | 넣지 않는다 |
 | META_CAPI_ACCESS_TOKEN | (2026-11-24 넣음) 전환 API 토큰 — 서버 전용, 문서·채팅에 남기지 않는다 | 넣지 않는다 |
+| KAKAO_REST_API_KEY | 카카오 로그인용 REST API 키 (2026-11-24 코드 추가, 값은 Ray가 넣는다) — 서버 전용 | 넣지 않는다 |
+| KAKAO_CLIENT_SECRET | 카카오 로그인 Client Secret (카카오 개발자 앱에서 켰을 때만) — 서버 전용 | 넣지 않는다 |
+| KAKAO_ADMIN_KEY | 탈퇴 때 카카오 연결 끊기 — 서버 전용. 없으면 연결 끊기만 건너뛴다 | 넣지 않는다 |
 | META_TEST_EVENT_CODE | 이벤트 테스트 때만 잠깐 넣고 확인 뒤 지운다 (2026-11-24 테스트 뒤 삭제 — Ray) | 넣지 않는다 |
 
 메타 광고 추적(decisions/infra.md 2026-11-20): 픽셀 ID가 없으면 픽셀·유입 쿠키(`cg_attr`)·서버 전송이 전부 꺼진다. 토큰만 없으면 서버 전송만 꺼진다. 랜딩은 환경변수가 아니라 `deploy/visit.js`의 `PIXEL_ID`. **2026-11-24부터 앱·랜딩 둘 다 켜져 있다**(랜딩 `PIXEL_ID`도 같은 ID).

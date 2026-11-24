@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server";
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import { verifyIdToken } from "@/lib/auth-server";
 import { getAdminDb } from "@/lib/firebase-admin";
+import { isKakaoUid } from "@/lib/kakao-auth";
 import { notifyEventCreated } from "@/lib/notifications/scenarios/event-created";
 import { getPlanMaxClipSeconds, MAX_TOTAL_CLIP_SECONDS, type PlanId } from "@/lib/plans";
 import { trackMetaEvent } from "@/lib/meta-capi";
@@ -59,6 +60,11 @@ export async function POST(request: NextRequest) {
     uid = token.uid;
   } catch {
     return Response.json({ error: "UNAUTHORIZED" }, { status: 401 });
+  }
+
+  // 카카오로 로그인만 하고 가입(이름 · 휴대폰 · 약관 동의)을 마치지 않은 계정은 이벤트를 만들 수 없다
+  if (isKakaoUid(uid) && !(await getAdminDb().collection("users").doc(uid).get()).exists) {
+    return Response.json({ error: "SIGNUP_INCOMPLETE" }, { status: 403 });
   }
 
   const body = await request.json() as {

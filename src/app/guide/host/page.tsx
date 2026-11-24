@@ -68,6 +68,13 @@ export default function GuideHostPage() {
               </ul>
             </div>
             <div className="flex flex-col gap-1">
+              <h3 style={H3}>카카오로 시작하기</h3>
+              <ul className="list-disc flex flex-col gap-1" style={LIST}>
+                <li>로그인·가입 화면 맨 위 "카카오로 시작하기"를 누르면 이메일·비밀번호 없이 가입됩니다. 처음 한 번만 이름과 휴대폰 번호를 적고 약관에 동의합니다.</li>
+                <li>카카오로 가입하면 이메일 인증이 필요 없습니다. 대신 이벤트를 만들 때 알림 받을 이메일을 직접 적습니다.</li>
+              </ul>
+            </div>
+            <div className="flex flex-col gap-1">
               <h3 style={H3}>이메일 인증</h3>
               <ul className="list-disc flex flex-col gap-1" style={LIST}>
                 <li>가입 직후 인증 메일이 발송됩니다. 메일 안 "인증" 링크를 클릭하면 완료.</li>
@@ -209,8 +216,8 @@ export default function GuideHostPage() {
               <ul className="list-disc flex flex-col gap-1" style={LIST}>
                 <li>이벤트 요약: 진행 중과 완료된 이벤트 수를 한눈에</li>
                 <li>프로필: 이름과 전화번호 수정</li>
-                <li>비밀번호 변경: 현재 비밀번호 + 신규 비밀번호 입력</li>
-                <li>회원 탈퇴: 비밀번호 재인증 후 모든 데이터 즉시 삭제</li>
+                <li>비밀번호 변경: 현재 비밀번호 + 신규 비밀번호 입력 (카카오로 가입한 계정에는 없음)</li>
+                <li>회원 탈퇴: 비밀번호 재인증(카카오로 가입한 계정은 카카오 로그인 한 번 더) 후 모든 데이터 즉시 삭제</li>
               </ul>
             </div>
             <div className="flex flex-col gap-1">

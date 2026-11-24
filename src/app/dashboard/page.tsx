@@ -5,7 +5,7 @@ import Link from "next/link";
 import AppHeader from "@/components/AppHeader";
 import PageBackdrop from "@/components/PageBackdrop";
 import { useRouter } from "next/navigation";
-import { subscribeToAuthChanges, logout, type User } from "@/lib/auth";
+import { subscribeToAuthChanges, isVerifiedHost, logout, type User } from "@/lib/auth";
 import { EmailVerificationBanner } from "@/components/EmailVerificationBanner";
 import { type EventPlan, type EventStatus } from "@/lib/events";
 import { isFirebaseConfigured, getFirebaseAuth } from "@/lib/firebase";
@@ -46,7 +46,7 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!isFirebaseConfigured) return;
     return subscribeToAuthChanges(async (firebaseUser) => {
-      if (firebaseUser && !firebaseUser.emailVerified) {
+      if (firebaseUser && !isVerifiedHost(firebaseUser)) {
         try {
           await firebaseUser.reload();
         } catch (e) {
@@ -146,7 +146,7 @@ export default function DashboardPage() {
         <main className="mx-auto max-w-3xl px-5 pt-2 pb-16 flex flex-col gap-4">
           <div className="flex items-end justify-between gap-3" style={{ paddingTop: 12 }}>
             <h1 className="display" style={{ fontSize: 28, lineHeight: 1.3 }}>내 이벤트</h1>
-            {user?.emailVerified ? (
+            {isVerifiedHost(user) ? (
               <Link href="/dashboard/create" className="btn btn-primary shrink-0" style={NEW_EVENT_BTN}>
                 + 새 이벤트
               </Link>
@@ -160,7 +160,7 @@ export default function DashboardPage() {
             )}
           </div>
 
-          {user && !user.emailVerified && <EmailVerificationBanner />}
+          {user && !isVerifiedHost(user) && <EmailVerificationBanner />}
 
           {eventsLoading ? (
             <p className="text-center text-muted text-sm py-16 animate-pulse">불러오는 중...</p>

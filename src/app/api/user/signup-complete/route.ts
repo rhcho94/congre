@@ -7,6 +7,7 @@ import { trackMetaEvent } from "@/lib/meta-capi";
 
 // 가입 마무리 표시 — 가입은 브라우저가 users 문서를 직접 만들어 서버가 가입을 알 길이 없다.
 // 가입 화면이 가입 직후 이 주소를 한 번 불러, 광고 유입 정보를 users 문서에 붙이고 가입 완료를 메타에 알린다.
+// (카카오 가입은 api/user/kakao-signup이 같은 일을 한다.)
 
 const FRESH_SIGNUP_WINDOW_MS = 10 * 60 * 1000;
 
