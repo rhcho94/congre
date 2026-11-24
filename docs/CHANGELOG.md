@@ -4,7 +4,7 @@
 
 ## 2026-11-24
 
-- feat(auth): 카카오 로그인 추가 — 로그인·가입 화면 [카카오로 시작하기], 가입 마무리(이름·휴대폰·동의), 카카오 회원은 이벤트 만들 때 이메일을 직접 적음, 탈퇴는 카카오 재로그인으로 확인. 환경변수 3개(`KAKAO_REST_API_KEY` 등)가 없으면 버튼이 안내 문구로 끝난다. 처리방침 v1.0 보완(카카오 회원번호·닉네임). decisions/auth-model.md 2026-11-24.
+- feat(auth): 카카오 로그인 추가 — 로그인·가입 화면 [카카오로 시작하기], 가입 마무리(이름·휴대폰·동의), 카카오 회원은 이벤트 만들 때 이메일을 직접 적음, 탈퇴는 카카오 재로그인으로 확인. 환경변수 3개(`KAKAO_REST_API_KEY` 등)가 없으면 버튼이 안내 문구로 끝난다. 처리방침 v1.0 보완(카카오 회원번호·닉네임). decisions/auth-model.md 2026-11-24. 운영 반영 `33b476c`, 폰 실기 테스트 통과(Ray).
 - chore(meta): 메타 광고 추적 켬 — 데이터 세트 `Congre`(`1137167305747518`, 레이네 소유) 생성, Vercel `congre` 환경변수(픽셀 ID·전환 API 토큰) 넣고 재배포(Ray). 이벤트 테스트 통과(브라우저 PageView, 서버 CompleteRegistration·EventCreated, `users.attribution` 저장) 뒤 테스트 코드 삭제·재배포(Ray). 앱 코드 변경 없음. decisions/infra.md 2026-11-20 항목에 상태 추가.
 - feat(landing): `visit.js`에 픽셀 ID 넣음(git 밖, Ray PowerShell 배포 congre-landing-argikldit). 랜딩에서 생긴 유입 쿠키가 앱에서 그대로 읽히는 것 확인(코난). 백업 `visit_pre_pixelid.js.bak`.
 - docs(legal): 개인정보처리방침 v1.0 보완 — 처리 위탁·국외 이전 현황 정정(Shotstack·AWS 시드니 삭제, 편집 수탁자 AWS 서울, Google은 Firebase Authentication만). `src/app/privacy/page.tsx` +7 −51. docs/legal/CHANGELOG.md, known-issues 문구 묶음 10번.
