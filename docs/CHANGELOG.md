@@ -2,6 +2,12 @@
 
 > 기능 단위 작업 이력. 최신이 위.
 
+## 2026-11-24
+
+- chore(meta): 메타 광고 추적 켬 — 데이터 세트 `Congre`(`1137167305747518`, 레이네 소유) 생성, Vercel `congre` 환경변수(픽셀 ID·전환 API 토큰) 넣고 재배포(Ray). 이벤트 테스트 통과(브라우저 PageView, 서버 CompleteRegistration·EventCreated, `users.attribution` 저장) 뒤 테스트 코드 삭제·재배포(Ray). 앱 코드 변경 없음. decisions/infra.md 2026-11-20 항목에 상태 추가.
+- feat(landing): `visit.js`에 픽셀 ID 넣음(git 밖, Ray PowerShell 배포 congre-landing-argikldit). 랜딩에서 생긴 유입 쿠키가 앱에서 그대로 읽히는 것 확인(코난). 백업 `visit_pre_pixelid.js.bak`.
+- docs: PROJECT.md 환경변수·랜딩 자산 인벤토리(`media/friends/`·`visit.js`) 갱신. 핸드오프 2026-11-24.
+
 ## 2026-11-20
 
 - feat: 메타 광고 추적 추가(꺼진 채) — 픽셀(페이지 조회만, 참가자 화면 제외)·서버 전환 API(가입 완료·이벤트 생성·결제 확정)·광고 유입 정보 저장(`users.attribution`, 쿠키 `cg_attr`를 랜딩·앱이 함께 씀). 환경변수 3개가 비어 있어 아직 아무것도 수집하지 않는다. decisions/infra.md 2026-11-20.

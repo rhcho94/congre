@@ -99,11 +99,11 @@ npx firebase emulators:start --only firestore
 |---|---|---|
 | ENGINE_STATE_MACHINE_ARN | arn:...:stateMachine:congre-engine-render-job | 같음 |
 | NEXT_PUBLIC_APP_URL | https://app.congre.kr | 확인 필요 |
-| NEXT_PUBLIC_META_PIXEL_ID | (2026-11-20 현재 비어 있음) 메타 데이터 세트 ID — 공개 값, Config 타입 | 넣지 않는다 |
-| META_CAPI_ACCESS_TOKEN | (비어 있음) 전환 API 토큰 — 서버 전용, 문서·채팅에 남기지 않는다 | 넣지 않는다 |
-| META_TEST_EVENT_CODE | 이벤트 테스트 때만 잠깐 넣고 확인 뒤 지운다 | 넣지 않는다 |
+| NEXT_PUBLIC_META_PIXEL_ID | `1137167305747518` (2026-11-24부터. 메타 데이터 세트 `Congre`, 레이네 포트폴리오 소유) — 공개 값, Config 타입 | 넣지 않는다 |
+| META_CAPI_ACCESS_TOKEN | (2026-11-24 넣음) 전환 API 토큰 — 서버 전용, 문서·채팅에 남기지 않는다 | 넣지 않는다 |
+| META_TEST_EVENT_CODE | 이벤트 테스트 때만 잠깐 넣고 확인 뒤 지운다 (2026-11-24 테스트 뒤 삭제 — Ray) | 넣지 않는다 |
 
-메타 광고 추적(decisions/infra.md 2026-11-20): 픽셀 ID가 없으면 픽셀·유입 쿠키(`cg_attr`)·서버 전송이 전부 꺼진다. 토큰만 없으면 서버 전송만 꺼진다. 랜딩은 환경변수가 아니라 `deploy/visit.js`의 `PIXEL_ID`.
+메타 광고 추적(decisions/infra.md 2026-11-20): 픽셀 ID가 없으면 픽셀·유입 쿠키(`cg_attr`)·서버 전송이 전부 꺼진다. 토큰만 없으면 서버 전송만 꺼진다. 랜딩은 환경변수가 아니라 `deploy/visit.js`의 `PIXEL_ID`. **2026-11-24부터 앱·랜딩 둘 다 켜져 있다**(랜딩 `PIXEL_ID`도 같은 ID).
 
 (Firebase, AWS 관련 환경변수는 Vercel 대시보드 참조)
 
@@ -185,6 +185,8 @@ npx firebase emulators:start --only firestore
 - `site.css` — 4페이지 공통
 - `media/` — demo-v2.mp4, poster, ch0~5, final, occasion-dol·birth·grad
 - `media/hero/` — 첫 화면 무대(finale.mp4·jpg, clip1~5.mp4·jpg)
+- `media/friends/` — 첫 화면 스와이프 영상 3편(f1~f3.mp4·jpg, 2026-11-19). 원본 `media/friends/src/`는 배포 제외
+- `visit.js` — 메타 픽셀·유입 쿠키(`cg_attr`), 4페이지 `<head>`에서 불러옴(2026-11-20 신설, 2026-11-24 `PIXEL_ID` 넣음)
 - `videos/wedding_2.mp4` — 완성본 예시 재생
 - `images/og-image.png` — 결혼식판
 - `favicon.ico`·`apple-touch-icon.png`
