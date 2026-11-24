@@ -6,7 +6,12 @@
 
 - chore(meta): 메타 광고 추적 켬 — 데이터 세트 `Congre`(`1137167305747518`, 레이네 소유) 생성, Vercel `congre` 환경변수(픽셀 ID·전환 API 토큰) 넣고 재배포(Ray). 이벤트 테스트 통과(브라우저 PageView, 서버 CompleteRegistration·EventCreated, `users.attribution` 저장) 뒤 테스트 코드 삭제·재배포(Ray). 앱 코드 변경 없음. decisions/infra.md 2026-11-20 항목에 상태 추가.
 - feat(landing): `visit.js`에 픽셀 ID 넣음(git 밖, Ray PowerShell 배포 congre-landing-argikldit). 랜딩에서 생긴 유입 쿠키가 앱에서 그대로 읽히는 것 확인(코난). 백업 `visit_pre_pixelid.js.bak`.
+- docs(legal): 개인정보처리방침 v1.0 보완 — 처리 위탁·국외 이전 현황 정정(Shotstack·AWS 시드니 삭제, 편집 수탁자 AWS 서울, Google은 Firebase Authentication만). `src/app/privacy/page.tsx` +7 −51. docs/legal/CHANGELOG.md, known-issues 문구 묶음 10번.
 - docs: PROJECT.md 환경변수·랜딩 자산 인벤토리(`media/friends/`·`visit.js`) 갱신. 핸드오프 2026-11-24.
+
+## 2026-11-23
+
+- feat(landing): `index.html` 문구 4곳을 새 제목(신부·친구)에 맞춤 — title·og:title·twitter:title, meta description, og/twitter description, 제목 아래 lead(git 밖, Ray PowerShell 배포 congre-landing-oqwyb59gk). 이 배포로 11/20의 `visit.js` 연결이 처음 운영에 올라감(`PIXEL_ID` 빈 채). 백업 `index_pre_friendscopy_backup.html`. 핸드오프 2026-11-23.
 
 ## 2026-11-20
 

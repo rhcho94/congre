@@ -5,6 +5,30 @@
 > 본문 자체는 `src/app/terms/page.tsx` 및 `src/app/privacy/page.tsx`에 보관.
 > Git이 본문 변경 이력 추적, 본 파일은 결정 사항·미확정 항목·베이스 출처 기록.
 
+## [1.0 보완] - 2026-11-24 (처리 위탁·국외 이전 현황 정정 — 처리방침만, 약관 변경 없음)
+
+### 변경
+- 처리방침 제5조 위탁 표: Shotstack Pty Ltd 행 삭제. Amazon Web Services, Inc. 행의 위탁 업무를 "클립 영상 파일 저장 및 영상 자동 편집 (Amazon S3 등, 서울 리전)"으로, 처리 항목에 "인트로·아웃트로 텍스트"를 합침(Shotstack 행에 있던 항목).
+- 제5조의2 국외 이전(좁은 화면 카드와 표 양쪽): Amazon Web Services, Inc.(ap-southeast-2)·Shotstack Pty Ltd(호주) 삭제. Google LLC는 "미국 (Firestore 리전: us-central1)" → "미국 (Firebase Authentication)", 이전 항목 "호스트 이메일, 비밀번호 해시, 이름, 이벤트 정보" → "호스트 이메일, 비밀번호 해시".
+- 머리말·부칙에 보완 일자(2026-11-24).
+
+### 근거 (사실 관계)
+- S3는 2026-10-13 서울 버킷 `congre-videos-kr`로 이전, 옛 시드니 버킷 2026-10-16 삭제. 렌더는 2026-10-16부터 서울 자체 엔진(AWS Lambda·Step Functions), Shotstack 코드 제거·구독 해지(decisions/infra.md 2026-10-13, CHANGELOG 10/13~10/16).
+- Firestore `(default)`는 처음부터 서울 asia-northeast3(2026-10-13 Firebase 콘솔, decisions/infra.md).
+- Firebase Authentication은 미국 데이터센터에서만 운영(Firebase 공식 문서 "Privacy and Security in Firebase"의 US-only services, 2026-11-24 확인). 앱이 Authentication에 넣는 것은 이메일·비밀번호뿐(`src/lib/auth.ts` — 이름은 Firestore `users`).
+
+### 결정 사항 (코난 판단, Ray가 2026-11-24 "끝까지 진행, 배포 전에만 확인"으로 위임)
+- 2026-11-20 보완과 같은 방식 — 새 판 대신 v1.0 보완, 공지와 같은 날 시행. 국외 이전이 줄어드는 방향의 사실 정정이다.
+- 범위는 "이미 사실이 아닌 표기"만. known-issues "문구 묶음" 1·2번(수집 항목 누락)과 3번의 항목 확대(참가자 이름 자막·완성본·하객 사진)는 넣지 않았다 — 제2조 수집 항목과 함께 고쳐야 해서 법률 상담 묶음(D4·D6·D8)에 남긴다.
+- **보완 일자(11-24)는 이 변경이 실제로 배포되는 날과 같아야 한다.** 배포가 늦어지면 머리말·부칙의 날짜를 배포일로 고친다.
+
+### 미확정
+- **"외국 회사(AWS·Google)의 서울 리전에 저장"이 국외 이전이 아니라는 전제로 표에서 뺐다.** 법무 검토 미수행(decisions/infra.md 2026-10-13 "Ray 법률 트랙"). 국내 사업자 처리방침의 통상 표기를 따른 것이며, 검토 결과가 다르면 행을 되살린다.
+- Vercel 행은 그대로(함수는 서울 icn1이나 엣지·로그는 글로벌). Resend·Meta 행 그대로.
+- 쿠키 동의 배너 등 2026-11-20 미확정 항목 그대로.
+
+---
+
 ## [1.0 보완] - 2026-11-20 (광고 성과 측정 — 처리방침만, 약관 변경 없음)
 
 ### 변경

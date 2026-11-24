@@ -30,7 +30,7 @@ export default function PrivacyPage() {
         <main className="mx-auto max-w-3xl px-6 py-16">
           <div className="mb-10">
             <h1 className="display text-3xl">Congre 개인정보처리방침</h1>
-            <p className="text-xs text-muted mt-3">시행일: 2026년 9월 1일 · 2026년 11월 20일 보완(광고 성과 측정)</p>
+            <p className="text-xs text-muted mt-3">시행일: 2026년 9월 1일 · 2026년 11월 20일 보완(광고 성과 측정) · 2026년 11월 24일 보완(처리 위탁·국외 이전 현황)</p>
           </div>
 
           <div className="hr mb-10" />
@@ -224,12 +224,7 @@ export default function PrivacyPage() {
                   </tr>
                   <tr>
                     <td className="border border-border px-3 py-2 align-top">Amazon Web Services, Inc.</td>
-                    <td className="border border-border px-3 py-2 align-top">클립 영상 파일 저장 (Amazon S3)</td>
-                    <td className="border border-border px-3 py-2 align-top">클립 영상 콘텐츠</td>
-                  </tr>
-                  <tr>
-                    <td className="border border-border px-3 py-2 align-top">Shotstack Pty Ltd</td>
-                    <td className="border border-border px-3 py-2 align-top">영상 자동 편집 엔진</td>
+                    <td className="border border-border px-3 py-2 align-top">클립 영상 파일 저장 및 영상 자동 편집 (Amazon S3 등, 서울 리전)</td>
                     <td className="border border-border px-3 py-2 align-top">클립 영상 콘텐츠, 인트로·아웃트로 텍스트</td>
                   </tr>
                   <tr>
@@ -268,37 +263,11 @@ export default function PrivacyPage() {
                 <h3 style={{ fontSize: 17, color: "var(--text)" }}>Google LLC</h3>
                 <dl style={TRANSFER_DL}>
                   <dt className="text-muted">이전 국가·리전</dt>
-                  <dd>미국 (Firestore 리전: us-central1)</dd>
+                  <dd>미국 (Firebase Authentication)</dd>
                   <dt className="text-muted">이전 일시 및 방법</dt>
                   <dd>서비스 이용 시점에 네트워크를 통한 전송</dd>
                   <dt className="text-muted">이전 항목</dt>
-                  <dd>호스트 이메일, 비밀번호 해시, 이름, 이벤트 정보</dd>
-                  <dt className="text-muted">보유 기간</dt>
-                  <dd>제3조에 따른 보유 기간</dd>
-                </dl>
-              </div>
-              <div className="flex flex-col gap-1.5" style={TRANSFER_CARD}>
-                <h3 style={{ fontSize: 17, color: "var(--text)" }}>Amazon Web Services, Inc.</h3>
-                <dl style={TRANSFER_DL}>
-                  <dt className="text-muted">이전 국가·리전</dt>
-                  <dd>ap-southeast-2</dd>
-                  <dt className="text-muted">이전 일시 및 방법</dt>
-                  <dd>클립 영상 업로드 시점에 네트워크를 통한 전송</dd>
-                  <dt className="text-muted">이전 항목</dt>
-                  <dd>클립 영상 콘텐츠</dd>
-                  <dt className="text-muted">보유 기간</dt>
-                  <dd>제3조에 따른 보유 기간</dd>
-                </dl>
-              </div>
-              <div className="flex flex-col gap-1.5" style={TRANSFER_CARD}>
-                <h3 style={{ fontSize: 17, color: "var(--text)" }}>Shotstack Pty Ltd</h3>
-                <dl style={TRANSFER_DL}>
-                  <dt className="text-muted">이전 국가·리전</dt>
-                  <dd>호주</dd>
-                  <dt className="text-muted">이전 일시 및 방법</dt>
-                  <dd>완성본 영상 생성 시점에 네트워크를 통한 전송</dd>
-                  <dt className="text-muted">이전 항목</dt>
-                  <dd>클립 영상 콘텐츠, 인트로·아웃트로 텍스트</dd>
+                  <dd>호스트 이메일, 비밀번호 해시</dd>
                   <dt className="text-muted">보유 기간</dt>
                   <dd>제3조에 따른 보유 기간</dd>
                 </dl>
@@ -357,23 +326,9 @@ export default function PrivacyPage() {
                 <tbody>
                   <tr>
                     <td className="border border-border px-3 py-2 align-top">Google LLC</td>
-                    <td className="border border-border px-3 py-2 align-top">미국 (Firestore 리전: us-central1)</td>
+                    <td className="border border-border px-3 py-2 align-top">미국 (Firebase Authentication)</td>
                     <td className="border border-border px-3 py-2 align-top">서비스 이용 시점에 네트워크를 통한 전송</td>
-                    <td className="border border-border px-3 py-2 align-top">호스트 이메일, 비밀번호 해시, 이름, 이벤트 정보</td>
-                    <td className="border border-border px-3 py-2 align-top">제3조에 따른 보유 기간</td>
-                  </tr>
-                  <tr>
-                    <td className="border border-border px-3 py-2 align-top">Amazon Web Services, Inc.</td>
-                    <td className="border border-border px-3 py-2 align-top">ap-southeast-2</td>
-                    <td className="border border-border px-3 py-2 align-top">클립 영상 업로드 시점에 네트워크를 통한 전송</td>
-                    <td className="border border-border px-3 py-2 align-top">클립 영상 콘텐츠</td>
-                    <td className="border border-border px-3 py-2 align-top">제3조에 따른 보유 기간</td>
-                  </tr>
-                  <tr>
-                    <td className="border border-border px-3 py-2 align-top">Shotstack Pty Ltd</td>
-                    <td className="border border-border px-3 py-2 align-top">호주</td>
-                    <td className="border border-border px-3 py-2 align-top">완성본 영상 생성 시점에 네트워크를 통한 전송</td>
-                    <td className="border border-border px-3 py-2 align-top">클립 영상 콘텐츠, 인트로·아웃트로 텍스트</td>
+                    <td className="border border-border px-3 py-2 align-top">호스트 이메일, 비밀번호 해시</td>
                     <td className="border border-border px-3 py-2 align-top">제3조에 따른 보유 기간</td>
                   </tr>
                   <tr>
@@ -594,6 +549,7 @@ export default function PrivacyPage() {
             <h2 className="text-sm font-medium text-foreground">부칙</h2>
             <p>이 개인정보 처리방침은 2026년 9월 1일부터 시행합니다.</p>
             <p>2026년 11월 20일 보완: 광고 성과 측정(메타 픽셀·메타 전환 API, 가입 경로 정보)에 관한 사항을 제1조·제2조·제3조·제5조의2·제8조에 추가하였으며, 같은 날부터 적용합니다.</p>
+            <p>2026년 11월 24일 보완: 영상 저장·편집을 국내(서울) 리전에서 처리하도록 바꾼 데 따라 제5조의 영상 자동 편집 수탁자를 Amazon Web Services, Inc.로 고치고, 제5조의2에서 Amazon Web Services, Inc.·Shotstack Pty Ltd를 삭제하였으며 Google LLC의 이전 항목을 바로잡았습니다. 같은 날부터 적용합니다.</p>
           </section>
         </div>
 
